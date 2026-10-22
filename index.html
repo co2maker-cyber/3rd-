@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#12151A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="스마트카">
+<title>스마트카 리모컨</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2312151A'/%3E%3Cpath d='M32 12l14 18H18z' fill='%23F2A93B'/%3E%3Crect x='24' y='34' width='16' height='16' rx='3' fill='%23E5484D'/%3E%3C/svg%3E">
+<style>
+/* 레이아웃: 위 상태 → 가운데 방향 패드 → 아래 모드/기록. 한 손 조종을 위해 패드는 화면 가운데 고정 크기 */
+:root{
+  --bg:#12151A; --panel:#1C2128; --panel-hi:#262C35; --line:#2E3540;
+  --text:#E8ECF1; --muted:#8A94A3; --accent:#F2A93B;
+  --ok:#3FB97A; --warn:#E8B931; --stop:#E5484D;
+  --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font)}
+body{
+  padding-top:max(14px,env(safe-area-inset-top,0px));
+  padding-bottom:max(20px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:24px;font-weight:800;margin:0;letter-spacing:-.3px}
+.sub{color:var(--muted);font-size:13px;margin-top:2px;letter-spacing:.4px}
+.ghost{background:none;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 14px;font:600 14px var(--font);cursor:pointer}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:6px;background:var(--panel);padding:6px 12px;border-radius:999px;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--stop)}
+.err{color:var(--stop);font-size:12px;min-height:0}
+.card{background:var(--panel);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.label{color:var(--muted);font-size:12px;letter-spacing:.3px}
+.value{font-size:18px;font-weight:700;margin-top:4px}
+.sensor-head{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6px}
+.sensor-num{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.sensor-num small{color:var(--muted);font-size:13px;font-weight:400}
+.bar{position:relative;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent);border-radius:5px;transition:width .15s}
+.mark{position:absolute;top:0;bottom:0;width:2px;background:var(--text)}
+.caption{color:var(--muted);font-size:11px}
+.pad{display:grid;grid-template-columns:repeat(3,92px);grid-template-rows:repeat(3,92px);gap:10px;justify-content:center;padding:4px 0;user-select:none;-webkit-user-select:none;touch-action:none}
+.drive{border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:34px;cursor:pointer;touch-action:none}
+.drive.active{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.stopbtn{border-radius:50%;background:var(--stop);border:0;color:#fff;font:800 18px var(--font);cursor:pointer}
+.stopbtn:active{opacity:.75}
+.f{grid-column:2;grid-row:1}.l{grid-column:1;grid-row:2}.s{grid-column:2;grid-row:2}.r{grid-column:3;grid-row:2}.b{grid-column:2;grid-row:3}
+.hint{color:var(--muted);font-size:12px;text-align:center;margin-top:-4px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mode{height:52px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);font:700 15px var(--font);cursor:pointer}
+.mode:active{background:var(--panel-hi)}
+.log{display:flex;flex-direction:column;gap:3px;font-size:13px;font-variant-numeric:tabular-nums;max-height:180px;overflow-y:auto}
+.log .t{color:var(--muted)}
+.empty{color:var(--muted);font-size:13px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* 설정 */
+dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:18px;width:min(440px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog h2{margin:0 0 6px;font-size:20px}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.field label{font-weight:600;font-size:14px}
+.field input[type=text],.field input[type=number]{background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px 12px;font:15px var(--font)}
+.help{color:var(--muted);font-size:12px;line-height:1.45}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.switch{display:flex;align-items:center;gap:12px;margin-top:14px}
+.switch input{width:22px;height:22px;accent-color:var(--accent)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.formerr{color:var(--stop);font-size:13px;margin-top:8px}
+@media (max-width:360px){.pad{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)}}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>스마트카</h1>
+      <div class="sub" id="carIdLabel">ID -</div>
+    </div>
+    <button class="ghost" id="openSettings" type="button">설정</button>
+  </header>
+
+  <div class="pills">
+    <div class="pill"><span class="dot" id="brokerDot"></span><span id="brokerText">브로커 연결 안 됨</span></div>
+    <div class="pill"><span class="dot" id="carDot"></span><span id="carText">차 응답 없음</span></div>
+  </div>
+  <div class="err" id="brokerErr"></div>
+
+  <section class="card" aria-label="자동차 상태">
+    <div class="stats">
+      <div><div class="label">모드</div><div class="value" id="vMode">-</div></div>
+      <div><div class="label">동작</div><div class="value" id="vAction">-</div></div>
+      <div><div class="label">장애물 감지</div><div class="value" id="vCheck">-</div></div>
+    </div>
+    <div class="sensor-head">
+      <div class="label">거리 센서 (A0)</div>
+      <div class="sensor-num" id="vSensor">-<small> / 1023</small></div>
+    </div>
+    <div class="bar"><div class="fill" id="sensorFill"></div><div class="mark" id="sensorMark"></div></div>
+    <div class="caption" id="limitCaption"></div>
+  </section>
+
+  <div class="pad" id="pad">
+    <button class="drive f" data-cmd="F" type="button" aria-label="전진">▲</button>
+    <button class="drive l" data-cmd="L" type="button" aria-label="좌회전">◀</button>
+    <button class="stopbtn s" id="stopBtn" type="button" aria-label="정지">정지</button>
+    <button class="drive r" data-cmd="R" type="button" aria-label="우회전">▶</button>
+    <button class="drive b" data-cmd="B" type="button" aria-label="후진">▼</button>
+  </div>
+  <div class="hint" id="hint"></div>
+
+  <div class="modes">
+    <button class="mode" data-mode="A" type="button">자율주행</button>
+    <button class="mode" data-mode="M" type="button">수동</button>
+    <button class="mode" data-mode="O" type="button">장애물감지</button>
+  </div>
+
+  <section class="card" aria-label="기록">
+    <div class="label">기록</div>
+    <div class="log" id="log"><div class="empty">아직 기록이 없어요</div></div>
+  </section>
+  <div class="hint">PC에서는 방향키 또는 W A S D, 스페이스바는 정지</div>
+</div>
+
+<dialog id="settings">
+  <form id="settingsForm" method="dialog">
+    <h2>설정</h2>
+    <div class="field">
+      <label for="sCarId">차 ID</label>
+      <input type="text" id="sCarId" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="help">아두이노 코드의 CAR_ID 와 같아야 해요. 이 ID를 아는 사람은 차를 조종할 수 있어요.</div>
+    </div>
+    <div class="field">
+      <label for="sUrl">브로커 주소 (WebSocket)</label>
+      <input type="text" id="sUrl" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="help">HiveMQ 공개 브로커는 wss://broker.hivemq.com:8884/mqtt 그대로 쓰면 돼요.</div>
+    </div>
+    <div class="field">
+      <label for="sLimit">장애물 기준값</label>
+      <input type="number" id="sLimit" min="0" max="1023">
+      <div class="help">화면 표시용이에요. 아두이노 OBSTACLE_LIMIT 과 같게 맞춰 주세요.</div>
+    </div>
+    <label class="switch" for="sHold">
+      <input type="checkbox" id="sHold">
+      <span><b>누르는 동안만 움직이기</b><br><span class="help">끄면 한 번 누를 때마다 정지할 때까지 계속 움직여요.</span></span>
+    </label>
+    <div class="formerr" id="formErr"></div>
+    <div class="actions">
+      <button class="mode" type="button" id="cancelSettings">취소</button>
+      <button class="mode primary" type="submit">저장</button>
+    </div>
+  </form>
+</dialog>
+<script>
+// ----- MQTT over WebSocket (작은 MQTT 3.1.1 클라이언트) -----
+// ---------- UTF-8 (Hermes 에는 TextDecoder 가 없음) ----------
+function utf8Encode(s) {
+    const out = [];
+    for (let i = 0; i < s.length; i++) {
+        let c = s.charCodeAt(i);
+        if (c >= 0xd800 && c <= 0xdbff && i + 1 < s.length) {
+            const d = s.charCodeAt(i + 1);
+            if (d >= 0xdc00 && d <= 0xdfff) {
+                c = 0x10000 + ((c - 0xd800) << 10) + (d - 0xdc00);
+                i++;
+            }
+        }
+        if (c < 0x80) {
+            out.push(c);
+        }
+        else if (c < 0x800) {
+            out.push(0xc0 | (c >> 6), 0x80 | (c & 63));
+        }
+        else if (c < 0x10000) {
+            out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+        }
+        else {
+            out.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+        }
+    }
+    return out;
+}
+function utf8Decode(b) {
+    let s = '';
+    let i = 0;
+    while (i < b.length) {
+        const c = b[i++];
+        let cp;
+        if (c < 0x80) {
+            cp = c;
+        }
+        else if (c < 0xe0) {
+            cp = ((c & 31) << 6) | (b[i++] & 63);
+        }
+        else if (c < 0xf0) {
+            cp = ((c & 15) << 12) | ((b[i++] & 63) << 6) | (b[i++] & 63);
+        }
+        else {
+            cp =
+                ((c & 7) << 18) |
+                    ((b[i++] & 63) << 12) |
+                    ((b[i++] & 63) << 6) |
+                    (b[i++] & 63);
+        }
+        if (cp > 0xffff) {
+            cp -= 0x10000;
+            s += String.fromCharCode(0xd800 + (cp >> 10), 0xdc00 + (cp & 1023));
+        }
+        else {
+            s += String.fromCharCode(cp);
+        }
+    }
+    return s;
+}
+// ---------- 패킷 만들기 ----------
+function str(s) {
+    const b = utf8Encode(s);
+    return [b.length >> 8, b.length & 255, ...b];
+}
+function packet(header, body) {
+    const len = [];
+    let n = body.length;
+    do {
+        let d = n % 128;
+        n = Math.floor(n / 128);
+        if (n > 0) {
+            d |= 128;
+        }
+        len.push(d);
+    } while (n > 0);
+    return new Uint8Array([header, ...len, ...body]);
+}
+class MiniMqtt {
+    constructor(opt) {
+        this.opt = opt;
+        this.ws = null;
+        this.buf = new Uint8Array(0);
+        this.pingTimer = null;
+        this.retryTimer = null;
+        this.stopped = false;
+        this.connected = false;
+        this.packetId = 1;
+    }
+    get isConnected() {
+        return this.connected;
+    }
+    start() {
+        this.stopped = false;
+        this.open();
+    }
+    stop() {
+        this.stopped = true;
+        if (this.retryTimer) {
+            clearTimeout(this.retryTimer);
+            this.retryTimer = null;
+        }
+        if (this.ws && this.connected) {
+            this.send(new Uint8Array([0xe0, 0x00])); // DISCONNECT
+        }
+        this.cleanup();
+        this.opt.onState('disconnected');
+    }
+    publish(topic, payload) {
+        if (!this.connected) {
+            return false;
+        }
+        this.send(packet(0x30, [...str(topic), ...utf8Encode(payload)]));
+        return true;
+    }
+    // ---------- 내부 ----------
+    open() {
+        var _a;
+        this.cleanup();
+        this.opt.onState('connecting');
+        let ws;
+        try {
+            ws = new WebSocket(this.opt.url, ['mqtt']);
+        }
+        catch (e) {
+            this.fail('WebSocket 생성 실패: ' + ((_a = e === null || e === void 0 ? void 0 : e.message) !== null && _a !== void 0 ? _a : String(e)));
+            return;
+        }
+        ws.binaryType = 'arraybuffer';
+        this.ws = ws;
+        ws.onopen = () => {
+            var _a;
+            const keep = (_a = this.opt.keepAliveSec) !== null && _a !== void 0 ? _a : 30;
+            const body = [
+                ...str('MQTT'),
+                4,
+                0x02,
+                keep >> 8,
+                keep & 255,
+                ...str(this.opt.clientId),
+            ];
+            this.send(packet(0x10, body));
+        };
+        ws.onmessage = (ev) => {
+            if (typeof ev.data === 'string') {
+                return;
+            }
+            const chunk = new Uint8Array(ev.data);
+            const merged = new Uint8Array(this.buf.length + chunk.length);
+            merged.set(this.buf);
+            merged.set(chunk, this.buf.length);
+            this.buf = merged;
+            this.parse();
+        };
+        ws.onerror = (ev) => {
+            var _a;
+            this.fail('연결 오류: ' + ((_a = ev === null || ev === void 0 ? void 0 : ev.message) !== null && _a !== void 0 ? _a : '브로커에 접속할 수 없습니다'));
+        };
+        ws.onclose = (ev) => {
+            if (this.ws === ws) {
+                this.fail('연결 끊김' + ((ev === null || ev === void 0 ? void 0 : ev.reason) ? ': ' + ev.reason : ''));
+            }
+        };
+    }
+    parse() {
+        while (this.buf.length >= 2) {
+            let mult = 1;
+            let len = 0;
+            let i = 1;
+            let byte;
+            do {
+                if (i >= this.buf.length) {
+                    return; // 길이 바이트가 아직 다 안 옴
+                }
+                byte = this.buf[i++];
+                len += (byte & 127) * mult;
+                mult *= 128;
+            } while (byte & 128);
+            if (this.buf.length < i + len) {
+                return; // 패킷이 아직 다 안 옴
+            }
+            const type = this.buf[0] >> 4;
+            const flags = this.buf[0] & 15;
+            const body = this.buf.slice(i, i + len);
+            this.buf = this.buf.slice(i + len);
+            this.handle(type, flags, body);
+        }
+    }
+    handle(type, flags, body) {
+        var _a, _b;
+        switch (type) {
+            case 2: {
+                // CONNACK
+                const rc = body[1];
+                if (rc !== 0) {
+                    const why = [
+                        '',
+                        '지원하지 않는 프로토콜',
+                        '클라이언트 ID 거부',
+                        '서버 사용 불가',
+                        '아이디/비밀번호 오류',
+                        '권한 없음',
+                    ];
+                    this.fail('브로커가 연결을 거부함: ' + ((_a = why[rc]) !== null && _a !== void 0 ? _a : rc));
+                    return;
+                }
+                this.connected = true;
+                this.opt.onState('connected');
+                if (this.opt.subscribe.length > 0) {
+                    const id = this.nextId();
+                    const subs = [];
+                    this.opt.subscribe.forEach(t => subs.push(...str(t), 0));
+                    this.send(packet(0x82, [id >> 8, id & 255, ...subs]));
+                }
+                const keep = ((_b = this.opt.keepAliveSec) !== null && _b !== void 0 ? _b : 30) * 1000;
+                this.pingTimer = setInterval(() => this.send(new Uint8Array([0xc0, 0x00])), keep / 2);
+                break;
+            }
+            case 3: {
+                // PUBLISH
+                const tlen = (body[0] << 8) | body[1];
+                const topic = utf8Decode(body.slice(2, 2 + tlen));
+                let p = 2 + tlen;
+                const qos = (flags >> 1) & 3;
+                if (qos > 0) {
+                    const id0 = body[p];
+                    const id1 = body[p + 1];
+                    p += 2;
+                    if (qos === 1) {
+                        this.send(new Uint8Array([0x40, 0x02, id0, id1])); // PUBACK
+                    }
+                }
+                this.opt.onMessage(topic, utf8Decode(body.slice(p)));
+                break;
+            }
+            default:
+                // SUBACK(9), PINGRESP(13) 등은 무시
+                break;
+        }
+    }
+    nextId() {
+        this.packetId = (this.packetId % 65535) + 1;
+        return this.packetId;
+    }
+    send(data) {
+        try {
+            if (this.ws && this.ws.readyState === 1) {
+                this.ws.send(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
+            }
+        }
+        catch {
+            // 전송 실패는 onclose 에서 재연결로 처리
+        }
+    }
+    fail(detail) {
+        const wasActive = this.ws !== null;
+        this.cleanup();
+        if (this.stopped) {
+            return;
+        }
+        if (wasActive) {
+            this.opt.onState('disconnected', detail);
+        }
+        if (!this.retryTimer) {
+            this.retryTimer = setTimeout(() => {
+                this.retryTimer = null;
+                if (!this.stopped) {
+                    this.open();
+                }
+            }, 2000);
+        }
+    }
+    cleanup() {
+        this.connected = false;
+        if (this.pingTimer) {
+            clearInterval(this.pingTimer);
+            this.pingTimer = null;
+        }
+        const ws = this.ws;
+        this.ws = null;
+        this.buf = new Uint8Array(0);
+        if (ws) {
+            ws.onopen = null;
+            ws.onmessage = null;
+            ws.onerror = null;
+            ws.onclose = null;
+            try {
+                ws.close();
+            }
+            catch {
+                // 무시
+            }
+        }
+    }
+}
+// ===== 스마트카 리모컨 (웹) =====
+const DEFAULTS = {
+  carId: 'mrs4me46',
+  url: 'wss://broker.hivemq.com:8884/mqtt',
+  limit: 400,
+  hold: true,
+};
+const KEY = 'smartcar.web.settings.v1';
+const SENSOR_MAX = 1023;
+const ACTION_NAMES = {F: '전진', B: '후진', L: '좌회전', R: '우회전', S: '정지'};
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    return raw ? {...DEFAULTS, ...JSON.parse(raw)} : {...DEFAULTS};
+  } catch (e) {
+    return {...DEFAULTS};
+  }
+}
+function saveSettings(s) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(s));
+  } catch (e) {
+    // 저장이 막힌 브라우저(시크릿 모드 등)에서는 이번 접속에만 적용
+  }
+}
+
+let settings = loadSettings();
+// 주소 뒤에 ?car=ID 를 붙여서 열면 그 ID 로 바로 시작
+try {
+  const q = new URLSearchParams(location.search).get('car');
+  if (q && /^[A-Za-z0-9_-]+$/.test(q)) {
+    settings.carId = q;
+  }
+} catch (e) {}
+
+const $ = id => document.getElementById(id);
+const topics = () => ({
+  cmd: `smartcar/${settings.carId}/cmd`,
+  status: `smartcar/${settings.carId}/status`,
+});
+
+let client = null;
+let lastStatusAt = 0;
+let status = null;
+let pressed = null;
+
+// ---------- 기록 ----------
+const logLines = [];
+function addLog(msg) {
+  const d = new Date();
+  const t = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, '0')).join(':');
+  logLines.unshift({t, msg});
+  logLines.length = Math.min(logLines.length, 30);
+  const box = $('log');
+  box.innerHTML = '';
+  for (const l of logLines) {
+    const row = document.createElement('div');
+    const ts = document.createElement('span');
+    ts.className = 't';
+    ts.textContent = l.t + '  ';
+    row.appendChild(ts);
+    row.appendChild(document.createTextNode(l.msg));
+    box.appendChild(row);
+  }
+}
+
+// ---------- 상태 해석 ----------
+function parseStatus(text) {
+  const parts = text.split('|').map(p => p.trim());
+  const m = /(\d+)/.exec(parts[2] || '');
+  return {
+    mode: parts[0] || '-',
+    action: parts[1] || '-',
+    sensor: m ? Number(m[1]) : null,
+    check: parts[3] ? parts[3].includes('켜짐') : null,
+    event: parts[4] || null,
+  };
+}
+
+// ---------- 화면 그리기 ----------
+function setPill(dotId, textId, color, text) {
+  $(dotId).style.background = `var(--${color})`;
+  $(textId).textContent = text;
+}
+
+let brokerState = 'disconnected';
+function render() {
+  const online = Date.now() - lastStatusAt < 2000;
+  setPill('brokerDot', 'brokerText',
+    brokerState === 'connected' ? 'ok' : brokerState === 'connecting' ? 'warn' : 'stop',
+    brokerState === 'connected' ? '브로커 연결됨' : brokerState === 'connecting' ? '브로커 연결 중' : '브로커 끊김');
+  setPill('carDot', 'carText', online ? 'ok' : 'stop', online ? '차 응답 중' : '차 응답 없음');
+
+  $('vMode').textContent = online && status ? status.mode : '-';
+  $('vAction').textContent = online && status ? status.action : '-';
+  const c = status ? status.check : null;
+  $('vCheck').textContent = c === null ? '-' : c ? '켜짐' : '꺼짐';
+  $('vCheck').style.color = c === false ? 'var(--warn)' : 'var(--text)';
+
+  const sensor = status ? status.sensor : null;
+  const blocked = sensor !== null && sensor > settings.limit;
+  $('vSensor').firstChild.textContent = sensor === null ? '-' : String(sensor);
+  $('vSensor').style.color = blocked ? 'var(--stop)' : 'var(--text)';
+  $('sensorFill').style.width = sensor === null ? '0%' : Math.min(sensor / SENSOR_MAX, 1) * 100 + '%';
+  $('sensorFill').style.background = blocked ? 'var(--stop)' : 'var(--accent)';
+}
+
+function renderStatic() {
+  $('carIdLabel').textContent = 'ID ' + settings.carId;
+  $('sensorMark').style.left = (settings.limit / SENSOR_MAX) * 100 + '%';
+  $('limitCaption').textContent = `${settings.limit} 넘으면 장애물로 판단`;
+  $('hint').textContent = settings.hold
+    ? '버튼을 누르고 있는 동안만 움직여요'
+    : '한 번 누르면 정지할 때까지 계속 움직여요';
+}
+
+// ---------- MQTT ----------
+function connect() {
+  if (client) {
+    client.stop();
+  }
+  const t = topics();
+  client = new MiniMqtt({
+    url: settings.url,
+    clientId: 'web-' + settings.carId + '-' + Math.floor(Math.random() * 1e6),
+    subscribe: [t.status],
+    keepAliveSec: 20,
+    onState: (s, detail) => {
+      brokerState = s;
+      $('brokerErr').textContent = s !== 'connected' && detail ? detail : '';
+      if (s === 'connected') {
+        addLog('브로커 연결됨');
+      } else if (s === 'disconnected' && detail) {
+        addLog(detail);
+      }
+      render();
+    },
+    onMessage: (topic, payload) => {
+      if (topic !== t.status) {
+        return;
+      }
+      status = parseStatus(payload);
+      lastStatusAt = Date.now();
+      if (status.event === 'OBSTACLE STOP') {
+        addLog(`장애물 감지로 정지 (센서 ${status.sensor ?? '-'})`);
+      } else if (status.event === 'ONLINE') {
+        addLog('자동차 접속');
+      } else if (status.event === 'APP LOST - STOP') {
+        addLog('리모컨 신호가 끊겨서 차가 스스로 정지함');
+      } else if (status.event) {
+        addLog(status.event);
+      }
+      render();
+    },
+  });
+  client.start();
+}
+
+function send(c) {
+  const ok = client && client.publish(topics().cmd, c);
+  if (!ok && c !== 'H') {
+    addLog('전송 실패: 브로커에 연결되지 않음');
+  }
+}
+
+// 0.5초마다 하트비트(H). 차는 1.5초 넘게 못 받으면 수동 주행을 멈춤
+setInterval(() => {
+  if (!document.hidden) {
+    send('H');
+  }
+  render();
+}, 500);
+
+// 화면을 벗어나면(다른 앱으로 전환 등) 바로 정지
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && pressed) {
+    release();
+  }
+});
+
+// ---------- 방향 버튼 ----------
+function press(cmd, el) {
+  if (settings.hold) {
+    if (pressed === cmd) {
+      return;
+    }
+    if (pressed) {
+      document.querySelector(`.drive[data-cmd="${pressed}"]`)?.classList.remove('active');
+    }
+    pressed = cmd;
+    el.classList.add('active');
+    send(cmd);
+    if (navigator.vibrate) {
+      try { navigator.vibrate(15); } catch (e) {}
+    }
+  } else {
+    send(cmd);
+    el.classList.add('active');
+    setTimeout(() => el.classList.remove('active'), 150);
+  }
+}
+function release() {
+  if (!settings.hold || !pressed) {
+    return;
+  }
+  document.querySelector(`.drive[data-cmd="${pressed}"]`)?.classList.remove('active');
+  pressed = null;
+  send('S');
+}
+
+for (const el of document.querySelectorAll('.drive')) {
+  const cmd = el.dataset.cmd;
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    press(cmd, el);
+  });
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+  el.addEventListener('lostpointercapture', release);
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+$('stopBtn').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (pressed) {
+    document.querySelector(`.drive[data-cmd="${pressed}"]`)?.classList.remove('active');
+    pressed = null;
+  }
+  send('S');
+});
+for (const el of document.querySelectorAll('.mode[data-mode]')) {
+  el.addEventListener('click', () => send(el.dataset.mode));
+}
+
+// ---------- 키보드 ----------
+const KEYS = {ArrowUp: 'F', ArrowDown: 'B', ArrowLeft: 'L', ArrowRight: 'R', w: 'F', s: 'B', a: 'L', d: 'R', W: 'F', S: 'B', A: 'L', D: 'R'};
+document.addEventListener('keydown', e => {
+  if ($('settings').open) {
+    return;
+  }
+  if (e.key === ' ' || e.key === 'x' || e.key === 'X') {
+    e.preventDefault();
+    $('stopBtn').dispatchEvent(new PointerEvent('pointerdown'));
+    return;
+  }
+  const cmd = KEYS[e.key];
+  if (!cmd || e.repeat) {
+    if (cmd) e.preventDefault();
+    return;
+  }
+  e.preventDefault();
+  press(cmd, document.querySelector(`.drive[data-cmd="${cmd}"]`));
+});
+document.addEventListener('keyup', e => {
+  const cmd = KEYS[e.key];
+  if (cmd && cmd === pressed) {
+    release();
+  }
+});
+window.addEventListener('blur', release);
+
+// ---------- 설정 ----------
+$('openSettings').addEventListener('click', () => {
+  $('sCarId').value = settings.carId;
+  $('sUrl').value = settings.url;
+  $('sLimit').value = settings.limit;
+  $('sHold').checked = settings.hold;
+  $('formErr').textContent = '';
+  $('settings').showModal();
+});
+$('cancelSettings').addEventListener('click', () => $('settings').close());
+$('settingsForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const carId = $('sCarId').value.trim();
+  const url = $('sUrl').value.trim();
+  const limit = Number($('sLimit').value);
+  if (!/^[A-Za-z0-9_-]+$/.test(carId)) {
+    $('formErr').textContent = '차 ID는 영문, 숫자, -, _ 만 쓸 수 있어요.';
+    return;
+  }
+  if (!/^wss?:\/\/.+/.test(url)) {
+    $('formErr').textContent = '브로커 주소는 wss:// 로 시작해야 해요.';
+    return;
+  }
+  if (!Number.isInteger(limit) || limit < 0 || limit > 1023) {
+    $('formErr').textContent = '장애물 기준값은 0~1023 사이 숫자예요.';
+    return;
+  }
+  const changed = carId !== settings.carId || url !== settings.url;
+  settings = {carId, url, limit, hold: $('sHold').checked};
+  saveSettings(settings);
+  $('settings').close();
+  renderStatic();
+  if (changed) {
+    status = null;
+    lastStatusAt = 0;
+    connect();
+  }
+  render();
+});
+
+renderStatic();
+render();
+connect();
+</script>
+</body>
+</html>
