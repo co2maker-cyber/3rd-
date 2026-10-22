@@ -19,6 +19,7 @@
   --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
   color-scheme:dark;
 }
+[hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font)}
 body{
@@ -54,6 +55,8 @@ h1{font-size:24px;font-weight:800;margin:0;letter-spacing:-.3px}
 .stopbtn:active{opacity:.75}
 .f{grid-column:2;grid-row:1}.l{grid-column:1;grid-row:2}.s{grid-column:2;grid-row:2}.r{grid-column:3;grid-row:2}.b{grid-column:2;grid-row:3}
 .hint{color:var(--muted);font-size:12px;text-align:center;margin-top:-4px}
+.pad.locked .drive{opacity:.35}
+.notice{background:var(--panel);border:1px solid var(--warn);color:var(--text);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}
 .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .mode{height:52px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);font:700 15px var(--font);cursor:pointer}
 .mode:active{background:var(--panel-hi)}
@@ -92,6 +95,7 @@ dialog h2{margin:0 0 6px;font-size:20px}
   <div class="pills">
     <div class="pill"><span class="dot" id="brokerDot"></span><span id="brokerText">브로커 연결 안 됨</span></div>
     <div class="pill"><span class="dot" id="carDot"></span><span id="carText">차 응답 없음</span></div>
+    <div class="pill"><span class="dot" id="accessDot"></span><span id="accessText">권한 확인 중</span></div>
   </div>
   <div class="err" id="brokerErr"></div>
 
@@ -117,6 +121,7 @@ dialog h2{margin:0 0 6px;font-size:20px}
     <button class="drive b" data-cmd="B" type="button" aria-label="후진">▼</button>
   </div>
   <div class="hint" id="hint"></div>
+  <div class="notice" id="accessNotice" hidden></div>
 
   <div class="modes">
     <button class="mode" data-mode="A" type="button">자율주행</button>
@@ -134,6 +139,11 @@ dialog h2{margin:0 0 6px;font-size:20px}
 <dialog id="settings">
   <form id="settingsForm" method="dialog">
     <h2>설정</h2>
+    <div class="field">
+      <label for="sName">내 이름</label>
+      <input type="text" id="sName" maxlength="20" autocomplete="nickname" placeholder="예: 김민수">
+      <div class="help">관리자 화면에 이 이름으로 보여요. 내 접속 ID: <b id="myUid">-</b></div>
+    </div>
     <div class="field">
       <label for="sCarId">차 ID</label>
       <input type="text" id="sCarId" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -269,11 +279,11 @@ class MiniMqtt {
         this.cleanup();
         this.opt.onState('disconnected');
     }
-    publish(topic, payload) {
+    publish(topic, payload, retain = false) {
         if (!this.connected) {
             return false;
         }
-        this.send(packet(0x30, [...str(topic), ...utf8Encode(payload)]));
+        this.send(packet(retain ? 0x31 : 0x30, [...str(topic), ...utf8Encode(payload)]));
         return true;
     }
     // ---------- 내부 ----------
@@ -496,7 +506,64 @@ const $ = id => document.getElementById(id);
 const topics = () => ({
   cmd: `smartcar/${settings.carId}/cmd`,
   status: `smartcar/${settings.carId}/status`,
+  acl: `smartcar/${settings.carId}/acl`,
+  active: `smartcar/${settings.carId}/active`,
+  deny: `smartcar/${settings.carId}/deny`,
+  presence: `smartcar/${settings.carId}/presence`,
 });
+
+// ---------- 내 접속 ID / 이름 (이 브라우저에 저장) ----------
+function loadIdentity() {
+  let uid = '';
+  let name = '';
+  try {
+    uid = localStorage.getItem('smartcar.uid') || '';
+    name = localStorage.getItem('smartcar.name') || '';
+  } catch (e) {}
+  if (!/^[a-z0-9]{8}$/.test(uid)) {
+    const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+    const rnd = new Uint8Array(8);
+    crypto.getRandomValues(rnd);
+    uid = Array.from(rnd, b => chars[b % chars.length]).join('');
+    try { localStorage.setItem('smartcar.uid', uid); } catch (e) {}
+  }
+  return {uid, name};
+}
+const me = loadIdentity();
+function saveName(n) {
+  me.name = n;
+  try { localStorage.setItem('smartcar.name', n); } catch (e) {}
+}
+
+// ---------- 접속 규칙 (관리자가 정함, 차와 같은 규칙) ----------
+let acl = {mode: 'open', admin: '', driver: '', allow: [], block: []};
+let aclReceived = false;
+let activeUser = '';
+function parseAcl(text) {
+  const out = {mode: 'open', admin: '', driver: '', allow: [], block: []};
+  for (const part of text.split(';')) {
+    const i = part.indexOf('=');
+    if (i < 0) continue;
+    const k = part.slice(0, i).trim();
+    const v = part.slice(i + 1).trim();
+    if (k === 'allow' || k === 'block') out[k] = v ? v.split(',') : [];
+    else if (k in out) out[k] = v;
+  }
+  if (!out.mode) out.mode = 'open';
+  return out;
+}
+function denyReason(uid) {
+  if (acl.admin && uid === acl.admin) return '';
+  if (acl.block.includes(uid)) return 'blocked';
+  if (acl.driver && uid !== acl.driver) return 'not-driver';
+  if (acl.mode === 'approve' && !acl.allow.includes(uid) && uid !== acl.driver) return 'not-approved';
+  return '';
+}
+const DENY_TEXT = {
+  blocked: '관리자가 차단했어요. 조종할 수 없어요.',
+  'not-approved': '관리자 승인을 기다리는 중이에요. 승인되면 바로 조종할 수 있어요.',
+  'not-driver': '지금은 다른 사람에게 조종권이 있어요.',
+};
 
 let client = null;
 let lastStatusAt = 0;
@@ -556,6 +623,22 @@ function render() {
   $('vCheck').textContent = c === null ? '-' : c ? '켜짐' : '꺼짐';
   $('vCheck').style.color = c === false ? 'var(--warn)' : 'var(--text)';
 
+  const why = denyReason(me.uid);
+  if (!aclReceived && brokerState === 'connected') {
+    setPill('accessDot', 'accessText', 'ok', '조종 가능');
+  } else if (!why) {
+    setPill('accessDot', 'accessText', 'ok', activeUser === me.uid ? '내가 조종 중' : '조종 가능');
+  } else if (why === 'blocked') {
+    setPill('accessDot', 'accessText', 'stop', '차단됨');
+  } else if (why === 'not-approved') {
+    setPill('accessDot', 'accessText', 'warn', '승인 대기');
+  } else {
+    setPill('accessDot', 'accessText', 'warn', '조종권 없음');
+  }
+  $('pad').classList.toggle('locked', !!why);
+  $('accessNotice').hidden = !why;
+  $('accessNotice').textContent = why ? DENY_TEXT[why] + ' (내 이름: ' + (me.name || '이름 없음') + ', ID: ' + me.uid + ')' : '';
+
   const sensor = status ? status.sensor : null;
   const blocked = sensor !== null && sensor > settings.limit;
   $('vSensor').firstChild.textContent = sensor === null ? '-' : String(sensor);
@@ -582,7 +665,7 @@ function connect() {
   client = new MiniMqtt({
     url: settings.url,
     clientId: 'web-' + settings.carId + '-' + Math.floor(Math.random() * 1e6),
-    subscribe: [t.status],
+    subscribe: [t.status, t.acl, t.active, t.deny],
     keepAliveSec: 20,
     onState: (s, detail) => {
       brokerState = s;
@@ -595,6 +678,30 @@ function connect() {
       render();
     },
     onMessage: (topic, payload) => {
+      if (topic === t.acl) {
+        const before = denyReason(me.uid);
+        acl = parseAcl(payload);
+        aclReceived = true;
+        const after = denyReason(me.uid);
+        if (before !== after) {
+          addLog(after ? '권한 변경: ' + DENY_TEXT[after] : '권한 변경: 이제 조종할 수 있어요');
+          if (after && pressed) release();
+        }
+        render();
+        return;
+      }
+      if (topic === t.active) {
+        activeUser = payload;
+        render();
+        return;
+      }
+      if (topic === t.deny) {
+        const [uid, why] = payload.split('|');
+        if (uid === me.uid) {
+          addLog('거절됨: ' + (DENY_TEXT[why] || why));
+        }
+        return;
+      }
       if (topic !== t.status) {
         return;
       }
@@ -604,6 +711,8 @@ function connect() {
         addLog(`장애물 감지로 정지 (센서 ${status.sensor ?? '-'})`);
       } else if (status.event === 'ONLINE') {
         addLog('자동차 접속');
+      } else if (status.event === 'ACCESS REVOKED') {
+        addLog('관리자가 조종 권한을 바꿔서 차가 정지함');
       } else if (status.event === 'APP LOST - STOP') {
         addLog('리모컨 신호가 끊겨서 차가 스스로 정지함');
       } else if (status.event) {
@@ -616,7 +725,8 @@ function connect() {
 }
 
 function send(c) {
-  const ok = client && client.publish(topics().cmd, c);
+  const ok = client && client.publish(topics().cmd, me.uid + '|' + c);
+  if (c !== 'H') lastCmd = c;
   if (!ok && c !== 'H') {
     addLog('전송 실패: 브로커에 연결되지 않음');
   }
@@ -629,6 +739,20 @@ setInterval(() => {
   }
   render();
 }, 500);
+
+// 2초마다 접속 알림 (관리자 화면의 접속자 목록용)
+let lastCmd = '';
+function sendPresence(state) {
+  if (!client || !client.isConnected) return;
+  const ua = navigator.userAgent;
+  const dev = /iPhone|iPad/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : '기타';
+  client.publish(topics().presence, JSON.stringify({
+    id: me.uid, name: me.name || '(이름 없음)', dev, state: state || (document.hidden ? 'away' : 'online'),
+    driving: activeUser === me.uid, cmd: lastCmd, t: Date.now(),
+  }));
+}
+setInterval(() => sendPresence(), 2000);
+window.addEventListener('pagehide', () => sendPresence('left'));
 
 // 화면을 벗어나면(다른 앱으로 전환 등) 바로 정지
 document.addEventListener('visibilitychange', () => {
@@ -719,18 +843,26 @@ document.addEventListener('keyup', e => {
 window.addEventListener('blur', release);
 
 // ---------- 설정 ----------
-$('openSettings').addEventListener('click', () => {
+function openSettings(msg) {
+  $('sName').value = me.name;
+  $('myUid').textContent = me.uid;
   $('sCarId').value = settings.carId;
   $('sUrl').value = settings.url;
   $('sLimit').value = settings.limit;
   $('sHold').checked = settings.hold;
-  $('formErr').textContent = '';
+  $('formErr').textContent = msg || '';
   $('settings').showModal();
-});
+}
+$('openSettings').addEventListener('click', () => openSettings());
 $('cancelSettings').addEventListener('click', () => $('settings').close());
 $('settingsForm').addEventListener('submit', e => {
   e.preventDefault();
+  const name = $('sName').value.trim();
   const carId = $('sCarId').value.trim();
+  if (!name) {
+    $('formErr').textContent = '이름을 입력해 주세요. 관리자가 누구인지 알아볼 수 있어요.';
+    return;
+  }
   const url = $('sUrl').value.trim();
   const limit = Number($('sLimit').value);
   if (!/^[A-Za-z0-9_-]+$/.test(carId)) {
@@ -748,11 +880,16 @@ $('settingsForm').addEventListener('submit', e => {
   const changed = carId !== settings.carId || url !== settings.url;
   settings = {carId, url, limit, hold: $('sHold').checked};
   saveSettings(settings);
+  saveName(name);
+  sendPresence();
   $('settings').close();
   renderStatic();
   if (changed) {
     status = null;
     lastStatusAt = 0;
+    acl = parseAcl('');
+    aclReceived = false;
+    activeUser = '';
     connect();
   }
   render();
@@ -761,6 +898,9 @@ $('settingsForm').addEventListener('submit', e => {
 renderStatic();
 render();
 connect();
+if (!me.name) {
+  openSettings('처음 오셨네요. 관리자 화면에 보일 이름을 입력해 주세요.');
+}
 </script>
 </body>
 </html>
