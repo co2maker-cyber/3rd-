@@ -711,6 +711,8 @@ function connect() {
         addLog(`장애물 감지로 정지 (센서 ${status.sensor ?? '-'})`);
       } else if (status.event === 'ONLINE') {
         addLog('자동차 접속');
+      } else if (status.event === 'SENSOR ERROR') {
+        addLog('거리 센서 값이 계속 최대로 나와서 자율주행을 멈췄어요. 센서 연결을 확인하세요.');
       } else if (status.event === 'ACCESS REVOKED') {
         addLog('관리자가 조종 권한을 바꿔서 차가 정지함');
       } else if (status.event === 'APP LOST - STOP') {
