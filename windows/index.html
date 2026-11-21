@@ -55,7 +55,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .req li.ok::before{content:"✓";background:var(--ok);color:var(--surface)}
 .req li.no::before{content:"✗";background:var(--bad);color:var(--surface)}
 .req code,.hint code,.ref code{font-family:var(--mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px;word-break:break-all}
-.req .why{grid-column:2;font-size:12.5px;color:var(--bad)}
+.req .cmp{grid-column:2;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12.5px;background:var(--sunk);border-radius:6px;padding:6px 8px;margin-top:2px;min-width:0}
+.req .cmp .k{color:var(--muted);font-weight:700;white-space:nowrap}
+.req .cmp .v{color:var(--bad);min-width:0;overflow-wrap:anywhere}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 13px;font-size:14px;font-weight:500}
 .btn:hover{border-color:var(--accent)}
@@ -446,7 +448,10 @@ function openWin(o){
   body.addEventListener('wrr',()=>W.rerender());
   W.rerender=()=>{
     const keep={};body.querySelectorAll('[data-keep]').forEach(x=>keep[x.dataset.keep]=[x.scrollTop,x.scrollLeft]);
+    const ae=document.activeElement,F='input,select,textarea,button';let fi=-1,ss=null,se=null;
+    if(ae&&body.contains(ae)){fi=[...body.querySelectorAll(F)].indexOf(ae);try{ss=ae.selectionStart;se=ae.selectionEnd;}catch(e){}}
     const n=W.render(W);body.replaceChildren(...(Array.isArray(n)?n:[n]).filter(Boolean));
+    if(fi>=0){const t=body.querySelectorAll(F)[fi];if(t&&!t.disabled){t.focus({preventScroll:true});try{if(ss!=null&&t.setSelectionRange)t.setSelectionRange(ss,se);}catch(e){}}}
     body.querySelectorAll('[data-keep]').forEach(x=>{const k=keep[x.dataset.keep];if(k){x.scrollTop=k[0];x.scrollLeft=k[1];}});
   };
   W.setTitle=t=>{tbar.querySelector('.tn').textContent=t;W.title=t;renderTaskbar();};
@@ -699,11 +704,12 @@ const APPS={
   iis:{n:'IIS(인터넷 정보 서비스) 관리자',i:'iis',f:()=>openIIS()},
   fw:{n:'고급 보안이 포함된 Windows 방화벽',i:'fw',f:()=>openFW()},
   sec:{n:'로컬 보안 정책',i:'sec',f:()=>openSec()},
+  gpmc:{n:'그룹 정책 관리',i:'domain',f:()=>openGPMC()},
   sys:{n:'시스템 속성',i:'sys',f:()=>openSys()},
 };
-const TOOLS=['ad','dhcp','dns','iis','fw','sec'];
+const TOOLS=['ad','dhcp','dns','iis','fw','gpmc','sec'];
 const RUNCMD=[['ncpa.cpl','ncpa','네트워크 연결'],['dnsmgmt.msc','dns','DNS 관리자'],['dhcpmgmt.msc','dhcp','DHCP 관리자'],['inetmgr','iis','IIS 관리자'],['dsa.msc','ad','Active Directory 사용자 및 컴퓨터'],
-  ['secpol.msc','sec','로컬 보안 정책'],['wf.msc','fw','고급 보안이 포함된 Windows 방화벽'],['sysdm.cpl','sys','시스템 속성 (컴퓨터 이름, 원격 데스크톱)'],['cmd','cmd','명령 프롬프트'],['explorer','exp','파일 탐색기'],['servermanager','sm','서버 관리자']];
+  ['secpol.msc','sec','로컬 보안 정책'],['gpmc.msc','gpmc','그룹 정책 관리 (Default Domain Policy 편집)'],['wf.msc','fw','고급 보안이 포함된 Windows 방화벽'],['sysdm.cpl','sys','시스템 속성 (컴퓨터 이름, 원격 데스크톱)'],['cmd','cmd','명령 프롬프트'],['explorer','exp','파일 탐색기'],['servermanager','sm','서버 관리자']];
 function renderDesk(){
   desk.replaceChildren();
   const icons=h('div',{class:'icons'});
@@ -1812,7 +1818,7 @@ function newUser(owner,c){
   ],finish:()=>{
     const why=checkPw(d.pw,d.logon,d.full);
     if(why.length)return `Windows에서 ${d.full}에 대한 암호를 설정할 수 없습니다. 입력한 암호가 암호 정책 요구 사항을 충족하지 않습니다. 최소 암호 길이, 암호 복잡성 및 암호 기록 요구 사항을 확인하십시오.\n\n• ${why.join('\n• ')}`;
-    S.ad.users.push({logon:d.logon.trim(),first:d.first.trim(),last:d.last.trim(),full:d.full.trim(),upn:d.upn,pw:d.pw,mustChange:d.must,cannotChange:d.cannot,neverExp:d.never,disabled:d.dis,desc:'',phone:'',email:'',office:'',groups:['Domain Users'],c,exp:null});
+    S.ad.users.push({logon:d.logon.trim(),first:d.first.trim(),last:d.last.trim(),full:d.full.trim(),upn:d.upn,pw:d.pw,pre:(d.pre||d.logon).trim(),mustChange:d.must,cannotChange:d.cannot,neverExp:d.never,disabled:d.dis,desc:'',phone:'',email:'',office:'',groups:['Domain Users'],c,exp:null});
   }});
   function cur(){return [...wins.values()].find(w=>w.title===title);}
 }
@@ -1841,6 +1847,7 @@ function userProps(owner,u){
       fr('성(L):',tx(...B(d,'last'),{w:240})),fr('이름(F):',tx(...B(d,'first'),{w:240})),fr('표시 이름(S):',tx(...B(d,'full'),{w:240})),fr('설명(D):',tx(...B(d,'desc'),{w:240})),fr('사무실(C):',tx(...B(d,'office'),{w:240})),
       fr('전화 번호(T):',tx(...B(d,'phone'),{w:240})),fr('전자 메일(M):',tx(...B(d,'email'),{w:240})),fr('웹 페이지(W):',tx(()=>'',()=>{},{w:240,dis:true})))]],
     ['계정',()=>[txt('사용자 로그온 이름(U):'),h('div',{class:'fr'},tx(...B(d,'logon'),{w:180,dis:u.sys}),'@'+u.upn),
+      txt('사용자 로그온 이름(Windows 2000 이전 버전)(W):'),h('div',{class:'fr'},h('input',{class:'wi',readOnly:true,value:'NETLAB\\',style:{width:'90px',background:'#F0F0F0'}}),tx(()=>d.pre||d.logon,v=>d.pre=v,{w:150,dis:u.sys})),
       h('div',{class:'fr'},btn('로그온 시간(L)...',null,{dis:true}),btn('로그온 대상(F)...',null,{dis:true})),
       txt('계정 옵션(O):'),h('div',{class:'box',style:{padding:'4px',height:'100px'}},
         h('div',null,ck(...B(d,'mustChange'),'다음 로그온할 때 반드시 암호 변경',{after:v=>{if(v)d.neverExp=false;}})),h('div',null,ck(...B(d,'cannotChange'),'사용자가 암호를 변경할 수 없음')),
@@ -1884,7 +1891,9 @@ function openSec(){
       {id:'local',label:'로컬 정책',icon:'folder',kids:[{id:'aud',label:'감사 정책',icon:'folder'},{id:'ura',label:'사용자 권한 할당',icon:'folder'},{id:'so',label:'보안 옵션',icon:'folder'}]},
       {id:'wfp',label:'고급 보안이 포함된 Windows 방화벽',icon:'fw'},{id:'nlm',label:'네트워크 목록 관리자 정책',icon:'folder'},{id:'pk',label:'공개 키 정책',icon:'folder'}]}],
     menu:(W,n)=>[{label:'새로 고침(F)',act:()=>W.rerender()},{label:'목록 내보내기(L)...',dis:true}],
-    pane:(W,n)=>{
+    pane:(W,n)=>secPane(W,n)});
+}
+function secPane(W,n){
       const P=S.sec;
       if(n.id==='pw'||n.id==='lk'){const L=n.id==='pw'?PWP:LKP;
         return listView(W,['정책','보안 설정'],L.map(x=>({key:x[0],cells:[x[1],x[2](P[x[0]])],icon:'pol',x})),{dbl:r=>polDlg(W,r.x),menu:r=>[{label:'속성(R)',b:true,act:()=>polDlg(W,r.x)}]});}
@@ -1892,7 +1901,39 @@ function openSec(){
       if(n.id==='ura')return listView(W,['정책','보안 설정'],RIGHTS.map(([k,l])=>({key:k,cells:[l,P.rights[k].join(', ')],icon:'pol',k,l})),{dbl:r=>rightDlg(W,r.k,r.l),menu:r=>[{label:'속성(R)',b:true,act:()=>rightDlg(W,r.k,r.l)}]});
       if(n.id==='so')return listView(W,['정책','보안 설정'],[['계정: Administrator 계정 상태','사용'],['계정: Guest 계정 상태','사용 안 함'],['대화형 로그온: 마지막 사용자 이름 표시 안 함','사용 안 함']].map((r,i)=>({key:i,cells:r,icon:'pol'})));
       return listView(W,['이름','설명'],(n.kids||[]).map(k=>({key:k.id,cells:[k.label,''],icon:'folder'})),{dbl:r=>{W.sel=r.key;W.rerender();}});
+}
+function openGPMC(){
+  const D=S.ad.domain;
+  const gpoPane=(name,linked)=>h('div',{style:{flex:'1',overflow:'auto'}},h('div',{class:'fh'},h('b',null,name)),
+    h('div',{class:'kv'},'링크 위치',linked,'강제','아니요','링크 사용','예','GPO 상태','사용','보안 필터링','Authenticated Users'),
+    h('div',{class:'pad small'},'설정을 바꾸려면 GPO를 마우스 오른쪽 단추로 클릭한 다음 [편집]을 클릭하십시오.'));
+  const gpoMenu=name=>[{label:'편집(E)...',b:true,act:()=>openGPME(name)},{label:'강제(N)',dis:true},{label:'링크 사용(L)',dis:true},{label:'보고서 저장(S)...',dis:true}];
+  mmc({id:'gpmc',title:'그룹 정책 관리',icon:'domain',w:760,openIds:['root','forest','doms','dom'],defSel:'ddp',
+    tree:()=>[{id:'root',label:'그룹 정책 관리',icon:'domain',kids:[{id:'forest',label:'포리스트: '+D,icon:'domain',kids:[{id:'doms',label:'도메인',icon:'folder',kids:[{id:'dom',label:D,icon:'domain',kids:[
+      {id:'ddp',label:'Default Domain Policy',icon:'pol'},{id:'dc',label:'Domain Controllers',icon:'ou',kids:[{id:'ddcp',label:'Default Domain Controllers Policy',icon:'pol'}]},
+      ...S.ad.ous.filter(o=>!o.parent).map(o=>({id:'ou:'+o.name,label:o.name,icon:'ou'})),
+      {id:'gpos',label:'그룹 정책 개체',icon:'folder',kids:[{id:'g1',label:'Default Domain Policy',icon:'pol'},{id:'g2',label:'Default Domain Controllers Policy',icon:'pol'}]}]}]},{id:'sites',label:'사이트',icon:'folder'}]}]}],
+    menu:(W,n)=>['ddp','g1'].includes(n.id)?gpoMenu('Default Domain Policy'):['ddcp','g2'].includes(n.id)?gpoMenu('Default Domain Controllers Policy'):[{label:'이 도메인에서 GPO를 만들어 여기에 연결(C)...',dis:true},{label:'기존 GPO 연결(L)...',dis:true},'-',{label:'새로 고침(F)',act:()=>W.rerender()}],
+    pane:(W,n)=>{
+      if(['ddp','g1'].includes(n.id))return gpoPane('Default Domain Policy',D);
+      if(['ddcp','g2'].includes(n.id))return gpoPane('Default Domain Controllers Policy',D+'/Domain Controllers');
+      if(n.id==='dom'||n.id==='dc'||n.id.startsWith('ou:'))return listView(W,['링크 순서','GPO','강제','링크 사용'],n.id==='dom'?[{key:'ddp',cells:['1','Default Domain Policy','아니요','예'],icon:'pol'}]:n.id==='dc'?[{key:'ddcp',cells:['1','Default Domain Controllers Policy','아니요','예'],icon:'pol'}]:[],
+        {dbl:r=>{W.sel=r.key;W.rerender();},menu:r=>gpoMenu(r.cells[1])});
+      if(n.id==='gpos')return listView(W,['이름','GPO 상태'],[{key:'g1',cells:['Default Domain Policy','사용'],icon:'pol'},{key:'g2',cells:['Default Domain Controllers Policy','사용'],icon:'pol'}],{dbl:r=>{W.sel=r.key;W.rerender();},menu:r=>gpoMenu(r.cells[0])});
+      return listView(W,['이름'],(n.kids||[]).map(k=>({key:k.id,cells:[k.label],icon:k.icon})),{dbl:r=>{W.sel=r.key;W.open.add(n.id);W.rerender();}});
     }});
+}
+function openGPME(name){
+  name=name||'Default Domain Policy';
+  const W0=wins.get('gpme');if(W0)closeWin(W0);
+  mmc({id:'gpme',title:'그룹 정책 관리 편집기',icon:'pol',w:780,openIds:['groot','cc','ccp','ws','ss','acct','local'],defSel:'pw',
+    tree:()=>[{id:'groot',label:`${name} [${S.sys.name}.${S.ad.domain}] 정책`,icon:'pol',kids:[
+      {id:'cc',label:'컴퓨터 구성',icon:'comp',kids:[{id:'ccp',label:'정책',icon:'folder',kids:[{id:'sws',label:'소프트웨어 설정',icon:'folder'},{id:'ws',label:'Windows 설정',icon:'folder',kids:[{id:'ss',label:'보안 설정',icon:'sec',kids:[
+        {id:'acct',label:'계정 정책',icon:'folder',kids:[{id:'pw',label:'암호 정책',icon:'folder'},{id:'lk',label:'계정 잠금 정책',icon:'folder'}]},
+        {id:'local',label:'로컬 정책',icon:'folder',kids:[{id:'aud',label:'감사 정책',icon:'folder'},{id:'ura',label:'사용자 권한 할당',icon:'folder'},{id:'so',label:'보안 옵션',icon:'folder'}]}]}]},{id:'at',label:'관리 템플릿',icon:'folder'}]},{id:'ccpref',label:'기본 설정',icon:'folder'}]},
+      {id:'uc',label:'사용자 구성',icon:'user',kids:[{id:'ucp',label:'정책',icon:'folder'},{id:'ucpref',label:'기본 설정',icon:'folder'}]}]}],
+    menu:(W,n)=>[{label:'새로 고침(F)',act:()=>W.rerender()}],
+    pane:(W,n)=>secPane(W,n)});
 }
 function polDlg(owner,x){
   const [k,label,fmt,mn,mx,unit]=x;const P=S.sec;const isBool=typeof P[k]==='boolean';
@@ -2181,7 +2222,7 @@ const TASKS=[
   {t:`호스트(A) ${C('ftp')} → ${C(p.ftp)}`,f:()=>{const r=rec(Z(),'A','ftp');return ok(r&&r.data===p.ftp,r?`현재 ${r.data}`:'레코드가 없습니다.');}},
   {t:`호스트(A) ${C('mail')} → ${C(p.mail)}`,f:()=>{const r=rec(Z(),'A','mail');return ok(r&&r.data===p.mail,r?`현재 ${r.data}`:'레코드가 없습니다.');}},
   {t:`별칭(CNAME) ${C(p.al)} → 대상 ${C('www.'+p.z)}`,f:()=>{const r=rec(Z(),'CNAME',p.al);return ok(r&&eqName(r.data,'www.'+p.z),r?`대상이 ${r.data}입니다. 대상은 FQDN으로 입력합니다.`:'레코드가 없습니다.');}},
-  {t:`메일 교환기(MX) (같은 부모 폴더) → ${C('mail.'+p.z)}, 우선 순위 ${C(p.pri)}`,f:()=>{const r=Z()&&Z().recs.find(r=>r.type==='MX'&&r.name==='@');return ok(r&&eqName(r.data,'mail.'+p.z)&&r.pri===p.pri,r?`현재 [${r.pri}] ${r.data}`:'호스트 칸을 비운 MX 레코드가 없습니다.');}}];},
+  {t:`메일 교환기(MX) (같은 부모 폴더) → ${C('mail.'+p.z)}, 우선 순위 ${C(p.pri)}`,f:()=>{const r=Z()&&Z().recs.find(r=>r.type==='MX'&&r.name==='@');return ok(r&&eqName(r.data,'mail.'+p.z)&&r.pri===p.pri,r?`현재 [${r.pri}] ${r.data}`+(eqName(r.data,'mail.'+p.z)?'':' (메일 서버는 FQDN으로 입력)'):'호스트 칸을 비운 MX 레코드가 없습니다.');}}];},
  hint:p=>['DNS 관리자 → 정방향 조회 영역 → '+C(p.z)+' 선택','영역 오른쪽 클릭 → <b>새 호스트(A 또는 AAAA)</b> → 이름과 IP 입력 → <b>호스트 추가</b> (세 번 반복 후 완료)','<b>새 별칭(CNAME)</b> → 별칭 이름, 대상 호스트의 FQDN '+C('www.'+p.z),'<b>새 메일 교환기(MX)</b> → 호스트 칸은 비우고 메일 서버 FQDN과 우선 순위 입력']},
 
 {id:'rev',cat:'DNS',t:'역방향 조회 영역과 PTR 레코드',lead:'',
@@ -2214,8 +2255,10 @@ const TASKS=[
  hint:()=>['DNS 관리자 → 서버(SERVER) 오른쪽 클릭 → <b>속성</b> → <b>전달자</b> 탭 → [편집]','IP를 순서대로 추가하고 루트 힌트 확인란을 해제합니다.','<b>조건부 전달자</b> 폴더 오른쪽 클릭 → 새 조건부 전달자']},
 
 {id:'scope',cat:'DHCP',t:'DHCP 범위 만들기',lead:'DHCP 서버에 새 IPv4 범위를 만드십시오.',
+ leadF:p=>p.unauth?'DHCP 서버가 아직 Active Directory에서 권한을 부여받지 않았습니다. 권한을 부여하고 새 IPv4 범위를 만드십시오.':'DHCP 서버에 새 IPv4 범위를 만드십시오.',
+ setup:(st,p)=>{if(p.unauth)st.dhcp.auth=false;},
  gen:()=>{const N=genNet({ps:[24,24,25]});N.showP=Math.random()<.4;const a=pick([11,21,31]);const b=N.size-pick([6,11]);const ea=a+rnd(10,30),eb=ea+rnd(4,9);
-   return {N,name:pick(['본사-LAN','영업부','Office','LAN-A','3층']),s:N.host(a),e:N.host(b),xs:N.host(ea),xe:N.host(eb),lease:pick([{d:1,h:0,m:0},{d:3,h:12,m:0},{d:0,h:8,m:0},{d:7,h:0,m:0},{d:2,h:0,m:30}]),dns:pick([[SRVIP],pick(PUBDNS)]),dom:pick([DOMAIN,...DOMS])};},
+   return {unauth:Math.random()<.5,N,name:pick(['본사-LAN','영업부','Office','LAN-A','3층']),s:N.host(a),e:N.host(b),xs:N.host(ea),xe:N.host(eb),lease:pick([{d:1,h:0,m:0},{d:3,h:12,m:0},{d:0,h:8,m:0},{d:7,h:0,m:0},{d:2,h:0,m:30}]),dns:pick([[SRVIP],pick(PUBDNS)]),dom:pick([DOMAIN,...DOMS])};},
  items:p=>{const sc=()=>S.dhcp.scopes.find(s=>scopeNet(s)===p.N.net);const no='범위 ['+p.N.net+']가 없습니다.';return [
   {t:`범위 이름 ${C(p.name)}`,f:()=>ok(sc()&&sc().name===p.name,sc()?'현재 '+sc().name:no)},
   {t:`주소 범위 ${C(p.s)} ~ ${C(p.e)}, 서브넷 마스크 ${maskTxt(p.N)}`,f:()=>{const s=sc();return ok(s&&s.start===p.s&&s.end===p.e&&s.mask===p.N.mask,s?`현재 ${s.start} ~ ${s.end} / ${s.mask}`:no);}},
@@ -2223,8 +2266,9 @@ const TASKS=[
   {t:`임대 기간 ${C(fmtLease(p.lease))}`,f:()=>{const s=sc();return ok(s&&!s.unl&&s.lease.d===p.lease.d&&s.lease.h===p.lease.h&&s.lease.m===p.lease.m,s?'현재 '+fmtLease(s.lease):no);}},
   {t:`라우터(기본 게이트웨이) ${C(p.N.first)}`,f:()=>{const s=sc();return ok(s&&(s.opts['003']||[])[0]===p.N.first,s?'현재 '+((s.opts['003']||[]).join(', ')||'없음'):no);}},
   {t:`DNS 서버 ${p.dns.map(C).join(', ')}, 부모 도메인 ${C(p.dom)}`,f:()=>{const s=sc();return ok(s&&JSON.stringify(s.opts['006']||[])===JSON.stringify(p.dns)&&lc(s.opts['015'])===p.dom,s?`현재 DNS ${(s.opts['006']||[]).join(', ')||'없음'}, 도메인 ${s.opts['015']||'없음'}`:no);}},
-  {t:'범위 활성화',f:()=>ok(sc()&&sc().act,sc()?'범위가 비활성 상태입니다.':no)}];},
- hint:p=>['서버 관리자 → 도구 → <b>DHCP</b> (또는 '+C('dhcpmgmt.msc')+')','<b>IPv4</b> 오른쪽 클릭 → <b>새 범위</b>','범위 이름 → 시작/끝 IP, 길이 또는 서브넷 마스크'+(p.N.showP?` (/${p.N.p} = ${p.N.mask})`:''),'제외 범위 [추가] → 임대 기간','"예, 지금 이 옵션을 구성합니다" → 라우터 → 도메인 이름 및 DNS 서버(기본으로 들어 있는 주소는 [제거]) → WINS → 범위 활성화']},
+  {t:'범위 활성화',f:()=>ok(sc()&&sc().act,sc()?'범위가 비활성 상태입니다.':no)},
+  ...(p.unauth?[{t:'DHCP 서버 권한 부여',f:()=>ok(S.dhcp.auth,'권한이 부여되지 않았습니다 (IPv4 아이콘이 빨간색).')}]:[])];},
+ hint:p=>['서버 관리자 → 도구 → <b>DHCP</b> (또는 '+C('dhcpmgmt.msc')+')','<b>IPv4</b> 오른쪽 클릭 → <b>새 범위</b>','범위 이름 → 시작/끝 IP, 길이 또는 서브넷 마스크'+(p.N.showP?` (/${p.N.p} = ${p.N.mask})`:''),'제외 범위 [추가] → 임대 기간','"예, 지금 이 옵션을 구성합니다" → 라우터 → 도메인 이름 및 DNS 서버(기본으로 들어 있는 주소는 [제거]) → WINS → 범위 활성화',...(p.unauth?['서버(server.netlab.local) 오른쪽 클릭 → <b>권한 부여</b>. 권한이 없으면 범위를 만들어도 주소를 나눠 주지 않습니다.']:[])]},
 
 {id:'dhcpres',cat:'DHCP',t:'예약 · 제외 · 범위 옵션',lead:'',
  gen:()=>{const N=genNet({p:24,bases:['192.168']});return {N,name:pick(['PRINTER-1','NAS','PC-01','CCTV']),rip:N.host(rnd(120,170)),mac:randMac(),xs:N.host(190),xe:N.host(200),dns:pick(PUBDNS)[0],ld:pick([1,3,14,30]),dom:pick(DOMS)};},
@@ -2245,9 +2289,10 @@ const TASKS=[
  items:p=>{const s=()=>findSite(p.name);const no='사이트가 없습니다.';const it=[
   {t:`사이트 이름 ${C(p.name)}, 실제 경로 ${C('C:\\'+p.dir)}`,f:()=>ok(s()&&lc(s().path.replace(/\\+$/,''))===lc('C:\\'+p.dir),s()?'현재 경로 '+s().path:no)},
   {t:`바인딩: http, IP ${C(SRVIP)}, 포트 ${C(p.port)}${p.host?', 호스트 이름 '+C(p.host):''}`,f:()=>{const b=s()?.bind.find(b=>b.t==='http');return ok(b&&b.ip===SRVIP&&b.port===p.port&&lc(b.host)===lc(p.host),b?'현재 '+bindInfo(b):no);}}];
-  if(p.v==='stop')it.push({t:`포트 80을 쓰는 ${C('Default Web Site')} 중지`,f:()=>ok(!findSite('Default Web Site')?.on,'Default Web Site가 아직 시작됨 상태입니다.')});
+  it.push({t:`응용 프로그램 풀 ${C(p.name)} (사이트 이름과 같은 기본값)`,f:()=>ok(s()&&s().pool===p.name,s()?'현재 '+s().pool:no)});
+  if(p.v==='stop')it.push({t:`포트 80을 쓰는 ${C('Default Web Site')} 중지 또는 제거`,f:()=>ok(!findSite('Default Web Site')?.on,'Default Web Site가 아직 시작됨 상태입니다.')});
   it.push({t:'새 사이트가 시작됨 상태',f:()=>ok(s()&&s().on,s()?'사이트가 중지되어 있습니다.':no)});return it;},
- hint:p=>['서버 관리자 → 도구 → <b>IIS(인터넷 정보 서비스) 관리자</b> (또는 '+C('inetmgr')+')','<b>사이트</b> 오른쪽 클릭 → <b>웹 사이트 추가</b>','사이트 이름, 실제 경로([...]로 선택), IP 주소 목록에서 '+SRVIP+', 포트'+(p.host?', 호스트 이름':''),p.v==='stop'?'Default Web Site를 먼저 선택해 오른쪽 작업 창에서 <b>중지</b>한 뒤 새 사이트를 시작합니다. (바인딩이 겹치면 한 사이트만 시작할 수 있습니다.)':'즉시 웹 사이트 시작 → 확인']},
+ hint:p=>['서버 관리자 → 도구 → <b>IIS(인터넷 정보 서비스) 관리자</b> (또는 '+C('inetmgr')+')','<b>사이트</b> 오른쪽 클릭 → <b>웹 사이트 추가</b>','사이트 이름, 실제 경로([...]로 선택), IP 주소 목록에서 '+SRVIP+', 포트'+(p.host?', 호스트 이름':''),p.v==='stop'?'Default Web Site를 먼저 선택해 오른쪽 작업 창에서 <b>중지</b>하거나, 오른쪽 클릭 → <b>제거</b>한 뒤 새 사이트를 시작합니다. (바인딩이 겹치면 한 사이트만 시작할 수 있습니다.)':'즉시 웹 사이트 시작 → 확인']},
 
 {id:'iisdoc',cat:'IIS',t:'기본 문서 · 디렉터리 검색 · 연결 제한',lead:`${'Default Web Site'}를 다음과 같이 설정하십시오.`,
  gen:()=>({doc:pick(['main.html','index.php','home.htm','start.html']),to:pick([60,180,240,300]),cn:pick([100,200,500,1000])}),
@@ -2286,7 +2331,8 @@ const TASKS=[
  items:p=>{const u=()=>S.ad.users.find(x=>lc(x.logon)===lc(p.logon));const no='사용자가 없습니다.';const it=[
   {t:`도메인 바로 아래 조직 구성 단위 ${C(p.ou)}`,f:()=>ok(S.ad.ous.some(o=>o.name===p.ou&&o.parent===''),'OU가 없습니다.')},
   {t:`${C(p.ou)} 안에 사용자 성 ${C(p.l)}, 이름 ${C(p.f)} (전체 이름 ${C(p.l+p.f)})`,f:()=>ok(u()&&u().c==='ou:'+p.ou&&u().last===p.l&&u().first===p.f,u()?(u().c!=='ou:'+p.ou?'사용자가 '+cName(u().c)+'에 있습니다.':'성/이름이 다릅니다.'):no)},
-  {t:`사용자 로그온 이름 ${C(p.logon)}, 암호 ${C(p.pw)}`,f:()=>ok(u()&&u().pw===p.pw,u()?'암호가 다릅니다.':no)}];
+  {t:`사용자 로그온 이름(UPN) ${C(p.logon+'@'+DOMAIN)}, Windows 2000 이전 버전 ${C('NETLAB\\'+p.logon)}`,f:()=>ok(u()&&lc(u().pre||u().logon)===lc(p.logon),u()?'현재 NETLAB\\'+u().pre:no)},
+  {t:`암호 ${C(p.pw)}`,f:()=>ok(u()&&u().pw===p.pw,u()?'암호가 다릅니다.':no)}];
   if(p.v==='never')it.push({t:'다음 로그온할 때 반드시 암호 변경: 해제',f:()=>ok(u()&&!u().mustChange,no)},{t:'암호 사용 기간 제한 없음: 선택',f:()=>ok(u()?.neverExp,no)});
   else it.push({t:'다음 로그온할 때 반드시 암호 변경: 선택',f:()=>ok(u()?.mustChange,no)},{t:'계정 사용 안 함: 선택',f:()=>ok(u()?.disabled,no)});
   return it;},
@@ -2312,7 +2358,7 @@ const TASKS=[
   {t:'암호는 복잡성을 만족해야 함: 사용',f:()=>ok(S.sec.cplx)},
   {t:`계정 잠금 임계값 ${C(p.thr+'번')}, 잠금 기간 ${C(p.dur+'분')}, 잠금 수 원래대로 설정 ${C(p.rs+'분')}`,f:()=>ok(S.sec.lockThr===p.thr&&S.sec.lockDur===p.dur&&S.sec.lockReset===p.rs,`현재 ${S.sec.lockThr}번 / ${S.sec.lockDur??'-'}분 / ${S.sec.lockReset??'-'}분`)},
   {t:'로그온 이벤트 감사: 성공, 실패',f:()=>ok(S.sec.audit.logon.s&&S.sec.audit.logon.f,'현재 '+audTxt(S.sec.audit.logon))}],
- hint:()=>['서버 관리자 → 도구 → <b>로컬 보안 정책</b> (또는 '+C('secpol.msc')+')','계정 정책 → 암호 정책 / 계정 잠금 정책 → 항목 두 번 클릭','계정 잠금 임계값을 먼저 설정하면 나머지 두 항목이 30분으로 제안됩니다. 그다음 값을 고칩니다.','로컬 정책 → 감사 정책 → 로그온 이벤트 감사']},
+ hint:()=>['서버 관리자 → 도구 → <b>로컬 보안 정책</b> (또는 '+C('secpol.msc')+')','계정 정책 → 암호 정책 / 계정 잠금 정책 → 항목 두 번 클릭','계정 잠금 임계값을 먼저 설정하면 나머지 두 항목이 30분으로 제안됩니다. 그다음 값을 고칩니다.','로컬 정책 → 감사 정책 → 로그온 이벤트 감사','같은 설정을 <b>그룹 정책 관리</b>('+C('gpmc.msc')+') → Default Domain Policy 오른쪽 클릭 → 편집 → 컴퓨터 구성 › 정책 › Windows 설정 › 보안 설정에서도 바꿀 수 있습니다. 실제 도메인 컨트롤러에서는 이쪽이 도메인 암호 정책입니다.']},
 
 {id:'share',cat:'파일 공유',t:'폴더 공유와 공유 권한',lead:'',
  gen:()=>{const f=pick(['Data','Share','Docs','Public']);const hid=Math.random()<.4;return {f,sn:hid?f+'$':f+'_share',hid,lim:pick([5,10,20]),desc:pick(['부서 자료','공용 문서','백업 자료'])};},
@@ -2392,7 +2438,7 @@ function renderPanel(){
   card.replaceChildren(...[
     h('span',{class:'chip'},CUR.cat),h('h2',null,CUR.t),
     h('p',{class:'lead',html:CUR.leadF?CUR.leadF(P):CUR.lead}),
-    items.length?h('ol',{class:'req'},items.map((it,i)=>h('li',{class:RES?(RES[i].ok?'ok':'no'):''},h('span',{html:it.t}),RES&&!RES[i].ok&&RES[i].why?h('span',{class:'why'},RES[i].why):null))):null,
+    items.length?h('ol',{class:'req'},items.map((it,i)=>h('li',{class:RES?(RES[i].ok?'ok':'no'):''},h('span',{html:it.t}),RES&&!RES[i].ok?h('div',{class:'cmp'},h('span',{class:'k'},'기대 값'),h('span',{html:it.t}),h('span',{class:'k'},'현재 값'),h('span',{class:'v'},(RES[i].why||'요구 조건을 만족하지 않습니다.').replace(/^현재\s*/,''))):null))):null,
     RES&&items.length?h('div',{class:'score'+(n===items.length?' all':'')},n===items.length?h('b',null,`모두 맞았습니다. ${n} / ${items.length}`):[h('b',null,`${n} / ${items.length}`),' 항목 완료. 빨간 항목을 고친 뒤 다시 채점하세요.']):null,
     h('div',{class:'acts'},items.length?h('button',{class:'btn pri',type:'button',onclick:grade},'채점하기'):null,
       h('button',{class:'btn',type:'button',onclick:()=>{SHOWH=!SHOWH;renderPanel();}},SHOWH?'풀이 숨기기':'풀이 보기'),
