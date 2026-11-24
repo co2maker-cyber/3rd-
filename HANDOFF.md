@@ -23,6 +23,11 @@
 ✓ 길 따라 전선: `wireDrag.path`→`tracePts`(RDP→가로·세로 구간, `offRow`/`offCol`)→`declash`
 ✓ 터치 확대: touchstart/touchmove 직접 처리(`tpinch`), 사파리 gesture 이벤트 차단, 핀치 중 한 손가락 뗐을 때 NaN 버그 수정. 좁은 화면 도구 막대 한 줄 스크롤
 ✓ 부품 고르기 창 `#partDlg`(`PCATS`, `renderParts`, `openParts`), 7세그먼트 새 모양(기운 획·핀 번호·이름, `compSVG`의 seg7 분기)
+✓ 화면 배치 변경: 페이지 스크롤 없음(100dvh), 리본 숨김(`.ribbon{display:none}` — DOM·`renderRibbon`은 남아 있음), 부품은 `#partOpen` 창으로만, 속성·점검·객체는 `#dock` 팝업(`openDock`/`closeDock`, 도구 막대 `[data-dock]`), 도구 옵션은 캔버스 위 `#optCard.optbar`
+✓ + 레일에 클럭이 물리면 자동 5V 해제(`clkNets`, `resolve`), 점검에 `info` 항목
+✓ 계측기 속성 숫자 입력(`numIn`, `input[data-n]`), FG 오프셋·듀티·톱니파, 스코프 채널별 설정
+✓ 저장·불러오기 창 `#saveDlg`(`savedList`, `saveLocal`, `saveToFile`, localStorage 키 `bblab.v1.saves`), Ctrl+S
+✓ IC 검증 스크립트 `breadboard/tests/verify74.js`(47/47 통과). RBO(`ls47`), `UP192`/`DN192`, 칩별 전원 범위 경고
 ✓ 파일로 부품 배치: `openImport`→`parseSpec`(텍스트 목록)→`autoLayout`(full 보드, IC 홈, 2단자 e–f 걸침, 넷별 전선, IC 전원 핀 자동 레일)
 ✓ 예제 9개(`EXAMPLES`: nand, dff, counter, adder, gates, ls47, ls90, t555, sync10), 링크 해시 `#sync10` 등으로 바로 열림
 ✓ 자동차 관련 전부 삭제(`car1/`, `car2/`, 루트 `index.html` 문구) — 사용자 요청
@@ -50,7 +55,7 @@
 - 아티팩트 재게시: 같은 `file_path`로 Artifact 호출(URL 유지). `capabilities` 생략 시 기존 선언 유지
 - 코드 수정은 Python 문자열 치환 스크립트 방식 사용(치환 대상 개수 검사). 파일이 한 줄이 긴 minified풍 JS라 Edit 전 Read 필요
 - 자동 배치는 전선 겹침 정리 안 함. 구멍 모자라면 `report.fail`
-- 시험 스크립트(Playwright)는 스크래치패드에만 있음 — 재부팅 시 소실 가능, 저장소 미포함
+- IC 검증은 `breadboard/tests/verify74.js`(저장소 포함). 그 밖의 UI 시험 스크립트(t*.js)는 스크래치패드에만 있음 — 재부팅 시 소실 가능
 
 ## 다음 할 일
 1. 사용자 새 요청 대기(직전 요청 "main에도 반영해"까지 완료)

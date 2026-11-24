@@ -33,8 +33,10 @@ html,body{margin:0;height:100%}
 body{background:var(--chrome);color:var(--fg);font-family:var(--sans);font-size:13px;line-height:1.45;overflow:hidden}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer}
-.app{display:grid;height:100vh;height:100dvh;grid-template-columns:minmax(0,1fr) 320px;grid-template-rows:auto auto auto minmax(0,1fr) auto auto;
-  grid-template-areas:"title title" "tool tool" "rib rib" "canvas right" "cmd cmd" "stat stat"}
+/* 화면 전체가 한 화면 안에 들어오고(스크롤 없음), 캔버스가 남는 자리를 모두 쓴다 */
+.app{display:grid;height:100vh;height:100dvh;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;
+  grid-template-areas:"title" "tool" "canvas" "cmd" "stat"}
+.ribbon{display:none!important}
 /* 제목줄 */
 .titlebar{grid-area:title;display:flex;align-items:center;gap:10px;padding:5px max(12px,env(safe-area-inset-left,0px));background:var(--chrome);border-bottom:1px solid var(--line)}
 .logo{width:22px;height:22px;flex:none;border-radius:5px;background:#F4F1E8;border:1px solid #CFC8B4;display:grid;grid-template-columns:repeat(3,4px);gap:2px;place-content:center}
@@ -66,6 +68,12 @@ select.ex{height:30px;align-self:center;border:1px solid var(--line);background:
 .mbox{width:min(760px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column}
 .mhead{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
 .mhead b{font-size:15px;flex:1}
+.sh{margin:6px 0 0;font-size:12px;letter-spacing:.04em;color:var(--muted)}
+.srow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.slist{display:flex;flex-direction:column;gap:6px;max-height:min(280px,36vh);overflow:auto}
+.sitem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);flex-wrap:wrap}
+.sitem b{font-size:13.5px}.sitem small{color:var(--muted);font-size:11.5px}.sitem .sp{flex:1;min-width:0;display:flex;flex-direction:column}
+.sitem .btn.del{color:var(--bad)}
 .pbox{width:min(920px,100%);height:min(660px,calc(100dvh - 32px));overflow:hidden}
 .pbox .mhead b{flex:none;white-space:nowrap}.pbox .mhead .btn{flex:none;white-space:nowrap;margin-left:auto}.pbox .mhead .search{min-width:0}
 .pwrap{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:0;flex:1}
@@ -124,7 +132,20 @@ select.ex{height:30px;align-self:center;border:1px solid var(--line);background:
 .ropts .opts{flex-direction:row;align-items:center;padding:0;gap:8px;flex-wrap:nowrap}
 .ropts .opts .desc{margin:0;white-space:nowrap;font-size:12px}
 .ropts .opts .sw,.ropts .opts .seg{flex-wrap:nowrap}
-.dock.right{grid-area:right;border-left:1px solid var(--line)}
+.dock[hidden],.optbar[hidden]{display:none}
+/* 속성·점검·객체: 도구 막대의 버튼으로 여닫는 떠 있는 창 */
+.dock.right{grid-area:canvas;justify-self:end;align-self:start;position:relative;z-index:8;width:min(350px,calc(100% - 20px));max-height:calc(100% - 20px);margin:10px;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.35);overflow:hidden}
+.dockx{flex:none!important;width:34px;border:0;background:none;color:var(--muted);font-size:14px}.dockx:hover{color:var(--fg);background:var(--sunk)}
+.tbtn{position:relative}
+.tbtn.pick{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.tbtn .bdg{position:absolute;top:1px;right:1px;min-width:15px;height:15px;padding:0 4px;border-radius:8px;font:700 9.5px/15px var(--mono);background:var(--warn);color:#fff}
+.tbtn .bdg.b{background:var(--bad)}.tbtn .bdg[hidden]{display:none}
+/* 고른 도구의 옵션(전선 색·저항 값 등): 캔버스 위쪽에 떠 있는 막대 */
+.optbar{position:absolute;z-index:5;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:5px 12px;max-width:calc(100% - 20px);overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.optbar .olab{font-size:11.5px;font-weight:700;color:var(--fg);white-space:nowrap}
+.optbar .opts{flex-direction:row;align-items:center;padding:0;gap:8px;flex-wrap:nowrap}
+.optbar .opts .desc{margin:0;white-space:nowrap;font-size:12px}
+.optbar .opts .sw,.optbar .opts .seg{flex-wrap:nowrap}
 .dhead{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--chrome);border-bottom:1px solid var(--line);flex:none}
 .dhead b{color:var(--fg);text-transform:none;letter-spacing:0;font-size:12px}
 .search{margin:8px;flex:none;height:28px;border:1px solid var(--line);border-radius:5px;background:var(--surface);padding:0 8px;font-size:12.5px;outline:none}
@@ -206,6 +227,7 @@ html,body{touch-action:manipulation;overscroll-behavior:none}
 .warns li::before{content:"!";width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--warn);color:#fff;margin-top:1px}
 .warns li.bad::before{background:var(--bad)}
 .warns li.ok::before{content:"✓";background:var(--ok)}
+.warns li.info::before{content:"i";background:var(--accent)}
 .olist{display:flex;flex-direction:column}
 .orow{display:grid;grid-template-columns:52px 1fr auto 10px;gap:8px;align-items:center;border:0;border-bottom:1px solid var(--line2);background:none;text-align:left;padding:4px 4px;font-size:12px}
 .orow:hover{background:var(--sunk)}
@@ -262,20 +284,15 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .toast.on{opacity:.95}
 /* 좁은 화면: 위아래로 쌓고 페이지 스크롤 */
 @media (max-width:900px){
-  body{overflow:auto}
-  .app{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto 56vh auto auto auto;grid-template-areas:"title" "tool" "rib" "canvas" "cmd" "right" "stat"}
-  .rbody{flex-direction:column}.ropts{max-width:none;border-left:0;border-top:1px solid var(--line2)}
-  .dock.left,.dock.right{border:0;border-top:1px solid var(--line)}
-  .pane{max-height:none}.rtop{flex-wrap:wrap}.rtop .search{width:100%;order:3}
   .tbtn{min-width:38px;font-size:10.5px}.grp{padding:0 4px}select.ex{max-width:calc(50vw - 40px);min-width:0}
   .titlebar .doc{display:none}
   .statusbar .hide-s{display:none}
-  /* 좁은 화면(휴대폰·세로로 든 태블릿): 도구 막대를 한 줄로 두고 옆으로 밀어서 쓰게 해 캔버스 자리를 넓힌다 */
+  /* 좁은 화면(휴대폰·세로로 든 태블릿): 도구 막대는 한 줄로 두고 옆으로 밀어서 쓴다 */
   .toolbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.toolbar::-webkit-scrollbar{display:none}
   .grp{flex-wrap:nowrap;flex:none;max-width:none}
-  .app{grid-template-rows:auto auto auto max(60vh,340px) auto auto auto}
+  /* 속성 창은 아래에서 올라오는 판으로 */
+  .dock.right{justify-self:stretch;align-self:end;width:auto;max-height:58%;margin:0;border-radius:12px 12px 0 0}
 }
-@media (max-width:600px){.ropts{display:none}}
 /* SVG 안쪽 */
 .bbody{fill:#F5F2EA;stroke:#D8D1BF}
 .groove{fill:#E6E0D0}
@@ -313,8 +330,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   <nav class="toolbar" aria-label="도구 막대">
     <div class="grp">
       <button class="tbtn bad" id="clr" title="새로 만들기 (모두 지우기)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M12 11v6M9 14h6"/></svg>새로</button>
-      <button class="tbtn" id="imp" title="파일 열기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h6l2 2h10v10H3z"/></svg>열기</button>
-      <button class="tbtn" id="exp" title="파일로 저장"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h12l3 3v15H5z"/><path d="M8 3v5h8V3M8 21v-7h9v7"/></svg>저장</button>
+      <button class="tbtn" id="imp" title="불러오기: 이 기기에 저장한 회로나 파일을 열어요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h6l2 2h10v10H3z"/></svg>열기</button>
+      <button class="tbtn" id="exp" title="저장 (Ctrl+S): 이 기기에 저장하거나 파일로 내려받아요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h12l3 3v15H5z"/><path d="M8 3v5h8V3M8 21v-7h9v7"/></svg>저장</button>
       <input type="file" id="file" accept=".json,application/json,image/*,.txt,.csv" hidden>
     </div>
     <div class="grp">
@@ -329,11 +346,18 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
       <button class="tbtn" data-tool="move" title="보드 이동 (M): 브레드보드를 끌어서 옮겨요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>보드 이동</button>
     </div>
     <div class="grp">
+      <button class="tbtn pick" id="partOpen" title="종류별로 부품을 고르는 창을 열어요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>부품 고르기</button>
+      <button class="tbtn" id="upl" title="회로도 사진, 부품·연결 목록 파일을 올리면 자동으로 배치해요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>파일 배치</button>
+    </div>
+    <div class="grp">
       <button class="tbtn" id="zo" title="축소 (−)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="6"/><path d="M15 15l5 5M7 10h6"/></svg>축소</button>
       <span class="zv" id="zv">100%</span>
       <button class="tbtn" id="zi" title="확대 (+)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="6"/><path d="M15 15l5 5M7 10h6M10 7v6"/></svg>확대</button>
       <button class="tbtn" id="fit" title="화면에 맞춤 (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8" y="8" width="8" height="8"/></svg>맞춤</button>
       <button class="tbtn" id="sig" aria-pressed="false" title="신호 색 보기: HIGH 빨강 · LOW 파랑"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 16h5V8h5v8" stroke="#E5484D"/><path d="M12 16h5V8h5" stroke="#3E63DD"/></svg>신호</button>
+      <button class="tbtn" data-dock="info" aria-pressed="false" title="속성 창: 고른 부품의 설명·핀 상태·설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>속성</button>
+      <button class="tbtn" data-dock="warn" aria-pressed="false" title="점검 창: 회로에서 찾은 문제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 16.5v.5"/></svg>점검<span class="bdg" id="wbadge" hidden>0</span></button>
+      <button class="tbtn" data-dock="obj" aria-pressed="false" title="객체 창: 보드에 있는 부품 목록"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h12M8 12h12M8 18h12M4 6h0M4 12h0M4 18h0"/></svg>객체</button>
     </div>
     <div class="grp">
       <button class="tbtn pwr" id="pwr" aria-pressed="true" title="전원 켜기/끄기"><span class="led"></span><span id="pwrTx">전원 ON</span></button>
@@ -364,13 +388,10 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   <section class="ribbon" aria-label="부품 고르기">
     <div class="rtop">
       <div class="rtabs" role="tablist" id="rtabs"></div>
-      <button class="upl" id="partOpen" style="background:var(--surface);color:var(--fg);border:1px solid var(--line)" title="카테고리별로 부품을 고르는 창을 열어요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>부품 고르기</button>
       <input class="search" id="search" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색">
-      <button class="upl" id="upl" title="회로도 사진, 부품·연결 목록 파일을 올리면 자동으로 배치해요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>파일로 부품 배치</button>
     </div>
     <div class="rbody">
       <div class="ritems" id="ritems" role="tabpanel"></div>
-      <div class="ropts" id="optCard"><span class="olab" id="optTitle"></span><div class="opts" id="opts"></div></div>
     </div>
   </section>
 
@@ -380,6 +401,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     <div class="vlabel">평면도 · 브레드보드 830</div>
     <div class="tip" id="tip" hidden></div>
     <div class="fbar" id="fbar" hidden></div>
+    <div class="optbar" id="optCard" hidden><span class="olab" id="optTitle"></span><div class="opts" id="opts"></div></div>
     <div class="navhud">
       <button id="hzi" title="확대" aria-label="확대">+</button>
       <button id="hzo" title="축소" aria-label="축소">−</button>
@@ -387,11 +409,12 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     </div>
   </main>
 
-  <aside class="dock right">
+  <aside class="dock right" id="dock" hidden aria-label="속성 · 점검 · 객체">
     <div class="tabs" role="tablist">
       <button role="tab" id="tabInfo" data-tab="info" aria-selected="true">속성</button>
       <button role="tab" id="tabWarn" data-tab="warn" aria-selected="false">점검 <span class="cnt" id="wcount">0</span></button>
       <button role="tab" id="tabObj" data-tab="obj" aria-selected="false">객체 <span class="cnt" id="ocount">0</span></button>
+      <button class="dockx" id="dockX" title="닫기" aria-label="닫기">✕</button>
     </div>
     <section class="pane" id="info"></section>
     <section class="pane" id="paneWarn" hidden><ul class="warns" id="warns"></ul></section>
@@ -410,6 +433,20 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 </div>
 <div class="toast" id="toast"></div>
 <div class="cmenu" id="cmenu" role="menu" hidden></div>
+<div class="modal" id="saveDlg" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+  <div class="mbox" style="width:min(640px,100%)">
+    <div class="mhead"><b id="saveTitle">저장 · 불러오기</b><button class="btn" id="saveX">닫기</button></div>
+    <div class="mbody">
+      <h3 class="sh">이 기기에 저장</h3>
+      <p class="desc" style="margin:0">지금 쓰는 브라우저 안에 이름을 붙여 저장해요. 인터넷이 없어도 되고, 같은 기기·같은 브라우저에서 다시 불러올 수 있어요.</p>
+      <div class="srow"><input class="search" id="saveName" type="text" maxlength="40" placeholder="회로 이름" aria-label="회로 이름" style="margin:0;flex:1;height:32px"><button class="btn pri" id="saveLocal">이 기기에 저장</button></div>
+      <div id="saveList" class="slist"></div>
+      <h3 class="sh">파일로 저장 · 불러오기</h3>
+      <p class="desc" style="margin:0">회로를 파일(.json)로 내려받아 보관하거나 다른 기기로 옮길 수 있어요. 내려받은 파일을 다시 골라 불러와요.</p>
+      <div class="srow"><button class="btn" id="saveFile">파일로 내려받기</button><button class="btn" id="loadFile">파일에서 불러오기</button></div>
+    </div>
+  </div>
+</div>
 <div class="modal" id="partDlg" hidden role="dialog" aria-modal="true" aria-labelledby="partTitle">
   <div class="mbox pbox">
     <div class="mhead"><b id="partTitle">부품 고르기</b><input class="search" id="partQ" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색" style="margin:0;flex:1;max-width:320px"><button class="btn" id="partX">닫기</button></div>
@@ -536,7 +573,7 @@ def({name:'74HC74',title:'D 플립플롭 ×2',pins:['~1CLR','1D','1CLK','~1PRE',
     const clr=g('~'+n+'CLR'),pre=g('~'+n+'PRE'),clk=g(n+'CLK'),d=g(n+'D');let q=st['q'+n];
     const rise=st['p'+n]===L&&clk===Hh;st['p'+n]=clk;
     if(clr===L&&pre===L){o[n+'Q']=Hh;o['~'+n+'Q']=Hh;continue;}
-    if(clr===L)q=L;else if(pre===L)q=Hh;else if(clr===X||pre===X)q=X;else if(rise)q=d;
+    if(clr===L&&pre===Hh)q=L;else if(pre===L&&clr===Hh)q=Hh;else if(clr!==Hh||pre!==Hh)q=X;else if(rise)q=d;
     st['q'+n]=q;o[n+'Q']=q;o['~'+n+'Q']=NOT(q);}
     return o;}});
 def({name:'74HC161',title:'4비트 2진 카운터',pins:['~CLR','CLK','A','B','C','D','ENP','GND','~LOAD','ENT','QD','QC','QB','QA','RCO','VCC'],
@@ -570,7 +607,7 @@ const SEG={0:'1111110',1:'0110000',2:'1101101',3:'1111001',4:'0110011',5:'101101
 def({name:'CD4511',title:'BCD→7세그먼트 디코더',pins:['B','C','~LT','~BI','LE','D','A','VSS','e','d','c','b','a','g','f','VDD'],vcc:'VDD',gnd:'VSS',
   outs:['a','b','c','d','e','f','g'],
   desc:'4비트 숫자(D C B A = 0~9)를 받아 7세그먼트의 a~g 를 켜요(공통 캐소드용). LT·BI 는 + 에, LE 는 − 에 연결하면 바로 표시돼요. 10 이상은 꺼져요.',
-  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐)',LE:'값 고정 (HIGH면 유지)',VDD:'전원 +',VSS:'전원 −'},
+  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐) · 0을 지울 때는 LOW를 내보냄(RBO)',LE:'값 고정 (HIGH면 유지)',VDD:'전원 +',VSS:'전원 −'},
   init:()=>({v:0}),
   eval(g,st){const le=g('LE');if(le===L){const d=['A','B','C','D'].map(g);st.v=anyX(d)?-1:toNum(d);}else if(le===X)st.v=-1;
     const lt=g('~LT'),bi=g('~BI'),o={};const set=f=>'abcdefg'.split('').forEach((s,i)=>o[s]=f(i));
@@ -582,12 +619,14 @@ function ls47(name,vmax){def({name,title:'BCD→7세그먼트 디코더 (오픈 
   pins:['B','C','~LT','~BI','~RBI','D','A','GND','~e','~d','~c','~b','~a','~g','~f','VCC'],
   outs:['~a','~b','~c','~d','~e','~f','~g'],
   desc:`4비트 숫자(D C B A)를 받아 켤 획의 출력을 LOW로 끌어내려요(오픈 컬렉터, 켜지 않는 획은 연결 끊김). 그래서 공통 애노드 7세그먼트와 함께 써요 — COM은 + 에, 각 획은 저항을 거쳐 연결하세요. TTL(74LS)이라 떠 있는 입력은 HIGH로 읽혀요. 10~15는 특수 모양이 나오고 15는 꺼져요.${name==='74LS46'?' 74LS47과 핀·동작이 같고 출력 내전압만 30V로 더 높아요.':' 출력 내전압 15V.'}`,
-  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐)','~RBI':'0 지우기 (LOW이고 입력이 0이면 꺼짐)',
+  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐) · 0을 지울 때는 LOW를 내보냄(RBO)','~RBI':'0 지우기 (LOW이고 입력이 0이면 꺼짐)',
     '~a':'획 a (켜면 LOW)','~b':'획 b (켜면 LOW)','~c':'획 c (켜면 LOW)','~d':'획 d (켜면 LOW)','~e':'획 e (켜면 LOW)','~f':'획 f (켜면 LOW)','~g':'획 g (켜면 LOW)'},
   eval(g){const o={},set=f=>'abcdefg'.split('').forEach((s,i)=>o['~'+s]=f(i));
     const bi=g('~BI'),lt=g('~LT'),d=['A','B','C','D'].map(g),rbi=g('~RBI');
     if(bi===L)set(()=>Z);else if(bi===X)set(()=>X);else if(lt===L)set(()=>L);else if(lt===X||anyX(d))set(()=>X);
-    else{const v=toNum(d);if(v===0&&rbi===L)set(()=>Z);else set(i=>SEG47[v][i]==='1'?L:Z);}
+    else{const v=toNum(d);if(v===0&&rbi===L)set(()=>Z);else if(v===0&&rbi===X)set(i=>SEG47[0][i]==='1'?X:Z);else set(i=>SEG47[v][i]==='1'?L:Z);}
+    // 4번 핀은 입력(BI)이면서 출력(RBO)이다: 0을 지울 때(RBI̅=LOW, 입력 0) LOW를 내보내 다음 자리의 RBI̅로 넘긴다
+    if(lt===Hh&&rbi===L&&!anyX(d)&&toNum(d)===0)o['~BI']=L;
     return o;}});}
 ls47('74LS47','15V');ls47('74LS46','30V');
 
@@ -627,7 +666,7 @@ def({name:'74LS112',title:'JK 플립플롭 ×2 (하강 에지)',ttl:true,pins:['
   eval(g,st){const o={};for(const n of [1,2]){const clr=g('~'+n+'CLR'),pre=g('~'+n+'PRE'),clk=g(n+'CLK'),j=g(n+'J'),k=g(n+'K');let q=st['q'+n];
     const fall=st['p'+n]===Hh&&clk===L;st['p'+n]=clk;
     if(clr===L&&pre===L){o[n+'Q']=Hh;o['~'+n+'Q']=Hh;continue;}
-    if(clr===L)q=L;else if(pre===L)q=Hh;else if(clr===X||pre===X)q=X;
+    if(clr===L&&pre===Hh)q=L;else if(pre===L&&clr===Hh)q=Hh;else if(clr!==Hh||pre!==Hh)q=X;
     else if(fall){if(j===X||k===X)q=X;else if(j&&k)q=NOT(q);else if(j)q=Hh;else if(k)q=L;}
     st['q'+n]=q;o[n+'Q']=q;o['~'+n+'Q']=NOT(q);}return o;}});
 def({name:'74LS76',title:'JK 플립플롭 ×2 (프리셋·클리어, 하강 에지)',ttl:true,
@@ -655,13 +694,15 @@ function ripple(name,title,mod,pins,desc){def({name,title,ttl:true,pins,outs:['Q
   init:()=>({a:0,b:0,pa:X,pb:X,x:false}),
   eval(g,st){const ca=g('CKA'),cb=g('CKB');const fa=st.pa===Hh&&ca===L,fb=st.pb===Hh&&cb===L;st.pa=ca;st.pb=cb;
     const r0=AND(g('R01'),g('R02')),r9=mod===5?AND(g('R91'),g('R92')):L;
-    if(r9===Hh){st.a=1;st.b=4;st.x=false;}else if(r0===Hh){st.a=0;st.b=0;st.x=false;}else if(r0===X||r9===X)st.x=true;
+    if(r9===Hh){st.a=1;st.b=4;st.x=false;}else if(r0===Hh&&r9===L){st.a=0;st.b=0;st.x=false;}else if(r0!==L||r9===X)st.x=true;
     else{if(fa)st.a^=1;if(fb)st.b=(st.b+1)%mod;}
     if(st.x)return{QA:X,QB:X,QC:X,QD:X};return{QA:st.a,QB:st.b&1,QC:(st.b>>1)&1,QD:(st.b>>2)&1};}});}
 ripple('74LS90','10진 카운터 (리플)',5,['CKB','R01','R02','NC','VCC','R91','R92','QC','QB','GND','QD','QA','NC','CKA'],
-  'QA를 CKB(1번)에 연결하고 CKA(14번)에 클럭을 넣으면 0~9를 세는 10진 카운터가 돼요(하강 에지). R0·R9 핀을 − 에 연결해야 세기 시작해요(떠 있으면 리셋 상태로 멈춤). VCC는 5번, GND는 10번 핀이에요.');
+  'QA를 CKB(1번)에 연결하고 CKA(14번)에 클럭을 넣으면 0~9를 세는 10진 카운터가 돼요(하강 에지). R0·R9 핀을 − 에 연결해야 세기 시작해요(떠 있으면 HIGH로 읽혀서 9에 멈춰 있어요). VCC는 5번, GND는 10번 핀이에요.');
 ripple('74LS93','4비트 2진 카운터 (리플)',8,['CKB','R01','R02','NC','VCC','NC','NC','QC','QB','GND','QD','QA','NC','CKA'],
   'QA를 CKB(1번)에 연결하고 CKA(14번)에 클럭을 넣으면 0~15를 세요(하강 에지). R01·R02를 − 에 연결해야 세기 시작해요. VCC는 5번, GND는 10번 핀이에요.');
+/* 74LS192의 다음 값: 0~9는 10진으로 세고, LOAD로만 들어갈 수 있는 10~15에서는 규격표대로 움직인다 */
+const UP192=[1,2,3,4,5,6,7,8,9,0,11,6,13,4,15,2],DN192=[9,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
 function updown(name,title,mod){def({name,title,ttl:true,pins:['B','QB','QA','DOWN','UP','QC','QD','GND','D','C','~LOAD','~CO','~BO','CLR','A','VCC'],
   outs:['QA','QB','QC','QD','~CO','~BO'],
   desc:`UP에 클럭을 넣으면 1씩 늘고(DOWN은 HIGH 유지), DOWN에 넣으면 1씩 줄어요(0~${mod-1}). CLR은 HIGH일 때 0으로 만들기 때문에 − 에 연결해야 세기 시작해요. LOAD̅가 LOW면 DCBA를 바로 불러와요.`+TTLN,
@@ -669,9 +710,9 @@ function updown(name,title,mod){def({name,title,ttl:true,pins:['B','QB','QA','DO
   init:()=>({n:0,pu:X,pd:X}),
   eval(g,st){const up=g('UP'),dn=g('DOWN'),ru=st.pu===L&&up===Hh,rd=st.pd===L&&dn===Hh;st.pu=up;st.pd=dn;const clr=g('CLR'),ld=g('~LOAD');
     if(clr===Hh)st.n=0;else if(clr===X)st.n=-1;else if(ld===L){const d=['A','B','C','D'].map(g);st.n=anyX(d)?-1:toNum(d)%16;}else if(ld===X)st.n=-1;
-    else if(st.n>=0){if(ru&&dn===Hh)st.n=(st.n+1)%mod;else if(rd&&up===Hh)st.n=(st.n-1+mod)%mod;}
+    else if(st.n>=0){if(ru&&dn===Hh)st.n=mod===10?UP192[st.n]:(st.n+1)&15;else if(rd&&up===Hh)st.n=mod===10?DN192[st.n]:(st.n-1)&15;}
     const b=k=>st.n<0?X:(st.n>>k)&1;
-    return{QA:b(0),QB:b(1),QC:b(2),QD:b(3),'~CO':st.n<0?X:(st.n===mod-1&&up===L)?L:Hh,'~BO':st.n<0?X:(st.n===0&&dn===L)?L:Hh};}});}
+    return{QA:b(0),QB:b(1),QC:b(2),QD:b(3),'~CO':st.n<0?X:(mod===10?(st.n&9)===9:st.n===15)?up:Hh,'~BO':st.n<0?X:st.n===0?dn:Hh};}});}
 updown('74LS192','10진 업/다운 카운터',10);updown('74LS193','4비트 업/다운 카운터',16);
 def({name:'74LS139',title:'2→4 디코더 ×2',ttl:true,pins:['~1G','1A','1B','~1Y0','~1Y1','~1Y2','~1Y3','GND','~2Y3','~2Y2','~2Y1','~2Y0','2B','2A','~2G','VCC'],
   outs:['~1Y0','~1Y1','~1Y2','~1Y3','~2Y0','~2Y1','~2Y2','~2Y3'],
@@ -701,16 +742,18 @@ def({name:'74LS85',title:'4비트 크기 비교기',ttl:true,pins:['B3','A<Bi','
 def({name:'74LS48',title:'BCD→7세그먼트 디코더 (공통 캐소드용)',ttl:true,pins:['B','C','~LT','~BI','~RBI','D','A','GND','e','d','c','b','a','g','f','VCC'],
   outs:['a','b','c','d','e','f','g'],
   desc:'74LS47과 핀 배치가 같지만 켤 획의 출력이 HIGH(내부 풀업)라 공통 캐소드 7세그먼트와 써요. 10~15는 특수 모양, 15는 꺼짐.'+TTLN,
-  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐)','~RBI':'0 지우기 (LOW이고 입력이 0이면 꺼짐)'},
+  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐) · 0을 지울 때는 LOW를 내보냄(RBO)','~RBI':'0 지우기 (LOW이고 입력이 0이면 꺼짐)'},
   eval(g){const o={},set=f=>'abcdefg'.split('').forEach((s,i)=>o[s]=f(i));const bi=g('~BI'),lt=g('~LT'),d=['A','B','C','D'].map(g),rbi=g('~RBI');
     if(bi===L)set(()=>L);else if(bi===X)set(()=>X);else if(lt===L)set(()=>Hh);else if(lt===X||anyX(d))set(()=>X);
-    else{const v=toNum(d);if(v===0&&rbi===L)set(()=>L);else set(i=>SEG47[v][i]==='1'?Hh:L);}return o;}});
+    else{const v=toNum(d);if(v===0&&rbi===L)set(()=>L);else if(v===0&&rbi===X)set(i=>SEG47[0][i]==='1'?X:L);else set(i=>SEG47[v][i]==='1'?Hh:L);}
+    if(lt===Hh&&rbi===L&&!anyX(d)&&toNum(d)===0)o['~BI']=L; // RBO
+    return o;}});
 def({name:'NE555',title:'타이머 (비안정·단안정)',ttl:true,is555:true,pins:['GND','TRIG','OUT','~RESET','CTRL','THRES','DISCH','VCC'],outs:['OUT','DISCH'],
   desc:'TRIG(2번)이 VCC의 1/3보다 낮아지면 OUT=HIGH, THRES(6번)가 2/3보다 높아지면 OUT=LOW가 되고 DISCH(7번)가 GND로 이어져 커패시터를 방전해요. 비안정(깜박이): VCC–R1–7번–R2–6·2번–C–GND, 주기 ≈ 0.693·(R1+2·R2)·C. 단안정: 펄스 폭 ≈ 1.1·R·C. RESET̅(4번)은 + 에 연결하세요.',
   roles:{TRIG:'트리거 (< ⅓VCC면 OUT=H)',OUT:'출력',
     '~RESET':'리셋 (LOW면 OUT=L)',CTRL:'제어 전압 (보통 0.01µF로 GND, 비워도 됨)',THRES:'문턱 (> ⅔VCC면 OUT=L)',DISCH:'방전 (OUT=L일 때 GND로 연결)'},
   init:()=>({q:L}),
-  eval(g,st,va){const rs=g('~RESET'),vc=va?va('CTRL'):null,vth=vc==null?10/3:vc,vtr=vth/2,tr=va?va('TRIG'):null,th=va?va('THRES'):null;
+  eval(g,st,va){const rs=g('~RESET'),vc=va?va('CTRL'):null,vs=va?va('VCC'):null,vth=vc==null?(vs==null?5:vs)*2/3:vc,vtr=vth/2,tr=va?va('TRIG'):null,th=va?va('THRES'):null;
     if(rs===L)st.q=L;else if(tr!=null&&tr<vtr)st.q=Hh;else if(th!=null&&th>vth)st.q=L;
     return{OUT:st.q,DISCH:st.q===Hh?Z:L};}});
 /* 분류 */
@@ -817,6 +860,8 @@ function settle(){
   const netOf=new Int32Array(n);for(let i=0;i<n;i++)netOf[i]=uf.f(i);
   const res=S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]);
   const ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
+  // 클럭 발생기(또는 함수 발생기 출력)가 물린 줄: 그 줄에 + 레일이 있으면 자동 5V를 넣지 않고 클럭 배선으로 쓴다
+  const clkNets=new Set([...clks,...fgs].map(c=>netOf[ph.get(c.id)[0]]));
   let lvl,weak,strong=new Map(),volt=new Map(),srcV=new Map(); // srcV: 서플라이·함수 발생기가 직접 정하는 줄의 전압
   const combine=m=>(m&1)&&(m&2)?SH:(m&4)?X:(m&2)?Hh:L;
   function resolve(){
@@ -824,7 +869,7 @@ function settle(){
     srcV=new Map();
     if(S.power){
       // 파워 서플라이나 건전지를 하나라도 놓으면 보드 레일의 자동 5V는 꺼지고, 그 전원이 이어진 줄에만 전원이 들어간다
-      if(!psus.length)for(const R_ of RAILS)add(netOf[R_.i],R_.lv?Hh:L);
+      if(!psus.length)for(const R_ of RAILS){if(R_.lv&&clkNets.has(netOf[R_.i]))continue;add(netOf[R_.i],R_.lv?Hh:L);}
       for(const c of psus){if(c.on===false)continue;const hs=ph.get(c.id),v=+c.v||0;add(netOf[hs[1]],L);add(netOf[hs[0]],v>=3?Hh:v<=1?L:X);srcV.set(netOf[hs[0]],v);}
       for(const c of fgs){const hs=ph.get(c.id),v=fgVolt(c,now);add(netOf[hs[1]],L);add(netOf[hs[0]],v>=2.5?Hh:L);srcV.set(netOf[hs[0]],v);}
       for(const c of clks)add(netOf[ph.get(c.id)[0]],clkVal(c,now));}
@@ -909,16 +954,21 @@ function settle(){
     if(psus.length&&!psus.some(c=>c.on!==false))W_.push(['warn','파워 서플라이의 출력이 꺼져 있어요. 서플라이를 누르고 [속성]에서 출력을 켜세요.']);
     const hv=psus.filter(c=>c.on!==false&&+c.v>=50);
     if(hv.length)W_.push(['warn',`파워 서플라이가 ${Math.max(...hv.map(c=>+c.v))}V예요. 50V가 넘는 직류는 실제로는 만지면 감전될 수 있어요. 브레드보드와 점퍼선도 이런 전압용이 아니에요.`]);
+    if(!psus.length){const cr=RAILS.filter(R_=>R_.lv&&clkNets.has(netOf[R_.i]));
+      if(cr.length)W_.push(['info',`${cr.map(R_=>(S.boards.length>1?'보드 '+R_.b+' ':'')+(R_.r[0]==='t'?'위쪽':'아래쪽')+' + 레일').join(', ')}에 클럭이 물려 있어서, 이 레일은 5V 대신 클럭 신호를 실어 날라요. 이 레일에서 전원을 받던 칩은 다른 + 레일로 옮겨 주세요. 클럭을 빼면 5V로 돌아와요.`]);}
     const railShort=!psus.length&&RAILS.some(R_=>shortNets.has(netOf[R_.i]));
     if(psShort){}else if(railShort)W_.push(['bad','전원 단락! + 레일과 − 레일이 전선이나 스위치로 바로 이어져 있어요. 실제 회로라면 전원 장치가 꺼지거나 부품이 탈 수 있어요.']);
     else if(shortNets.size)W_.push(['bad','출력 충돌! 한 줄에 HIGH와 LOW가 동시에 들어오고 있어요(출력끼리 또는 출력과 전원이 바로 연결됨). 해당 전선은 자주색으로 깜박여요.']);
   }
   for(const c of S.comps){const hs=ph.get(c.id);
+    if(c.t==='ic'&&S.power&&/^74LS4[678]$/.test(c.chip)&&shortNets.has(netOf[hs[CHIPS[c.chip].idx['~BI']]]))W_.push(['warn',`${LBL.get(c.id)} ${c.chip}의 4번 핀(BI/RBO)이 + 에 바로 묶여 있는데, 0을 지우는 중이라(RBI̅가 LOW, 입력 0) 이 핀이 LOW를 내보내면서 충돌해요. 4번 핀은 비워 두거나, RBI̅(5번)를 + 에 연결하세요.`]);
     if(c.t==='ic'&&S.power&&!rt(c).pw){const d=CHIPS[c.chip];
       W_.push(['warn',`${LBL.get(c.id)} ${c.chip}에 전원이 안 들어가요. ${d.idx[d.vcc]+1}번 핀(${d.vcc})을 + 에, ${d.idx[d.gnd]+1}번 핀(${d.gnd})을 − 에 연결하세요.${psus.length?' (파워 서플라이나 건전지를 쓰는 중이라 레일에 자동 전원이 없어요. 전원의 +, −가 이 칩의 레일까지 전선으로 이어져 있는지 보세요.)':''}`]);}
     if(c.t==='ic'&&S.power&&rt(c).pw&&!CHIPS[c.chip].free){const d=CHIPS[c.chip],v=srcV.get(netOf[hs[d.idx[d.vcc]]]);
-      if(v>5.5)W_.push(['bad',`${LBL.get(c.id)} ${c.chip}에 ${v}V가 걸려 있어요. 이 칩은 5V용이라 실제로는 망가져요. 전원을 5V로 맞추세요.`]);
-      else if(v<4.5)W_.push(['warn',`${LBL.get(c.id)} ${c.chip}의 전원이 ${v}V예요. 5V보다 낮아서 실제로는 제대로 동작하지 않을 수 있어요.`]);}
+      // 칩 종류마다 쓸 수 있는 전원 전압이 다르다: 74LS 4.5~5.5V, 74HC 2~6V, CD4000 계열 3~18V, NE555 4.5~16V
+      const [lo,hi]=c.chip==='NE555'?[4.5,16]:c.chip.startsWith('CD4')?[3,18]:c.chip.startsWith('74HC')?[2,6]:[4.5,5.5];
+      if(v>hi)W_.push(['bad',`${LBL.get(c.id)} ${c.chip}에 ${v}V가 걸려 있어요. 이 칩은 ${lo}~${hi}V용이라 실제로는 망가져요. 전원 전압을 낮추세요.`]);
+      else if(v<lo)W_.push(['warn',`${LBL.get(c.id)} ${c.chip}의 전원이 ${v}V예요. 이 칩은 ${lo}V 이상이 필요해서 실제로는 제대로 동작하지 않을 수 있어요.`]);}
     if(c.t==='res'&&S.power){const na=netOf[hs[0]],nb=netOf[hs[1]];
       if(na!==nb&&strong.has(na)&&strong.has(nb)){const va=vOf(na),vb=vOf(nb);if(va!=null&&vb!=null){const pw=(va-vb)*(va-vb)/c.ohms;
         if(pw>.25)W_.push(['warn',`${LBL.get(c.id)} 저항(${ohmTx(c.ohms)})에 ${Math.abs(va-vb).toFixed(1)}V가 걸려 약 ${pw>=10?pw.toFixed(0):pw.toFixed(1)}W가 열로 나가요. 보통 쓰는 ¼W 저항은 실제로는 타 버려요.`]);}}}
@@ -1238,9 +1288,10 @@ const $=id=>document.getElementById(id);
 const lvBadge=(v,w)=>`<span class="lv ${LVK[v]}${w?' w':''}" title="${lvText(v,w)}">${['0','1','?','—','!'][v]}</span>`;
 const lvText=(v,w,a)=>a!=null?(['LOW','HIGH'][v]||'')+' · 아날로그 '+fmtV(a):(['LOW (0V, 0)','HIGH (5V, 1)','알 수 없음 (X)','연결 안 됨 (떠 있음)','단락 / 충돌!'][v])+(w&&v<2?' · 저항을 거쳐서':'');
 const pinHTML=nm=>nm[0]==='~'?`<span class="ov">${esc(nm.slice(1))}</span>`:esc(nm);
-function renderWarns(){const w=SIM.warns;const bad=w.some(x=>x[0]==='bad');const wc=$('wcount');wc.textContent=w.length;wc.className='cnt'+(w.length?(bad?' b':' w'):'');
+function renderWarns(){const all=SIM.warns,w=all.filter(x=>x[0]!=='info');const bad=w.some(x=>x[0]==='bad');const wc=$('wcount');wc.textContent=w.length;wc.className='cnt'+(w.length?(bad?' b':' w'):'');
+  {const bd=$('wbadge');bd.hidden=!w.length;bd.textContent=w.length;bd.className='bdg'+(bad?' b':'');}
   $('sSim').textContent=!S.power?'● 전원 꺼짐':paused?'⏸ 일시 정지':SIM.unstable?'● 발진 중':bad?'● 단락/충돌':w.length?`● 경고 ${w.length}건`:'● 시뮬레이션 정상';
-  $('warns').innerHTML=w.length?w.map(([k,t])=>`<li class="${k}">${esc(t)}</li>`).join(''):`<li class="ok">${S.comps.length?'문제가 보이지 않아요. 회로가 정상적으로 동작 중이에요.':'보드가 비어 있어요. 왼쪽에서 부품을 골라 꽂아 보세요.'}</li>`;}
+  $('warns').innerHTML=all.length?all.map(([k,t])=>`<li class="${k}">${esc(t)}</li>`).join(''):`<li class="ok">${S.comps.length?'문제가 보이지 않아요. 회로가 정상적으로 동작 중이에요.':'보드가 비어 있어요. [부품 고르기]에서 부품을 골라 꽂아 보세요.'}</li>`;}
 function renderInfo(){const box=$('info');
   syncSel();
   if(sel&&sel.type==='multi'){const ids=[...SEL];
@@ -1370,21 +1421,22 @@ function truthTable(d){const ins=d.gates[0].ins.map(p=>p.replace(/^\d/,'')),k=in
   for(let i=0;i<(1<<k);i++){const v=[...Array(k)].map((_,j)=>(i>>(k-1-j))&1);rows.push([...v,d.fn(...v)]);}
   return`<div class="tt"><h3 style="margin:10px 0 4px">진리표</h3><table><thead><tr>${ins.map(n=>`<th>${n}</th>`).join('')}<th>Y</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function helpHTML(){return`<h3>사용법</h3><ol class="help">
-<li>위쪽 부품 줄에서 <b>IC</b>를 고르고 보드 아무 데나 누르면 칩이 가운데 홈에 꽂혀요. 누른 자리가 다른 부품과 겹치면 가장 가까운 빈자리에 자동으로 놓여요. 부품 이름을 두 번 누르면 보드를 누르지 않아도 빈자리에 놓여요. 1번 핀은 왼쪽 아래(홈 쪽 점)예요.</li>
+<li>도구 막대의 <b>[부품 고르기]</b>에서 <b>IC</b>를 고르고 보드 아무 데나 누르면 칩이 가운데 홈에 꽂혀요. 누른 자리가 다른 부품과 겹치면 가장 가까운 빈자리에 자동으로 놓여요. 부품 고르기 창에서 부품을 두 번 누르면 보드를 누르지 않아도 빈자리에 놓여요. 1번 핀은 왼쪽 아래(홈 쪽 점)예요.</li>
 <li><b>전선</b> 도구로 구멍 두 개를 차례로 눌러 연결해요. a~e, f~j 는 세로 다섯 구멍끼리 안에서 이어져 있고, 맨 위·아래 레일은 가로로 이어져 있어요.</li>
 <li>모든 IC는 <b>VCC를 + 레일</b>, <b>GND를 − 레일</b>에 연결해야 동작해요.</li>
 <li>스위치·버튼·저항·LED 로 입력과 출력을 만들고, <b>선택</b> 도구로 스위치를 눌러 결과를 확인하세요.</li>
-<li>부품을 누르면 [속성]에 핀마다 현재 상태(<span class="lv H">1</span> HIGH, <span class="lv L">0</span> LOW, <span class="lv Z">—</span> 떠 있음, <span class="lv X">?</span> 알 수 없음)가 실시간으로 나와요.</li>
+<li>부품을 고르고 도구 막대의 <b>[속성]</b>을 누르면(또는 부품을 두 번 누르면) 속성 창이 뜨고, 핀마다 현재 상태(<span class="lv H">1</span> HIGH, <span class="lv L">0</span> LOW, <span class="lv Z">—</span> 떠 있음, <span class="lv X">?</span> 알 수 없음)가 실시간으로 나와요.</li>
 <li><b>지우기</b>: 부품을 선택하고 <kbd>Delete</kbd>, 선택하면 뜨는 막대의 [삭제], 오른쪽 클릭 메뉴, 또는 <b>지우개</b>(<kbd>E</kbd>)로 누르거나 문질러서 지워요.</li>
 <li><b>전선</b>: 선택 도구에서 빈 구멍을 누른 채 다른 구멍까지 끌면 그려져요. <b>끌고 간 길을 따라</b> 전선이 가로·세로로 반듯하게 놓이고(곧게 끌면 직선), 이미 있는 전선과 같은 길이면 옆으로 비켜 놓여요. 터치 화면에서는 [전선] 도구를 고른 뒤 구멍에서 끌면 돼요. 같은 줄에서 겹치는 전선은 저절로 비켜 가서 경로가 하나하나 보여요. <b>꺾기</b>: 전선 도구로 그리는 도중에 구멍 사이 빈 곳을 누르면 거기서 꺾이고, 다 그린 전선은 골라서 가운데 점선 동그라미를 끌면 꺾여요(더블클릭해도 돼요). 꺾는 점(흰 네모)은 끌어서 옮기고, 더블클릭하거나 다시 일직선에 놓으면 없어져요.</li>
 <li><b>여러 개</b>: 보드 밖 빈 곳을 끌어 범위 선택, <kbd>Shift</kbd>+클릭으로 더하기, <kbd>Ctrl</kbd>+<kbd>A</kbd> 모두 선택. 방향키로 한 칸씩 옮기고 <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd>로 복사·붙여넣기·복제해요.</li>
-<li>위쪽 부품 줄의 부품을 보드로 <b>끌어다 놓을</b> 수도 있어요. [파일로 부품 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
+<li>도구 막대의 <b>[점검]</b>은 회로에서 찾은 문제를, <b>[객체]</b>는 보드에 있는 부품 목록을 창으로 보여 줘요. [파일 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
 <li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드는 가장자리나 가운데 홈을 끌거나, [보드 이동] 도구(M)로 아무 데나 끌면 꽂힌 부품과 함께 옮겨져요. 이름표를 누르면 종류 바꾸기·삭제 메뉴가 떠요. 보드끼리 전선으로 이어도 돼요.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
-<li><b>부품 고르기 창</b>: 부품 줄의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
-<li><b>계측기·전원</b>: 부품 줄의 [계측기·전원]에서 <b>파워 서플라이·건전지·함수 발생기·오실로스코프</b>를 고르고 놓을 자리를 누르면 그곳에 놓여요. 그다음 몸통의 <b>단자(동그라미)에서 구멍까지 끌면</b> 전선이 이어져요. 몸통은 끌어서 옮기고, 전압·파형·시간 눈금은 계측기를 누른 뒤 [속성]에서 바꿔요. 파워 서플라이나 건전지를 놓으면 보드의 자동 전원은 꺼지고, 그 전원이 전선으로 이어진 레일에만 전원이 들어가요.</li>
+<li><b>부품 고르기 창</b>: 도구 막대의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
+<li><b>계측기·전원</b>: [부품 고르기]의 [계측기·전원]에서 <b>파워 서플라이·건전지·함수 발생기·오실로스코프</b>를 고르고 놓을 자리를 누르면 그곳에 놓여요. 그다음 몸통의 <b>단자(동그라미)에서 구멍까지 끌면</b> 전선이 이어져요. 몸통은 끌어서 옮기고, 전압·파형·시간 눈금은 계측기를 누른 뒤 [속성]에서 바꿔요. 파워 서플라이나 건전지를 놓으면 보드의 자동 전원은 꺼지고, 그 전원이 전선으로 이어진 레일에만 전원이 들어가요.</li>
 <li>단축키: <kbd>V</kbd> 선택 <kbd>W</kbd> 전선 <kbd>R</kbd> 저항 <kbd>L</kbd> LED <kbd>B</kbd> 버튼 <kbd>S</kbd> 스위치 <kbd>C</kbd> 클럭 <kbd>E</kbd> 지우개 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 실행 취소/다시 실행</li>
 <li>IC를 선택하면 <b>데이터시트 기준 핀 배치도</b>가 나오고, 보드 위 다리에도 핀 이름이 표시돼요.</li>
+<li><b>저장 · 불러오기</b>: 도구 막대의 [저장](<kbd>Ctrl</kbd>+<kbd>S</kbd>)이나 [열기]를 누르면 창이 떠요. 이름을 붙여 <b>이 기기에 저장</b>해 두었다가 목록에서 불러오거나, <b>파일(.json)로 내려받아</b> 보관하고 다시 불러올 수 있어요. 지금 작업 중인 회로는 따로 저장하지 않아도 자동으로 기억돼요.</li>
 <li><b>일시 정지</b>(<kbd>P</kbd>): 도구 막대의 [일시 정지]를 누르면 클럭·함수 발생기·커패시터·오실로스코프의 시간이 멈추고, 다시 누르면 멈춘 곳에서 이어져요.</li></ol>
 <p class="legal"><b>안내</b> · 이 시뮬레이터는 공부를 돕는 가상 실험 도구예요. 실제 부품의 전기적 특성·발열·제조사별 세부 규격을 완전히 대신하지 않아요. 74LS00·74HC00·NE555·CD4511 같은 이름은 널리 쓰이는 범용 부품 번호이고, 특정 제조사의 공식 제품이거나 제휴·보증된 소프트웨어가 아니에요. 각 회사의 상표는 해당 권리자에게 있어요. 핀 배치도와 설명은 공개된 표준 규격(핀 번호·논리표)을 바탕으로 직접 그리고 썼어요. 글꼴은 IBM Plex Sans KR과 JetBrains Mono(SIL Open Font License 1.1)를 써요.</p>
 <div class="legend"><span><span class="lv H">1</span>HIGH 5V</span><span><span class="lv L">0</span>LOW 0V</span><span><span class="lv Z">—</span>연결 안 됨</span><span><span class="lv X">?</span>알 수 없음</span><span><span class="lv S">!</span>단락</span></div>
@@ -1465,10 +1517,10 @@ function renderOpts(){const o=$('opts');let h='',t='옵션';
   else if(tool==='cap'){t='용량';h=`<div class="seg">${FARADS.map(v=>`<button data-k="farad" data-v="${v}" aria-pressed="${opt.farad===v}">${capTx(v)}</button>`).join('')}</div><p class="desc">1µF 이상은 전해(+ 쪽부터)</p>`;}
   else if(tool==='clk'){t='클럭 속도';h=`<div class="seg">${HZ.map(v=>`<button data-k="hz" data-v="${v}" aria-pressed="${opt.hz===v}">${v}Hz</button>`).join('')}</div>`;}
   else if(tool==='seg7'){t='7세그먼트 종류';h=`<div class="seg"><button data-k="seg" data-v="cc" aria-pressed="${opt.seg!=='ca'}">공통 캐소드</button><button data-k="seg" data-v="ca" aria-pressed="${opt.seg==='ca'}">공통 애노드</button></div><p class="desc">캐소드형은 CD4511·74LS48, 애노드형은 74LS47·46</p>`;}
-  else if(tool.startsWith('gate:')){const d=GATES[tool.slice(5)];t=d.name+' 게이트';h=`<p class="desc">Y = ${esc(d.expr)} · 진리표는 오른쪽 [속성]</p>`;}
-  else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];t=d.name;h=`<p class="desc">${esc(d.title)} · ${d.pins.length}핀 · 핀 배치도는 오른쪽 [속성]</p>`;}
+  else if(tool.startsWith('gate:')){const d=GATES[tool.slice(5)];t=d.name+' 게이트';h=`<p class="desc">Y = ${esc(d.expr)} · 진리표는 [속성] 창</p>`;}
+  else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];t=d.name;h=`<p class="desc">${esc(d.title)} · ${d.pins.length}핀 · 핀 배치도는 [속성] 창</p>`;}
   if(!h){t='';h=`<p class="desc">${tool==='select'?'부품을 고르거나, 보드로 끌어다 놓으세요':tool==='erase'?'지울 것을 누르거나 문지르세요':tool==='move'?'브레드보드를 끌어서 옮기세요':''}</p>`;}
-  $('optTitle').textContent=t;o.innerHTML=h;
+  $('optTitle').textContent=t||toolName();o.innerHTML=h;$('optCard').hidden=tool==='select'||tool==='erase'||tool==='move';
   o.querySelectorAll('button[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;opt[k]=k==='ohms'||k==='hz'||k==='farad'?+b.dataset.v:b.dataset.v;store.set('opt',opt);renderOpts();});}
 function pinoutMini(d){const n=d.pins.length,h=n/2;let l='',r='';
   for(let i=0;i<h;i++){l+=`<div style="font-size:12px"><code>${i+1}</code> ${pinHTML(d.pins[i])}</div>`;r+=`<div style="font-size:12px;text-align:right">${pinHTML(d.pins[n-1-i])} <code>${n-i}</code></div>`;}
@@ -1758,12 +1810,12 @@ function renderFbar(){const fb=$('fbar');
   const wires=list.every(c=>c.t==='wire'),bent=list.some(c=>c.t==='wire'&&c.pts);
   const key=list.map(c=>c.id+':'+(c.color||'')+(c.pts?'b':'')).join(',');
   if(key!==fbKey){fbKey=key;
-    fb.innerHTML=`<b>${list.length>1?list.length+'개 선택':esc(LBL.get(list[0].id)+' '+compName(list[0]))}</b><button class="del" data-a="del" title="삭제 (Delete)">${TRASH}삭제</button><button data-a="dup" title="복제 (Ctrl+D)">복제</button>`
+    fb.innerHTML=`<b>${list.length>1?list.length+'개 선택':esc(LBL.get(list[0].id)+' '+compName(list[0]))}</b><button class="del" data-a="del" title="삭제 (Delete)">${TRASH}삭제</button><button data-a="dup" title="복제 (Ctrl+D)">복제</button><button data-a="props" title="속성 창 열기 (부품을 두 번 눌러도 돼요)">속성</button>`
       +(wires?`<span class="sep"></span>${WIRE_COLORS.map(col=>`<button class="swc" data-col="${col}" style="background:${col}" aria-pressed="${list.every(c=>c.color===col)}" aria-label="전선 색"></button>`).join('')}`:'')
       +(bent?`<span class="sep"></span><button data-a="straight" title="손으로 꺾은 점을 모두 지우고 자동 경로로 되돌려요">꺾은 점 지우기</button>`:'')
       +(wires&&list.length===1&&!bent?`<small>가운데 동그라미를 끌면 꺾여요</small>`:'');
     fb.querySelectorAll('button').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const a=b.dataset.a;
-      if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='straight')straightenSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
+      if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='props')openDock('info');else if(a==='straight')straightenSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
   fb.hidden=false;}
 /* 마우스를 올린 핀 이름표 */
 function updTip(e){const tp=$('tip');if(!hover||e.pointerType==='touch'){tp.hidden=true;return;}
@@ -1843,7 +1895,9 @@ function handleDbl(e){if(tool!=='select')return false;const p=svgPt(e);
   // 첫 클릭 뒤에 다시 그려져서 e.target이 바뀔 수 있으므로 포인터 아래 요소를 직접 찾는다
   const under=document.elementsFromPoint(e.clientX,e.clientY).filter(x=>svg.contains(x));
   const b=under.map(x=>x.closest('[data-bend]')).find(Boolean);if(b){const [id,k]=b.dataset.bend.split(':').map(Number);const c=compById(id);if(!c||!routePts(c)[k])return false;pushHist();ownPts(c).splice(k,1);if(!c.pts.length)delete c.pts;commit(true);return true;}
-  const g=under.map(x=>x.closest('[data-id]')).find(x=>x&&gC.contains(x));if(!g)return false;const c=compById(+g.dataset.id);if(!c||c.t!=='wire')return false;
+  const g=under.map(x=>x.closest('[data-id]')).find(x=>x&&gC.contains(x));if(!g)return false;const c=compById(+g.dataset.id);if(!c)return false;
+  // 전선이 아닌 부품을 두 번 누르면 속성 창을 연다(버튼·스위치는 눌러 쓰는 부품이라 제외)
+  if(c.t!=='wire'){if(c.t==='btn'||c.t==='sw')return false;sel={type:'comp',id:c.id};render();renderInfo();openDock('info');return true;}
   const Lp=wirePts(c);let best=0,bd=1e9;
   for(let i=0;i<Lp.length-1;i++){const d=segDist(p,Lp[i],Lp[i+1]);if(d<bd){bd=d;best=i;}}
   pushHist();ownPts(c).splice(best,0,{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});sel={type:'comp',id:c.id};commit(true);
@@ -1868,7 +1922,7 @@ svg.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);if(panState){p
 svg.addEventListener('auxclick',e=>e.preventDefault());
 
 /* ───────── 키보드·상단 버튼 ───────── */
-document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||!$('impDlg').hidden||!$('partDlg').hidden)return;
+document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||!$('impDlg').hidden||!$('partDlg').hidden||!$('saveDlg').hidden)return;
   if((e.ctrlKey||e.metaKey)&&(e.key.toLowerCase()==='y'||(e.shiftKey&&e.key.toLowerCase()==='z'))){e.preventDefault();redo();return;}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
   if(e.key===' '){e.preventDefault();spaceDown=true;svg.style.cursor='grab';return;}
@@ -1884,7 +1938,7 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textar
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   const AR={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
   if(AR&&SEL.size&&tool==='select'){e.preventDefault();nudge(AR[0],AR[1]);return;}
-  if(e.key==='Escape'){if(!$('cmenu').hidden){closeMenu();return;}if(wireDrag||boxSel){wireDrag=null;boxSel=null;renderOverlay();return;}if(pending){pending=null;renderHint();renderOverlay();}else if(tool!=='select')setTool('select');else{sel=null;render();renderInfo();}return;}
+  if(e.key==='Escape'){if(!$('cmenu').hidden){closeMenu();return;}if(wireDrag||boxSel){wireDrag=null;boxSel=null;renderOverlay();return;}if(pending){pending=null;renderHint();renderOverlay();}else if(tool!=='select')setTool('select');else if(sel){sel=null;render();renderInfo();}else if(!$('dock').hidden)closeDock();return;}
   if((e.key==='Delete'||e.key==='Backspace')&&SEL.size){e.preventDefault();delSel();return;}
   const m={p:'__pause',v:'select',m:'move',w:'wire',r:'res',l:'led',b:'btn',s:'sw',c:'clk',k:'cap',e:'erase'}[e.key.toLowerCase()];if(m==='__pause'){togglePause();return;}if(m)setTool(m);});
 document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;svg.style.cursor='';}});
@@ -1897,14 +1951,41 @@ $('clr').onclick=()=>{if(!S.comps.length&&S.boards.length===1)return;pushHist();
 $('sig').setAttribute('aria-pressed',sigMode);
 $('sig').onclick=()=>{sigMode=!sigMode;store.set('sig',sigMode);$('sig').setAttribute('aria-pressed',sigMode);$('sig').classList.toggle('pri',sigMode);render();};
 $('sig').classList.toggle('pri',sigMode);
-$('exp').onclick=async()=>{const data=JSON.stringify({app:'breadboard-lab',v:2,boards:S.boards,comps:S.comps},null,1),fn='breadboard-circuit.json';
-  // claude.ai 미리보기 안에서는 downloads 기능으로, 그 밖에서는 일반 다운로드로 저장
+/* ── 저장 · 불러오기 ──
+   (1) 이 기기에 저장: 브라우저 저장소(localStorage)에 이름을 붙여 여러 개 보관  (2) 파일: .json으로 내려받기 / 파일에서 불러오기 */
+let curName=store.get('name','');
+const savedList=()=>{const a=store.get('saves',[]);return Array.isArray(a)?a.filter(e=>e&&e.name&&Array.isArray(e.comps)):[];};
+const circuitData=()=>({app:'breadboard-lab',v:2,name:curName||undefined,boards:S.boards,comps:S.comps});
+function renderSaves(){const L=savedList().sort((a,b)=>b.t-a.t),fmt=t=>{const d=new Date(t),z=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
+  $('saveList').innerHTML=L.length?L.map(e=>`<div class="sitem" data-sid="${esc(e.id)}"><span class="sp"><b>${esc(e.name)}</b><small>${fmt(e.t)} · 부품 ${e.comps.length}개 · 보드 ${(e.boards||[]).length||1}장</small></span><button class="btn pri" data-a="load">불러오기</button><button class="btn" data-a="over" title="지금 보드의 회로로 이 저장본을 바꿔요">덮어쓰기</button><button class="btn del" data-a="del">삭제</button></div>`).join('')
+    :'<p class="desc" style="margin:0">아직 이 기기에 저장한 회로가 없어요.</p>';
+  $('saveList').querySelectorAll('.sitem button').forEach(b=>b.onclick=()=>{const id=b.closest('.sitem').dataset.sid,all=savedList(),e=all.find(x=>String(x.id)===id);if(!e)return;const a=b.dataset.a;
+    if(a==='load'){loadComps(JSON.parse(JSON.stringify(e.comps)),false,e.boards);curName=e.name;store.set('name',curName);fitView();closeSave();toast(`"${e.name}" 회로를 불러왔어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요`);return;}
+    // 덮어쓰기·삭제는 되돌릴 수 없어서 한 번 더 눌러야 실행된다
+    if(!b.dataset.sure){b.dataset.sure='1';b.textContent=a==='del'?'정말 삭제?':'정말 덮어쓸까요?';setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent=a==='del'?'삭제':'덮어쓰기';}},3000);return;}
+    if(a==='del'){store.set('saves',all.filter(x=>x!==e));toast(`"${e.name}" 저장본을 지웠어요`);}
+    else{Object.assign(e,{t:Date.now(),comps:JSON.parse(JSON.stringify(S.comps)),boards:JSON.parse(JSON.stringify(S.boards))});store.set('saves',all);curName=e.name;store.set('name',curName);toast(`"${e.name}"에 덮어썼어요`);}
+    renderSaves();});}
+function openSave(){closeMenu();$('saveDlg').hidden=false;$('saveName').value=curName||`내 회로 ${savedList().length+1}`;renderSaves();}
+function closeSave(){$('saveDlg').hidden=true;}
+function saveLocal(){const name=$('saveName').value.trim().slice(0,40);if(!name){toast('회로 이름을 적어 주세요');$('saveName').focus();return;}
+  const all=savedList(),old=all.find(x=>x.name===name),rec={id:old?old.id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,t:Date.now(),comps:JSON.parse(JSON.stringify(S.comps)),boards:JSON.parse(JSON.stringify(S.boards))};
+  const next=old?all.map(x=>x===old?rec:x):[...all,rec];
+  try{localStorage.setItem(KEY+'.saves',JSON.stringify(next));}catch(e){toast('이 브라우저에 저장할 수 없어요(저장 공간이 막혔거나 가득 찼어요). [파일로 내려받기]를 써 주세요');return;}
+  curName=name;store.set('name',curName);renderSaves();toast(old?`"${name}"에 다시 저장했어요`:`"${name}" 이름으로 이 기기에 저장했어요`);}
+async function saveToFile(){const data=JSON.stringify(circuitData(),null,1),fn=((curName||$('saveName').value||'breadboard-circuit').trim().replace(/[\\/:*?"<>|]+/g,'_')||'breadboard-circuit')+'.json';
+  // 저장 위치를 고를 수 있는 브라우저에서는 저장 창을 띄우고, claude.ai 미리보기에서는 downloads 기능, 그 밖에는 일반 내려받기
+  if(window.showSaveFilePicker&&window.self===window.top){try{const h=await window.showSaveFilePicker({suggestedName:fn,types:[{description:'브레드보드 회로',accept:{'application/json':['.json']}}]});const w=await h.createWritable();await w.write(data);await w.close();toast('파일로 저장했어요');return;}catch(e){if(e&&e.name==='AbortError')return;}}
   let dl=null;try{dl=window.claude&&await window.claude.use('downloads');}catch(_){}
   if(dl){try{await dl.save({filename:fn,data});toast('파일로 저장했어요');}catch(e){toast('저장을 취소했거나 저장할 수 없어요');}return;}
-  const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
-$('imp').onclick=()=>$('file').click();
+  const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('파일을 내려받았어요 ('+fn+')');}
+$('exp').onclick=openSave;$('imp').onclick=openSave;$('saveX').onclick=closeSave;$('saveLocal').onclick=saveLocal;$('saveFile').onclick=saveToFile;$('loadFile').onclick=()=>$('file').click();
+$('saveName').addEventListener('keydown',e=>{if(e.key==='Enter')saveLocal();});
+$('saveDlg').addEventListener('pointerdown',e=>{if(e.target===$('saveDlg'))closeSave();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('saveDlg').hidden){e.stopImmediatePropagation();closeSave();}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if($('saveDlg').hidden)openSave();}},true);
 $('file').onchange=async()=>{const f=$('file').files[0];$('file').value='';if(!f)return;let d=null;try{if(!/^image\//.test(f.type))d=JSON.parse(await f.text());}catch(_){}
-  if(d&&Array.isArray(d.comps)){loadComps(d.comps,false,d.boards);fitView();toast('회로를 불러왔어요');}else openImport(f);};
+  if(d&&Array.isArray(d.comps)){loadComps(d.comps,false,d.boards);curName=typeof d.name==='string'?d.name.slice(0,40):f.name.replace(/\.json$/i,'').slice(0,40);store.set('name',curName);fitView();closeSave();toast('파일에서 회로를 불러왔어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}else{closeSave();openImport(f);}};
 const DEFAULT_BOARDS=()=>[{id:1,type:'std',x:0,y:0}];
 function setBoards(bs){const ok=Array.isArray(bs)&&bs.length&&bs.every(b=>b&&BTYPES[b.type]&&Number.isFinite(b.id)&&Number.isFinite(b.x)&&Number.isFinite(b.y));
   S.boards=ok?bs.map(b=>({id:b.id,type:b.type,x:b.x,y:b.y})):DEFAULT_BOARDS();if(!S.boards.some(b=>b.id===1))S.boards[0].id=1;buildHoles();renderBoards();}
@@ -1932,7 +2013,13 @@ setTheme(store.get('theme','dark'));$('theme').onclick=()=>setTheme(document.doc
 let tab='info';
 function showTab(t){tab=t;document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
   $('info').hidden=t!=='info';$('paneWarn').hidden=t!=='warn';$('paneObj').hidden=t!=='obj';}
-document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.onclick=()=>{showTab(b.dataset.tab);syncDock();});
+/* 속성·점검·객체 창 여닫기: 도구 막대 버튼을 누르면 뜨고, 같은 버튼을 다시 누르거나 ✕를 누르면 닫힌다 */
+function syncDock(){document.querySelectorAll('[data-dock]').forEach(b=>b.setAttribute('aria-pressed',!$('dock').hidden&&b.dataset.dock===tab));}
+function openDock(t){$('dock').hidden=false;showTab(t||tab);syncDock();}
+function closeDock(){$('dock').hidden=true;syncDock();}
+document.querySelectorAll('[data-dock]').forEach(b=>b.onclick=()=>{if(!$('dock').hidden&&tab===b.dataset.dock)closeDock();else openDock(b.dataset.dock);});
+$('dockX').onclick=closeDock;
 /* 객체 목록 */
 function compLoc(c){const hs=pinHoles(c);return c.t==='ic'||c.t==='seg7'?`${c.col}~${c.col+hs.length/2-1}열`:hs.join('–');}
 function renderObjs(){$('ocount').textContent=S.comps.length;$('sCount').textContent='부품 '+S.comps.length;
@@ -2102,8 +2189,8 @@ function runImport(){const txt=$('impText').value;if(!txt.trim()){impMsg('먼저
   $('info').innerHTML=`<div class="ttl"><b>자동 배치 결과</b></div><p class="desc">부품 ${rep.placed}개와 전선 ${rep.wires}개를 브레드보드 ${rep.boards}장에 배치했어요. 이전 회로는 Ctrl+Z로 되돌릴 수 있어요.</p>`
     +(rep.auto.length?`<p class="desc">전원 핀을 자동으로 레일에 이은 IC: ${esc(rep.auto.join(', '))}</p>`:'')
     +(probs.length?`<h3>확인이 필요한 부분 ${probs.length}개</h3><ul class="ires">${probs.slice(0,30).map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:'<p class="desc">모든 연결을 이었어요.</p>')
-    +`<p class="desc">배치는 자동이라 전선이 겹쳐 보일 수 있어요. 전선을 골라 가운데 동그라미를 끌어 꺾거나 색을 바꿔서 정리해 보세요.</p>`;showTab('info');
-  toast(probs.length?`배치했어요 · 확인이 필요한 부분 ${probs.length}개 (오른쪽 [속성])`:`부품 ${rep.placed}개, 전선 ${rep.wires}개를 배치했어요`);}
+    +`<p class="desc">배치는 자동이라 전선이 겹쳐 보일 수 있어요. 전선을 골라 가운데 동그라미를 끌어 꺾거나 색을 바꿔서 정리해 보세요.</p>`;openDock('info');
+  toast(probs.length?`배치했어요 · 확인이 필요한 부분 ${probs.length}개 ([속성] 창)`:`부품 ${rep.placed}개, 전선 ${rep.wires}개를 배치했어요`);}
 const IMPORT_EXAMPLE=`# 동기식 10진 업 카운터 (74LS76 ×2 + 74LS08)
 # 부품
 U1 74LS08
