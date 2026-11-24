@@ -565,8 +565,8 @@ function inPage() {
 
   /* ───────────── run ───────────── */
   const norm = s => String(s).replace(/\s/g, '');
-  // LED 표시 소자(disp)는 논리 출력이 없는 표시용 부품이라 74계열 기준 모델 검사에서 뺀다(브라우저 UI 시험에서 따로 확인)
-  const names = Object.keys(CHIPS).filter(n => !CHIPS[n].disp), report = { names, levels: { L, Hh, X, Z }, chips: [], missingRef: names.filter(n => !REF[n]), refWithoutChip: Object.keys(REF).filter(n => !CHIPS[n]), gates: [] };
+  // LED 표시 소자(disp)와 표시 소자 드라이버(ledcat)는 74계열이 아닌 표시용 부품이라 74계열 기준 모델 검사에서 뺀다(브라우저 UI 시험에서 따로 확인)
+  const names = Object.keys(CHIPS).filter(n => !CHIPS[n].disp && !CHIPS[n].ledcat), report = { names, levels: { L, Hh, X, Z }, chips: [], missingRef: names.filter(n => !REF[n]), refWithoutChip: Object.keys(REF).filter(n => !CHIPS[n]), gates: [] };
   for (const name of names) {
     const d = CHIPS[name], r = REF[name], res = { name, title: d.title, subs: [], notes: [], pin: [] };
     report.chips.push(res);

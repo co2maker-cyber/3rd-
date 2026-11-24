@@ -997,13 +997,257 @@ def({name:'HEX-DISP',title:'16진 표시기 (논리 내장)',disp:'hex',bodyH:36
   init(){return{v:null,bl:false};},
   eval(g,st){if(g('~LE')!==Hh)st.v=[g('D1'),g('D2'),g('D4'),g('D8')];st.bl=g('BL')===Hh;return{};},
   desc:'4비트 2진수(D1·D2·D4·D8, 자리 값 1·2·4·8)를 받아 0~9, A~F 한 글자로 보여 주는 표시기예요. 해독 회로와 LED 구동 회로가 안에 있어서 저항 없이 논리 출력을 바로 이어요. ~LE를 비워 두거나 LOW면 입력을 그대로 보여 주고, HIGH로 올리면 그 순간 값을 붙잡아 둬요. BL이 HIGH면 화면이 꺼져요. 8번 VCC, 4번 GND.'});
+/* ═════ LED 표시 소자 확장: 공통 표시 엔진(disp:'gen') ═════
+   부품마다 핀 이름과 '켜지는 칸'(애노드 핀 a, 캐소드 핀 k, 모양 s, 색 c)만 적으면, 칸마다 a가 HIGH이고 k가 LOW일 때 켜진다.
+   논리 회로가 들어 있는 표시기는 look(상태)로 켜질 칸을 정한다. 빠르게 번갈아 켜는(멀티플렉싱) 회로도 보이도록 꺼진 뒤 0.15초 동안 잔상이 남는다.
+   핀 배치·부품 이름은 이 시뮬레이터에서 쓰기 쉽게 정한 것이에요(실제 제품은 제품마다 달라요) */
+const LSUB=[['pk','낱개 LED · 모양 · 렌즈'],['fn','다색 · 기능 내장 · 스마트 LED'],['cbi','기판 표시등(CBI) · 패널'],['seg','세그먼트 표시기'],['mat','도트 매트릭스'],['bar','막대 그래프 · 라이트 바 · LED 링'],['smart','지능형 표시기 (논리 내장)'],['drv','표시 소자 드라이버 IC']];
+const LCO={R:'#FF3B30',G:'#34C759',Y:'#FFCC00',B:'#3B82F6',O:'#FF9500',W:'#F2F2F7'};
+const xs=(h,k)=>(k-(h-1)/2)*20;
+const rng=(n,f)=>Array.from({length:n},(_,i)=>f(i));
+function gd(o){def(Object.assign({disp:'gen',free:true,outs:[],eval(){return{};}},o));}
+const ln_=(p,w)=>({t:'l',x1:p[0],y1:p[1],x2:p[2],y2:p[3],w}),dot_=(x,y,r)=>({t:'c',x,y,r}),box_=(x,y,w,h,rx)=>({t:'r',x,y,w,h,rx:rx||1});
+// 획 모양: 가운데 (ox,oy), 반폭 hw, 반높이 hh
+function segLines(ox,oy,hw,hh){const g=Math.max(1.6,hw*.2),q=hw*.28,L=(a,b,c,d)=>[ox+a,oy+b,ox+c,oy+d];
+  return{a:L(-hw+g,-hh,hw-g,-hh),b:L(hw,-hh+g,hw,-g),c:L(hw,g,hw,hh-g),d:L(-hw+g,hh,hw-g,hh),e:L(-hw,g,-hw,hh-g),f:L(-hw,-hh+g,-hw,-g),g:L(-hw+g,0,hw-g,0),
+    g1:L(-hw+g,0,-g,0),g2:L(g,0,hw-g,0),a1:L(-hw+g,-hh,-g,-hh),a2:L(g,-hh,hw-g,-hh),d1:L(-hw+g,hh,-g,hh),d2:L(g,hh,hw-g,hh),
+    h:L(-hw+q,-hh+q*1.5,-g,-g*1.5),i:L(0,-hh+g,0,-g),j:L(hw-q,-hh+q*1.5,g,-g*1.5),k:L(-hw+q,hh-q*1.5,-g,g*1.5),l:L(0,g,0,hh-g),m:L(hw-q,hh-q*1.5,g,g*1.5)};}
+function digitEls(names,ox,oy,hw,hh,an,ka,col,w,map){const S=segLines(ox,oy,hw,hh);
+  return names.map(n=>n==='dp'?{a:an(n),k:ka(n),s:dot_(ox+hw+w*.9+1,oy+hh,w*.55+.6),c:col}:{a:an(n),k:ka(n),s:ln_(S[(map&&map[n])||n],w),c:col});}
+const SEG8=['a','b','c','d','e','f','g','dp'];
+// 점 격자: rows×cols, 몸통 폭 W·높이 2H 안에 고르게
+function gridPos(rows,cols,W,H,r,k){const sx=Math.min(20,(W-12)/cols),sy=Math.min(20,(2*H-12)/rows);return{x:(k-(cols-1)/2)*sx,y:(r-(rows-1)/2)*sy,d:Math.min(sx,sy)};}
+const bodyW=n=>(n/2-1)*20+18;
+
+/* ── ② 다색 · 기능 내장 · 스마트 LED ── */
+gd({name:'LED-2C3-CC',sub:'fn',title:'2색 LED 3핀 (공통 캐소드)',pins:['R','K','G','NC'],bodyH:26,clear:1,
+  els:[{a:'R',k:'K',s:dot_(0,0,10),c:LCO.R},{a:'G',k:'K',s:dot_(0,0,10),c:LCO.G}],
+  desc:'빨강·초록 LED 두 개가 공통 캐소드(K) 하나를 함께 쓰는 3다리 LED예요(4번 자리는 빈 핀). R이나 G를 HIGH로 하면 그 색, 둘 다면 섞여서 노랑(주황)으로 보여요. 색마다 저항을 다세요.'});
+gd({name:'LED-2C3-CA',sub:'fn',title:'2색 LED 3핀 (공통 애노드)',pins:['R','A','G','NC'],bodyH:26,clear:1,
+  els:[{a:'A',k:'R',s:dot_(0,0,10),c:LCO.R},{a:'A',k:'G',s:dot_(0,0,10),c:LCO.G}],
+  desc:'빨강·초록 LED 두 개가 공통 애노드(A) 하나를 함께 쓰는 3다리 LED예요(4번 자리는 빈 핀). A를 + 에 잇고 R이나 G를 LOW로 하면 그 색이 켜지고, 둘 다면 섞여 보여요.'});
+gd({name:'LED-SFLUX',sub:'fn',title:'4핀 고휘도 사각 LED',pins:['A1','K1','K2','A2'],bodyH:26,clear:1,
+  els:[{a:['A1','A2'],k:['K1','K2'],s:box_(-15,-15,30,30,4),c:LCO.R}],
+  desc:'7.6mm 사각 몸통에 다리가 4개(애노드 2, 캐소드 2)인 밝은 LED예요. 다리가 많아 열이 잘 빠져서 큰 전류(수십 mA)로 켜는 자동차 등·전광판에 써요. 애노드 하나 이상이 HIGH, 캐소드 하나 이상이 LOW면 켜져요.'});
+gd({name:'LED-SMART',sub:'fn',title:'스마트 LED (주소 지정형, 4핀)',free:false,vcc:'VDD',gnd:'GND',pins:['DIN','VDD','GND','DOUT'],outs:['DOUT'],bodyH:26,clear:1,colorProp:1,
+  els:[{s:dot_(0,0,10),c:'prop'}],eval(g){return{DOUT:g('DIN')};},look(st,c,v,pw){return{lit:[!!pw]};},
+  desc:'색을 정하는 칩이 LED 안에 든 부품이에요. 실제로는 DIN 한 가닥으로 아주 빠른(수백 kHz) 직렬 신호를 보내 색을 정하고, DOUT으로 다음 LED에 넘겨요. 이 시뮬레이터는 그 신호 타이밍은 흉내 내지 않고, 전원(VDD·GND)이 들어오면 [속성]에서 고른 색으로 켜져요. DIN은 DOUT으로 그대로 넘어가요. 제품마다 핀 순서와 색 순서가 달라서 꼭 확인해야 해요.'});
+
+/* ── ③ 기판 표시등(CBI) · 패널: 검은 하우징에 LED를 넣어 기판 가장자리에서 앞면 패널 쪽을 비추는 부품 ── */
+const CBIDESC='검은 하우징에 LED를 넣어, 기판에 세워 꽂으면 앞면 패널 구멍과 높이가 딱 맞게 만든 표시등(CBI)이에요. 다리를 직접 구부릴 필요가 없어요. ';
+function cbi(name,title,n,pos,desc){const h=n;gd({name,sub:'cbi',title,pins:[...rng(n,i=>'A'+(i+1)),...rng(n,i=>'K'+(n-i))],bodyH:26,body:'#141517',
+  els:rng(n,i=>({a:'A'+(i+1),k:'K'+(i+1),s:dot_(pos[i][0],pos[i][1],6.5),c:[LCO.G,LCO.R,LCO.Y,LCO.B][i%4]})),desc:CBIDESC+desc});}
+cbi('CBI-V2','기판 표시등 2단',2,[[0,-11],[0,11]],'LED 2개가 위아래로 쌓여 있어요. 칸마다 애노드 A1·A2(아래 핀), 캐소드 K1·K2(위 핀).');
+cbi('CBI-V3','기판 표시등 3단',3,[[0,-15],[0,0],[0,15]].map(([x,y])=>[x,y*1]),'LED 3개가 위아래로 쌓여 있어요.');
+cbi('CBI-V4','기판 표시등 4단',4,[[-9,-11],[9,-11],[-9,11],[9,11]].map(p=>p),'LED 4개가 2단 2줄로 쌓여 있어요.');
+cbi('CBI-H2','기판 표시등 가로 2연',2,[[-10,0],[10,0]],'LED 2개가 가로로 붙어 있어요.');
+cbi('CBI-H3','기판 표시등 가로 3연',3,[[-20,0],[0,0],[20,0]],'LED 3개가 가로로 붙어 있어요.');
+cbi('CBI-H4','기판 표시등 가로 4연',4,[[-30,0],[-10,0],[10,0],[30,0]],'LED 4개가 가로로 붙어 있어요.');
+gd({name:'CBI-2C',sub:'cbi',title:'기판 표시등 2색 (3리드)',pins:['R','K','G','NC'],bodyH:26,body:'#141517',
+  els:[{a:'R',k:'K',s:dot_(0,0,8),c:LCO.R},{a:'G',k:'K',s:dot_(0,0,8),c:LCO.G}],desc:CBIDESC+'빨강·초록 2색 LED(공통 캐소드)가 들어 있어요. 둘 다 켜면 섞여 보여요.'});
+gd({name:'CBI-RGB',sub:'cbi',title:'기판 표시등 RGB (4리드)',pins:['R','G','B','K'],bodyH:26,body:'#141517',
+  els:[{a:'R',k:'K',s:dot_(0,0,8),c:LCO.R},{a:'G',k:'K',s:dot_(0,0,8),c:LCO.G},{a:'B',k:'K',s:dot_(0,0,8),c:LCO.B}],desc:CBIDESC+'RGB LED(공통 캐소드)가 들어 있어요. 색을 섞어 켤 수 있어요.'});
+
+/* ── ④ 세그먼트 표시기 ── */
+gd({name:'SEG7-2D-CC',sub:'seg',title:'7세그먼트 2자리 (공통 캐소드)',pins:[...SEG8,'D1','D2'],bodyH:30,
+  els:[0,1].flatMap(i=>digitEls(SEG8,i?20:-26,0,9,17,n=>n,()=>'D'+(i+1),LCO.R,3.2)),
+  desc:'숫자 두 자리가 획(a~g, dp) 핀을 함께 쓰고, 자리마다 공통 캐소드(D1·D2)가 따로 있어요. 켤 자리의 D를 LOW로 하고 획 핀을 HIGH로 해요. 두 자리에 다른 숫자를 보이려면 자리를 빠르게 번갈아 켜요(멀티플렉싱).'});
+for(const [ca,nm] of [[0,'CC'],[1,'CA']])gd({name:'SEG7-4D-'+nm,sub:'seg',title:`7세그먼트 4자리 (${ca?'공통 애노드':'공통 캐소드'})`,pins:[...SEG8,'D1','D2','D3','D4'],bodyH:30,
+  els:[0,1,2,3].flatMap(i=>digitEls(SEG8,-45+i*29,0,8,16,ca?()=>'D'+(i+1):n=>n,ca?n=>n:()=>'D'+(i+1),LCO.R,3)),
+  desc:`네 자리가 획 핀(a~g, dp)을 함께 쓰고 자리마다 ${ca?'공통 애노드(D1~D4, HIGH로 켬)':'공통 캐소드(D1~D4, LOW로 켬)'}가 있어요. ${ca?'획 핀을 LOW':'획 핀을 HIGH'}로 하면 켜져요. 한 자리씩 빠르게 번갈아 켜서(멀티플렉싱) 네 자리를 다 보여요.`});
+gd({name:'SEG7-4D-CLK',sub:'seg',title:'7세그먼트 4자리 시계용 (콜론, 공통 캐소드)',pins:[...SEG8,'D1','D2','D3','D4','L+','L-'],bodyH:30,
+  els:[...[0,1,2,3].flatMap(i=>digitEls(SEG8,[-54,-27,13,40][i],0,8,16,n=>n,()=>'D'+(i+1),LCO.R,3)),{a:'L+',k:'L-',s:[dot_(-7,-6,2),dot_(-7,6,2)],c:LCO.R}],
+  desc:'시계처럼 가운데 콜론(:)이 있는 4자리 표시기예요. 콜론은 L+ (애노드)·L− (캐소드) 핀으로 따로 켜요. 숫자는 4자리 공통 캐소드 표시기와 같아요.'});
+gd({name:'SEG7-BUBBLE',sub:'seg',title:'버블 렌즈 7세그먼트 4자리 (공통 캐소드)',pins:[...SEG8,'D1','D2','D3','D4'],bodyH:24,body:'#3A1F22',
+  deco:[0,1,2,3].map(i=>({s:dot_(-45+i*29,0,12),fill:'#FF6B6B',op:.18})),
+  els:[0,1,2,3].flatMap(i=>digitEls(SEG8,-45+i*29,0,4,7.5,n=>n,()=>'D'+(i+1),LCO.R,1.6)),
+  desc:'아주 작은 숫자 칩 위에 볼록 렌즈(버블)를 씌워 크게 보이게 한 4자리 표시기예요. 적은 전류(획마다 수 mA)로 켜져서 옛 계산기에 많이 쓰였어요. 사용법은 4자리 공통 캐소드 표시기와 같아요.'});
+gd({name:'SEG7-BIG-CA',sub:'seg',title:'대형 7세그먼트 (공통 애노드, 높은 전압)',pins:['e','d','A1','c','dp','b','a','A2','f','g'],bodyH:84,
+  els:[...digitEls(['a','b','c','d','e','f','g'],0,0,26,54,()=>['A1','A2'],n=>n,LCO.R,7).map(e=>Object.assign(e,{minV:7})),{a:['A1','A2'],k:'dp',s:dot_(37,54,4),c:LCO.R,minV:3.5}],
+  desc:'글자 높이가 10cm쯤 되는 큰 표시기예요. 획마다 LED 여러 개가 직렬로 들어 있어서 켜는 데 약 7.4V(소수점은 약 3.7V)가 필요해요. 5V 논리 회로로는 바로 못 켜고, 9~12V 전원과 고전압 드라이버(전력 시프트 레지스터·달링턴 싱크 등)를 써요. 공통 애노드(A1·A2)를 높은 전압에, 획 핀을 LOW로.'});
+gd({name:'SEG-PM1',sub:'seg',title:'±1 오버플로 표시기 (공통 애노드)',pins:['A','M','P','ONE','DP','NC'],bodyH:30,
+  els:[{a:'A',k:'M',s:ln_([-22,0,-6,0],3.2),c:LCO.R},{a:'A',k:'P',s:ln_([-14,-8,-14,8],3.2),c:LCO.R},{a:'A',k:'ONE',s:[ln_([8,-17,8,-2],3.2),ln_([8,2,8,17],3.2)],c:LCO.R},{a:'A',k:'DP',s:dot_(15,17,2),c:LCO.R}],
+  desc:'계측기의 맨 앞자리에 쓰는 표시기로, + · − · 1만 보여 줘요(3½자리 멀티미터의 "1"). M은 가로획(−), P는 세로획(+를 만들 때 M과 함께), ONE은 숫자 1, DP는 소수점이에요. 공통 애노드 A를 + 에, 켤 획을 LOW로.'});
+gd({name:'SEG9-CC',sub:'seg',title:'9세그먼트 (공통 캐소드)',pins:['a','b','c','d','e','f','g','h','i','dp','COM','NC'],bodyH:34,
+  els:digitEls(['a','b','c','d','e','f','g','h','i','dp'],0,0,14,25,n=>n,()=>'COM',LCO.R,3.2,{h:'h',i:'m'}),
+  desc:'7세그먼트에 대각선 획 두 개(h: 왼쪽 위, i: 오른쪽 아래)를 더해 N·R 같은 글자도 조금 쓸 수 있게 한 표시기예요. 공통 캐소드 COM을 LOW로, 켤 획을 HIGH로.'});
+gd({name:'SEG14-CC',sub:'seg',title:'14세그먼트 (공통 캐소드)',pins:['a','b','c','d','e','f','g1','g2','h','i','j','k','l','m','dp','COM'],bodyH:36,
+  els:digitEls(['a','b','c','d','e','f','g1','g2','h','i','j','k','l','m','dp'],0,0,18,27,n=>n,()=>'COM',LCO.R,3),
+  desc:'가운데 세로·대각선 획까지 14개 획으로 숫자와 영어 대문자, 기호를 쓸 수 있는 표시기(스타버스트형)예요. 공통 캐소드 COM을 LOW로, 켤 획을 HIGH로.'});
+gd({name:'SEG16-CC',sub:'seg',title:'16세그먼트 (공통 캐소드)',pins:['a1','a2','b','c','d1','d2','e','f','g1','g2','h','i','j','k','l','m','dp','COM'],bodyH:38,
+  els:digitEls(['a1','a2','b','c','d1','d2','e','f','g1','g2','h','i','j','k','l','m','dp'],0,0,20,29,n=>n,()=>'COM',LCO.R,3),
+  desc:'14세그먼트의 위·아래 가로획을 둘로 나눠 16개 획으로 만든 표시기예요. 영어 대·소문자와 여러 기호를 더 또렷하게 쓸 수 있어요. 공통 캐소드 COM을 LOW로, 켤 획을 HIGH로.'});
+
+/* ── ⑤ 도트 매트릭스 ── */
+function mat(name,title,rows,cols,pins,bodyH,an,ka,colors,desc){const W=bodyW(pins.length);
+  gd({name,sub:'mat',title,pins,bodyH,body:'#1E2024',
+    els:rng(rows*cols,i=>{const r=(i/cols)|0,k=i%cols,p=gridPos(rows,cols,W,bodyH,r,k);return colors.map(([cc,a,kk])=>({a:a(r+1,k+1),k:kk(r+1,k+1),s:dot_(p.x,p.y,p.d*.36),c:cc}));}).flat(),desc});}
+mat('MAT57-CA','5×7 도트 매트릭스 (세로칸 애노드)',7,5,['C1','C2','C3','C4','C5','R7','R6','R5','R4','R3','R2','R1'],40,null,null,[[LCO.R,(r,k)=>'C'+k,(r,k)=>'R'+r]],
+  '점 35개가 7줄 5칸으로 놓인 한 글자용 표시기예요. 세로칸 C1~C5가 애노드, 가로줄 R1~R7이 캐소드예요. 세로칸을 HIGH, 가로줄을 LOW로 하면 만나는 점이 켜져요. 칸을 하나씩 빠르게 바꿔 켜면 글자가 보여요.');
+mat('MAT57-CC','5×7 도트 매트릭스 (세로칸 캐소드)',7,5,['C1','C2','C3','C4','C5','R7','R6','R5','R4','R3','R2','R1'],40,null,null,[[LCO.R,(r,k)=>'R'+r,(r,k)=>'C'+k]],
+  '점 35개가 7줄 5칸으로 놓인 한 글자용 표시기예요. 가로줄 R1~R7이 애노드, 세로칸 C1~C5가 캐소드예요(세로칸 애노드형과 정반대라 섞어 쓰면 안 켜져요). 가로줄을 HIGH, 세로칸을 LOW로.');
+mat('MAT58-CA','5×8 도트 매트릭스 (세로칸 애노드)',8,5,['C1','C2','C3','C4','C5','R8','NC','R7','R6','R5','R4','R3','R2','R1'],42,null,null,[[LCO.R,(r,k)=>'C'+k,(r,k)=>'R'+r]],
+  '5×7보다 한 줄 많은 8줄짜리라 밑줄이나 커서까지 보여 줄 수 있어요. 세로칸 C1~C5 애노드, 가로줄 R1~R8 캐소드.');
+mat('MAT58-CC','5×8 도트 매트릭스 (세로칸 캐소드)',8,5,['C1','C2','C3','C4','C5','R8','NC','R7','R6','R5','R4','R3','R2','R1'],42,null,null,[[LCO.R,(r,k)=>'R'+r,(r,k)=>'C'+k]],
+  '5×8 표시기의 반대 극성형이에요. 가로줄 R1~R8 애노드, 세로칸 C1~C5 캐소드.');
+mat('MAT88-CA','8×8 도트 매트릭스 (세로칸 애노드)',8,8,[...rng(8,i=>'C'+(i+1)),...rng(8,i=>'R'+(8-i))],44,null,null,[[LCO.R,(r,k)=>'C'+k,(r,k)=>'R'+r]],
+  '8×8 도트 매트릭스의 반대 극성형이에요. 아래 1~8번 핀이 세로칸 C1~C8(애노드), 위 9~16번 핀이 가로줄 R8~R1(캐소드)이에요.');
+mat('MAT88-2C','8×8 도트 매트릭스 2색 (빨강·초록)',8,8,[...rng(8,i=>'RC'+(i+1)),...rng(4,i=>'W'+(i+1)),...rng(4,i=>'W'+(i+5)),...rng(8,i=>'GC'+(8-i))],44,null,null,
+  [[LCO.R,(r,k)=>'RC'+k,(r,k)=>'W'+r],[LCO.G,(r,k)=>'GC'+k,(r,k)=>'W'+r]],
+  '점마다 빨강·초록 LED가 함께 든 8×8 표시기예요(24핀). 가로줄 W1~W8이 두 색의 공통 캐소드, RC1~RC8이 빨강 세로칸, GC1~GC8이 초록 세로칸(애노드)이에요. 둘 다 켜면 노랑(주황)으로 보여요.');
+mat('MAT88-RGB','8×8 도트 매트릭스 RGB',8,8,[...rng(8,i=>'RC'+(i+1)),...rng(8,i=>'GC'+(i+1)),...rng(8,i=>'BC'+(i+1)),...rng(8,i=>'W'+(i+1))],44,null,null,
+  [[LCO.R,(r,k)=>'RC'+k,(r,k)=>'W'+r],[LCO.G,(r,k)=>'GC'+k,(r,k)=>'W'+r],[LCO.B,(r,k)=>'BC'+k,(r,k)=>'W'+r]],
+  '점마다 빨강·초록·파랑 LED가 든 8×8 표시기예요(32핀). 가로줄 W1~W8이 공통 캐소드, RC·GC·BC가 색별 세로칸 애노드예요. 색을 섞어 여러 색을 낼 수 있고, 실제로는 RGB 드라이버로 빠르게 번갈아 켜요.');
+const PATS={heart:['01100110','11111111','11111111','11111111','01111110','00111100','00011000','00000000'],smile:['00111100','01000010','10100101','10000001','10100101','10011001','01000010','00111100'],
+  arrow:['00011000','00111100','01111110','11111111','00011000','00011000','00011000','00011000'],all:rng(8,()=>'11111111')};
+const PATN={heart:'하트',smile:'웃는 얼굴',arrow:'화살표',all:'전부'};
+gd({name:'MAT88-SMART',sub:'mat',title:'8×8 스마트 LED 판 (64개 직렬)',free:false,vcc:'VDD',gnd:'GND',pins:['DIN','VDD','GND','DOUT'],outs:['DOUT'],bodyH:44,body:'#101114',colorProp:1,patProp:1,
+  els:rng(64,i=>({s:dot_(((i%8)-3.5)*4.3,(((i/8)|0)-3.5)*9.5,1.8),c:'prop'})),eval(g){return{DOUT:g('DIN')};},
+  look(st,c,v,pw){const P=PATS[c.pat||'heart'];return{lit:rng(64,i=>!!pw&&P[(i/8)|0][i%8]==='1')};},
+  desc:'스마트 LED 64개를 한 줄로 이어 붙인 8×8 판이에요. 실제로는 DIN 한 가닥 직렬 신호로 점마다 색을 정해요. 이 시뮬레이터는 신호 타이밍을 흉내 내지 않고, 전원이 들어오면 [속성]에서 고른 무늬·색으로 켜져요. 전부 흰색으로 켜면 실제로는 4A 가까이 흐르니 따로 굵은 5V 전원이 필요해요.'});
+
+/* ── ⑥ 막대 그래프 · 라이트 바 · LED 링 ── */
+function bar(name,title,n,colors,desc,extra){const pins=[...rng(n,i=>'A'+(i+1)),...rng(n,i=>'K'+(n-i))];
+  gd(Object.assign({name,sub:'bar',title,pins,bodyH:26,body:'#2B2E33',els:rng(n,i=>({a:'A'+(i+1),k:'K'+(i+1),s:box_(xs(n,i)-5,-12,10,24,1.5),c:colors[i]}))},extra||{},{desc}));}
+const BARD='아래 핀들이 칸마다 애노드(+), 위 핀들이 캐소드(−)이고, 같은 칸의 두 핀이 위아래로 마주 봐요. 애노드가 HIGH, 캐소드가 LOW인 칸이 켜져요. 칸마다 저항을 다세요.';
+bar('BAR10-Y','10칸 막대 LED (노랑)',10,rng(10,()=>LCO.Y),'노란 LED 10칸 막대예요. '+BARD);
+bar('BAR10-G','10칸 막대 LED (초록)',10,rng(10,()=>LCO.G),'초록 LED 10칸 막대예요. '+BARD);
+bar('BAR10-GYR','10칸 막대 LED (구역 3색: 초록3·노랑4·빨강3)',10,[...rng(3,()=>LCO.G),...rng(4,()=>LCO.Y),...rng(3,()=>LCO.R)],'낮은 칸은 초록, 가운데는 노랑, 높은 칸은 빨강으로 나뉘어 있어 "안전·주의·위험"을 한눈에 보여 줘요. '+BARD);
+bar('BAR10-SYM','10칸 막대 LED (가운데 0점 대칭)',10,[LCO.R,LCO.R,LCO.Y,LCO.Y,LCO.G,LCO.G,LCO.Y,LCO.Y,LCO.R,LCO.R],'가운데가 초록이고 양쪽 끝으로 갈수록 노랑·빨강인 대칭 배치라, 가운데를 0으로 두고 +·− 로 벗어난 정도를 보여 주기 좋아요. '+BARD);
+bar('BAR10-LOW','10칸 막대 LED (저전류형)',10,rng(10,()=>LCO.R),'1mA 정도의 작은 전류로도 잘 보이도록 만든 막대예요. 배터리로 오래 쓰는 계측기에 알맞아요(저항을 크게, 예: 2.2kΩ~4.7kΩ). '+BARD);
+bar('BAR5','5칸 막대 LED',5,rng(5,()=>LCO.R),'칸이 5개인 짧은 막대예요. '+BARD);
+bar('BAR12-3C','12칸 막대 LED (초록4·노랑4·빨강4)',12,[...rng(4,()=>LCO.G),...rng(4,()=>LCO.Y),...rng(4,()=>LCO.R)],'12칸이 4칸씩 초록·노랑·빨강으로 나뉜 막대예요. '+BARD);
+bar('BAR20','20칸 막대 LED',20,rng(20,()=>LCO.R),'칸이 20개인 긴 막대예요(40핀). 더 잘게 나눠 보여 줄 수 있어요. '+BARD);
+gd({name:'BAR10-2C',sub:'bar',title:'10칸 막대 LED (칸마다 빨강·초록 2색)',pins:[...rng(10,i=>'AR'+(i+1)),...rng(5,i=>'AG'+(i+1)),...rng(5,i=>'AG'+(i+6)),...rng(10,i=>'K'+(10-i))],bodyH:26,body:'#2B2E33',
+  els:rng(10,i=>{const x=(i-4.5)*27;return[{a:'AR'+(i+1),k:'K'+(i+1),s:box_(x-7,-12,14,24,1.5),c:LCO.R},{a:'AG'+(i+1),k:'K'+(i+1),s:box_(x-7,-12,14,24,1.5),c:LCO.G}];}).flat(),
+  desc:'칸마다 빨강·초록 LED가 함께 들어 있어 상태에 따라 색을 바꿔 보여 주는 막대예요(30핀). AR1~AR10이 빨강 애노드, AG1~AG10이 초록 애노드, K1~K10이 칸마다 공통 캐소드예요. 둘 다 켜면 노랑(주황)으로 보여요.'});
+gd({name:'LBAR-W',sub:'bar',title:'면발광 라이트 바 (넓은 노랑)',pins:['A1','A2','K2','K1'],bodyH:26,body:'#3A3D42',
+  els:[{a:['A1','A2'],k:['K1','K2'],s:box_(-13,-21,26,42,2),c:LCO.Y}],
+  desc:'넓은 면 전체가 고르게 빛나는 표시등이에요. 계기판 글자 뒤를 밝히거나 경고등으로 써요. 애노드(A1·A2) 하나 이상 HIGH, 캐소드(K1·K2) 하나 이상 LOW면 켜져요.'});
+gd({name:'LBAR-N',sub:'bar',title:'면발광 라이트 바 (좁은 빨강)',pins:['A1','A2','K2','K1'],bodyH:26,body:'#3A3D42',
+  els:[{a:['A1','A2'],k:['K1','K2'],s:box_(-13,-5,26,10,2),c:LCO.R}],desc:'가로로 길고 좁게 빛나는 표시등이에요. 사용법은 넓은 라이트 바와 같아요.'});
+gd({name:'LBAR-4',sub:'bar',title:'라이트 바 4분할 (빨강)',pins:['A1','A2','A3','A4','K4','K3','K2','K1'],bodyH:26,body:'#3A3D42',
+  els:rng(4,i=>({a:'A'+(i+1),k:'K'+(i+1),s:box_(xs(4,i)-9,-6,18,12,1.5),c:LCO.R})),desc:'빛나는 면이 4칸으로 나뉜 라이트 바예요. 칸마다 애노드 A1~A4(아래), 캐소드 K1~K4(위).'});
+gd({name:'RING16',sub:'bar',title:'원형 LED 링 (16개)',pins:[...rng(16,i=>'A'+(i+1)),'K','NC'],bodyH:52,body:'#1C1E22',
+  deco:[{s:dot_(0,0,14),fill:'#3A3D42'}],
+  els:[...rng(15,i=>{const t=(135+i*270/14)*Math.PI/180;return{a:'A'+(i+1),k:'K',s:dot_(Math.cos(t)*40,Math.sin(t)*40,4.2),c:LCO.R};}),{a:'A16',k:'K',s:dot_(0,40,4.2),c:LCO.G}],
+  desc:'LED 15개를 270° 원호로, 1개를 아래에 놓은 링이에요. 가운데에 돌리는 손잡이(로터리 인코더)를 두고 돌린 위치를 불빛으로 보여 줄 때 써요. A1~A16이 애노드, K가 공통 캐소드예요. 실제로는 시프트 레지스터나 정전류 드라이버로 켜요.'});
+
+/* ── ⑦ 지능형 표시기 (논리 내장) ── */
+const ASCB=(g,names)=>names.reduce((n,p,i)=>n|(g(p)===Hh?1<<i:0),0);
+def({name:'ASC4-16',sub:'smart',disp:'gen',title:'4자리 영숫자 표시기 (ASCII, 병렬 입력)',pins:['D0','D1','D2','D3','D4','D5','D6','A0','A1','~WR','GND','VCC'],outs:[],bodyH:24,body:'#22100F',
+  text:{n:4,size:17,col:LCO.R},els:[],init(){return{ch:[32,32,32,32]};},
+  eval(g,st){if(g('~WR')===L){const a=ASCB(g,['A0','A1']);st.ch[a]=ASCB(g,['D0','D1','D2','D3','D4','D5','D6']);}return{};},
+  look(st){return{txt:st?st.ch.map(x=>x>=32&&x<127?String.fromCharCode(x):' ').join(''):''};},
+  desc:'글자 해독 회로·기억 장소·구동 회로가 든 4자리 영숫자 표시기예요. D0~D6에 글자의 ASCII 코드(예: A = 65 = 1000001)를, A0·A1에 자리(0~3, 왼쪽이 0)를 놓고 ~WR을 LOW로 내리면 그 자리에 글자가 들어가요. 저항 없이 논리 회로에 바로 이어요.'});
+def({name:'DOT4-SER',sub:'smart',disp:'gen',title:'4자리 5×7 점 표시기 (직렬 입력, 세로칸 스캔)',pins:['DATA','CLK','COL1','COL2','GND','COL3','COL4','COL5','DOUT','VCC'],outs:['DOUT'],bodyH:24,body:'#1A1416',
+  els:rng(140,i=>{const dg=(i/35)|0,j=i%35,col=(j/7)|0,row=j%7;return{s:dot_(-36+dg*24+(col-2)*3.6,(row-3)*4.2,1.4),c:LCO.R};}),
+  init(){return{sr:rng(28,()=>0),p:Z};},
+  eval(g,st){const c=g('CLK');if(st.p===L&&c===Hh){st.sr.unshift(g('DATA')===Hh?1:0);st.sr.length=28;}st.p=c;return{DOUT:st.sr[27]?Hh:L};},
+  look(st,c,v){return{lit:rng(140,i=>{if(!st)return false;const dg=(i/35)|0,j=i%35,col=(j/7)|0,row=j%7;return v('COL'+(col+1))===Hh&&!!st.sr[27-(dg*7+row)];})};},
+  desc:'자리마다 7비트 시프트 레지스터가 든 4자리 5×7 점 표시기예요(28비트가 한 줄로 이어짐). CLK가 올라갈 때마다 DATA 한 비트가 들어가고, 맨 끝 비트는 DOUT으로 나가 다음 표시기로 이어 붙일 수 있어요. 먼저 넣은 비트가 왼쪽 자리 맨 윗줄로 가요. COL1~COL5 중 HIGH인 세로칸에서, 레지스터 비트가 1인 점이 켜져요. 세로칸을 하나씩 바꾸며 그 칸의 28비트를 다시 넣으면 글자가 보여요.'});
+def({name:'ASC8-BUS',sub:'smart',disp:'gen',title:'8자리 5×7 영숫자 표시기 (8비트 버스)',pins:['D0','D1','D2','D3','D4','D5','D6','D7','A0','A1','A2','A3','~WR','~CE','~RST','NC','GND','VCC'],outs:[],bodyH:24,body:'#150F10',
+  text:{n:8,size:15,col:LCO.R},els:[],init(){return{ch:rng(8,()=>32),ctl:0};},
+  eval(g,st){if(g('~RST')===L){st.ch=rng(8,()=>32);st.ctl=0;return{};}
+    if(g('~CE')===L&&g('~WR')===L){const dv=ASCB(g,['D0','D1','D2','D3','D4','D5','D6','D7']);if(g('A3')===Hh){st.ctl=dv;if(dv&128){st.ch=rng(8,()=>32);st.ctl=dv&127;}}else st.ch[ASCB(g,['A0','A1','A2'])]=dv;}return{};},
+  look(st){if(!st||st.ctl&8)return{txt:''};return{txt:st.ch.map(x=>x>=128?'▒':x>=32&&x<127?String.fromCharCode(x):' ').join(''),br:1-(st.ctl&7)/8};},
+  desc:'마이크로프로세서 버스에 바로 물리는 8자리 영숫자 표시기예요. ~CE와 ~WR을 LOW로 하면 써져요. A3이 LOW면 D0~D7(ASCII 코드)이 A0~A2가 고른 자리(0~7)로 들어가고, A3이 HIGH면 제어 값이 돼요: 0~2번 비트 밝기(0이 가장 밝음, 7단계), 3번 비트 1이면 화면 끄기, 7번 비트 1이면 모두 지우기. ~RST를 LOW로 하면 처음 상태로. 128 이상 코드(사용자 정의 글자)는 ▒로 보여요.'});
+
+/* ── ⑧ 표시 소자 드라이버 IC ── */
+const DIGN=rng(8,i=>'DIG'+i);
+const CODEB=[0x7E,0x30,0x6D,0x79,0x33,0x5B,0x5F,0x70,0x7F,0x7B,0x01,0x4F,0x37,0x0E,0x67,0x00];
+const scanK=n=>Math.floor(simNow()*50)%n;   // 20ms마다 다음 자리로
+def({name:'DRV-SER8',sub:'drv',ledcat:1,timed:true,title:'8자리 LED 드라이버 (직렬 3선, 공통 캐소드)',
+  pins:['DIN','CLK','LOAD','DOUT',...DIGN,'SEGA','SEGB','SEGC','SEGD','SEGE','SEGF','SEGG','SEGDP','ISET','NC','GND','VCC'],
+  outs:['DOUT',...DIGN,'SEGA','SEGB','SEGC','SEGD','SEGE','SEGF','SEGG','SEGDP'],
+  init(){return{sr:0,reg:rng(16,()=>0),p:{}};},
+  eval(g,st){const ck=g('CLK'),ld=g('LOAD');
+    if(st.p.c===L&&ck===Hh)st.sr=((st.sr<<1)|(g('DIN')===Hh?1:0))&0xFFFF;
+    if(st.p.l===L&&ld===Hh)st.reg[(st.sr>>8)&15]=st.sr&255;
+    st.p={c:ck,l:ld};const R=st.reg,o={DOUT:st.sr&0x8000?Hh:L};
+    for(const d of DIGN)o[d]=Hh;for(const s of ['A','B','C','D','E','F','G','DP'])o['SEG'+s]=L;
+    if((R[12]&1)||(R[15]&1)){const lim=R[11]&7,k=scanK(lim+1);let b=R[1+k];if(R[15]&1)b=255;else if((R[9]>>k)&1)b=CODEB[b&15]|(b&128);
+      o['DIG'+k]=L;['DP','A','B','C','D','E','F','G'].forEach((s,j)=>o['SEG'+s]=(b>>(7-j))&1?Hh:L);}
+    return o;},
+  desc:'공통 캐소드 7세그먼트 8자리(또는 8×8 도트 64개)를 핀 3개로 켜는 드라이버예요. CLK가 올라갈 때마다 DIN 한 비트씩 16비트를 넣고(앞쪽 비트 먼저), LOAD를 올리면 저장돼요. 16비트 = 주소 4비트(11~8번) + 값 8비트. 주소 1~8 = 자리 0~7 값(비트 7=DP, 6~0=A~G), 9 = 숫자 해독(비트마다 그 자리를 0~9·−·E·H·L·P 코드로), 10 = 밝기, 11 = 켤 자리 수(0~7), 12 = 1이면 켜기(처음엔 꺼짐), 15 = 1이면 모든 획 시험 점등. DIG0~7을 차례로 LOW로 내리며(20ms씩) 그 자리 획을 켜요. 밀려난 비트는 DOUT으로 나가 다음 드라이버로 이어져요.'});
+// 2선(시작·끝 신호가 있는 독자 방식) — 공통 애노드 표시기 6자리
+def({name:'DRV-2W6',sub:'drv',ledcat:1,timed:true,title:'6자리 LED 드라이버 + 키 (2선, 공통 애노드)',vcc:'VDD',
+  pins:['K1','K2','SG1','SG2','SG3','SG4','SG5','SG6','SG7','SG8','GR6','GR5','GR4','GR3','GR2','GR1','VDD','DIO','CLK','GND'],
+  outs:['DIO',...rng(8,i=>'SG'+(i+1)),...rng(6,i=>'GR'+(i+1))],
+  init(){return{p:{},on:false,n:0,b:0,first:true,ack:false,auto:true,addr:0,mode:'',ram:rng(6,()=>0),ctl:0};},
+  eval(g,st){const c=g('CLK'),d=g('DIO'),pc=st.p.c,pd=st.p.d;
+    if(pc===Hh&&c===Hh&&pd===Hh&&d===L&&!st.ack){st.on=true;st.n=0;st.b=0;st.first=true;}
+    else if(pc===Hh&&c===Hh&&pd===L&&d===Hh&&!st.ack){st.on=false;}
+    else if(st.on){
+      if(pc===L&&c===Hh&&st.n<8){st.b|=(d===Hh?1:0)<<st.n;st.n++;
+        if(st.n===8){const B=st.b;if(st.first){st.first=false;const t=B&0xC0;if(t===0x40){st.auto=!(B&4);st.mode='data';}else if(t===0xC0){st.addr=B&7;st.mode='addr';}else if(t===0x80){st.ctl=B&15;st.mode='ctl';}}
+          else if(st.mode==='addr'){if(st.addr<6)st.ram[st.addr]=B;if(st.auto)st.addr++;}}}
+      else if(pc===Hh&&c===L){if(st.n===8&&!st.ack)st.ack=true;else if(st.ack){st.ack=false;st.n=0;st.b=0;}}}
+    st.p={c,d};const o={DIO:st.ack?L:Z};
+    for(let i=1;i<=6;i++)o['GR'+i]=L;for(let i=1;i<=8;i++)o['SG'+i]=Hh;
+    if(st.ctl&8){const k=scanK(6);o['GR'+(k+1)]=Hh;for(let i=0;i<8;i++)o['SG'+(i+1)]=(st.ram[k]>>i)&1?L:Hh;}
+    return o;},
+  desc:'공통 애노드 7세그먼트를 6자리까지 켜는 드라이버예요. 선 2개(CLK·DIO)로 명령을 받아요(주소가 없는 독자 방식이라 I2C와 달라요). CLK가 HIGH일 때 DIO를 내리면 시작, 올리면 끝이에요. 시작 뒤 CLK가 올라갈 때마다 DIO 한 비트씩(낮은 비트 먼저) 8비트를 받고, 9번째 클럭 동안 DIO를 LOW로 당겨 받았다고 알려요(그래서 DIO는 풀업 저항으로 올려 두고 버튼으로 내려야 해요). 명령: 0x40 자동 주소 증가, 0x44 고정 주소, 0xC0+자리 다음에 자리 값(비트 0~7 = SG1~SG8), 0x88~0x8F 화면 켜기(밝기 8단계). GR1~6을 차례로 HIGH로 올리며 켜요. 키(K1·K2) 읽기는 흉내 내지 않아요.'});
+def({name:'DRV-3W8',sub:'drv',ledcat:1,timed:true,title:'8자리 LED 드라이버 + 키 (3선, 공통 캐소드)',vcc:'VDD',
+  pins:['STB','CLK','DIO','K1','K2','K3',...rng(10,i=>'SG'+(i+1)),...rng(8,i=>'GR'+(i+1)),'VDD','GND','NC1','NC2'],
+  outs:[...rng(10,i=>'SG'+(i+1)),...rng(8,i=>'GR'+(i+1))],
+  init(){return{p:{},n:0,b:0,first:true,auto:true,addr:0,mode:'',ram:rng(16,()=>0),ctl:0};},
+  eval(g,st){const sb=g('STB'),c=g('CLK'),d=g('DIO');
+    if(st.p.s!==L&&sb===L){st.n=0;st.b=0;st.first=true;}
+    if(sb===L&&st.p.c===L&&c===Hh){st.b|=(d===Hh?1:0)<<st.n;st.n++;
+      if(st.n===8){const B=st.b;st.n=0;st.b=0;if(st.first){st.first=false;const t=B&0xC0;if(t===0x40){st.auto=!(B&4);st.mode=B&2?'read':'data';}else if(t===0xC0){st.addr=B&15;st.mode='addr';}else if(t===0x80){st.ctl=B&15;st.mode='ctl';}}
+        else if(st.mode==='addr'){st.ram[st.addr&15]=B;if(st.auto)st.addr=(st.addr+1)&15;}}}
+    st.p={s:sb,c};const o={};
+    for(let i=1;i<=8;i++)o['GR'+i]=Hh;for(let i=1;i<=10;i++)o['SG'+(i)]=L;
+    if(st.ctl&8){const k=scanK(8),bits=st.ram[2*k]|((st.ram[2*k+1]&3)<<8);o['GR'+(k+1)]=L;for(let i=0;i<10;i++)o['SG'+(i+1)]=(bits>>i)&1?Hh:L;}
+    return o;},
+  desc:'공통 캐소드 7세그먼트 8자리와 LED를 함께 켜는 드라이버예요(선 3개: STB·CLK·DIO). STB를 LOW로 내리면 명령 시작, 그 뒤 CLK가 올라갈 때마다 DIO 한 비트씩(낮은 비트 먼저) 8비트씩 받아요. STB를 올리면 끝. 명령: 0x40 자동 주소 증가, 0x44 고정 주소, 0xC0+주소(0~15) 다음에 값, 0x88~0x8F 화면 켜기. 짝수 주소 2k = k+1번째 자리의 SG1~SG8, 홀수 주소 = 그 자리의 SG9·SG10. GR1~8을 차례로 LOW로 내리며 켜요. 키(K1~K3) 읽기는 흉내 내지 않아요.'});
+def({name:'DRV-I2C',sub:'drv',ledcat:1,timed:true,title:'16×8 LED 드라이버 (I2C)',vcc:'VDD',
+  pins:['SDA','SCL','A0','A1','A2','INT','VDD','GND',...rng(16,i=>'ROW'+i),...rng(8,i=>'COM'+i)],
+  outs:['SDA',...rng(16,i=>'ROW'+i),...rng(8,i=>'COM'+i)],
+  init(){return{p:{},on:false,n:0,b:0,stage:0,me:false,ack:false,ptr:0,mode:'',ram:rng(16,()=>0),osc:0,disp:0,blink:0};},
+  eval(g,st){const c=g('SCL'),d=g('SDA'),pc=st.p.c,pd=st.p.d;
+    if(pc===Hh&&c===Hh&&pd===Hh&&d===L&&!st.ack){st.on=true;st.n=0;st.b=0;st.stage=0;st.me=false;st.mode='';}
+    else if(pc===Hh&&c===Hh&&pd===L&&d===Hh&&!st.ack){st.on=false;}
+    else if(st.on){
+      if(pc===L&&c===Hh&&st.n<8){st.b=(st.b<<1)|(d===Hh?1:0);st.n++;
+        if(st.n===8){const B=st.b;
+          if(st.stage===0){const adr=0x70|ASCB(g,['A0','A1','A2']);st.me=(B>>1)===adr&&!(B&1);}
+          else if(st.me){if(st.mode==='ram'){st.ram[st.ptr&15]=B;st.ptr=(st.ptr+1)&15;}
+            else{const t=B&0xF0;if(t===0x20)st.osc=B&1;else if(t===0x80){st.disp=B&1;st.blink=(B>>1)&3;}else if(t===0xE0){}else if(t===0x00){st.ptr=B&15;st.mode='ram';}}}
+          st.stage++;}}
+      else if(pc===Hh&&c===L){if(st.n===8&&!st.ack&&st.me)st.ack=true;else if(st.n===8&&!st.me){st.n=0;st.b=0;}else if(st.ack){st.ack=false;st.n=0;st.b=0;}}}
+    st.p={c,d};const o={SDA:st.ack?L:Z};
+    for(let i=0;i<8;i++)o['COM'+i]=Hh;for(let i=0;i<16;i++)o['ROW'+i]=L;
+    const bl=st.blink?Math.floor(simNow()*[0,4,2,1][st.blink])%2:0;
+    if(st.osc&&st.disp&&!bl){const k=scanK(8),bits=st.ram[2*k]|(st.ram[2*k+1]<<8);o['COM'+k]=L;for(let i=0;i<16;i++)o['ROW'+i]=(bits>>i)&1?Hh:L;}
+    return o;},
+  desc:'LED 128개(16×8)를 I2C 두 선(SCL·SDA)으로 켜는 드라이버예요. 주소는 0x70 + A2·A1·A0(같은 선에 여러 개를 달 수 있어요). SCL이 HIGH일 때 SDA를 내리면 시작, 올리면 끝, 비트는 높은 비트 먼저, 바이트마다 9번째 클럭에 SDA를 LOW로 당겨 받았다고 알려요(SDA는 풀업 저항으로). 명령: 0x21 발진 켜기, 0x81 화면 켜기(0x83·0x85·0x87은 2·1·0.5Hz 깜빡임), 0xE0~0xEF 밝기, 0x00~0x0F 기억 주소 다음에 값들. COM0~7을 차례로 LOW로 내리고 그 줄의 ROW0~15(두 바이트)를 켜요. 키 읽기·INT는 흉내 내지 않아요.'});
+def({name:'DRV-SINK8',sub:'drv',ledcat:1,free:true,title:'달링턴 싱크 드라이버 ×8 (오픈 컬렉터)',
+  pins:[...rng(8,i=>'IN'+(i+1)),'GND','COM',...rng(8,i=>'OUT'+(8-i))],outs:rng(8,i=>'OUT'+(i+1)),
+  eval(g){const o={};for(let i=1;i<=8;i++)o['OUT'+i]=g('IN'+i)===Hh?L:Z;return o;},
+  desc:'트랜지스터 두 개를 겹쳐 만든 큰 전류용 스위치 8개예요. IN이 HIGH면 OUT이 GND로 이어져(LOW) 전류를 빨아들이고, LOW면 OUT이 끊겨요(오픈 컬렉터). 높은 전압으로 켜는 대형 표시기·릴레이·막대 LED의 캐소드 쪽에 써요. COM은 릴레이 같은 코일의 역전압 보호용 공통 핀이에요. 9번 GND.'});
+def({name:'DRV-SRC8',sub:'drv',ledcat:1,vcc:'VS',title:'소스 드라이버 ×8 (높은 쪽 스위치)',
+  pins:[...rng(8,i=>'IN'+(i+1)),'VS','GND',...rng(8,i=>'OUT'+(8-i))],outs:rng(8,i=>'OUT'+(i+1)),
+  eval(g){const o={};for(let i=1;i<=8;i++)o['OUT'+i]=g('IN'+i)===Hh?Hh:Z;return o;},
+  desc:'IN이 HIGH면 OUT을 전원(VS) 쪽으로 이어 전류를 내보내는 스위치 8개예요. 공통 애노드 표시기의 자리 선택이나 큰 LED의 애노드 쪽을 켤 때 써요. IN이 LOW면 OUT이 끊겨요. 9번 VS(공급 전원), 10번 GND.'});
+def({name:'DRV-PSR8',sub:'drv',ledcat:1,title:'전력 시프트 레지스터 (오픈 드레인 ×8)',
+  pins:['SER','SRCK','RCK','~SRCLR','~G','D0','D1','D2','D3','GND','D4','D5','D6','D7','SEROUT','NC1','NC2','NC3','NC4','VCC'],outs:['SEROUT',...rng(8,i=>'D'+i)],
+  init(){return{sr:0,lat:0,p:{}};},
+  eval(g,st){const sk=g('SRCK'),rk=g('RCK');if(g('~SRCLR')===L)st.sr=0;else if(st.p.s===L&&sk===Hh)st.sr=((st.sr<<1)|(g('SER')===Hh?1:0))&255;
+    if(st.p.r===L&&rk===Hh)st.lat=st.sr;st.p={s:sk,r:rk};const o={SEROUT:st.sr&128?Hh:L},en=g('~G')===L;for(let i=0;i<8;i++)o['D'+i]=en&&(st.lat>>i)&1?L:Z;return o;},
+  desc:'8비트 시프트 레지스터 뒤에 큰 전류용 스위치(오픈 드레인)를 붙인 칩이에요. SRCK가 올라갈 때 SER 한 비트가 들어가고, RCK를 올리면 출력으로 옮겨져요. 비트가 1인 D 핀이 GND로 이어져(LOW) 전류를 빨아들여요. ~G가 LOW일 때만 출력이 켜지고, ~SRCLR을 LOW로 하면 레지스터가 지워져요. 핀 3개로 높은 전압의 대형 7세그먼트를 켤 수 있어요(애노드를 9~12V에, 획을 D 핀에).'});
+
+/* ── 기존 표시 소자 4종의 하위 분류 ── */
+CHIPS['LED-RGB-CC'].sub=CHIPS['LED-RGB-CA'].sub='fn';CHIPS['LED-BAR10'].sub='bar';CHIPS['LED-8X8'].sub='mat';CHIPS['HEX-DISP'].sub='smart';
+
 const CATS=[['gate','게이트'],['ff','플립플롭·래치'],['shift','시프트 레지스터'],['cnt','카운터'],['mux','디코더·인코더·멀티플렉서'],['math','연산·비교'],['buf','버퍼'],['disp','7세그먼트 디코더'],['ledx','LED 표시 소자'],['timer','타이머']];
 const CATMAP={'00':'gate','02':'gate','04':'gate','08':'gate','10':'gate','11':'gate','14':'gate','20':'gate','21':'gate','27':'gate','30':'gate','32':'gate','86':'gate',
   '03':'gate','05':'gate','09':'gate','132':'gate','07':'buf','126':'buf','240':'buf','244':'buf',
   '74':'ff','75':'ff','76':'ff','112':'ff','175':'ff','73':'ff','109':'ff','273':'ff','373':'ff','374':'ff','164':'shift','165':'shift','194':'shift','595':'shift','163':'cnt','393':'cnt','42':'mux','148':'mux','158':'mux','83':'math','688':'math','90':'cnt','93':'cnt','161':'cnt','192':'cnt','193':'cnt','138':'mux','139':'mux','151':'mux','153':'mux','157':'mux',
   '283':'math','85':'math','125':'buf','4511':'disp','47':'disp','46':'disp','48':'disp','NE555':'timer'};
 const chipNum=n=>n.replace(/^(74HC|74LS|CD|NE)/,'');
-Object.values(CHIPS).forEach(d=>d.cat=d.disp?'ledx':CATMAP[chipNum(d.name)]||CATMAP[d.name]||'gate');
+Object.values(CHIPS).forEach(d=>d.cat=d.disp||d.ledcat?'ledx':CATMAP[chipNum(d.name)]||CATMAP[d.name]||'gate');
 const SEG7PINS=['e','d','COM','c','dp','b','a','COM','f','g'];
 /* 단독 기본 게이트 (전원 연결 없이 동작하는 이상적인 게이트 모듈) */
 const GATES={};
@@ -1020,7 +1264,7 @@ const defOf=c=>c.t==='gate'?GATES[c.kind]:CHIPS[c.chip];
 
 /* ───────── 부품 메타 ───────── */
 const WIRE_COLORS=['#D93A3A','#24282D','#2F6FDB','#2E9E5B','#E8B820','#E57A1F','#8B5CD6','#E9ECEF'];
-const LEDC={red:['#FF3B30','빨강'],green:['#2FD158','초록'],yellow:['#FFD60A','노랑'],blue:['#3A86FF','파랑']};
+const LEDC={red:['#FF3B30','빨강'],green:['#2FD158','초록'],yellow:['#FFD60A','노랑'],blue:['#3A86FF','파랑'],orange:['#FF9500','주황'],white:['#F2F2F7','흰색']};
 const OHMS=[220,330,1000,4700,10000,47000,100000,1000000];
 const FARADS=[1e-8,1e-7,1e-6,1e-5,4.7e-5,1e-4,4.7e-4];
 const capTx=f=>{const u=f*1e6;return u>=1?(Math.round(u*10)/10)+'µF':u>=0.001?(Math.round(u*1000))+'nF':f+'F';};
@@ -1231,13 +1475,21 @@ function settle(){
       const A=side(netOf[hs[0]],true),K=side(netOf[hs[1]],false);
       if(A&&K&&A.r+K.r>0){const mA=(A.v-K.v-2)/(A.r+K.r)*1000;
         if(mA>30)W_.push(['warn',`${LBL.get(c.id)} LED에 약 ${mA.toFixed(0)}mA가 흘러요(전원 ${A.v-K.v}V, 저항 ${ohmTx(A.r+K.r)}). 20mA 안팎이 한계라 실제로는 LED가 타요. 저항을 ${ohmTx(OHMS.find(o=>o>=(A.v-K.v-2)/.015)||1e6)} 이상으로 바꾸거나 전압을 낮추세요.`]);}}
-    if(c.t==='led'){const a=lvAt(hs[0]),k=lvAt(hs[1]);const lit=a===Hh&&k===L;
+    if(c.t==='led'){const a=lvAt(hs[0]),k=lvAt(hs[1]);const lit=(a===Hh&&k===L)||(c.lk==='bip'&&a===L&&k===Hh);
       const noR=lit&&c.lk!=='res'&&!weak.has(netOf[hs[0]])&&!weak.has(netOf[hs[1]]);
       SIM.led.set(c.id,{lit,noR,rev:a===L&&k===Hh});
       if(noR)W_.push(['warn',`${LBL.get(c.id)} LED에 저항 없이 전압이 바로 걸려 있어요. 실제로는 LED가 탈 수 있으니 220Ω~1kΩ 저항을 직렬로 넣으세요.`]);
-      if(a===L&&k===Hh)W_.push(['warn',`${LBL.get(c.id)} LED가 거꾸로 꽂혀 있어요. 긴 다리(애노드, +)가 높은 전압 쪽이어야 켜져요.`]);}
+      if(a===L&&k===Hh&&c.lk!=='bip')W_.push(['warn',`${LBL.get(c.id)} LED가 거꾸로 꽂혀 있어요. 긴 다리(애노드, +)가 높은 전압 쪽이어야 켜져요.`]);}
     if(c.t==='cap'&&S.power&&c.farad>=1e-6&&(rt(c).v||0)<-0.5)W_.push(['warn',`${LBL.get(c.id)} 전해 커패시터의 극성이 반대예요. + 극(처음 누른 쪽)이 높은 전압 쪽이어야 해요. 실제로는 터질 수 있어요.`]);
-    if(c.t==='ic'&&CHIPS[c.chip].disp){const d=CHIPS[c.chip],v=nm=>lvAt(hs[d.idx[nm]]),strongPair=(a,k)=>!weak.has(netOf[hs[d.idx[a]]])&&!weak.has(netOf[hs[d.idx[k]]]);let noR=false;
+    if(c.t==='ic'&&CHIPS[c.chip].disp==='gen'){const d=CHIPS[c.chip],r=rt(c),v=nm=>lvAt(hs[d.idx[nm]]),nt=nm=>netOf[hs[d.idx[nm]]],A=x=>[].concat(x);let lit,txt,br,noR=false,lowV=0;
+      if(d.look){const o=d.look(r.pw&&r.st?r.st:null,c,v,r.pw)||{};lit=o.lit||d.els.map(()=>false);txt=o.txt;br=o.br;}
+      else lit=d.els.map(e=>{const pa=A(e.a).find(p=>v(p)===Hh),pk=A(e.k).find(p=>v(p)===L);let on=!!(pa&&pk);
+        if(on&&e.minV){const va=vOf(nt(pa)),vk=vOf(nt(pk));if(va!=null&&vk!=null&&va-vk<e.minV){on=false;lowV=Math.max(lowV,e.minV);}}
+        if(on&&!weak.has(nt(pa))&&!weak.has(nt(pk)))noR=true;return on;});
+      const now=simNow();r.off=r.off||[];(r.lit0||[]).forEach((x,i)=>{if(x&&!lit[i])r.off[i]=now;});r.lit0=lit;SIM.disp.set(c.id,{lit,txt,br});
+      if(noR&&!d.look)W_.push(['warn',`${LBL.get(c.id)} ${d.title}에 저항 없이 전압이 바로 걸린 칸이 있어요. 실제로는 그 LED가 탈 수 있으니 칸(획)마다 저항을 직렬로 넣으세요.`]);
+      if(lowV)W_.push(['warn',`${LBL.get(c.id)} ${d.title}: 켜는 데 약 ${lowV}V 이상이 필요한데 전압이 모자라 안 켜져요. 공통 애노드를 9~12V 전원에 잇고, 획은 고전압 드라이버로 LOW로 내리세요.`]);}
+    else if(c.t==='ic'&&CHIPS[c.chip].disp){const d=CHIPS[c.chip],v=nm=>lvAt(hs[d.idx[nm]]),strongPair=(a,k)=>!weak.has(netOf[hs[d.idx[a]]])&&!weak.has(netOf[hs[d.idx[k]]]);let noR=false;
       if(d.disp==='bar'){const lit=d.cells.map(([a,k])=>{const l=v(a)===Hh&&v(k)===L;if(l&&strongPair(a,k))noR=true;return l;});SIM.disp.set(c.id,{lit});}
       else if(d.disp==='mat'){const on=[];for(let r=1;r<=8;r++){on.push([]);for(let k=1;k<=8;k++){const l=v('R'+r)===Hh&&v('C'+k)===L;if(l&&strongPair('R'+r,'C'+k))noR=true;on[r-1].push(l);}}SIM.disp.set(c.id,{on});}
       else if(d.disp==='rgb'){const com=d.ca?'A':'K',rgb=['R','G','B'].map(x=>{const l=d.ca?(v(com)===Hh&&v(x)===L):(v(x)===Hh&&v(com)===L);if(l&&strongPair(x,com))noR=true;return l?1:0;});SIM.disp.set(c.id,{rgb});}
@@ -1440,11 +1692,10 @@ function compSVG(c,now){
     if(c.t==='res'){const bw=Math.max(12,Math.min(28,len-10)),bd=bands(c.ohms);
       s+=`<rect x="${-bw/2}" y="-4.5" width="${bw}" height="9" rx="4" fill="#D8C08E" stroke="#A98F5C" stroke-width=".8"/>`;
       bd.forEach((col,i)=>{const x=-bw/2+bw*(.2+i*.2)-(i===3?-bw*.04:0);s+=`<rect x="${x-1.2}" y="-4.3" width="2.4" height="8.6" fill="${col}"/>`;});}
-    else if(c.t==='led'){const st0=SIM.led.get(id)||{},st=c.lk==='blink'&&st0.lit&&Math.floor(now*3)%2?{...st0,lit:false}:st0,[col]=LEDC[c.color]||LEDC.red;
-      if(st.lit)s+=`<circle r="13" fill="${col}" opacity=".75" filter="url(#glow)"/>`;
-      s+=`<circle r="7.5" fill="${col}" fill-opacity="${st.lit?1:.28}" stroke="${col}" stroke-width="1.4"/>
-        <circle cx="-2.5" cy="-2.5" r="2" fill="#fff" opacity="${st.lit?.9:.45}"/>
-        <line x1="7.5" y1="-6" x2="7.5" y2="6" stroke="#555" stroke-width="2"/>
+    else if(c.t==='led'){const st0=SIM.led.get(id)||{},st=c.lk==='blink'&&st0.lit&&Math.floor(now*3)%2?{...st0,lit:false}:st0,[col]=st.rev&&c.lk==='bip'?LEDC.green:LEDC[c.color]||LEDC.red;
+      if(st.lit)s+=`<circle r="${c.pk==='r18'?8:c.pk==='r10'?17:13}" fill="${col}" opacity=".75" filter="url(#glow)"/>`;
+      s+=ledBody(c,st.lit,col);
+      s+=`
         <text x="-13" y="-6" font-size="8" font-weight="700" fill="#666" transform="rotate(${-ang} -13 -6)" text-anchor="middle">+</text>`;
       if(c.lk)s+=`<text x="0" y="17" font-size="6.5" font-weight="700" fill="#666" text-anchor="middle" transform="rotate(${-ang} 0 17)">${c.lk==='blink'?'점멸':'R내장'}</text>`;
       if(st.noR)s+=`<text x="0" y="-11" font-size="9" font-weight="700" fill="var(--warn)" text-anchor="middle" transform="rotate(${-ang} 0 -11)">!</text>`;}
@@ -1549,9 +1800,32 @@ function doneBadges(){let s='';for(const c of chkable()){if(!c.done)continue;con
 function bchkLabel(){const L_=chkable(),n=L_.filter(c=>c.done).length;$('bChkTx').textContent=bchk||n?`연결 체크 ${n}/${L_.length}`:'연결 체크';$('bChk').setAttribute('aria-pressed',bchk);$('bChk').classList.toggle('pri',bchk);}
 function toggleBDone(c){if(INST.has(c.t))return;pushHist();if(c.done)delete c.done;else c.done=true;save();render();
   const L_=chkable();if(c.done&&L_.every(x=>x.done))toast(`모든 부품과 전선을 꽂았어요 ✓ (${L_.length}개)`);}
+/* 공통 표시 엔진 그리기: 몸통 → 꾸밈 → 칸(켜짐은 빛 번짐, 같은 자리의 여러 색은 화면 섞기) → 글자 표시기는 글자 → 핀 번호 */
+function shp(q,cx,cy,col,op,blend){if(Array.isArray(q))return q.map(z=>shp(z,cx,cy,col,op,blend)).join('');const a=`${op<1?` opacity="${op}"`:''}${blend?' style="mix-blend-mode:screen"':''}`;
+  if(q.t==='c')return`<circle cx="${cx+q.x}" cy="${cy+q.y}" r="${q.r}" fill="${col}"${a}/>`;
+  if(q.t==='r')return`<rect x="${cx+q.x}" y="${cy+q.y}" width="${q.w}" height="${q.h}" rx="${q.rx}" fill="${col}"${a}/>`;
+  if(q.t==='l')return`<line x1="${cx+q.x1}" y1="${cy+q.y1}" x2="${cx+q.x2}" y2="${cy+q.y2}" stroke="${col}" stroke-width="${q.w}" stroke-linecap="round"${a}/>`;return'';}
+const ledHex=k=>(LEDC[k]||LEDC.red)[0];
+function genSVG(c,x1,x2,MID,ph){const d=CHIPS[c.chip],st=SIM.disp.get(c.id)||{},H=d.bodyH||26,cx=(x1+x2)/2,r=rt(c),now=simNow(),lit=st.lit||[],off=r.off||[];
+  let s=`<rect x="${x1}" y="${MID-H}" width="${x2-x1}" height="${2*H}" rx="${d.clear?7:2.5}" fill="${d.clear?'#DDE3EA':d.body||'#24272C'}"${d.clear?' fill-opacity=".55"':''} stroke="${d.clear?'#9AA0A8':'#000'}" stroke-width=".8"/>`;
+  for(const e of d.deco||[])s+=shp(e.s,cx,MID,e.fill,e.op??1);
+  // 같은 자리(같은 모양)의 여러 색 칸은 켜진 색을 더해 섞는다(빨강+초록=노랑)
+  let glow='';const grp=new Map();
+  d.els.forEach((e,i)=>{const on=lit[i]||(S.power&&now-(off[i]??-9)<.15),col=e.c==='prop'?ledHex(c.lc||'white'):e.c,k=JSON.stringify(e.s);
+    if(!grp.has(k))grp.set(k,{s:e.s,base:col,on:[]});if(on)grp.get(k).on.push(col);});
+  const mix=cs=>{const v=[0,0,0];for(const h of cs){const n=parseInt(h.slice(1),16);v[0]+=n>>16;v[1]+=(n>>8)&255;v[2]+=n&255;}const m=Math.max(255,...v);return'#'+v.map(x=>Math.round(x*255/m).toString(16).padStart(2,'0')).join('');};
+  for(const g of grp.values()){const on=g.on.length>0,col=on?mix(g.on):g.base;
+    s+=shp(g.s,cx,MID,col,on?1:(d.clear?.35:.2));if(on&&g.s.t==='c'&&g.s.r>=6)glow+=shp(dot_(g.s.x,g.s.y,g.s.r*1.5),cx,MID,col,.55);}
+  if(glow)s+=`<g filter="url(#glow)" pointer-events="none">${glow}</g>`;
+  if(d.text){const t=d.text,w=(x2-x1-10)/t.n,txt=(st.txt||'').padEnd(t.n);for(let i=0;i<t.n;i++){const x=x1+5+w*(i+.5);
+      s+=`<rect x="${x-w/2+1.5}" y="${MID-t.size*.75}" width="${w-3}" height="${t.size*1.5}" rx="1.5" fill="#000" opacity=".35"/>`;
+      if(txt[i]!==' ')s+=`<text x="${x}" y="${MID+t.size*.36}" font-size="${t.size}" font-weight="700" fill="${t.col}" opacity="${st.br??1}" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${esc(txt[i])}</text>`;}}
+  if(!d.free){const pw=rt(c).pw;s+=`<circle cx="${x2-5}" cy="${MID-H+5}" r="1.8" fill="${!S.power?'#555':pw?'#3DDC84':'#E5484D'}"/>`;}
+  s+=ph.map((p,k)=>`<text x="${p.x}" y="${p.y<MID?MID-H+6:MID+H-2}" font-size="5" font-weight="700" fill="${d.clear?'#5B5F66':'#8A9098'}" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${k+1}</text>`).join('');
+  return s;}
 /* LED 표시 소자 그리기: 몸통과 켜진 칸. 핀 번호는 몸통 가장자리에 작게 */
 const HEXSEG=['abcdef','bc','abdeg','abcdg','bcfg','acdfg','acdefg','abc','abcdefg','abcdfg','abcefg','cdefg','adef','bcdeg','adefg','aefg'];
-function dispSVG(c,x1,x2,MID,ph){const d=CHIPS[c.chip],st=SIM.disp.get(c.id)||{},H=d.bodyH||26,w=x2-x1;let s='';
+function dispSVG(c,x1,x2,MID,ph){if(CHIPS[c.chip].disp==='gen')return genSVG(c,x1,x2,MID,ph);const d=CHIPS[c.chip],st=SIM.disp.get(c.id)||{},H=d.bodyH||26,w=x2-x1;let s='';
   const num=()=>ph.map((p,k)=>`<text x="${p.x}" y="${p.y<MID?MID-H+7:MID+H-2.5}" font-size="5.5" font-weight="700" fill="#9AA0A8" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${k+1}</text>`).join('');
   if(d.disp==='bar'){const lit=st.lit||[];s+=`<rect x="${x1}" y="${MID-H}" width="${w}" height="${2*H}" rx="2.5" fill="#2B2E33" stroke="#111" stroke-width=".8"/>`;
     for(let i=0;i<10;i++){const x=ph[i].x;s+=`<rect x="${x-5}" y="${MID-12}" width="10" height="24" rx="1.5" fill="${lit[i]?'#FF3B30':'#5A2B2B'}"${lit[i]?' filter="url(#glow)"':''}/>`;}s+=num();}
@@ -1570,6 +1844,23 @@ function dispSVG(c,x1,x2,MID,ph){const d=CHIPS[c.chip],st=SIM.disp.get(c.id)||{}
     s+=`<g transform="translate(${cx-2} ${MID}) skewX(-7)">${Object.entries(SG).map(([k,p])=>`<path d="${p}" fill="${col(k)}"/>`).join('')}</g>`;
     s+=`<circle cx="${x2-6}" cy="${MID-H+6}" r="2" fill="${!S.power?'#555':pw?'#3DDC84':'#E5484D'}"/>`+num();}
   return s;}
+/* LED 몸통: 모양(c.pk)·렌즈(c.ln)에 따라 */
+function ledBody(c,on,col){const pk=c.pk||'r5',ln=c.ln||'diff',f=on?col:ln==='clear'?'#E8EEF3':ln==='white'?'#F4F4F0':col,op=on?1:ln==='clear'?.5:ln==='tint'?.5:ln==='white'?.95:.28,
+    B=`fill="${f}" fill-opacity="${op}" stroke="${ln==='clear'||ln==='white'?'#9AA0A8':col}" stroke-width="1.3"`,hi=`<circle cx="-2.5" cy="-2.5" r="2" fill="#fff" opacity="${on?.9:.45}"/>`,R={r5:7.5,r3:6,r18:4.2,r4:6.8,r8:10,r10:12}[pk];
+  if(R)return`<circle r="${R}" ${B}/>${hi}<line x1="${R}" y1="${-R*.8}" x2="${R}" y2="${R*.8}" stroke="#555" stroke-width="2"/>`;
+  switch(pk){
+    case'oval':return`<ellipse rx="9.5" ry="6" ${B}/>${hi}`;
+    case'flat':return`<circle r="7.5" ${B}/><circle r="5" fill="none" stroke="#fff" stroke-opacity=".5"/>`;
+    case'cyl':return`<circle r="6.5" ${B}/><circle r="6.5" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="3"/>`;
+    case'rect':return`<rect x="-7" y="-3" width="14" height="6" rx="1" ${B}/>`;
+    case'sq':return`<rect x="-7" y="-7" width="14" height="14" rx="1.5" ${B}/>${hi}`;
+    case'straw':return`<circle r="8" ${B}/><circle r="4" fill="#fff" opacity="${on?.6:.3}"/>`;
+    case'axial':return`<rect x="-8" y="-3.2" width="16" height="6.4" rx="3.2" ${B}/>`;
+    case'can':return`<circle r="9" fill="#B8BEC6" stroke="#7A8088" stroke-width="1"/><circle r="5.5" ${B}/>${hi}`;
+    case'cbi':return`<rect x="-10" y="-8" width="20" height="16" rx="2" fill="#141517"/><circle cx="4" r="5" ${B}/>`;
+    case'bezel':return`<circle r="10.5" fill="#A7ADB5" stroke="#6B7178" stroke-width="1"/><circle r="6.5" ${B}/>${hi}`;
+    case'pipe':return`<rect x="-4" y="-15" width="8" height="30" rx="3" fill="${on?col:'#DDE6EE'}" fill-opacity="${on?.6:.45}" stroke="#9AA0A8"/><circle r="4.5" ${B}/>`;}
+  return`<circle r="7.5" ${B}/>${hi}`;}
 function renderOverlay(){
   let s='',hs='';
   if(hover&&SIM.netOf){const net=SIM.netOf[hover.i];
@@ -1710,12 +2001,16 @@ function propEditor(c){
   if(c.t==='wire')return`<div class="prop"><label>전선 색</label><div class="sw" id="pc">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-v="${col}" aria-pressed="${c.color===col}" aria-label="색"></button>`).join('')}</div></div>`;
   if(c.t==='res')return`<div class="prop"><label>저항 값</label><div class="seg" id="pc">${OHMS.map(o=>`<button data-v="${o}" aria-pressed="${c.ohms===o}">${ohmTx(o)}</button>`).join('')}</div></div>`;
   if(c.t==='led')return`<div class="prop"><label>LED 색</label><div class="seg" id="pc">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-v="${k}" aria-pressed="${c.color===k}">${n}</button>`).join('')}</div></div>`
-    +`<div class="prop"><label>LED 종류</label><div class="seg" id="pc2">${Object.entries(LEDK).map(([k,[n,t]])=>`<button data-v="${k}" aria-pressed="${(c.lk||'std')===k}" title="${t}">${n}</button>`).join('')}</div></div><p class="desc">${LEDK[c.lk||'std'][1]}</p>`;
+    +`<div class="prop"><label>LED 종류</label><div class="seg" id="pc2">${Object.entries(LEDK).map(([k,[n,t]])=>`<button data-v="${k}" aria-pressed="${(c.lk||'std')===k}" title="${t}">${n}</button>`).join('')}</div></div><p class="desc">${LEDK[c.lk||'std'][1]}</p>`
+    +`<div class="prop"><label>모양</label><select class="btn" id="pcPk">${Object.entries(LEDPK).map(([k,n])=>`<option value="${k}"${(c.pk||'r5')===k?' selected':''}>${n}</option>`).join('')}</select></div>`
+    +`<div class="prop"><label>렌즈</label><div class="seg" id="pcLn">${Object.entries(LEDLN).map(([k,[n,t]])=>`<button data-v="${k}" aria-pressed="${(c.ln||'diff')===k}" title="${t}">${n}</button>`).join('')}</div></div><p class="desc">${LEDLN[c.ln||'diff'][1]}</p>`;
   if(c.t==='cap')return`<div class="prop"><label>용량</label><div class="seg" id="pc">${FARADS.map(f=>`<button data-v="${f}" aria-pressed="${c.farad===f}">${capTx(f)}</button>`).join('')}</div></div>`;
   if(c.t==='clk')return`<div class="prop"><label>속도</label><div class="seg" id="pc">${HZ.map(z=>`<button data-v="${z}" aria-pressed="${c.hz===z}">${z}Hz</button>`).join('')}</div></div>`;
   if(c.t==='seg7')return`<div class="prop"><label>종류</label><div class="seg" id="pc"><button data-v="cc" aria-pressed="${!c.ca}">공통 캐소드</button><button data-v="ca" aria-pressed="${!!c.ca}">공통 애노드</button></div></div>`;
   if(c.t==='gate')return`<div class="prop"><label>게이트 바꾸기</label><div class="seg" id="pc">${Object.keys(GATES).filter(k=>(k==='NOT')===(c.kind==='NOT')).map(k=>`<button data-v="${k}" aria-pressed="${c.kind===k}">${k}</button>`).join('')}</div></div>`;
-  if(c.t==='ic')return`<div class="prop"><label>칩 바꾸기 (같은 핀 수)</label><select class="btn" id="pc">${Object.values(CHIPS).filter(d=>d.pins.length===CHIPS[c.chip].pins.length&&!d.disp===!CHIPS[c.chip].disp).map(d=>`<option ${d.name===c.chip?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
+  if(c.t==='ic'){const D_=CHIPS[c.chip];return`<div class="prop"><label>칩 바꾸기 (같은 핀 수)</label><select class="btn" id="pc">${Object.values(CHIPS).filter(d=>d.pins.length===D_.pins.length&&!d.disp===!D_.disp).map(d=>`<option ${d.name===c.chip?'selected':''}>${d.name}</option>`).join('')}</select></div>`
+    +(D_.colorProp?`<div class="prop"><label>색</label><div class="seg" id="pcLc">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-v="${k}" aria-pressed="${(c.lc||'white')===k}">${n}</button>`).join('')}</div></div>`:'')
+    +(D_.patProp?`<div class="prop"><label>무늬</label><div class="seg" id="pcPat">${Object.entries(PATN).map(([k,n])=>`<button data-v="${k}" aria-pressed="${(c.pat||'heart')===k}">${n}</button>`).join('')}</div></div>`:'');}
   return'';}
 function bindProps(c){
   if(INST.has(c.t)){$('info').querySelectorAll('[data-f] button').forEach(b=>b.onclick=()=>{pushHist();const f=b.closest('[data-f]').dataset.f,v=b.dataset.v;
@@ -1727,6 +2022,10 @@ function bindProps(c){
       if(v===+c[f]){inp.value=v;return;}pushHist();c[f]=v;commit(true);});
     const pr=$('psuR'),pv=$('info').querySelector('input[data-n="v"]');if(pr){pr.oninput=()=>{if(pv)pv.value=pr.value;};pr.onchange=()=>{const v=+pr.value;if(v!==+c.v){pushHist();c.v=v;commit(true);}};}return;}
   const pc=$('pc');if(!pc)return;
+  {const pk=$('pcPk');if(pk&&c.t==='led')pk.onchange=()=>{pushHist();if(pk.value==='r5')delete c.pk;else c.pk=pk.value;commit(true);};
+   const lnb=$('pcLn');if(lnb&&c.t==='led')lnb.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();if(b.dataset.v==='diff')delete c.ln;else c.ln=b.dataset.v;commit(true);});
+   const pcc=$('pcLc');if(pcc)pcc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.lc=b.dataset.v;commit(true);});
+   const pcp=$('pcPat');if(pcp)pcp.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.pat=b.dataset.v;commit(true);});}
   const pc2=$('pc2');if(pc2&&c.t==='led')pc2.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;if(v==='std')delete c.lk;else c.lk=v;opt.lk=v;store.set('opt',opt);commit(true);});
   if(c.t==='ic'){pc.onchange=()=>{pushHist();c.chip=pc.value;RT.delete(c.id);commit(true);};return;}
   pc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;
@@ -1822,7 +2121,15 @@ const ICO={
   ic:'<svg width="26" height="16" viewBox="0 0 26 16"><rect x="1" y="3" width="24" height="10" rx="1.5" fill="#26292E"/><path d="M1 6a2 2 0 0 1 0 4z" fill="#000"/>'+[4,9,14,19].map(x=>`<rect x="${x}" y="0" width="2.5" height="3" fill="#AAB"/><rect x="${x}" y="13" width="2.5" height="3" fill="#AAB"/>`).join('')+'</svg>'};
 const TOOLS=[['select','선택·이동','구멍에서 끌면 전선, 빈 곳을 끌면 범위 선택','V'],['wire','전선','구멍 두 개를 잇거나 끌어서 그려요','W'],['erase','지우개','누르거나 문질러서 지워요','E']];
 /* LED 종류: 일반 · 점멸(전압이 걸리면 스스로 깜빡여요) · 저항 내장(5V에 저항 없이 바로) */
-const LEDK={std:['일반','보통 LED예요. 220Ω~1kΩ 저항을 직렬로 넣어 써요.'],blink:['점멸','안에 깜빡이 회로가 들어 있어서, 전압이 걸려 있는 동안 1초에 1.5번쯤 스스로 깜빡여요.'],res:['저항 내장','안에 전류를 줄이는 저항이 들어 있어서, 5V에 저항 없이 바로 이어 써요.']};
+const LEDK={std:['일반','보통 LED예요. 220Ω~1kΩ 저항을 직렬로 넣어 써요.'],blink:['점멸','안에 깜빡이 회로가 들어 있어서, 전압이 걸려 있는 동안 1초에 1.5번쯤 스스로 깜빡여요.'],res:['저항 내장','안에 전류를 줄이는 저항이 들어 있어서, 5V에 저항 없이 바로 이어 써요.'],
+  low:['초저전류','2mA 정도의 작은 전류로도 잘 보이게 만든 LED예요. 논리 출력이나 배터리 기기에 바로 쓰기 좋아요(저항을 크게, 예: 1.5kΩ~2.2kΩ).'],
+  bip:['양극성 2색','다리 2개 안에 LED 두 개가 서로 반대 방향으로 들어 있어요. 긴 다리(+)가 높으면 고른 색, 거꾸로면 초록으로 켜져요. 전압 방향을 번갈아 바꾸면 두 색이 번갈아 켜져요.']};
+/* LED 모양(패키지)과 렌즈 */
+const LEDPK={r5:'5mm 원형 (가장 흔함)',r3:'3mm 원형',r18:'1.8mm 원형 (초소형)',r4:'4mm 원형',r8:'8mm 원형',r10:'10mm 원형',oval:'타원형 (가로로 넓게 퍼짐)',flat:'평두형 (윗면이 평평)',cyl:'원통형',rect:'직사각형 (2×5mm)',sq:'정사각형 (5×5mm)',straw:'스트로햇·오목형 (넓게 퍼짐)',axial:'축방향 초소형 (다리가 양끝으로)',can:'금속 캔 (유리 렌즈, 밀봉형)',cbi:'기판 표시등 (직각 하우징)',bezel:'패널 베젤 (금속 테두리)',pipe:'라이트 파이프 (빛을 패널까지 옮김)'};
+const LEDLN={diff:['유색 확산','발광색으로 물든 뿌연 렌즈예요. 넓게 고르게 보이고 꺼졌을 때와 켜졌을 때 차이가 커서 앞면 패널 표시등에 표준으로 써요.'],
+  clear:['무색 투명','투명한 렌즈라 빛이 거의 줄지 않고 정면이 가장 밝아요. 대신 비추는 각도가 좁고 가까이서 눈부셔요. 꺼져 있으면 무슨 색인지 모르죠.'],
+  tint:['유색 투명','발광색으로 물든 투명 렌즈예요. 꺼져 있어도 색을 알 수 있고 정면이 밝아요.'],
+  white:['백색 확산','유백색 뿌연 렌즈예요. 2색·RGB LED의 색을 고르게 섞어 보여 줄 때 꼭 필요해요.']};
 const PARTS=[['res','저항','220Ω ~ 10kΩ','R'],['led','LED','+ 쪽부터 누르세요','L'],['btn','푸시 버튼','누르는 동안 연결','B'],['sw','토글 스위치','켜고 끄기','S'],['clk','클럭 발생기','0.5 ~ 10Hz 펄스','C'],['cap','커패시터','10nF ~ 470µF (+ 쪽부터)','K'],['seg7','7세그먼트','캐소드형 · 애노드형','']];
 function itemBtn([k,b,sm,kb],ico){return`<button class="it" data-tool="${k}" aria-pressed="false"><span class="ic">${ico}</span><span class="tx"><b>${esc(b)}</b><small>${esc(sm)}</small></span>${kb?`<kbd>${kb}</kbd>`:''}</button>`;}
 
@@ -1853,6 +2160,12 @@ const LEDICO={'LED-RGB-CC':'<svg width="24" height="18" viewBox="0 0 24 18"><cir
   'LED-8X8':'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="3" y="0" width="18" height="18" rx="2" fill="#1E2024"/>'+[0,1,2,3].map(r=>[0,1,2,3].map(k=>`<circle cx="${6.5+k*3.7}" cy="${3.5+r*3.7}" r="1.3" fill="${(r+k)%3?'#3A2626':'#FF453A'}"/>`).join('')).join('')+'</svg>',
   'HEX-DISP':'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="4" y="0" width="16" height="18" rx="2" fill="#24272C"/><text x="12" y="14" font-size="12" font-weight="700" fill="#FF3B30" text-anchor="middle" font-family="monospace">F</text></svg>'};
 LEDICO['LED-RGB-CA']=LEDICO['LED-RGB-CC'];
+/* LED 하위 분류에 함께 넣는 'LED 미리 고르기'(LED 도구 + 모양·렌즈·종류) */
+const LEDPRE={pk:[...Object.entries(LEDPK).filter(([k])=>!['cbi','bezel','pipe'].includes(k)).map(([k,n])=>['led@'+k,n.replace(/ \(.*\)$/,'')+' LED',n.includes('(')?n.replace(/^.*\((.*)\)$/,'$1'):'LED 모양','']),
+    ...Object.entries(LEDLN).map(([k,[n,t]])=>['led#'+k,n+' 렌즈 LED',t.split('. ')[0],''])],
+  fn:Object.entries(LEDK).filter(([k])=>k!=='std').map(([k,[n,t]])=>['led%'+k,n+' LED',t.split('. ')[0],'']),
+  cbi:['cbi','bezel','pipe'].map(k=>['led@'+k,LEDPK[k].replace(/ \(.*\)$/,'')+' LED',LEDPK[k].includes('(')?LEDPK[k].replace(/^.*\((.*)\)$/,'$1'):'','']),
+  seg:[['seg7','7세그먼트 (1자리)','공통 캐소드 · 애노드','']]};
 const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','wire','erase'].includes(it.t[0]);
   const ics=CATALOG.filter(t=>t.k.startsWith('ic-')&&t.k!=='ic-ledx').map(t=>({k:t.k,label:t.label.replace(/^IC /,''),items:t.items,ico:ICO.ic,
     sub:t.items.slice(0,3).map(it=>it.t[1]).join(' · ')+(t.items.length>3?' …':'')}));
@@ -1860,7 +2173,10 @@ const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','w
     {k:'inst',label:'계측기 · 전원',sub:'파워 서플라이 · 건전지 · 함수 발생기 · 오실로스코프',items:tab('inst').items},
     {k:'gates',label:'기본 게이트',sub:'전원 연결 없이 쓰는 연습용 AND · OR · NOT …',items:tab('gates').items},
     {k:'ic',label:'IC',sub:'74HC · 74LS 시리즈, CD4511, NE555 — 종류별로 골라요',kids:ics,ico:ICO.ic},
-    {k:'leds',label:'LED 표시 소자',sub:'RGB LED · 10칸 막대 LED · 8×8 도트 매트릭스 · 16진 표시기',items:tab('ic-ledx').items.map(it=>({...it,ico:LEDICO[it.t[0].slice(3)]||it.ico}))}];})();
+    {k:'leds',label:'LED · 표시 소자',sub:LSUB.map(x=>x[1].split(' · ')[0]).join(' · '),ico:ICO.led,kids:LSUB.map(([k,label])=>{
+      const chips=tab('ic-ledx').items.filter(it=>CHIPS[it.t[0].slice(3)].sub===k).map(it=>{const d=CHIPS[it.t[0].slice(3)];return{t:[it.t[0],d.title,d.name+' · '+d.pins.length+'핀',''],ico:LEDICO[d.name]||(d.ledcat?ICO.ic:ICO.led)};});
+      const pre=(LEDPRE[k]||[]).map(t=>({t,ico:ICO[t[0].startsWith('led')?'led':t[0]]||ICO.led}));
+      const items=[...pre,...chips];return{k:'l-'+k,label,items,ico:ICO.led,sub:items.slice(0,3).map(it=>it.t[1]).join(' · ')+(items.length>3?' …':'')};})}];})();
 const SCHTREE=[PTREE[0],PTREE[4],{k:'pwr',label:'전원 기호',sub:'VCC(+5V) · GND(접지) — 회로도에서 전원을 나타내요',items:[
     {t:['vcc','VCC','전원 + 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 17V6M5 6h14" stroke="#E5484D" stroke-width="2" fill="none"/></svg>'},
     {t:['gnd','GND','접지(−) 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 1v8M4 9h16M7 13h10M10 17h4" stroke="#3E63DD" stroke-width="2" fill="none"/></svg>'}]},PTREE[2],PTREE[3]];
@@ -1896,7 +2212,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('partDlg').hidde
 document.querySelectorAll('.toolbar [data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
 $('bw').addEventListener('dragover',e=>{if(!dnd)return;e.preventDefault();try{e.dataTransfer.dropEffect='copy';}catch(_){}if(tool!==dnd)setTool(dnd);lastPt=svgPt(e);hover=nearHole(lastPt);renderOverlay();});
 $('bw').addEventListener('drop',e=>{if(!dnd)return;e.preventDefault();lastPt=svgPt(e);hover=nearHole(lastPt);const t=dnd;dnd=null;if(tool!==t)setTool(t);place(hover,lastPt);});
-function setTool(t){tool=t;pending=null;
+function setTool(t){
+  // LED 미리 고르기: led@모양 · led#렌즈 · led%종류 → LED 도구 + 그 설정
+  {const m=/^led([@#%])(.+)$/.exec(t);if(m){if(m[1]==='@')opt.pk=m[2];else if(m[1]==='#')opt.ln=m[2];else opt.lk=m[2];store.set('opt',opt);t='led';}}
+  tool=t;pending=null;
   document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
   svg.classList.toggle('place',t!=='select'&&t!=='erase');svg.classList.toggle('erase',t==='erase');svg.classList.toggle('mvtool',t==='move');svg.classList.remove('bmove');closeMenu();renderOpts();renderHint();renderOverlay();
   if(!sel&&typeof renderInfo==='function')renderInfo();}
@@ -2097,7 +2416,7 @@ function place(h,p){if(tool==='move')return;const o=occ();
   if(tool==='clk'){addComp({t:'clk',pins:[h.id],hz:opt.hz});return;}
   if(!pending){pending=h.id;pendPts=[];renderHint();renderOverlay();return;}
   const c={t:tool,pins:[pending,h.id]};
-  if(tool==='wire'){c.color=termColor(c.pins[0])||termColor(c.pins[1])||opt.wire;{const r=angRoute(HOLES.get(c.pins[0]),pendPts,h);if(r.length)c.pts=r;}pendPts=[];}if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led'){c.color=opt.led;if(opt.lk&&opt.lk!=='std')c.lk=opt.lk;}if(tool==='sw')c.on=false;
+  if(tool==='wire'){c.color=termColor(c.pins[0])||termColor(c.pins[1])||opt.wire;{const r=angRoute(HOLES.get(c.pins[0]),pendPts,h);if(r.length)c.pts=r;}pendPts=[];}if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led'){c.color=opt.led;if(opt.lk&&opt.lk!=='std')c.lk=opt.lk;if(opt.pk&&opt.pk!=='r5')c.pk=opt.pk;if(opt.ln&&opt.ln!=='diff')c.ln=opt.ln;}if(tool==='sw')c.on=false;
   pending=null;
   addComp(c);renderHint();}
 /* 계측기 몸통을 놓을 자리: 누른 곳이 가운데가 되게 하되, 보드나 다른 계측기와 겹치면 가장 가까운 빈 곳으로 옮긴다 */
@@ -3210,7 +3529,7 @@ function schLinkLabel(){const v=document.querySelector('#sw .vlabel');if(v)v.tex
 function schAutoSync(){const sig=boardSig();if(!(SCH.link||!SCH.parts.length)||sig===SCH.sig)return;
   const has=S.comps.some(c=>c.t!=='wire'&&!INST.has(c.t));
   if(has)boardToSch(true);else if(SCH.parts.some(p=>p.bid)){sPush();SCH.parts=[];SCH.wires=[];SRT.clear();SCH.sig=sig;SCH.link=true;sCommit();}else SCH.sig=sig;}
-function schNew(t){if(t==='vcc'||t==='gnd')return{t};if(t.startsWith('ic:'))return{t:'ic',chip:t.slice(3)};if(t.startsWith('gate:'))return{t:'gate',kind:t.slice(5)};
+function schNew(t){if(t==='vcc'||t==='gnd')return{t};{const m=/^led([@#%])(.+)$/.exec(t);if(m){const o={t:'led',color:opt.led};o[{'@':'pk','#':'ln','%':'lk'}[m[1]]]=m[2];return o;}}if(t.startsWith('ic:'))return{t:'ic',chip:t.slice(3)};if(t.startsWith('gate:'))return{t:'gate',kind:t.slice(5)};
   const o={t};if(t==='res')o.ohms=opt.ohms;if(t==='led')o.color=opt.led;if(t==='clk')o.hz=opt.hz;if(t==='cap')o.farad=opt.farad;if(t==='sw')o.on=false;if(t==='seg7')o.ca=opt.seg==='ca';return o;}
 function schAddPart(t,x,y){sPush();const p=Object.assign({id:SCH.nextId++,x:snapG(x),y:snapG(y),rot:0},schNew(t));
   // 다른 기호와 겹치면 아래로 비켜 놓는다
@@ -3319,7 +3638,7 @@ function _schApply(){syncTerms();const notes=[],real=SCH.parts.filter(p=>p.t!=='
   if(gone.length){touch();const ids=new Set(gone.map(c=>c.id));S.comps=S.comps.filter(c=>!ids.has(c.id));gone.forEach(c=>RT.delete(c.id));}
   for(const p of real)if(p.bid&&!compById(p.bid))delete p.bid;
   // ② 값
-  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca','lk'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
+  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
   // ③ 새 부품
   const added=[];
   for(const p of real){if(p.bid)continue;const c=schPlaceOnBoard(p);if(!c){notes.push(`${schLabels().get(p.id)}: 브레드보드에 빈자리가 없어 꽂지 못했어요`);continue;}
@@ -3421,7 +3740,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   const sameKind=(o,c)=>o&&(o.t==='ic'?c.t==='ic'&&o.chip===c.chip:o.t==='gate'?c.t==='gate'&&o.kind===c.kind:o.t===c.t);
   for(const c of comps){const o=keep.get(c.id);if(sameKind(o,c)){const k=col(c);yc[k]=Math.max(yc[k],o.y+symOf(o).h+40);}}
   for(const c of [...comps].sort((a,b)=>col(a)-col(b))){const p=Object.assign({id:nid++,x:X_[col(c)],y:0,rot:0,bid:c.id},schNew(c.t==='ic'?'ic:'+c.chip:c.t==='gate'?'gate:'+c.kind:c.t));
-    for(const k of ['ohms','color','farad','on','hz','ca','lk'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
+    for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
     if(sameKind(o,c)){p.x=o.x;p.y=o.y;p.rot=o.rot||0;}else{const s=symOf(p),k=col(c);p.y=snapG(yc[k]+s.h+10);yc[k]=p.y+s.h+40;}
     SCH.parts.push(p);map.set(c.id,p);}
   // 핀 → 줄(net)
@@ -3527,8 +3846,9 @@ window.addEventListener('resize',()=>{if(!$('tut').hidden)tutShow();});
     const clks=S.comps.filter(c=>c.t==='clk'||c.t==='fg'),caps=S.comps.some(c=>c.t==='cap'),oscs=S.comps.some(c=>c.t==='osc');
     const ana=caps||S.comps.some(c=>c.t==='fg'&&c.wave!=='sq'); // 전압이 연속으로 바뀌는 회로
     if(S.comps.some(c=>c.t==='led'&&c.lk==='blink'&&(SIM.led.get(c.id)||{}).lit)){const bp=Math.floor(now*3)%2;if(bp!==blinkPh){blinkPh=bp;render();}}
-    if(!clks.length&&!SIM.unstable&&!caps&&!oscs)return;
-    const sig=clks.map(c=>c.t==='clk'?clkVal(c,now):+(fgVolt(c,now)>=2.5)).join('');
+    const timed=S.comps.some(c=>c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].timed);
+    if(!clks.length&&!SIM.unstable&&!caps&&!oscs&&!timed)return;
+    const sig=clks.map(c=>c.t==='clk'?clkVal(c,now):+(fgVolt(c,now)>=2.5)).join('')+(timed?'|'+Math.floor(now*50):'');
     if(ana){settle();const ns=snapOut();if(ns!==lastOut||sig!==lastSig||(caps&&++frame%4===0)){lastOut=ns;lastSig=sig;render();}}
     else if(sig!==lastSig||SIM.unstable){lastSig=sig;settle();render();}
     if(oscs){sampleScopes(now);updScopes();}},20);
