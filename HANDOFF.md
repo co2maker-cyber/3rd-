@@ -15,6 +15,8 @@
 ✓ 보드 여러 장: `S.boards=[{id,type,x,y}]`, 종류 `BTYPES`(std 50열·full 63·half 30·mini 17 레일 없음), `buildHoles()`, 이름표 끌기/메뉴
 ✓ 보드 몸통 끌어 이동(`startBoardDrag`, `slideBoard`) + [보드 이동] 도구(`move`, M), 전선 직선(`wirePath`) + 가운데 손잡이로 꺾기(`data-mid`, `bendSnap`)
 ✓ 겹치지 않게 자동 배치: `ghostAt`/`gateGhost`가 가장 가까운 빈자리 탐색(`fitsHere`, `bodyRect`), 찬 구멍은 같은 줄 빈 구멍으로(`landing`), 리본 더블클릭 자동 배치
+✓ 전선 자동 경로: `buildRoutes`→`ROUTES`(같은 직선 겹침 → 차선 분리), `routePts`/`ownPts`, 둥근 모서리 `wirePath`, 그리면서 꺾기 `pendPts`(전선 도구·pending 중 구멍 반경 7px)
+✓ 계측기 `INST`(psu/fg/osc): 몸통 `c.x,c.y`+선 2가닥 `c.pins`, `instSVG`, `instSpot`, `instProps`, 드래그 kind `inst`. PSU 있으면 레일 자동 전원 꺼짐(`resolve`의 `srcV`), 스코프 `sampleScopes`/`updScopes`/`oscTrace`(20ms 샘플), 예제 `scope`
 ✓ 파일로 부품 배치: `openImport`→`parseSpec`(텍스트 목록)→`autoLayout`(full 보드, IC 홈, 2단자 e–f 걸침, 넷별 전선, IC 전원 핀 자동 레일)
 ✓ 예제 9개(`EXAMPLES`: nand, dff, counter, adder, gates, ls47, ls90, t555, sync10), 링크 해시 `#sync10` 등으로 바로 열림
 ✓ 자동차 관련 전부 삭제(`car1/`, `car2/`, 루트 `index.html` 문구) — 사용자 요청
