@@ -35,7 +35,7 @@
 
 ## 이슈/주의
 - 사용자: 한국어, 비전문가용 쉬운 말투(~해요), 요청 즉시 구현 선호. 결과마다 아티팩트 링크 요구
-- main push는 사용자가 그때그때 허락한 경우만 — 기본은 작업 브랜치 `ccr-957126bc-kqjtgb`에만 push, PR은 요청 시에만
+- main 자동 반영(2026-11-24 사용자 지시 "앞으로는 자동으로 main으로 업데이트") — 변경마다 작업 브랜치 push 후 main에도 fast-forward push. PR은 요청 시에만
 - 커밋 메시지 끝: `Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
 - 아티팩트 재게시: 같은 `file_path`로 Artifact 호출(URL 유지). `capabilities` 생략 시 기존 선언 유지
 - 코드 수정은 Python 문자열 치환 스크립트 방식 사용(치환 대상 개수 검사). 파일이 한 줄이 긴 minified풍 JS라 Edit 전 Read 필요
