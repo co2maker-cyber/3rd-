@@ -66,6 +66,22 @@ select.ex{height:30px;align-self:center;border:1px solid var(--line);background:
 .mbox{width:min(760px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column}
 .mhead{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
 .mhead b{font-size:15px;flex:1}
+.pbox{width:min(920px,100%);height:min(660px,calc(100dvh - 32px));overflow:hidden}
+.pbox .mhead b{flex:none;white-space:nowrap}.pbox .mhead .btn{flex:none;white-space:nowrap;margin-left:auto}.pbox .mhead .search{min-width:0}
+.pwrap{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:0;flex:1}
+.pcats{overflow:auto;border-right:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:2px}
+.pcats button{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;border:0;background:none;border-radius:6px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.pcats button:hover{background:var(--sunk);color:var(--fg)}
+.pcats button[aria-selected="true"]{background:var(--accent-soft);color:var(--fg);box-shadow:inset 3px 0 0 var(--accent)}
+.pgrid{overflow:auto;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;align-content:start}
+.pgrid h4{grid-column:1/-1;margin:6px 0 0;font-size:12px;color:var(--muted);letter-spacing:.03em}
+.pcard{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 10px;min-width:0}
+.pcard:hover,.pcard:focus-visible{border-color:var(--accent);background:var(--accent-soft)}
+.pcard .ic{flex:none;width:34px;height:22px;display:grid;place-items:center}
+.pcard span{min-width:0;display:flex;flex-direction:column}
+.pcard b{font:600 13px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard small{color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:640px){.pbox .mhead{flex-wrap:wrap}.pbox .mhead .search{order:3;flex:1 0 100%!important;max-width:none!important}.pwrap{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}.pcats{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}.pcats button{flex:none}.pgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
 .mbody{padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .drop{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .drop.on{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
@@ -347,6 +363,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   <section class="ribbon" aria-label="부품 고르기">
     <div class="rtop">
       <div class="rtabs" role="tablist" id="rtabs"></div>
+      <button class="upl" id="partOpen" style="background:var(--surface);color:var(--fg);border:1px solid var(--line)" title="카테고리별로 부품을 고르는 창을 열어요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>부품 고르기</button>
       <input class="search" id="search" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색">
       <button class="upl" id="upl" title="회로도 사진, 부품·연결 목록 파일을 올리면 자동으로 배치해요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>파일로 부품 배치</button>
     </div>
@@ -392,6 +409,13 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 </div>
 <div class="toast" id="toast"></div>
 <div class="cmenu" id="cmenu" role="menu" hidden></div>
+<div class="modal" id="partDlg" hidden role="dialog" aria-modal="true" aria-labelledby="partTitle">
+  <div class="mbox pbox">
+    <div class="mhead"><b id="partTitle">부품 고르기</b><input class="search" id="partQ" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색" style="margin:0;flex:1;max-width:320px"><button class="btn" id="partX">닫기</button></div>
+    <div class="pwrap"><nav class="pcats" id="partCats" aria-label="부품 종류"></nav><div class="pgrid" id="partGrid"></div></div>
+    <div class="mfoot" style="font-size:12px;color:var(--muted)">부품을 누르면 창이 닫히고, 보드에서 놓을 자리를 누르면 꽂혀요. 두 번 누르면 빈자리에 바로 놓여요.</div>
+  </div>
+</div>
 <div class="modal" id="impDlg" hidden role="dialog" aria-modal="true" aria-labelledby="impTitle">
   <div class="mbox">
     <div class="mhead"><b id="impTitle">파일로 부품 배치</b><button class="btn" id="impX">닫기</button></div>
@@ -1079,19 +1103,27 @@ function compSVG(c,now){
         <circle cx="${x1+7}" cy="${MID+7.5}" r="1.8" fill="#666"/>
         <text x="${(x1+x2)/2}" y="${MID+3.5}" font-size="10" font-weight="600" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${c.chip}</text>
         <circle cx="${x2-6}" cy="${MID-7}" r="2.2" fill="${!S.power?'#555':pw?'#3DDC84':'#E5484D'}"/>`;}
-    else{const on=SIM.seg.get(id)||{},cx=(x1+x2)/2,cy=MID,col='#FF3B30';
-      s+=`<rect x="${x1}" y="${MID-32}" width="${x2-x1}" height="64" rx="3" fill="#1A1C1F" stroke="#000"/>`;
-      ph.forEach(p=>s+=`<circle cx="${p.x}" cy="${p.y}" r="2.2" fill="#555"/>`);
-      const T=cy-21,M=cy,B=cy+21,Lx=cx-12,Rx=cx+12,th=4.4;
-      const segs={a:[cx-9,T-th/2,18,th],g:[cx-9,M-th/2,18,th],d:[cx-9,B-th/2,18,th],f:[Lx-th/2,T+2.5,th,16],b:[Rx-th/2,T+2.5,th,16],e:[Lx-th/2,M+2.5,th,16],c:[Rx-th/2,M+2.5,th,16]};
+    else{/* 7세그먼트: 회색 몸통, 오른쪽으로 기운 획(a~g)과 소수점, 위아래로 나온 다리와 핀 번호·이름.
+            아래 1~5번 = e d COM c DP, 위 10~6번 = g f COM a b (표준 핀 배열) */
+      const on=SIM.seg.get(id)||{},cx=(x1+x2)/2,cy=MID,col='#FF3B30',h2=2.8,T=-20,B=20,XR=12.6;
+      ph.forEach((p,k)=>{const up=p.y<MID,nm=SEG7PINS[k]==='COM'?'com':SEG7PINS[k]==='dp'?'DP':SEG7PINS[k];
+        s+=`<rect x="${p.x-1.7}" y="${up?MID-45:MID+36}" width="3.4" height="9" rx="1" fill="#BFC3C8" stroke="#8D9298" stroke-width=".5"/><text x="${p.x}" y="${up?MID-47.5:MID+51.5}" font-size="6" font-weight="700" fill="#5B5F66" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${nm}</text>`;});
+      s+=`<rect x="${x1}" y="${MID-36}" width="${x2-x1}" height="72" rx="2.5" fill="#6A6D72" stroke="#B9812F" stroke-width="1"/>`;
+      ph.forEach((p,k)=>s+=`<text x="${p.x}" y="${p.y<MID?MID-28.5:MID+33.5}" font-size="6" font-weight="700" fill="#F1F1F1" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${k+1}</text>`);
+      const hz=y=>`M-9 ${y-h2}H9L${9+h2} ${y}L9 ${y+h2}H-9L${-9-h2} ${y}Z`,vt=(x,y0,y1)=>`M${x-h2} ${y0+h2}L${x} ${y0}L${x+h2} ${y0+h2}V${y1-h2}L${x} ${y1}L${x-h2} ${y1-h2}Z`;
+      const segs={a:[hz(T),0,T],g:[hz(0),0,0],d:[hz(B),0,B],f:[vt(-XR,T+.9,-.9),-XR,T/2],b:[vt(XR,T+.9,-.9),XR,T/2],e:[vt(-XR,.9,B-.9),-XR,B/2],c:[vt(XR,.9,B-.9),XR,B/2]};
+      s+=`<g transform="translate(${cx-3} ${cy+2}) skewX(-8)">`;
       const lit=Object.entries(segs).filter(([k])=>on[k]);
-      if(lit.length)s+=`<g filter="url(#glow)" opacity=".7">${lit.map(([k,r])=>`<rect x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" fill="${col}"/>`).join('')}</g>`;
-      for(const [k,r] of Object.entries(segs))s+=`<rect x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" rx="2" fill="${col}" fill-opacity="${on[k]?1:.1}"/>`;
-      s+=`<circle cx="${Rx+7}" cy="${B+1}" r="2.6" fill="${col}" fill-opacity="${on.dp?1:.1}"/><text x="${x1+4}" y="${MID-24}" font-size="7" fill="#888" font-family="var(--mono)">${c.ca?'CA':'CC'}</text>`;}
+      if(lit.length)s+=`<g filter="url(#glow)" opacity=".75">${lit.map(([k,r])=>`<path d="${r[0]}" fill="${col}"/>`).join('')}</g>`;
+      for(const [k,r] of Object.entries(segs))s+=`<path d="${r[0]}" fill="${on[k]?col:'#D0453A'}" fill-opacity="${on[k]?1:.34}" stroke="#3B3D41" stroke-width=".5" stroke-dasharray="1 1"/><text x="${r[1]}" y="${r[2]+1.7}" font-size="4.8" font-weight="700" fill="#fff" fill-opacity="${on[k]?1:.75}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${k}</text>`;
+      s+=`</g>`;
+      const dx=cx+22,dy=cy+22;if(on.dp)s+=`<circle cx="${dx}" cy="${dy}" r="5" fill="${col}" opacity=".7" filter="url(#glow)"/>`;
+      s+=`<circle cx="${dx}" cy="${dy}" r="3.2" fill="${on.dp?col:'#D0453A'}" fill-opacity="${on.dp?1:.34}"/><text x="${dx+1}" y="${dy-5.5}" font-size="4.6" font-weight="700" fill="#F1F1F1" text-anchor="middle" pointer-events="none">DP</text>
+        <text x="${x1+4}" y="${MID+3}" font-size="5.5" font-weight="700" fill="#DADADA" font-family="var(--mono)" pointer-events="none">${c.ca?'CA':'CC'}</text>`;}
     s+=`</g>`;
     if(isSel&&c.t==='ic'){const d=CHIPS[c.chip];ph.forEach((p,k)=>{const up=p.y<MID,ty=up?EY-11:FY+12,t=d.pins[k],ov=t[0]==='~',tx=ov?t.slice(1):t;
       s+=`<g pointer-events="none"><rect x="${p.x-9.5}" y="${ty-6}" width="19" height="9" rx="2" fill="#1F8FFF"/><text x="${p.x}" y="${ty+1}" text-anchor="middle" font-size="${tx.length>3?5.2:6.4}" font-weight="700" fill="#fff" font-family="var(--mono)"${ov?' text-decoration="overline"':''}>${esc(tx)}</text></g>`;});}
-    if(isSel)s+=`<rect class="selbox" x="${x1-4}" y="${(c.t==='ic'?EY:MID-32)-6}" width="${x2-x1+8}" height="${(c.t==='ic'?FY-EY:64)+12}" rx="4"/>`;
+    if(isSel)s+=`<rect class="selbox" x="${x1-4}" y="${(c.t==='ic'?EY:MID-48)-6}" width="${x2-x1+8}" height="${(c.t==='ic'?FY-EY:96)+12}" rx="4"/>`;
     return s;}
   return s;}
 function gateSVG(kind,ph,id,out,ghost){
@@ -1162,7 +1194,7 @@ function renderOverlay(){
    부품을 놓으려는 자리가 다른 부품과 겹치면 가장 가까운 빈자리를 찾아 준다. */
 /* 겹침 검사용 부품 몸통 사각형(px). 전선은 위로 지나가도 되므로 뺀다 */
 function bodyRect(c){if(c.t==='wire'||INST.has(c.t))return null;const ph=pinHoles(c).map(h=>HOLES.get(h));if(!ph.length||ph.some(h=>!h))return null;
-  if(c.t==='ic'||c.t==='seg7'){const n=ph.length,h=n/2,my=(ph[0].y+ph[n-1].y)/2,d=c.t==='ic'?26:32;return{x0:ph[0].x-9,x1:ph[h-1].x+9,y0:my-d,y1:my+d};}
+  if(c.t==='ic'||c.t==='seg7'){const n=ph.length,h=n/2,my=(ph[0].y+ph[n-1].y)/2,d=c.t==='ic'?26:40;return{x0:ph[0].x-9,x1:ph[h-1].x+9,y0:my-d,y1:my+d};}
   if(c.t==='gate'){const a=ph[0],y=ph[ph.length-1];return{x0:a.x-7,x1:y.x+7,y0:a.y-43,y1:a.y+4};}
   if(c.t==='clk'){const a=ph[0];return{x0:a.x-20,x1:a.x+20,y0:a.y-34,y1:a.y+4};}
   // 저항·LED처럼 다리 둘인 부품은 비스듬히 놓일 수 있어서, 두 다리를 잇는 선분(seg)으로 따로 검사한다
@@ -1330,6 +1362,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li>위쪽 부품 줄의 부품을 보드로 <b>끌어다 놓을</b> 수도 있어요. [파일로 부품 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
 <li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드는 가장자리나 가운데 홈을 끌거나, [보드 이동] 도구(M)로 아무 데나 끌면 꽂힌 부품과 함께 옮겨져요. 이름표를 누르면 종류 바꾸기·삭제 메뉴가 떠요. 보드끼리 전선으로 이어도 돼요.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
+<li><b>부품 고르기 창</b>: 부품 줄의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
 <li><b>계측기·전원</b>: 부품 줄의 [계측기·전원]에서 <b>파워 서플라이·건전지·함수 발생기·오실로스코프</b>를 고르고 놓을 자리를 누르면 그곳에 놓여요. 그다음 몸통의 <b>단자(동그라미)에서 구멍까지 끌면</b> 전선이 이어져요. 몸통은 끌어서 옮기고, 전압·파형·시간 눈금은 계측기를 누른 뒤 [속성]에서 바꿔요. 파워 서플라이나 건전지를 놓으면 보드의 자동 전원은 꺼지고, 그 전원이 전선으로 이어진 레일에만 전원이 들어가요.</li>
 <li>단축키: <kbd>V</kbd> 선택 <kbd>W</kbd> 전선 <kbd>R</kbd> 저항 <kbd>L</kbd> LED <kbd>B</kbd> 버튼 <kbd>S</kbd> 스위치 <kbd>C</kbd> 클럭 <kbd>E</kbd> 지우개 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 실행 취소/다시 실행</li>
 <li>IC를 선택하면 <b>데이터시트 기준 핀 배치도</b>가 나오고, 보드 위 다리에도 핀 이름이 표시돼요.</li>
@@ -1380,6 +1413,25 @@ function renderRibbon(){const q=$('search').value.trim().toLowerCase();
     b.addEventListener('dragstart',e=>{dnd=t;try{e.dataTransfer.setData('text/plain',t);e.dataTransfer.effectAllowed='copy';}catch(_){}});b.addEventListener('dragend',()=>{dnd=null;});});}
 $('ritems').addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){$('ritems').scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
 $('search').addEventListener('input',renderRibbon);
+/* ── 부품 고르기 창: 왼쪽에서 종류를 고르고 오른쪽에서 부품을 누른다 ── */
+const PCATS=[{k:'all',label:'전체'},...CATALOG.map(t=>({k:t.k,label:t.k==='basic'?'기본 부품':t.label,items:t.items.filter(it=>!['select','wire','erase'].includes(it.t[0]))}))];
+let pcat='all';
+function renderParts(){const q=$('partQ').value.trim().toLowerCase(),cats=PCATS.slice(1);
+  $('partCats').innerHTML=PCATS.map(c=>`<button role="tab" data-pc="${c.k}" aria-selected="${!q&&c.k===pcat}">${esc(c.label)}<span class="cnt">${c.k==='all'?cats.reduce((n,x)=>n+x.items.length,0):c.items.length}</span></button>`).join('');
+  $('partCats').querySelectorAll('[data-pc]').forEach(b=>b.onclick=()=>{pcat=b.dataset.pc;$('partQ').value='';renderParts();$('partGrid').scrollTop=0;});
+  const card=it=>`<button class="pcard" data-pt="${esc(it.t[0])}"><span class="ic">${it.ico}</span><span><b>${esc(it.t[1])}</b><small>${esc(it.t[2])}</small></span></button>`;
+  const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]).toLowerCase().includes(q);
+  const show=q?cats.map(c=>({...c,items:c.items.filter(hit)})):pcat==='all'?cats:cats.filter(c=>c.k===pcat);
+  const h=show.filter(c=>c.items.length).map(c=>(q||pcat==='all'?`<h4>${esc(c.label)}</h4>`:'')+c.items.map(card).join('')).join('');
+  $('partGrid').innerHTML=h||'<p class="desc" style="grid-column:1/-1">찾는 부품이 없어요. 이름 일부(예: 47, AND, 카운터)로 검색해 보세요.</p>';
+  $('partGrid').querySelectorAll('[data-pt]').forEach(b=>{const t=b.dataset.pt,pick=()=>{closeParts();setTool(t);const tab=CATALOG.find(x=>x.items.some(it=>it.t[0]===t));if(tab){rtab=tab.k;store.set('rtab',rtab);$('search').value='';renderRibbon();}};
+    b.onclick=()=>{pick();toast(`${toolName()} · 보드에서 놓을 자리를 누르세요`);};
+    b.ondblclick=()=>{pick();if(/^(ic:|gate:)/.test(t)||t==='seg7'||INST.has(t)){const r=svg.getBoundingClientRect();place(null,{x:view.x+r.width/2/view.s,y:view.y+r.height/2/view.s});}};});}
+function openParts(){closeMenu();$('partDlg').hidden=false;const tab=CATALOG.find(x=>x.k===rtab);if(tab&&pcat!=='all')pcat=rtab;$('partQ').value='';renderParts();if(matchMedia('(pointer:fine)').matches)$('partQ').focus();}
+function closeParts(){$('partDlg').hidden=true;}
+$('partOpen').onclick=openParts;$('partX').onclick=closeParts;$('partQ').addEventListener('input',renderParts);
+$('partDlg').addEventListener('pointerdown',e=>{if(e.target===$('partDlg'))closeParts();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('partDlg').hidden){e.stopImmediatePropagation();closeParts();}},true);
 document.querySelectorAll('.toolbar [data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
 $('bw').addEventListener('dragover',e=>{if(!dnd)return;e.preventDefault();try{e.dataTransfer.dropEffect='copy';}catch(_){}if(tool!==dnd)setTool(dnd);lastPt=svgPt(e);hover=nearHole(lastPt);renderOverlay();});
 $('bw').addEventListener('drop',e=>{if(!dnd)return;e.preventDefault();lastPt=svgPt(e);hover=nearHole(lastPt);const t=dnd;dnd=null;if(tool!==t)setTool(t);place(hover,lastPt);});
@@ -1797,7 +1849,7 @@ svg.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);if(panState){p
 svg.addEventListener('auxclick',e=>e.preventDefault());
 
 /* ───────── 키보드·상단 버튼 ───────── */
-document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||!$('impDlg').hidden)return;
+document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||!$('impDlg').hidden||!$('partDlg').hidden)return;
   if((e.ctrlKey||e.metaKey)&&(e.key.toLowerCase()==='y'||(e.shiftKey&&e.key.toLowerCase()==='z'))){e.preventDefault();redo();return;}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
   if(e.key===' '){e.preventDefault();spaceDown=true;svg.style.cursor='grab';return;}

@@ -22,6 +22,7 @@
 ✓ 계측기 구조 변경: 몸통 먼저 배치(`instGhost`) → 단자 구멍 `@k:i`(`syncTerms`, `termAt`, `isTerm`, `c.k`)에서 전선 연결. 예전 형식(`pins`=보드 구멍)은 `migrateInst`가 단자+전선으로 변환. 건전지 `bat` 추가(항상 켜진 전원)
 ✓ 길 따라 전선: `wireDrag.path`→`tracePts`(RDP→가로·세로 구간, `offRow`/`offCol`)→`declash`
 ✓ 터치 확대: touchstart/touchmove 직접 처리(`tpinch`), 사파리 gesture 이벤트 차단, 핀치 중 한 손가락 뗐을 때 NaN 버그 수정. 좁은 화면 도구 막대 한 줄 스크롤
+✓ 부품 고르기 창 `#partDlg`(`PCATS`, `renderParts`, `openParts`), 7세그먼트 새 모양(기운 획·핀 번호·이름, `compSVG`의 seg7 분기)
 ✓ 파일로 부품 배치: `openImport`→`parseSpec`(텍스트 목록)→`autoLayout`(full 보드, IC 홈, 2단자 e–f 걸침, 넷별 전선, IC 전원 핀 자동 레일)
 ✓ 예제 9개(`EXAMPLES`: nand, dff, counter, adder, gates, ls47, ls90, t555, sync10), 링크 해시 `#sync10` 등으로 바로 열림
 ✓ 자동차 관련 전부 삭제(`car1/`, `car2/`, 루트 `index.html` 문구) — 사용자 요청
