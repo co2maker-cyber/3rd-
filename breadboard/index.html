@@ -707,7 +707,7 @@ const INST=new Set(['psu','fg','osc']);
 const ISZ={psu:[170,92],fg:[180,92],osc:[250,200]};
 const IJACK={psu:[[20,16,'#E5484D','+'],[150,16,'#59606B','−',1]],fg:[[20,16,'#F08C00','OUT'],[160,16,'#59606B','GND',1]],osc:[[28,16,'#F2C230','CH1'],[78,16,'#35B6E8','CH2']]};
 const IDEF={psu:()=>({v:5,on:true}),fg:()=>({wave:'sq',hz:1,vpp:5}),osc:()=>({tdiv:.5,vdiv:2,run:true})};
-const PSU_V=[3.3,5,9,12],FG_HZ=[0.5,1,2,5,10],FG_VPP=[1,3.3,5],OSC_T=[.05,.1,.2,.5,1],OSC_V=[1,2,5];
+const PSU_V=[3.3,5,9,12,24,48,100],PSU_MAX=100,FG_HZ=[0.5,1,2,5,10],FG_VPP=[1,3.3,5],OSC_T=[.05,.1,.2,.5,1],OSC_V=[1,2,5,10,20,50];
 const WAVES={sq:'구형파',sin:'사인파',tri:'삼각파'};
 const instRect=c=>({x0:c.x,y0:c.y,x1:c.x+ISZ[c.t][0],y1:c.y+ISZ[c.t][1]});
 /* 함수 발생기의 지금 출력 전압(0 ~ Vpp) */
@@ -852,6 +852,8 @@ function settle(){
     const psShort=psus.some(c=>c.on!==false&&shortNets.has(netOf[ph.get(c.id)[0]]));
     if(psShort)W_.push(['bad','전원 단락! 파워 서플라이의 + 단자가 −(GND)나 다른 출력과 바로 이어져 있어요. 실제라면 서플라이가 전류 제한에 걸리거나 부품이 탈 수 있어요.']);
     if(psus.length&&!psus.some(c=>c.on!==false))W_.push(['warn','파워 서플라이의 출력이 꺼져 있어요. 서플라이를 누르고 [속성]에서 출력을 켜세요.']);
+    const hv=psus.filter(c=>c.on!==false&&+c.v>=50);
+    if(hv.length)W_.push(['warn',`파워 서플라이가 ${Math.max(...hv.map(c=>+c.v))}V예요. 50V가 넘는 직류는 실제로는 만지면 감전될 수 있어요. 브레드보드와 점퍼선도 이런 전압용이 아니에요.`]);
     const railShort=!psus.length&&RAILS.some(R_=>shortNets.has(netOf[R_.i]));
     if(psShort){}else if(railShort)W_.push(['bad','전원 단락! + 레일과 − 레일이 전선이나 스위치로 바로 이어져 있어요. 실제 회로라면 전원 장치가 꺼지거나 부품이 탈 수 있어요.']);
     else if(shortNets.size)W_.push(['bad','출력 충돌! 한 줄에 HIGH와 LOW가 동시에 들어오고 있어요(출력끼리 또는 출력과 전원이 바로 연결됨). 해당 전선은 자주색으로 깜박여요.']);
@@ -862,6 +864,17 @@ function settle(){
     if(c.t==='ic'&&S.power&&rt(c).pw&&!CHIPS[c.chip].free){const d=CHIPS[c.chip],v=srcV.get(netOf[hs[d.idx[d.vcc]]]);
       if(v>5.5)W_.push(['bad',`${LBL.get(c.id)} ${c.chip}에 ${v}V가 걸려 있어요. 이 칩은 5V용이라 실제로는 망가져요. 파워 서플라이를 5V로 맞추세요.`]);
       else if(v<4.5)W_.push(['warn',`${LBL.get(c.id)} ${c.chip}의 전원이 ${v}V예요. 5V보다 낮아서 실제로는 제대로 동작하지 않을 수 있어요.`]);}
+    if(c.t==='res'&&S.power){const na=netOf[hs[0]],nb=netOf[hs[1]];
+      if(na!==nb&&strong.has(na)&&strong.has(nb)){const va=vOf(na),vb=vOf(nb);if(va!=null&&vb!=null){const pw=(va-vb)*(va-vb)/c.ohms;
+        if(pw>.25)W_.push(['warn',`${LBL.get(c.id)} 저항(${ohmTx(c.ohms)})에 ${Math.abs(va-vb).toFixed(1)}V가 걸려 약 ${pw>=10?pw.toFixed(0):pw.toFixed(1)}W가 열로 나가요. 보통 쓰는 ¼W 저항은 실제로는 타 버려요.`]);}}}
+    // 켜진 LED에 흐르는 전류 어림: (전원 전압 − 약 2V) ÷ 직렬 저항. 30mA를 넘으면 실제로는 타 버린다
+    if(c.t==='led'&&S.power&&lvAt(hs[0])===Hh&&lvAt(hs[1])===L){
+      const side=(net,hi)=>{if(strong.has(net))return{v:vOf(net),r:0};let best=null;
+        for(const x of S.comps){if(x.t!=='res')continue;const [p,q]=ph.get(x.id).map(i=>netOf[i]),o=p===net?q:q===net?p:null;if(o==null||o===net||!strong.has(o))continue;
+          const v=vOf(o);if(v==null||(hi?v<2.5:v>2.5))continue;if(!best||x.ohms<best.r)best={v,r:x.ohms};}return best;};
+      const A=side(netOf[hs[0]],true),K=side(netOf[hs[1]],false);
+      if(A&&K&&A.r+K.r>0){const mA=(A.v-K.v-2)/(A.r+K.r)*1000;
+        if(mA>30)W_.push(['warn',`${LBL.get(c.id)} LED에 약 ${mA.toFixed(0)}mA가 흘러요(전원 ${A.v-K.v}V, 저항 ${ohmTx(A.r+K.r)}). 20mA 안팎이 한계라 실제로는 LED가 타요. 저항을 ${ohmTx(OHMS.find(o=>o>=(A.v-K.v-2)/.015)||1e6)} 이상으로 바꾸거나 전압을 낮추세요.`]);}}
     if(c.t==='led'){const a=lvAt(hs[0]),k=lvAt(hs[1]);const lit=a===Hh&&k===L;
       const noR=lit&&!weak.has(netOf[hs[0]])&&!weak.has(netOf[hs[1]]);
       SIM.led.set(c.id,{lit,noR,rev:a===L&&k===Hh});
@@ -1190,13 +1203,13 @@ function partDesc(c){return{
   sw:'누를 때마다 켜짐/꺼짐이 바뀌어요. 켜지면 양쪽이 이어져요.',
   cap:`${capTx(c.farad)} ${c.farad>=1e-6?'전해 커패시터 (극성 있음: + 극이 처음 누른 쪽)':'세라믹 커패시터'}. 저항과 함께 RC 시정수(τ = R·C)만큼 천천히 충·방전돼요. 555 타이머의 시간을 정할 때 써요.`,
   clk:'정해진 속도로 HIGH와 LOW를 번갈아 내보내요. 카운터나 플립플롭의 CLK 입력에 연결하세요.',
-  psu:'실험실의 직류 전원 장치예요. 빨간 선(+)을 + 레일에, 검은 선(−)을 − 레일에 꽂으면 그 줄에 전원이 들어가요. 서플라이를 하나라도 놓으면 보드의 자동 5V 전원은 꺼지니, 위·아래 레일을 모두 쓰려면 레일끼리 전선으로 이어 주세요. 74 계열 칩은 5V에 맞추세요.',
+  psu:'실험실의 직류 전원 장치예요. 전압은 0V부터 100V까지 맞출 수 있어요(3V 이상이면 디지털 회로는 HIGH로 읽어요). 빨간 선(+)을 + 레일에, 검은 선(−)을 − 레일에 꽂으면 그 줄에 전원이 들어가요. 서플라이를 하나라도 놓으면 보드의 자동 5V 전원은 꺼지니, 위·아래 레일을 모두 쓰려면 레일끼리 전선으로 이어 주세요. 74 계열 칩은 5V에 맞추세요.',
   fg:'구형파·사인파·삼각파를 0V에서 정한 전압(Vpp)까지 내보내요. 주황 선(OUT)을 신호를 넣을 곳에, 검은 선(GND)을 − 레일에 꽂으세요. 2.5V를 넘으면 디지털 회로는 HIGH로 읽어요.',
   osc:'두 곳의 전압이 시간에 따라 어떻게 바뀌는지 그려 줘요. 노란 탐침(CH1)과 하늘색 탐침(CH2)을 보고 싶은 구멍에 꽂으세요. 전압은 회로의 GND(−)를 기준으로 재요. 화면 왼쪽의 짧은 눈금이 각 채널의 0V 자리예요.',
   seg7:c.ca?'공통 애노드 7세그먼트예요. COM(3·8번 핀)을 + 에 연결하고, a~g 핀이 LOW면 해당 획이 켜져요. 74LS47·46 과 짝이에요.':'공통 캐소드 7세그먼트예요. COM(3·8번 핀)을 − 에 연결하고, a~g 핀이 HIGH면 해당 획이 켜져요. CD4511 과 짝이에요.'}[c.t];}
 const segBtns=(f,list,cur,tx)=>`<div class="seg" data-f="${f}">${list.map(v=>`<button data-v="${v}" aria-pressed="${cur===v}">${tx(v)}</button>`).join('')}</div>`;
 function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`;
-  if(c.t==='psu')return P('전압',segBtns('v',PSU_V,+c.v,v=>v+'V'))+P('출력',segBtns('on',[1,0],c.on===false?0:1,v=>v?'켜짐':'꺼짐'));
+  if(c.t==='psu')return P('전압 (0 ~ '+PSU_MAX+'V)',`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><input type="number" id="psuV" min="0" max="${PSU_MAX}" step="0.1" value="${+c.v}" aria-label="전압" style="width:86px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--fg);font:600 13px var(--mono)"><b>V</b><input type="range" id="psuR" min="0" max="${PSU_MAX}" step="0.5" value="${+c.v}" aria-label="전압 조절" style="flex:1;min-width:60px"></div>`+segBtns('v',PSU_V,+c.v,v=>v+'V'))+P('출력',segBtns('on',[1,0],c.on===false?0:1,v=>v?'켜짐':'꺼짐'));
   if(c.t==='fg')return P('파형',segBtns('wave',Object.keys(WAVES),c.wave,v=>WAVES[v]))+P('주파수',segBtns('hz',FG_HZ,+c.hz,v=>v+'Hz'))+P('크기 (0V ~ )',segBtns('vpp',FG_VPP,+c.vpp,v=>v+'V'));
   return P('시간 / 칸',segBtns('tdiv',OSC_T,+c.tdiv,v=>v<1?v*1000+'ms':v+'s'))+P('전압 / 칸',segBtns('vdiv',OSC_V,+c.vdiv,v=>v+'V'))+P('화면',segBtns('run',[1,0],c.run===false?0:1,v=>v?'실행':'정지')+' <button class="btn" id="oscClr" style="margin-top:6px">화면 지우기</button>');}
 function propEditor(c){
@@ -1213,7 +1226,9 @@ function propEditor(c){
 function bindProps(c){
   if(INST.has(c.t)){$('info').querySelectorAll('[data-f] button').forEach(b=>b.onclick=()=>{pushHist();const f=b.closest('[data-f]').dataset.f,v=b.dataset.v;
       if(f==='wave')c.wave=v;else if(f==='on'||f==='run')c[f]=v==='1';else c[f]=+v;commit(true);});
-    const cl=$('oscClr');if(cl)cl.onclick=()=>{rt(c).buf=[];render();};return;}
+    const cl=$('oscClr');if(cl)cl.onclick=()=>{rt(c).buf=[];render();};
+    const setV=x=>{const v=Math.max(0,Math.min(PSU_MAX,Math.round((+x||0)*10)/10));if(v===+c.v)return;pushHist();c.v=v;commit(true);};
+    const pv=$('psuV'),pr=$('psuR');if(pv)pv.onchange=()=>setV(pv.value);if(pr){pr.oninput=()=>{if(pv)pv.value=pr.value;};pr.onchange=()=>setV(pr.value);}return;}
   const pc=$('pc');if(!pc)return;
   if(c.t==='ic'){pc.onchange=()=>{pushHist();c.chip=pc.value;RT.delete(c.id);commit(true);};return;}
   pc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;
@@ -1313,7 +1328,7 @@ const gIco=k=>`<svg width="30" height="16" viewBox="20 -10 64 30">${gateSVG(k,(k
 /* 부품 리본: 분류 탭 + 가로 목록 */
 const CATALOG=(()=>{const fam=d=>d.name.startsWith('74LS')?1:d.name.startsWith('74HC')?0:2,sorted=Object.values(CHIPS).sort((a,b)=>(+chipNum(a.name)-+chipNum(b.name))||fam(a)-fam(b));
   const tabs=[{k:'basic',label:'도구·부품',items:[...TOOLS,...PARTS].map(t=>({t,ico:ICO[t[0]]}))},
-    {k:'inst',label:'계측기',items:[['psu','파워 서플라이','직류 전원 3.3 ~ 12V',''],['fg','함수 발생기','구형·사인·삼각파',''],['osc','오실로스코프','2채널 파형 보기','']].map(t=>({t,ico:ICO[t[0]]}))},
+    {k:'inst',label:'계측기',items:[['psu','파워 서플라이','직류 전원 0 ~ 100V',''],['fg','함수 발생기','구형·사인·삼각파',''],['osc','오실로스코프','2채널 파형 보기','']].map(t=>({t,ico:ICO[t[0]]}))},
     {k:'gates',label:'기본 게이트',items:Object.values(GATES).map(d=>({t:['gate:'+d.name,d.name,'Y = '+d.expr,''],ico:gIco(d.name)}))}];
   for(const [k,label] of CATS){const list=sorted.filter(d=>d.cat===k);if(list.length)tabs.push({k:'ic-'+k,label:'IC '+label,items:list.map(d=>({t:['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ico:ICO.ic}))});}
   return tabs;})();
