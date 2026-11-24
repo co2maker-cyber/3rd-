@@ -74,13 +74,16 @@ select.ex{height:30px;align-self:center;border:1px solid var(--line);background:
 .sitem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);flex-wrap:wrap}
 .sitem b{font-size:13.5px}.sitem small{color:var(--muted);font-size:11.5px}.sitem .sp{flex:1;min-width:0;display:flex;flex-direction:column}
 .sitem .btn.del{color:var(--bad)}
-.pbox{width:min(920px,100%);height:min(660px,calc(100dvh - 32px));overflow:hidden}
+.pbox{width:min(760px,100%);height:min(600px,calc(100dvh - 32px));overflow:hidden}
 .pbox .mhead b{flex:none;white-space:nowrap}.pbox .mhead .btn{flex:none;white-space:nowrap;margin-left:auto}.pbox .mhead .search{min-width:0}
-.pwrap{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:0;flex:1}
-.pcats{overflow:auto;border-right:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:2px}
-.pcats button{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;border:0;background:none;border-radius:6px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
-.pcats button:hover{background:var(--sunk);color:var(--fg)}
-.pcats button[aria-selected="true"]{background:var(--accent-soft);color:var(--fg);box-shadow:inset 3px 0 0 var(--accent)}
+.pwrap{display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;flex:1}
+.pcats{display:flex;align-items:center;gap:2px;padding:8px 12px;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;font-size:13px}
+.pcats button{border:0;background:none;border-radius:6px;padding:5px 8px;font-size:13px;font-weight:600;color:var(--accent);flex:none}
+.pcats button:hover{background:var(--accent-soft)}
+.pcats .pback{font-size:18px;line-height:1;padding:2px 10px 4px;color:var(--fg);border:1px solid var(--line);margin-right:6px}
+.pcats .sep{color:var(--muted);padding:0 2px}.pcats b{padding:5px 8px;font-weight:700}
+.pfold{min-height:58px}.pfold em{margin-left:auto;font:600 12px var(--mono);color:var(--muted);font-style:normal;flex:none}.pfold i{font-style:normal;color:var(--muted);font-size:18px;flex:none}
+.pfold small{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .pgrid{overflow:auto;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;align-content:start}
 .pgrid h4{grid-column:1/-1;margin:6px 0 0;font-size:12px;color:var(--muted);letter-spacing:.03em}
 .pcard{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 10px;min-width:0}
@@ -89,7 +92,7 @@ select.ex{height:30px;align-self:center;border:1px solid var(--line);background:
 .pcard span{min-width:0;display:flex;flex-direction:column}
 .pcard b{font:600 13px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard small{color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media (max-width:640px){.pbox .mhead{flex-wrap:wrap}.pbox .mhead .search{order:3;flex:1 0 100%!important;max-width:none!important}.pwrap{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}.pcats{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}.pcats button{flex:none}.pgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+@media (max-width:640px){.pbox .mhead{flex-wrap:wrap}.pbox .mhead .search{order:3;flex:1 0 100%!important;max-width:none!important}.pgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.pgrid.folds{grid-template-columns:minmax(0,1fr)}}
 .mbody{padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .drop{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .drop.on{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
@@ -455,8 +458,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 <div class="modal" id="partDlg" hidden role="dialog" aria-modal="true" aria-labelledby="partTitle">
   <div class="mbox pbox">
     <div class="mhead"><b id="partTitle">부품 고르기</b><input class="search" id="partQ" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색" style="margin:0;flex:1;max-width:320px"><button class="btn" id="partX">닫기</button></div>
-    <div class="pwrap"><nav class="pcats" id="partCats" aria-label="부품 종류"></nav><div class="pgrid" id="partGrid"></div></div>
-    <div class="mfoot" style="font-size:12px;color:var(--muted)">부품을 누르면 창이 닫히고, 보드에서 놓을 자리를 누르면 꽂혀요. 두 번 누르면 빈자리에 바로 놓여요.</div>
+    <div class="pwrap"><nav class="pcats" id="partCats" aria-label="지금 위치"></nav><div class="pgrid" id="partGrid"></div></div>
+    <div class="mfoot" style="font-size:12px;color:var(--muted)">종류를 눌러 들어가고, ‹ 로 한 단계 나와요. 부품을 누르면 창이 닫히고 보드에서 놓을 자리를 누르면 꽂혀요(두 번 누르면 빈자리에 바로).</div>
   </div>
 </div>
 <div class="modal" id="impDlg" hidden role="dialog" aria-modal="true" aria-labelledby="impTitle">
@@ -761,10 +764,148 @@ def({name:'NE555',title:'타이머 (비안정·단안정)',ttl:true,is555:true,p
   eval(g,st,va){const rs=g('~RESET'),vc=va?va('CTRL'):null,vs=va?va('VCC'):null,vth=vc==null?(vs==null?5:vs)*2/3:vc,vtr=vth/2,tr=va?va('TRIG'):null,th=va?va('THRES'):null;
     if(rs===L)st.q=L;else if(tr!=null&&tr<vtr)st.q=Hh;else if(th!=null&&th>vth)st.q=L;
     return{OUT:st.q,DISCH:st.q===Hh?Z:L};}});
+/* ───────── 74 시리즈 추가분 ───────── */
+// 같은 핀 배치의 CMOS(74HC) 판: TTL 설명 꼬리를 떼고, 떠 있는 입력은 X로 읽는다
+function hcClone(ls,hc,extra){const h=CHIPS[ls];def(Object.assign({},h,{name:hc,ttl:false,outs:[...h.outs],roles:Object.assign({},h.roles),desc:h.desc.replace(TTLN,'')},extra||{}));}
+const OC=v=>v===L?L:v===Hh?Z:X;   // 오픈 컬렉터: LOW로 끌어내리거나, 손을 놓는다(Z)
+const OCN=' 출력이 오픈 컬렉터라 HIGH를 내지 못하고 연결이 끊겨요. 출력에서 + 쪽으로 풀업 저항(예: 1kΩ~10kΩ)을 달아야 HIGH가 보여요.';
+const G2=[1,2,3,4].map(n=>({ins:[n+'A',n+'B'],out:n+'Y'})),G6=[1,2,3,4,5,6].map(n=>({ins:[n+'A'],out:n+'Y'}));
+function ocGate(name,title,kind,fn,pins,gates,say){def({name,title,kind,pins,ttl:true,outs:gates.map(t=>t.out),gates,fn,desc:say+OCN+TTLN,
+  eval(g){const o={};for(const t of this.gates)o[t.out]=OC(fn(...t.ins.map(g)));return o;}});}
+ocGate('74LS03','NAND 게이트 ×4 (오픈 컬렉터)','NAND',(a,b)=>NOT(AND(a,b)),STD,G2,'2입력 NAND 4개. 두 입력이 모두 HIGH일 때만 출력이 LOW로 내려가요.');
+ocGate('74LS05','NOT 게이트 ×6 (오픈 컬렉터)','NOT',NOT,INV,G6,'인버터 6개. 입력이 HIGH면 출력이 LOW로 내려가요.');
+ocGate('74LS07','버퍼 ×6 (오픈 컬렉터)','BUF',a=>a,INV,G6,'뒤집지 않는 버퍼 6개. 입력이 LOW면 출력도 LOW로 내려가요. 다른 전압의 회로를 움직이거나 LED를 켤 때 써요.');
+ocGate('74LS09','AND 게이트 ×4 (오픈 컬렉터)','AND',AND,STD,G2,'2입력 AND 4개. 입력 중 하나라도 LOW면 출력이 LOW로 내려가요.');
+lsClone('74HC00','74LS132',{title:'NAND 게이트 ×4 (슈미트 트리거)',desc:'2입력 NAND 4개. 논리 동작은 74LS00과 같고, 입력이 슈미트 트리거라 천천히 바뀌거나 흔들리는 신호도 깔끔하게 받아요.'+TTLN});
+hcClone('74LS132','74HC132');
+['10','11','20','21','27','30','14','125','112','164','175','139','151','153','157','85','192','193'].forEach(n=>hcClone('74LS'+n,'74HC'+n));
+function bufQuad(name,ttl,act){def({name,title:'3상태 버퍼 ×4 (허용 HIGH)',ttl,pins:['1C','1A','1Y','2C','2A','2Y','GND','3Y','3A','3C','4Y','4A','4C','VCC'],outs:['1Y','2Y','3Y','4Y'],
+  desc:'74125와 같은 자리에 핀이 있지만 허용 입력 C가 반대예요. C가 HIGH면 Y = A, LOW면 출력이 끊겨요(High-Z).'+(ttl?TTLN:''),
+  roles:{'1C':'출력 허용 (HIGH)','2C':'출력 허용 (HIGH)','3C':'출력 허용 (HIGH)','4C':'출력 허용 (HIGH)'},
+  eval(g){const o={};for(const n of [1,2,3,4]){const c=g(n+'C');o[n+'Y']=c===Hh?g(n+'A'):c===L?Z:X;}return o;}});}
+bufQuad('74LS126',true);bufQuad('74HC126',false);
+/* JK 플립플롭 */
+def({name:'74LS73',title:'JK 플립플롭 ×2 (클리어, 하강 에지)',ttl:true,pins:['1CLK','~1CLR','1K','VCC','2CLK','~2CLR','2J','~2Q','2Q','2K','GND','1Q','~1Q','1J'],outs:['1Q','~1Q','2Q','~2Q'],
+  desc:'클럭이 HIGH→LOW로 떨어질 때 J·K를 보고 움직여요: 00 그대로, 01 Q=0, 10 Q=1, 11 뒤집기. 프리셋은 없고 CLR̅가 LOW면 Q=0이에요. 전원 핀이 4번(VCC)·11번(GND)으로 특이하니 주의하세요.'+TTLN,
+  roles:{'1CLK':'클럭 (하강 에지)','2CLK':'클럭 (하강 에지)','~1CLR':'클리어 (LOW면 Q=0)','~2CLR':'클리어 (LOW면 Q=0)'},
+  init:()=>({q1:L,q2:L,p1:X,p2:X}),
+  eval(g,st){return CHIPS['74LS112'].eval.call(this,nm=>/PRE/.test(nm)?Hh:g(nm),st);}});
+hcClone('74LS73','74HC73');
+def({name:'74LS109',title:'JK̅ 플립플롭 ×2 (상승 에지)',ttl:true,pins:['~1CLR','1J','~1K','1CLK','~1PRE','1Q','~1Q','GND','~2Q','2Q','~2PRE','2CLK','~2K','2J','~2CLR','VCC'],outs:['1Q','~1Q','2Q','~2Q'],
+  desc:'클럭이 LOW→HIGH로 오를 때 J와 K̅를 보고 움직여요: J=0·K̅=0 이면 Q=0, J=1·K̅=1 이면 Q=1, J=0·K̅=1 그대로, J=1·K̅=0 뒤집기. J와 K̅를 묶으면 D 플립플롭처럼 쓸 수 있어요.'+TTLN,
+  roles:{'1CLK':'클럭 (상승 에지)','2CLK':'클럭 (상승 에지)','~1K':'K̅ 입력 (반전)','~2K':'K̅ 입력 (반전)','~1PRE':'프리셋 (LOW면 Q=1)','~2PRE':'프리셋 (LOW면 Q=1)','~1CLR':'클리어 (LOW면 Q=0)','~2CLR':'클리어 (LOW면 Q=0)'},
+  init:()=>({q1:L,q2:L,p1:X,p2:X}),
+  eval(g,st){const o={};for(const n of [1,2]){const clr=g('~'+n+'CLR'),pre=g('~'+n+'PRE'),clk=g(n+'CLK'),j=g(n+'J'),k=NOT(g('~'+n+'K'));let q=st['q'+n];
+    const rise=st['p'+n]===L&&clk===Hh;st['p'+n]=clk;
+    if(clr===L&&pre===L){o[n+'Q']=Hh;o['~'+n+'Q']=Hh;continue;}
+    if(clr===L&&pre===Hh)q=L;else if(pre===L&&clr===Hh)q=Hh;else if(clr!==Hh||pre!==Hh)q=X;
+    else if(rise){if(j===X||k===X)q=X;else if(j&&k)q=NOT(q);else if(j)q=Hh;else if(k)q=L;}
+    st['q'+n]=q;o[n+'Q']=q;o['~'+n+'Q']=NOT(q);}return o;}});
+hcClone('74LS109','74HC109');
+/* 8비트 래치·플립플롭 (20핀) */
+const P8=(c11,one)=>[one,'1Q','1D','2D','2Q','3Q','3D','4D','4Q','GND',c11,'5Q','5D','6D','6Q','7Q','7D','8D','8Q','VCC'];
+const Q8=[1,2,3,4,5,6,7,8].map(n=>n+'Q');
+function oct(name,ttl,kind){const t=TTLN,tt=ttl?t:'';
+  if(kind==='273')def({name,title:'D 플립플롭 ×8 (클리어)',ttl,pins:P8('CLK','~CLR'),outs:Q8,desc:'클럭이 오르는 순간 8개의 D를 한꺼번에 Q에 저장해요. CLR̅가 LOW면 모두 0.'+tt,
+    roles:{CLK:'클럭 (상승 에지)','~CLR':'초기화 (LOW면 0)'},init:()=>({q:Array(8).fill(L),p:X}),
+    eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const clr=g('~CLR');
+      if(clr===L)st.q.fill(L);else if(clr===X)st.q.fill(X);else if(rise)st.q=Q8.map((_,i)=>g((i+1)+'D'));const o={};st.q.forEach((v,i)=>o[(i+1)+'Q']=v);return o;}});
+  if(kind==='374')def({name,title:'D 플립플롭 ×8 (3상태 출력)',ttl,pins:P8('CLK','~OE'),outs:Q8,desc:'클럭이 오르는 순간 8개의 D를 Q에 저장해요. OE̅가 HIGH면 출력만 끊기고(High-Z) 저장은 계속돼요. 데이터 버스에 붙일 때 써요.'+tt,
+    roles:{CLK:'클럭 (상승 에지)','~OE':'출력 허용 (LOW)'},init:()=>({q:Array(8).fill(L),p:X}),
+    eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;if(rise)st.q=Q8.map((_,i)=>g((i+1)+'D'));const oe=g('~OE'),o={};st.q.forEach((v,i)=>o[(i+1)+'Q']=oe===L?v:oe===Hh?Z:X);return o;}});
+  if(kind==='373')def({name,title:'D 래치 ×8 (3상태 출력)',ttl,pins:P8('LE','~OE'),outs:Q8,desc:'LE가 HIGH인 동안 Q가 D를 그대로 따라가고, LE가 LOW로 내려가는 순간의 값을 붙잡아요. OE̅가 HIGH면 출력이 끊겨요(High-Z).'+tt,
+    roles:{LE:'래치 허용 (HIGH면 통과)','~OE':'출력 허용 (LOW)'},init:()=>({q:Array(8).fill(L)}),
+    eval(g,st){const le=g('LE');if(le===Hh)st.q=Q8.map((_,i)=>g((i+1)+'D'));else if(le===X)st.q=st.q.map((v,i)=>v===g((i+1)+'D')?v:X);const oe=g('~OE'),o={};st.q.forEach((v,i)=>o[(i+1)+'Q']=oe===L?v:oe===Hh?Z:X);return o;}});}
+for(const k of ['273','373','374']){oct('74LS'+k,true,k);oct('74HC'+k,false,k);}
+/* 시프트 레지스터 */
+def({name:'74HC595',title:'8비트 시프트 레지스터 (출력 래치·3상태)',pins:['QB','QC','QD','QE','QF','QG','QH','GND',"QH'",'~SRCLR','SRCLK','RCLK','~OE','SER','QA','VCC'],
+  outs:['QA','QB','QC','QD','QE','QF','QG','QH',"QH'"],
+  desc:"SRCLK가 오를 때마다 SER 값이 안쪽 레지스터로 한 칸씩 밀려 들어가고, RCLK가 오르면 그 내용이 QA~QH 출력으로 한꺼번에 옮겨져요. 선 3개로 출력 8개를 움직일 때 많이 써요. QH'는 다음 칩의 SER에 이어 붙이는 꼬리 출력이에요. SRCLR̅가 LOW면 안쪽 레지스터가 0, OE̅가 HIGH면 QA~QH가 끊겨요.",
+  roles:{SER:'직렬 데이터 입력',SRCLK:'시프트 클럭 (상승 에지)',RCLK:'출력 래치 클럭 (상승 에지)','~SRCLR':'시프트 레지스터 초기화 (LOW면 0)','~OE':'출력 허용 (LOW)',"QH'":'직렬 꼬리 출력 (다음 칩 SER로)'},
+  init:()=>({sr:Array(8).fill(L),out:Array(8).fill(L),ps:X,pr:X}),
+  eval(g,st){const sc=g('SRCLK'),rc=g('RCLK'),rs=st.ps===L&&sc===Hh,rr=st.pr===L&&rc===Hh;st.ps=sc;st.pr=rc;
+    if(rr)st.out=st.sr.slice();                       // 래치는 밀리기 전 값을 받는다(두 클럭이 함께 오르면 한 칸 늦음)
+    const clr=g('~SRCLR');if(clr===L)st.sr.fill(L);else if(clr===X)st.sr.fill(X);else if(rs){st.sr.pop();st.sr.unshift(g('SER'));}
+    const oe=g('~OE'),o={};'ABCDEFGH'.split('').forEach((c,i)=>o['Q'+c]=oe===L?st.out[i]:oe===Hh?Z:X);o["QH'"]=st.sr[7];return o;}});
+hcClone('74HC595','74LS595',{ttl:true,desc:CHIPS['74HC595'].desc+TTLN});
+def({name:'74LS165',title:'8비트 병렬입력·직렬출력 시프트 레지스터',ttl:true,pins:['SH/~LD','CLK','E','F','G','H','~QH','GND','QH','SER','A','B','C','D','INH','VCC'],outs:['QH','~QH'],
+  desc:'SH/LD̅를 LOW로 두면 A~H 8개 값을 한꺼번에 불러오고, HIGH로 올린 뒤 클럭이 오를 때마다 한 칸씩 밀어 QH로 하나씩 내보내요(A가 들어간 값이 마지막에 나와요). 빈자리에는 SER 값이 들어가요. INH가 HIGH면 클럭을 무시해요.'+TTLN,
+  roles:{'SH/~LD':'밀기(HIGH) / 불러오기(LOW)',CLK:'클럭 (상승 에지)',INH:'클럭 막기 (HIGH면 멈춤)',SER:'직렬 입력',QH:'직렬 출력','~QH':'직렬 출력 반전'},
+  init:()=>({q:Array(8).fill(L),p:X}),
+  eval(g,st){const ck=OR(g('CLK'),g('INH')),rise=st.p===L&&ck===Hh;st.p=ck;const ld=g('SH/~LD');
+    if(ld===L)st.q='ABCDEFGH'.split('').map(g);else if(ld===X)st.q.fill(X);else if(rise){st.q.pop();st.q.unshift(g('SER'));}
+    return{QH:st.q[7],'~QH':NOT(st.q[7])};}});
+hcClone('74LS165','74HC165');
+def({name:'74LS194',title:'4비트 양방향 시프트 레지스터',ttl:true,pins:['~CLR','SR','A','B','C','D','SL','GND','S0','S1','CLK','QD','QC','QB','QA','VCC'],outs:['QA','QB','QC','QD'],
+  desc:'S1·S0로 할 일을 골라요: 00 그대로, 01 오른쪽으로 밀기(QA←SR), 10 왼쪽으로 밀기(QD←SL), 11 A~D 불러오기. 모두 클럭이 오를 때 일어나요. CLR̅가 LOW면 바로 0.'+TTLN,
+  roles:{'~CLR':'초기화 (LOW면 0)',SR:'오른쪽 밀기 입력 (→QA)',SL:'왼쪽 밀기 입력 (→QD)',S0:'동작 선택 비트0',S1:'동작 선택 비트1',CLK:'클럭 (상승 에지)'},
+  init:()=>({q:[L,L,L,L],p:X}),
+  eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const clr=g('~CLR');
+    if(clr===L)st.q=[L,L,L,L];else if(clr===X)st.q=[X,X,X,X];
+    else if(rise){const m=[g('S0'),g('S1')];if(anyX(m))st.q=[X,X,X,X];else{const q=st.q,k=toNum(m);
+      st.q=k===0?q:k===1?[g('SR'),q[0],q[1],q[2]]:k===2?[q[1],q[2],q[3],g('SL')]:['A','B','C','D'].map(g);}}
+    return{QA:st.q[0],QB:st.q[1],QC:st.q[2],QD:st.q[3]};}});
+hcClone('74LS194','74HC194');
+/* 카운터 */
+function cnt163(name,ttl){const b=CHIPS['74HC161'];def({name,title:'4비트 2진 카운터 (동기 클리어)',ttl,pins:b.pins.slice(),outs:[...b.outs],roles:Object.assign({},b.roles,{'~CLR':'초기화 (LOW이고 클럭이 오를 때 0000)'}),
+  desc:'74161과 핀·동작이 같지만, CLR̅가 LOW여도 바로 지우지 않고 다음 클럭이 오를 때 0000으로 만들어요. 그래서 출력에 잠깐 튀는 값(글리치) 없이 원하는 수에서 되돌릴 수 있어요.'+(ttl?TTLN:''),
+  init:()=>({n:0,p:X}),
+  eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const ent=g('ENT');
+    if(rise){const clr=g('~CLR'),ld=g('~LOAD');
+      if(clr===L)st.n=0;else if(clr===X)st.n=-1;
+      else if(ld===L){const d=['A','B','C','D'].map(g);st.n=anyX(d)?-1:toNum(d);}
+      else if(ld===X)st.n=-1;
+      else{const en=AND(g('ENP'),ent);if(en===Hh)st.n=st.n<0?-1:(st.n+1)&15;else if(en===X)st.n=-1;}}
+    const bt=k=>st.n<0?X:(st.n>>k)&1;return{QA:bt(0),QB:bt(1),QC:bt(2),QD:bt(3),RCO:AND(ent,st.n<0?X:(st.n===15?Hh:L))};}});}
+cnt163('74HC163',false);cnt163('74LS163',true);
+function c393(name,ttl){def({name,title:'4비트 2진 카운터 ×2 (리플)',ttl,pins:['1A','1CLR','1QA','1QB','1QC','1QD','GND','2QD','2QC','2QB','2QA','2CLR','2A','VCC'],outs:['1QA','1QB','1QC','1QD','2QA','2QB','2QC','2QD'],
+  desc:'카운터 2개가 들어 있어요. 각 A 입력이 HIGH→LOW로 떨어질 때마다 QD QC QB QA가 1씩 늘어요(0~15). CLR은 HIGH일 때 0으로 만드니 쓸 때는 − 에 연결하세요. 1QD를 2A에 이으면 8비트(0~255) 카운터가 돼요.'+(ttl?TTLN:''),
+  roles:{'1A':'클럭 (하강 에지)','2A':'클럭 (하강 에지)','1CLR':'초기화 (HIGH면 0)','2CLR':'초기화 (HIGH면 0)'},
+  init:()=>({n:[0,0],p:[X,X]}),
+  eval(g,st){const o={};for(const k of [0,1]){const n=k+1,ck=g(n+'A'),fall=st.p[k]===Hh&&ck===L;st.p[k]=ck;const clr=g(n+'CLR');
+      if(clr===Hh)st.n[k]=0;else if(clr===X)st.n[k]=-1;else if(fall&&st.n[k]>=0)st.n[k]=(st.n[k]+1)&15;
+      'ABCD'.split('').forEach((c,i)=>o[n+'Q'+c]=st.n[k]<0?X:(st.n[k]>>i)&1);}return o;}});}
+c393('74LS393',true);c393('74HC393',false);
+/* 디코더·인코더 */
+function d42(name,ttl){const Y=[0,1,2,3,4,5,6,7,8,9].map(k=>'~'+k);def({name,title:'BCD→10진 디코더',ttl,pins:['~0','~1','~2','~3','~4','~5','~6','GND','~7','~8','~9','D','C','B','A','VCC'],outs:Y,
+  desc:'4비트 숫자 D C B A(0~9)에 해당하는 출력 하나만 LOW가 돼요. 10~15가 들어오면 출력이 모두 HIGH예요. LED 10개로 숫자 위치를 보여 줄 때 좋아요.'+(ttl?TTLN:''),
+  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)'},
+  eval(g){const s=['A','B','C','D'].map(g),o={};Y.forEach((y,k)=>o[y]=anyX(s)?X:toNum(s)===k?L:Hh);return o;}});}
+d42('74LS42',true);d42('74HC42',false);
+function e148(name,ttl){def({name,title:'8→3 우선순위 인코더',ttl,pins:['~4','~5','~6','~7','~EI','~A2','~A1','GND','~A0','~0','~1','~2','~3','~GS','~EO','VCC'],outs:['~A2','~A1','~A0','~GS','~EO'],
+  desc:'입력 0~7 가운데 LOW인 것들 중 가장 큰 번호를 골라 A2 A1 A0로 알려 줘요. 입력과 출력이 모두 LOW가 켜짐이라, 출력은 번호를 뒤집은 값이에요(7이면 000). GS̅는 눌린 입력이 있을 때 LOW, EO̅는 아무것도 없을 때 LOW예요. EI̅를 LOW로 둬야 동작해요.'+(ttl?TTLN:''),
+  roles:{'~EI':'허용 입력 (LOW)','~EO':'허용 출력 (입력이 하나도 없으면 LOW)','~GS':'입력 있음 (LOW)','~A0':'번호 비트0 (반전)','~A1':'번호 비트1 (반전)','~A2':'번호 비트2 (반전)'},
+  eval(g){const ei=g('~EI'),I=[0,1,2,3,4,5,6,7].map(k=>g('~'+k)),all=v=>({'~A2':v,'~A1':v,'~A0':v,'~GS':v,'~EO':v});
+    if(ei===Hh)return all(Hh);if(ei===X)return all(X);
+    for(let k=7;k>=0;k--){if(I[k]===L)return{'~A2':NOT((k>>2)&1),'~A1':NOT((k>>1)&1),'~A0':NOT(k&1),'~GS':L,'~EO':Hh};if(I[k]===X)return all(X);}
+    return{'~A2':Hh,'~A1':Hh,'~A0':Hh,'~GS':Hh,'~EO':L};}});}
+e148('74LS148',true);e148('74HC148',false);
+function m158(name,ttl){const b=CHIPS['74LS157'];def({name,title:'2→1 멀티플렉서 ×4 (반전 출력)',ttl,pins:b.pins.slice(),outs:[...b.outs],roles:Object.assign({},b.roles),
+  desc:'74157과 같지만 출력이 뒤집혀 나와요. S가 LOW면 A의 반대, HIGH면 B의 반대를 Y로 내보내요. G̅가 HIGH면 Y가 모두 1이에요.'+(ttl?TTLN:''),
+  eval(g){const sl=g('S'),en=g('~G'),o={};for(const n of [1,2,3,4])o[n+'Y']=en===Hh?Hh:(en===X||sl===X)?X:NOT(g(n+(sl?'B':'A')));return o;}});}
+m158('74LS158',true);m158('74HC158',false);
+/* 연산·비교 */
+def({name:'74LS83',title:'4비트 가산기 (구형 핀 배치)',ttl:true,pins:['A4','S3','A3','B3','VCC','S2','B2','A2','S1','A1','B1','GND','C0','C4','S4','B4'],outs:['S1','S2','S3','S4','C4'],
+  desc:'74LS283과 하는 일은 같지만(A + B + C0 → S, C4) 핀 자리가 달라요. VCC가 5번, GND가 12번이니 전원 연결에 주의하세요.'+TTLN,roles:{C0:'올림 입력',C4:'올림 출력'},
+  eval(g){return CHIPS['74HC283'].eval.call(this,g);}});
+function c688(name,ttl){def({name,title:'8비트 같음 비교기',ttl,pins:['~G','P0','Q0','P1','Q1','P2','Q2','P3','Q3','GND','P4','Q4','P5','Q5','P6','Q6','P7','Q7','~P=Q','VCC'],outs:['~P=Q'],
+  desc:'8비트 수 P와 Q가 똑같으면 출력 P=Q̅가 LOW가 돼요. G̅를 LOW로 둬야 동작하고, HIGH면 출력은 늘 HIGH예요. 주소 비교에 많이 써요.'+(ttl?TTLN:''),
+  roles:{'~G':'허용 (LOW)','~P=Q':'같으면 LOW'},
+  eval(g){const en=g('~G');if(en===Hh)return{'~P=Q':Hh};let eq=Hh;for(let k=0;k<8;k++){const a=g('P'+k),b=g('Q'+k);if(a===X||b===X){if(eq===Hh)eq=X;}else if(a!==b)eq=L;}
+    if(eq===L)return{'~P=Q':Hh};if(en===X||eq===X)return{'~P=Q':X};return{'~P=Q':L};}});}
+c688('74LS688',true);c688('74HC688',false);
+/* 8비트 버퍼 (20핀) */
+const P244=['~1G','1A1','2Y4','1A2','2Y3','1A3','2Y2','1A4','2Y1','GND','2A1','1Y4','2A2','1Y3','2A3','1Y2','2A4','1Y1','~2G','VCC'];
+function b244(name,ttl,inv){def({name,title:inv?'3상태 반전 버퍼 ×8':'3상태 버퍼 ×8',ttl,pins:P244.slice(),outs:P244.filter(p=>/Y/.test(p)),
+  desc:`버퍼 4개씩 두 묶음이에요. 묶음마다 G̅가 LOW면 Y = ${inv?'A의 반대':'A'}, HIGH면 출력이 끊겨요(High-Z). 데이터 버스를 끊었다 이었다 할 때 써요.`+(ttl?TTLN:''),
+  roles:{'~1G':'1묶음 출력 허용 (LOW)','~2G':'2묶음 출력 허용 (LOW)'},
+  eval(g){const o={};for(const n of [1,2]){const en=g('~'+n+'G');for(let k=1;k<=4;k++){const a=g(n+'A'+k);o[n+'Y'+k]=en===Hh?Z:en===X?X:inv?NOT(a):a;}}return o;}});}
+b244('74LS244',true,false);b244('74HC244',false,false);b244('74LS240',true,true);b244('74HC240',false,true);
 /* 분류 */
-const CATS=[['timer','타이머'],['gate','게이트'],['ff','플립플롭·래치·시프트'],['cnt','카운터'],['mux','디코더·멀티플렉서'],['math','연산·비교'],['buf','버퍼'],['disp','7세그먼트 디코더']];
+const CATS=[['gate','게이트'],['ff','플립플롭·래치'],['shift','시프트 레지스터'],['cnt','카운터'],['mux','디코더·인코더·멀티플렉서'],['math','연산·비교'],['buf','버퍼'],['disp','7세그먼트 디코더'],['timer','타이머']];
 const CATMAP={'00':'gate','02':'gate','04':'gate','08':'gate','10':'gate','11':'gate','14':'gate','20':'gate','21':'gate','27':'gate','30':'gate','32':'gate','86':'gate',
-  '74':'ff','75':'ff','76':'ff','112':'ff','164':'ff','175':'ff','90':'cnt','93':'cnt','161':'cnt','192':'cnt','193':'cnt','138':'mux','139':'mux','151':'mux','153':'mux','157':'mux',
+  '03':'gate','05':'gate','09':'gate','132':'gate','07':'buf','126':'buf','240':'buf','244':'buf',
+  '74':'ff','75':'ff','76':'ff','112':'ff','175':'ff','73':'ff','109':'ff','273':'ff','373':'ff','374':'ff','164':'shift','165':'shift','194':'shift','595':'shift','163':'cnt','393':'cnt','42':'mux','148':'mux','158':'mux','83':'math','688':'math','90':'cnt','93':'cnt','161':'cnt','192':'cnt','193':'cnt','138':'mux','139':'mux','151':'mux','153':'mux','157':'mux',
   '283':'math','85':'math','125':'buf','4511':'disp','47':'disp','46':'disp','48':'disp','NE555':'timer'};
 const chipNum=n=>n.replace(/^(74HC|74LS|CD|NE)/,'');
 Object.values(CHIPS).forEach(d=>d.cat=CATMAP[chipNum(d.name)]||CATMAP[d.name]||'gate');
@@ -1556,21 +1697,38 @@ function renderRibbon(){const q=$('search').value.trim().toLowerCase();
     b.addEventListener('dragstart',e=>{dnd=t;try{e.dataTransfer.setData('text/plain',t);e.dataTransfer.effectAllowed='copy';}catch(_){}});b.addEventListener('dragend',()=>{dnd=null;});});}
 $('ritems').addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){$('ritems').scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
 $('search').addEventListener('input',renderRibbon);
-/* ── 부품 고르기 창: 왼쪽에서 종류를 고르고 오른쪽에서 부품을 누른다 ── */
-const PCATS=[{k:'all',label:'전체'},...CATALOG.map(t=>({k:t.k,label:t.k==='basic'?'기본 부품':t.label,items:t.items.filter(it=>!['select','wire','erase'].includes(it.t[0]))}))];
-let pcat='all';
-function renderParts(){const q=$('partQ').value.trim().toLowerCase(),cats=PCATS.slice(1);
-  $('partCats').innerHTML=PCATS.map(c=>`<button role="tab" data-pc="${c.k}" aria-selected="${!q&&c.k===pcat}">${esc(c.label)}<span class="cnt">${c.k==='all'?cats.reduce((n,x)=>n+x.items.length,0):c.items.length}</span></button>`).join('');
-  $('partCats').querySelectorAll('[data-pc]').forEach(b=>b.onclick=()=>{pcat=b.dataset.pc;$('partQ').value='';renderParts();$('partGrid').scrollTop=0;});
+/* ── 부품 고르기 창: 한 화면에서 차례로 들어간다 (부품 → IC → IC 종류 → 칩). 위쪽 ‹ 나 경로를 눌러 나온다 ── */
+const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','wire','erase'].includes(it.t[0]);
+  const ics=CATALOG.filter(t=>t.k.startsWith('ic-')).map(t=>({k:t.k,label:t.label.replace(/^IC /,''),items:t.items,ico:ICO.ic,
+    sub:t.items.slice(0,3).map(it=>it.t[1]).join(' · ')+(t.items.length>3?' …':'')}));
+  return[{k:'basic',label:'기본 부품',sub:'저항 · LED · 스위치 · 버튼 · 클럭 · 커패시터 · 7세그먼트',items:tab('basic').items.filter(noTool)},
+    {k:'inst',label:'계측기 · 전원',sub:'파워 서플라이 · 건전지 · 함수 발생기 · 오실로스코프',items:tab('inst').items},
+    {k:'gates',label:'기본 게이트',sub:'전원 연결 없이 쓰는 연습용 AND · OR · NOT …',items:tab('gates').items},
+    {k:'ic',label:'IC',sub:'74HC · 74LS 시리즈, CD4511, NE555 — 종류별로 골라요',kids:ics,ico:ICO.ic}];})();
+let pnav=[];
+function pnode(path){let list=PTREE,node=null;for(const k of path){node=list.find(n=>n.k===k);if(!node)return null;list=node.kids||[];}return node;}
+const pcount=n=>n.items?n.items.length:n.kids.reduce((a,c)=>a+pcount(c),0);
+function pleaves(list,trail){return list.flatMap(n=>n.items?[{label:[...trail,n.label].join(' › '),items:n.items}]:pleaves(n.kids,[...trail,n.label]));}
+function renderParts(){const q=$('partQ').value.trim().toLowerCase();let node=pnode(pnav);if(pnav.length&&!node){pnav=[];node=null;}
+  // 지금 위치: ‹  부품 › IC › 카운터
+  const trail=pnav.map((k,i)=>pnode(pnav.slice(0,i+1)).label);
+  $('partCats').innerHTML=q?`<b>검색: “${esc(q)}”</b>`:(pnav.length?'<button class="pback" data-up title="한 단계 나가기" aria-label="뒤로">‹</button>':'')+
+    `<button data-go="0">부품</button>`+trail.map((t,i)=>`<span class="sep">›</span>`+(i===trail.length-1?`<b>${esc(t)}</b>`:`<button data-go="${i+1}">${esc(t)}</button>`)).join('');
+  $('partCats').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{pnav=pnav.slice(0,+b.dataset.go);renderParts();});
+  const up=$('partCats').querySelector('[data-up]');if(up)up.onclick=()=>{pnav=pnav.slice(0,-1);renderParts();};
   const card=it=>`<button class="pcard" data-pt="${esc(it.t[0])}"><span class="ic">${it.ico}</span><span><b>${esc(it.t[1])}</b><small>${esc(it.t[2])}</small></span></button>`;
-  const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]).toLowerCase().includes(q);
-  const show=q?cats.map(c=>({...c,items:c.items.filter(hit)})):pcat==='all'?cats:cats.filter(c=>c.k===pcat);
-  const h=show.filter(c=>c.items.length).map(c=>(q||pcat==='all'?`<h4>${esc(c.label)}</h4>`:'')+c.items.map(card).join('')).join('');
+  const fold=n=>{const ico=n.ico||(n.items&&n.items[0]&&n.items[0].ico)||'';return`<button class="pcard pfold" data-pf="${n.k}"><span class="ic">${ico}</span><span><b>${esc(n.label)}</b><small>${esc(n.sub||'')}</small></span><em>${pcount(n)}</em><i>›</i></button>`;};
+  let h;
+  if(q){const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]).toLowerCase().includes(q);
+    h=pleaves(PTREE,[]).map(g=>({...g,items:g.items.filter(hit)})).filter(g=>g.items.length).map(g=>`<h4>${esc(g.label)}</h4>`+g.items.map(card).join('')).join('');}
+  else h=node&&node.items?node.items.map(card).join(''):(node?node.kids:PTREE).map(fold).join('');
   $('partGrid').innerHTML=h||'<p class="desc" style="grid-column:1/-1">찾는 부품이 없어요. 이름 일부(예: 47, AND, 카운터)로 검색해 보세요.</p>';
+  $('partGrid').scrollTop=0;$('partGrid').classList.toggle('folds',!q&&!(node&&node.items));
+  $('partGrid').querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{pnav=[...pnav,b.dataset.pf];renderParts();});
   $('partGrid').querySelectorAll('[data-pt]').forEach(b=>{const t=b.dataset.pt,pick=()=>{closeParts();setTool(t);const tab=CATALOG.find(x=>x.items.some(it=>it.t[0]===t));if(tab){rtab=tab.k;store.set('rtab',rtab);$('search').value='';renderRibbon();}};
     b.onclick=()=>{pick();toast(`${toolName()} · 보드에서 놓을 자리를 누르세요`);};
     b.ondblclick=()=>{pick();if(/^(ic:|gate:)/.test(t)||t==='seg7'||INST.has(t)){const r=svg.getBoundingClientRect();place(null,{x:view.x+r.width/2/view.s,y:view.y+r.height/2/view.s});}};});}
-function openParts(){closeMenu();$('partDlg').hidden=false;const tab=CATALOG.find(x=>x.k===rtab);if(tab&&pcat!=='all')pcat=rtab;$('partQ').value='';renderParts();if(matchMedia('(pointer:fine)').matches)$('partQ').focus();}
+function openParts(){closeMenu();$('partDlg').hidden=false;$('partQ').value='';renderParts();if(matchMedia('(pointer:fine)').matches)$('partQ').focus();}
 function closeParts(){$('partDlg').hidden=true;}
 $('partOpen').onclick=openParts;$('partX').onclick=closeParts;$('partQ').addEventListener('input',renderParts);
 $('partDlg').addEventListener('pointerdown',e=>{if(e.target===$('partDlg'))closeParts();});

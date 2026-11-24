@@ -114,19 +114,153 @@ function inPage() {
   gateChip(both('00'), P00, G00, a => 1 - AND_(a), 'quad 2-input NAND');
   gateChip(both('02'), P02, G02, a => 1 - OR_(a), 'quad 2-input NOR');
   gateChip(both('04'), P04, G04, a => 1 - a[0], 'hex inverter');
-  gateChip(['74LS14'], P04, G04, a => 1 - a[0], 'hex Schmitt inverter');
+  gateChip(both('14'), P04, G04, a => 1 - a[0], 'hex Schmitt inverter');
   gateChip(both('08'), P00, G00, AND_, 'quad 2-input AND');
   gateChip(both('32'), P00, G00, OR_, 'quad 2-input OR');
   gateChip(both('86'), P00, G00, a => a[0] ^ a[1], 'quad 2-input XOR');
-  gateChip(['74LS10'], P10, G10, a => 1 - AND_(a), 'triple 3-input NAND');
-  gateChip(['74LS11'], P10, G10, AND_, 'triple 3-input AND');
-  gateChip(['74LS27'], P10, G10, a => 1 - OR_(a), 'triple 3-input NOR');
-  gateChip(['74LS20'], P20, G20, a => 1 - AND_(a), 'dual 4-input NAND');
-  gateChip(['74LS21'], P20, G20, AND_, 'dual 4-input AND');
-  gateChip(['74LS30'], P30, G30, a => 1 - AND_(a), '8-input NAND');
+  gateChip(both('10'), P10, G10, a => 1 - AND_(a), 'triple 3-input NAND');
+  gateChip(both('11'), P10, G10, AND_, 'triple 3-input AND');
+  gateChip(both('27'), P10, G10, a => 1 - OR_(a), 'triple 3-input NOR');
+  gateChip(both('20'), P20, G20, a => 1 - AND_(a), 'dual 4-input NAND');
+  gateChip(both('21'), P20, G20, AND_, 'dual 4-input AND');
+  gateChip(both('30'), P30, G30, a => 1 - AND_(a), '8-input NAND');
+
+  /* ───────────── added chips (2026-11-24) ───────────── */
+  // open-collector gates: active output = L, otherwise released (Z)
+  const ocChip = (name, pins, groups, fn, label) => add([name], {
+    pins, vcc: 14, gnd: 7, outs: groups.map(g => g[1]),
+    test(T) { T.sub(`truth table (${label}, open collector: H → Z)`, 'core', fail => comb(T, fail, groups.flatMap(g => g[0]), inp => { const e = {}; for (const [ins, out] of groups) e[out] = fn(ins.map(p => inp[p])) ? Z : 0; return e; })); }
+  });
+  ocChip('74LS03', P00, G00, a => 1 - AND_(a), 'quad 2-input NAND');
+  ocChip('74LS09', P00, G00, AND_, 'quad 2-input AND');
+  ocChip('74LS05', P04, G04, a => 1 - a[0], 'hex inverter');
+  ocChip('74LS07', P04, G04, a => a[0], 'hex buffer');
+  gateChip(both('132'), P00, G00, a => 1 - AND_(a), 'quad 2-input Schmitt NAND');
+  // 74126: tri-state buffer, enable active HIGH
+  add(both('126'), {
+    pins: '1C|1G|1OE 1A 1Y 2C|2G|2OE 2A 2Y GND 3Y 3A 3C|3G|3OE 4Y 4A 4C|4G|4OE VCC', vcc: 14, gnd: 7, outs: [3, 6, 8, 11],
+    test(T) { const B = [[1, 2, 3], [4, 5, 6], [10, 9, 8], [13, 12, 11]];
+      T.sub('truth table (C=H → Y=A, C=L → Hi-Z)', 'core', fail => comb(T, fail, B.flatMap(b => [b[0], b[1]]), inp => { const e = {}; for (const [c, a, y] of B) e[y] = inp[c] ? inp[a] : Z; return e; })); }
+  });
+  // 7473: dual JK, clear only, negative edge, VCC=4 GND=11
+  add(both('73'), {
+    pins: '1CLK|1CK|~1CLK ~1CLR 1K VCC 2CLK|2CK|~2CLK ~2CLR 2J ~2Q 2Q 2K GND 1Q ~1Q 1J', vcc: 4, gnd: 11, outs: [12, 13, 9, 8],
+    test(T) { const F = [{ clk: 1, clr: 2, k: 3, j: 14, q: 12, qn: 13 }, { clk: 5, clr: 6, j: 7, k: 10, q: 9, qn: 8 }];
+      T.sub('negative-edge JK FF with async CLR̅', 'core', fail => seq(T, fail, { seed: 73, inputs: Object.assign({}, ...F.map(f => ({ [f.clr]: [1, .85], [f.clk]: [5, 'T'], [f.j]: [2, .5], [f.k]: [2, .5] }))),
+        ref() { const m = F.map(jkff); return inp => { const e = {}; F.forEach((f, i) => { const [q, qn] = m[i](inp[f.clr], 1, inp[f.clk], inp[f.j], inp[f.k]); e[f.q] = q; e[f.qn] = qn; }); return e; }; } })); }
+  });
+  // 74109: dual J-K̅, positive edge
+  const jkbff = () => { let q = null, pc = null; return (clr, pre, clk, j, kb) => { const rise = pc === 0 && clk === 1; pc = clk; if (!clr && !pre) { q = null; return [1, 1]; } if (!clr) q = 0; else if (!pre) q = 1; else if (rise) { if (j && !kb) q = q === null ? null : 1 - q; else if (j && kb) q = 1; else if (!j && !kb) q = 0; } return q === null ? [ANY, ANY] : [q, 1 - q]; }; };
+  add(both('109'), {
+    pins: '~1CLR 1J ~1K 1CLK|1CK|1CP ~1PRE 1Q ~1Q GND ~2Q 2Q ~2PRE 2CLK|2CK|2CP ~2K 2J ~2CLR VCC', vcc: 16, gnd: 8, outs: [6, 7, 10, 9],
+    test(T) { const F = [{ clr: 1, j: 2, kb: 3, clk: 4, pre: 5, q: 6, qn: 7 }, { clr: 15, j: 14, kb: 13, clk: 12, pre: 11, q: 10, qn: 9 }];
+      T.sub('positive-edge J-K̅ FF, async PRE̅/CLR̅', 'core', fail => seq(T, fail, { seed: 109, inputs: Object.assign({}, ...F.map(f => ({ [f.clr]: [1, .85], [f.pre]: [1, .85], [f.clk]: [5, 'T'], [f.j]: [2, .5], [f.kb]: [2, .5] }))),
+        ref() { const m = F.map(jkbff); return inp => { const e = {}; F.forEach((f, i) => { const [q, qn] = m[i](inp[f.clr], inp[f.pre], inp[f.clk], inp[f.j], inp[f.kb]); e[f.q] = q; e[f.qn] = qn; }); return e; }; } })); }
+  });
+  // octal 273 / 373 / 374 (20-pin)
+  const OD = [3, 4, 7, 8, 13, 14, 17, 18], OQ = [2, 5, 6, 9, 12, 15, 16, 19];
+  const octPins = (one, c11) => `${one} 1Q 1D 2D 2Q 3Q 3D 4D 4Q GND ${c11} 5Q 5D 6D 6Q 7Q 7D 8D 8Q VCC`;
+  const octIn = (one, p1, ck) => Object.assign({ 1: [1, p1], 11: ck }, ...OD.map(p => ({ [p]: [1, .5] })));
+  add(both('273'), { pins: octPins('~CLR|~MR', 'CLK|CK|CP'), vcc: 20, gnd: 10, outs: OQ,
+    test(T) { T.sub('octal D FF, rising edge, async CLR̅', 'core', fail => seq(T, fail, { seed: 273, inputs: octIn(1, .9, [6, 'T']),
+      ref() { let q = null, pc = null; return inp => { const rise = pc === 0 && inp[11] === 1; pc = inp[11]; if (!inp[1]) q = OD.map(() => 0); else if (rise) q = OD.map(p => inp[p]); const e = {}; OQ.forEach((p, i) => e[p] = q ? q[i] : ANY); return e; }; } })); } });
+  add(both('374'), { pins: octPins('~OE', 'CLK|CK|CP'), vcc: 20, gnd: 10, outs: OQ,
+    test(T) { T.sub('octal D FF, rising edge, OE̅=H → Hi-Z (state still clocked)', 'core', fail => seq(T, fail, { seed: 374, inputs: octIn(1, .2, [6, 'T']),
+      ref() { let q = null, pc = null; return inp => { const rise = pc === 0 && inp[11] === 1; pc = inp[11]; if (rise) q = OD.map(p => inp[p]); const e = {}; OQ.forEach((p, i) => e[p] = inp[1] ? Z : q ? q[i] : ANY); return e; }; } })); } });
+  add(both('373'), { pins: octPins('~OE', 'LE|C|G'), vcc: 20, gnd: 10, outs: OQ,
+    test(T) { T.sub('octal transparent latch (LE=H passes), OE̅=H → Hi-Z', 'core', fail => seq(T, fail, { seed: 373, inputs: octIn(1, .2, [3, .5]),
+      ref() { let q = OD.map(() => 0); return inp => { if (inp[11]) q = OD.map(p => inp[p]); const e = {}; OQ.forEach((p, i) => e[p] = inp[1] ? Z : q[i]); return e; }; } })); } });
+  // 74595: 8-bit shift register + output latch
+  add(both('595'), {
+    pins: "QB|Q1 QC|Q2 QD|Q3 QE|Q4 QF|Q5 QG|Q6 QH|Q7 GND QH'|Q7' ~SRCLR|~MR SRCLK|SHCP RCLK|STCP ~OE SER|DS QA|Q0 VCC", vcc: 16, gnd: 8, outs: [15, 1, 2, 3, 4, 5, 6, 7, 9],
+    test(T) { const Q = [15, 1, 2, 3, 4, 5, 6, 7];
+      T.sub("SRCLK↑ shifts SER in, RCLK↑ copies the (pre-shift) register to QA–QH, async SRCLR̅, OE̅=H → Hi-Z, QH' = register bit 7", 'core', fail => seq(T, fail, { seed: 595, steps: 4000,
+        inputs: { 14: [3, .5], 11: [6, 'T'], 12: [4, 'T'], 10: [1, .95], 13: [1, .15] },
+        ref() { let sr = Array(8).fill(0), out = Array(8).fill(0), ps = null, pr = null; return inp => { const rs = ps === 0 && inp[11] === 1, rr = pr === 0 && inp[12] === 1; ps = inp[11]; pr = inp[12];
+          if (rr) out = sr.slice(); if (!inp[10]) sr = Array(8).fill(0); else if (rs) sr = [inp[14], ...sr.slice(0, 7)];
+          const e = { 9: sr[7] }; Q.forEach((p, i) => e[p] = inp[13] ? Z : out[i]); return e; }; } })); }
+  });
+  // 74165: parallel-in serial-out
+  add(both('165'), {
+    pins: 'SH/~LD|~PL CLK|CP E|D4 F|D5 G|D6 H|D7 ~QH|~Q7 GND QH|Q7 SER|DS A|D0 B|D1 C|D2 D|D3 INH|CLKINH|~CE VCC', vcc: 16, gnd: 8, outs: [9, 7],
+    test(T) { const D = [11, 12, 13, 14, 3, 4, 5, 6];
+      T.sub('SH/LD̅=L async parallel load; else (CLK OR INH)↑ shifts SER→QA…→QH', 'core', fail => seq(T, fail, { seed: 165, steps: 4000,
+        inputs: Object.assign({ 1: [2, .8], 2: [6, 'T'], 15: [2, .2], 10: [2, .5] }, ...D.map(p => ({ [p]: [1, .5] }))),
+        ref() { let q = null, pc = null; return inp => { const ck = inp[2] | inp[15], rise = pc === 0 && ck === 1; pc = ck;
+          if (!inp[1]) q = D.map(p => inp[p]); else if (rise && q) q = [inp[10], ...q.slice(0, 7)];
+          return q ? { 9: q[7], 7: 1 - q[7] } : { 9: ANY, 7: ANY }; }; } })); }
+  });
+  // 74194: 4-bit bidirectional universal shift register
+  add(both('194'), {
+    pins: '~CLR|~MR SR|DSR A|D0 B|D1 C|D2 D|D3 SL|DSL GND S0 S1 CLK|CP QD|Q3 QC|Q2 QB|Q1 QA|Q0 VCC', vcc: 16, gnd: 8, outs: [15, 14, 13, 12],
+    test(T) { T.sub('S1S0: 00 hold, 01 shift right (QA←SR), 10 shift left (QD←SL), 11 load; rising edge; async CLR̅', 'core', fail => seq(T, fail, { seed: 194, steps: 4000,
+      inputs: { 1: [1, .95], 2: [2, .5], 3: [1, .5], 4: [1, .5], 5: [1, .5], 6: [1, .5], 7: [2, .5], 9: [2, .5], 10: [2, .5], 11: [6, 'T'] },
+      ref() { let q = [0, 0, 0, 0], pc = null; return inp => { const rise = pc === 0 && inp[11] === 1; pc = inp[11];
+        if (!inp[1]) q = [0, 0, 0, 0]; else if (rise) { const m = inp[9] | inp[10] << 1; q = m === 0 ? q : m === 1 ? [inp[2], q[0], q[1], q[2]] : m === 2 ? [q[1], q[2], q[3], inp[7]] : [inp[3], inp[4], inp[5], inp[6]]; }
+        return { 15: q[0], 14: q[1], 13: q[2], 12: q[3] }; }; } })); }
+  });
+  // 74163: like '161 but synchronous clear
+  add(both('163'), {
+    pins: '~CLR|~SR CLK|CK|CP A|P0 B|P1 C|P2 D|P3 ENP|CEP GND ~LOAD|~PE ENT|CET QD|Q3 QC|Q2 QB|Q1 QA|Q0 RCO|TC VCC', vcc: 16, gnd: 8, outs: [14, 13, 12, 11, 15],
+    test(T) { T.sub('sync CLR̅ > sync LOAD̅ > count (ENP·ENT), RCO=ENT·(count=15)', 'core', fail => seq(T, fail, { seed: 163, steps: 4000,
+      inputs: { 1: [1, .9], 2: [10, 'T'], 3: [1, .5], 4: [1, .5], 5: [1, .5], 6: [1, .5], 7: [1, .9], 9: [1, .92], 10: [1, .9] },
+      ref() { let n = 0, pc = null; return inp => { const rise = pc === 0 && inp[2] === 1; pc = inp[2];
+        if (rise) { if (!inp[1]) n = 0; else if (!inp[9]) n = inp[3] | inp[4] << 1 | inp[5] << 2 | inp[6] << 3; else if (inp[7] && inp[10]) n = (n + 1) & 15; }
+        return { 14: bit(n, 0), 13: bit(n, 1), 12: bit(n, 2), 11: bit(n, 3), 15: inp[10] ? +(n === 15) : 0 }; }; } })); }
+  });
+  // 74393: dual 4-bit ripple counter, falling edge, CLR active high
+  add(both('393'), {
+    pins: '1A|1CP|~1CP 1CLR|1MR 1QA|1Q0 1QB|1Q1 1QC|1Q2 1QD|1Q3 GND 2QD|2Q3 2QC|2Q2 2QB|2Q1 2QA|2Q0 2CLR|2MR 2A|2CP|~2CP VCC', vcc: 14, gnd: 7, outs: [3, 4, 5, 6, 11, 10, 9, 8],
+    test(T) { const C = [{ a: 1, clr: 2, q: [3, 4, 5, 6] }, { a: 13, clr: 12, q: [11, 10, 9, 8] }];
+      T.sub('two ÷16 counters on falling edges, async CLR (high)', 'core', fail => seq(T, fail, { seed: 393, steps: 4000, inputs: { 1: [6, 'T'], 13: [6, 'T'], 2: [1, .1], 12: [1, .1] },
+        ref() { const n = [0, 0], pc = [null, null]; return inp => { const e = {}; C.forEach((c, i) => { const fall = pc[i] === 1 && inp[c.a] === 0; pc[i] = inp[c.a];
+          if (inp[c.clr]) n[i] = 0; else if (fall) n[i] = (n[i] + 1) & 15; c.q.forEach((p, k) => e[p] = bit(n[i], k)); }); return e; }; } })); }
+  });
+  // 7442: BCD to decimal
+  add(both('42'), {
+    pins: '~0|~Y0 ~1|~Y1 ~2|~Y2 ~3|~Y3 ~4|~Y4 ~5|~Y5 ~6|~Y6 GND ~7|~Y7 ~8|~Y8 ~9|~Y9 D|A3 C|A2 B|A1 A|A0 VCC', vcc: 16, gnd: 8, outs: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11],
+    test(T) { const Y = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+      T.sub('truth table (10–15 → all outputs H)', 'core', fail => comb(T, fail, [15, 14, 13, 12], inp => { const n = inp[15] | inp[14] << 1 | inp[13] << 2 | inp[12] << 3, e = {}; Y.forEach((p, k) => e[p] = k === n ? 0 : 1); return e; })); }
+  });
+  // 74148: 8-to-3 priority encoder
+  add(both('148'), {
+    pins: '~4|~I4 ~5|~I5 ~6|~I6 ~7|~I7 ~EI ~A2 ~A1 GND ~A0 ~0|~I0 ~1|~I1 ~2|~I2 ~3|~I3 ~GS ~EO VCC', vcc: 16, gnd: 8, outs: [6, 7, 9, 14, 15],
+    test(T) { const I = [10, 11, 12, 13, 1, 2, 3, 4];
+      T.sub('priority (7 highest), active-low in/out, GS̅/EO̅', 'core', fail => comb(T, fail, [...I, 5], inp => {
+        if (inp[5]) return { 6: 1, 7: 1, 9: 1, 14: 1, 15: 1 };
+        for (let k = 7; k >= 0; k--) if (!inp[I[k]]) return { 6: 1 - bit(k, 2), 7: 1 - bit(k, 1), 9: 1 - bit(k, 0), 14: 0, 15: 1 };
+        return { 6: 1, 7: 1, 9: 1, 14: 1, 15: 0 }; })); }
+  });
+  // 74158: inverting quad 2-to-1 mux
+  add(both('158'), {
+    pins: 'S|~A/B|SEL 1A 1B 1Y 2A 2B 2Y GND 3Y 3B 3A 4Y 4B 4A ~G|~E VCC', vcc: 16, gnd: 8, outs: [4, 7, 9, 12],
+    test(T) { const M = [[2, 3, 4], [5, 6, 7], [11, 10, 9], [14, 13, 12]];
+      T.sub('truth table (Y = NOT(A or B), strobe H → Y=H)', 'core', fail => comb(T, fail, [1, 15, ...M.flatMap(m => [m[0], m[1]])], inp => { const e = {}; for (const [a, b, y] of M) e[y] = inp[15] ? 1 : 1 - inp[inp[1] ? b : a]; return e; })); }
+  });
+  // 7483A: 4-bit adder, old pinout (VCC 5, GND 12)
+  add(['74LS83'], {
+    pins: 'A4 S3 A3 B3 VCC S2 B2 A2 S1 A1 B1 GND C0 C4 S4 B4', vcc: 5, gnd: 12, outs: [9, 6, 2, 15, 14],
+    test(T) { const A = [10, 8, 3, 1], B = [11, 7, 4, 16], S = [9, 6, 2, 15];
+      T.sub('A+B+C0 for all 512 input combinations', 'core', fail => comb(T, fail, [...A, ...B, 13], inp => { const num = P => P.reduce((s, p, k) => s | inp[p] << k, 0), s = num(A) + num(B) + inp[13], e = { 14: bit(s, 4) }; S.forEach((p, k) => e[p] = bit(s, k)); return e; })); }
+  });
+  // 74688: 8-bit identity comparator
+  add(both('688'), {
+    pins: '~G|~E P0 Q0 P1 Q1 P2 Q2 P3 Q3 GND P4 Q4 P5 Q5 P6 Q6 P7 Q7 ~P=Q|~(P=Q) VCC', vcc: 20, gnd: 10, outs: [19],
+    test(T) { const PP = [2, 4, 6, 8, 11, 13, 15, 17], QQ = [3, 5, 7, 9, 12, 14, 16, 18];
+      T.sub('P=Q̅ low only when enabled and all 8 bits equal (random 1500 + equal cases)', 'core', fail => {
+        const r = rng(688); for (let t = 0; t < 1500; t++) { const inp = { 1: r() < .2 ? 1 : 0 }; const eq = r() < .5; PP.forEach((p, k) => { inp[p] = r() < .5 ? 1 : 0; inp[QQ[k]] = eq && r() < .9 ? inp[p] : (r() < .5 ? 1 : 0); });
+          const all = PP.every((p, k) => inp[p] === inp[QQ[k]]), exp = { 19: inp[1] ? 1 : all ? 0 : 1 }, got = T.ev(inp, {}), bad = cmp(exp, got, [19]);
+          if (bad.length) fail(`in: ${fmt(T.d, inp, [1, ...PP, ...QQ])} expected ${fmt(T.d, exp, bad)} got ${fmt(T.d, got, bad)}`); } });
+    }
+  });
+  // 74244 / 74240: octal tri-state buffer / inverting buffer
+  const P244 = '~1G|~1OE 1A1 2Y4 1A2 2Y3 1A3 2Y2 1A4 2Y1 GND 2A1 1Y4 2A2 1Y3 2A3 1Y2 2A4 1Y1 ~2G|~2OE VCC';
+  const B244 = [[1, [[2, 18], [4, 16], [6, 14], [8, 12]]], [19, [[11, 9], [13, 7], [15, 5], [17, 3]]]];
+  for (const inv of [0, 1]) add(both(inv ? '240' : '244'), { pins: P244, vcc: 20, gnd: 10, outs: [18, 16, 14, 12, 9, 7, 5, 3],
+    test(T) { T.sub(`two groups of 4 ${inv ? 'inverting ' : ''}buffers, G̅=H → Hi-Z`, 'core', fail => comb(T, fail, [1, 19, ...B244.flatMap(g => g[1].map(x => x[0]))], inp => { const e = {}; for (const [g, L_] of B244) for (const [a, y] of L_) e[y] = inp[g] ? Z : inv ? 1 - inp[a] : inp[a]; return e; })); } });
 
   // ── 74125 quad tri-state buffer (enable active low) ──
-  add(['74LS125'], {
+  add(both('125'), {
     pins: '~1C|~1G|~1OE 1A 1Y ~2C|~2G|~2OE 2A 2Y GND 3Y 3A ~3C|~3G|~3OE 4Y 4A ~4C|~4G|~4OE VCC', vcc: 14, gnd: 7, outs: [3, 6, 8, 11],
     test(T) {
       const B = [[1, 2, 3], [4, 5, 6], [10, 9, 8], [13, 12, 11]];
@@ -143,7 +277,7 @@ function inPage() {
     }
   });
   // ── 74139 dual 2-to-4 decoder ──
-  add(['74LS139'], {
+  add(both('139'), {
     pins: '~1G 1A 1B ~1Y0 ~1Y1 ~1Y2 ~1Y3 GND ~2Y3 ~2Y2 ~2Y1 ~2Y0 2B 2A ~2G VCC', vcc: 16, gnd: 8, outs: [4, 5, 6, 7, 12, 11, 10, 9],
     test(T) {
       const H = [{ g: 1, a: 2, b: 3, y: [4, 5, 6, 7] }, { g: 15, a: 14, b: 13, y: [12, 11, 10, 9] }];
@@ -151,7 +285,7 @@ function inPage() {
     }
   });
   // ── 74151 8-to-1 mux ──
-  add(['74LS151'], {
+  add(both('151'), {
     pins: 'D3 D2 D1 D0 Y W|~Y|~W ~G|~S|~E GND C B A D7 D6 D5 D4 VCC', vcc: 16, gnd: 8, outs: [5, 6],
     test(T) {
       const D = [4, 3, 2, 1, 15, 14, 13, 12];
@@ -159,7 +293,7 @@ function inPage() {
     }
   });
   // ── 74153 dual 4-to-1 mux ──
-  add(['74LS153'], {
+  add(both('153'), {
     pins: '~1G B 1C3 1C2 1C1 1C0 1Y GND 2Y 2C0 2C1 2C2 2C3 A ~2G VCC', vcc: 16, gnd: 8, outs: [7, 9],
     test(T) {
       const C1 = [6, 5, 4, 3], C2 = [10, 11, 12, 13];
@@ -167,7 +301,7 @@ function inPage() {
     }
   });
   // ── 74157 quad 2-to-1 mux ──
-  add(['74LS157'], {
+  add(both('157'), {
     pins: 'S|~A/B|SEL 1A 1B 1Y 2A 2B 2Y GND 3Y 3B 3A 4Y 4B 4A ~G|~E VCC', vcc: 16, gnd: 8, outs: [4, 7, 9, 12],
     test(T) {
       const M = [[2, 3, 4], [5, 6, 7], [11, 10, 9], [14, 13, 12]];
@@ -183,7 +317,7 @@ function inPage() {
     }
   });
   // ── 7485 4-bit magnitude comparator ──
-  add(['74LS85'], {
+  add(both('85'), {
     pins: 'B3 A<Bi|A<B_in|IA<B A=Bi|A=B_in|IA=B A>Bi|A>B_in|IA>B A>B A=B A<B GND B0 A0 B1 A1 A2 B2 A3 VCC', vcc: 16, gnd: 8, outs: [5, 6, 7],
     test(T) {
       const A = [10, 12, 13, 15], B = [9, 11, 14, 1];
@@ -262,7 +396,7 @@ function inPage() {
       }));
     }
   });
-  jkChip(['74LS112'], '1CLK|1CK|~1CLK 1K 1J ~1PRE 1Q ~1Q ~2Q GND 2Q ~2PRE 2J 2K 2CLK|2CK|~2CLK ~2CLR ~1CLR VCC', 16, 8,
+  jkChip(both('112'), '1CLK|1CK|~1CLK 1K 1J ~1PRE 1Q ~1Q ~2Q GND 2Q ~2PRE 2J 2K 2CLK|2CK|~2CLK ~2CLR ~1CLR VCC', 16, 8,
     [{ clk: 1, k: 2, j: 3, pre: 4, q: 5, qn: 6, clr: 15 }, { clk: 13, k: 12, j: 11, pre: 10, q: 9, qn: 7, clr: 14 }]);
   jkChip(['74LS76'], '1CLK|1CK|~1CLK ~1PRE ~1CLR 1J VCC 2CLK|2CK|~2CLK ~2PRE ~2CLR 2J ~2Q 2Q 2K GND ~1Q 1Q 1K', 5, 13,
     [{ clk: 1, pre: 2, clr: 3, j: 4, k: 16, q: 15, qn: 14 }, { clk: 6, pre: 7, clr: 8, j: 9, k: 12, q: 11, qn: 10 }]);
@@ -276,7 +410,7 @@ function inPage() {
       }));
     }
   });
-  add(['74LS175'], {
+  add(both('175'), {
     pins: '~CLR|~MR 1Q ~1Q 1D 2D ~2Q 2Q GND CLK|CK|CP 3Q ~3Q 3D 4D ~4Q 4Q VCC', vcc: 16, gnd: 8, outs: [2, 3, 7, 6, 10, 11, 15, 14],
     test(T) {
       const D = [4, 5, 12, 13], Q = [2, 7, 10, 15], QN = [3, 6, 11, 14];
@@ -286,7 +420,7 @@ function inPage() {
       }));
     }
   });
-  add(['74LS164'], {
+  add(both('164'), {
     pins: 'A|DSA B|DSB QA|Q0 QB|Q1 QC|Q2 QD|Q3 GND CLK|CK|CP ~CLR|~MR QE|Q4 QF|Q5 QG|Q6 QH|Q7 VCC', vcc: 14, gnd: 7, outs: [3, 4, 5, 6, 10, 11, 12, 13],
     test(T) {
       const Q = [3, 4, 5, 6, 10, 11, 12, 13];
@@ -359,13 +493,13 @@ function inPage() {
   const udPins = 'B|P1 QB|Q1 QA|Q0 DOWN|CPD|DN UP|CPU QC|Q2 QD|Q3 GND D|P3 C|P2 ~LOAD|~PL ~CO|~TCU ~BO|~TCD CLR|MR A|P0 VCC';
   const udIn = { 5: [8, 'T'], 4: [5, 'T'], 14: [1, .04], 11: [1, .93], 15: [1, .5], 1: [1, .5], 10: [1, .5], 9: [1, .5] };
   const data = inp => inp[15] | inp[1] << 1 | inp[10] << 2 | inp[9] << 3;
-  add(['74LS193'], {
+  add(both('193'), {
     pins: udPins, vcc: 16, gnd: 8, outs: [3, 2, 6, 7, 12, 13],
     test(T) {
       T.sub('async CLR (high) > async LOAD̅ > count; UP/DOWN rising edges; wrap 15↔0; CO̅/BO̅ follow the low clock phase', 'core', fail => seq(T, fail, { seed: 193, steps: 4000, inputs: udIn, ref: refUD(false), allow: i => i[5] || i[4] }));
     }
   });
-  add(['74LS192'], {
+  add(both('192'), {
     pins: udPins, vcc: 16, gnd: 8, outs: [3, 2, 6, 7, 12, 13],
     test(T) {
       T.sub('BCD range (loads 0–9 only): async CLR > async LOAD̅ > count; wrap 9↔0; CO̅ at 9, BO̅ at 0', 'core', fail => seq(T, fail, { seed: 192, steps: 4000, inputs: udIn, ref: refUD(true), allow: i => (i[5] || i[4]) && (i[11] || data(i) <= 9) }));
