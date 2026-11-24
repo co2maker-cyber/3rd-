@@ -414,6 +414,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
       <button class="tbtn" data-tool="select" title="선택·이동 (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z" fill="currentColor"/></svg>선택</button>
       <button class="tbtn" data-tool="erase" title="지우개 (E): 누르거나 문질러서 삭제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4l6 6-9 9H6l-3-3z"/><path d="M9 9l6 6M11 19h9"/></svg>지우개</button>
       <button class="tbtn" data-tool="wire" title="전선 (W)"><svg viewBox="0 0 24 24" fill="none" stroke="#D93A3A" stroke-width="2.4" stroke-linecap="round"><path d="M4 17L11 7L20 15"/></svg>전선</button>
+      <button class="tbtn" id="wTidy" title="전선 정리: 정해 둔 규칙대로 전선 길과 색을 다시 놓아요(가로·세로로만, 다른 전선과 한 길을 함께 쓰지 않음, 부품 몸통·남의 구멍 위로 안 감, 색은 기능별). 전선을 골라 두면 고른 것만"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h7v6h11" stroke="#D93A3A"/><path d="M3 12h4v6h14" stroke="#2F6FDB"/><path d="M3 18h1" stroke="#2E9E5B"/></svg>전선 정리</button>
       <button class="tbtn" data-tool="move" title="보드 이동 (M): 브레드보드를 끌어서 옮겨요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>보드 이동</button>
     </div>
     <div class="grp">
@@ -3477,6 +3478,31 @@ function eraseAt(e){const el=document.elementsFromPoint(e.clientX,e.clientY).map
   const id=+el.dataset.id;if(!compById(id))return;if(!erase.hit){pushHist();erase.hit=true;}
   S.comps=S.comps.filter(c=>c.id!==id);RT.delete(id);SEL.delete(id);if(sel&&sel.id===id)sel=null;settle();render();}
 function selComps(){return S.comps.filter(c=>SEL.has(c.id));}
+/* ───────── 전선 정리 ─────────
+   규칙: ① 가로·세로(90°)로만 ② 다른 전선과 한 길을 함께 쓰지 않음(가로지르기만) ③ 부품 몸통·남의 구멍 위로 지나지 않음
+   ④ 구멍이나 남의 전선 위에서 꺾지 않고 구멍 사이 틈에서 꺾음 ⑤ 짧은 전선부터, 되도록 곧게 — 길 찾기는 gridWires(예제와 같은 규칙)
+   ⑥ 색은 기능별: 전원 빨강 · 접지 검정 · 클럭 노랑 · 입력(스위치) 초록 · 출력 표시(LED 등) 주황 · 그 밖의 신호 파랑 (회로도 FNC와 같은 색) */
+function wireFnOf(){settle();const netOf=SIM.netOf,m=new Map(),put=(id,f)=>{const H=id!=null&&HOLES.get(id);if(!H)return;const n=netOf[H.i],o=m.get(n);if(!o||FNO.indexOf(f)<FNO.indexOf(o))m.set(n,f);};
+  for(const h of HL.slice(0,nBoardHoles))if(isRail(h.r))put(h.id,h.r[1]==='p'?'pwr':'gnd');
+  for(const c of S.comps){if(c.t==='wire')continue;const ps=pinHoles(c);
+    if(c.t==='psu'||c.t==='bat'){put(ps[0],'pwr');put(ps[1],'gnd');}
+    else if(c.t==='fg'){put(ps[0],'clk');put(ps[1],'gnd');}
+    else if(c.t==='clk')put(ps[0],'clk');
+    else if(c.t==='sw'||c.t==='btn'||(c.t==='px'&&!PX[c.kind].pot&&PX[c.kind].contacts))ps.forEach(h=>put(h,'in'));
+    else if(c.t==='led')put(ps[0],'out');                       // LED 캐소드 쪽은 보통 접지라 빼고 본다
+    else if(c.t==='led3'||c.t==='seg7'||(c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].disp))ps.forEach(h=>put(h,'out'));
+    if((c.t==='ic'||c.t==='gate')&&defOf(c)){const d=defOf(c);if(d.idx&&d.idx[d.vcc]!=null)put(ps[d.idx[d.vcc]],'pwr');if(d.idx&&d.idx[d.gnd]!=null)put(ps[d.idx[d.gnd]],'gnd');}}
+  return id=>{const H=HOLES.get(id);return H&&m.get(netOf[H.i])||'sig';};}
+function tidyWires(mode){const pick=selComps().filter(c=>c.t==='wire'),W=pick.length?pick:S.comps.filter(c=>c.t==='wire');
+  if(!W.length){toast('정리할 전선이 없어요');return;}
+  pushHist();const old=new Map(W.map(c=>[c.id,JSON.stringify(c.pts||[])+'|'+c.color]));let routed=0,colored=0;
+  if(mode!=='color'){for(const c of W)delete c.pts;orthoWires();routed=W.filter(c=>!old.get(c.id).startsWith(JSON.stringify(c.pts||[])+'|')).length;}
+  if(mode!=='route'){const fn=wireFnOf();for(const c of W){const col=FNC[fn(c.pins[0])][0];if(c.color!==col){c.color=col;colored++;}}}
+  commit(true);
+  const what=pick.length?`고른 전선 ${W.length}개`:`전선 ${W.length}개`;
+  toast(routed||colored?`${what} 정리: 길 ${routed}개${mode==='route'?'':`, 색 ${colored}개`} 바꿨어요 · 되돌리려면 Ctrl+Z`:`${what}가 이미 규칙대로예요`);}
+function openTidyMenu(){const r=$('wTidy').getBoundingClientRect(),n=selComps().filter(c=>c.t==='wire').length,on=n?`고른 전선 ${n}개`:'모든 전선';
+  openMenu(r.left,r.bottom+4,[{label:`${on}: 길과 색 정리`,fn:()=>tidyWires('all')},{label:`${on}: 길만 정리`,fn:()=>tidyWires('route')},{label:`${on}: 색만 기능별로`,fn:()=>tidyWires('color')}]);}
 function copySel(){const list=selComps();if(!list.length)return;clip=JSON.parse(JSON.stringify(list));toast(`${list.length}개를 복사했어요 · Ctrl+V로 붙여넣어요`);}
 function pasteList(list,dr0,dc0,mp){if(!list||!list.length)return false;
   // 계측기는 새 번호를 받아 조금 옆에 놓이고, 같이 복사한 전선의 단자 끝도 새 계측기로 옮긴다. 원본 계측기에만 물린 전선은 뺀다
@@ -4196,6 +4222,7 @@ L3: D3.K, R5.1
 L4: D4.K, R6.1
 GND: R1.2, R2.2, R3.2, R4.2, R5.2, R6.2`;
 $('upl').onclick=()=>openImport();
+$('wTidy').onclick=e=>{e.stopPropagation();openTidyMenu();};
 $('aiBtn').onclick=()=>{openImport();setTimeout(()=>$('aiAsk').focus(),60);};
 $('aiCopy').onclick=copyAiPrompt;$('gView').onclick=openGuide;$('gSave').onclick=$('gSave2').onclick=saveGuide;$('gX').onclick=closeGuide;
 $('guideDlg').addEventListener('pointerdown',e=>{if(e.target===$('guideDlg'))closeGuide();});
