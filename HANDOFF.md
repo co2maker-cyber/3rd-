@@ -17,9 +17,10 @@
 ✓ 일시 정지 `simNow()`/`setPaused`(버튼 `#pause`, P)
 ✓ 슬로우 모드 `SLOW{on,rate,ms,last}`/`setSlow`/`toggleSlow`(버튼 `#slow`, O, 배지 `#sbadge` ½·¼·⅒): `simNow`=simBase+경과×rate(`rebaseTime`). `settle`이 `SLOW.ms`마다 칩 계산 1회만(그 외 0회)→`SIM.pending`, 타이머가 계속 한 단계씩. 단계 간격=min(140ms/rate, 최고 클럭 실시간 반주기/3). `findFlows`가 전선별 레벨 `WLV` 비교→바뀐 줄을 구동점(칩 출력·레일·계측기·클럭, 없으면 저항)에서 BFS→`FLOWQ`, `render`가 `launchFlows`로 `#gF` 층에 흐르는 빛+출력 바뀐 칩 주황 테두리(`tickFlows` rAF)
 ✓ 화면: 페이지 스크롤 없음(100dvh), 리본 숨김(`.ribbon{display:none!important}` — DOM·`renderRibbon` 잔존), 부품은 `#partOpen`→`#partDlg`(`PCATS`,`renderParts`)만, 속성·점검·객체는 `#dock` 팝업(`openDock`/`closeDock`, 도구 막대 `[data-dock]`), 도구 옵션 `#optCard.optbar`
-✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작)·t27(슬로우)·t28(전선 각도)·t29(전선 길)·t30(부품 고르기) 추가
+✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작)·t27(슬로우)·t28(전선 각도)·t29(전선 길)·t30(부품 고르기)·t31(구멍 톡 전선) 추가
 ✓ 저장·불러오기 `#saveDlg`(`savedList`,`saveLocal`,`saveToFile`; localStorage 키 `bblab.v1.saves`), Ctrl+S
 ✓ 7세그먼트 새 모양(기운 획·핀 번호·이름), 터치 핀치 `tpinch`(touch 이벤트 직접 처리), 좁은 화면 도구 막대 한 줄
+✓ 선택 도구에서 구멍 톡 = 전선 시작/완성 `selTap`(잠깐 tool='wire'로 `place` 호출; `endPan`·`finishWire`·`finishBox`의 톡 경로). 신호 보기(`sigMode`, 저장됨)에서 Z(안 이어진) 전선은 제 색 유지 — 사용자가 '전선이 회색으로 변함' 신고
 ✓ 부품 고르기 = 한 창 계층 이동 `PTREE`(기본 부품/계측기·전원/기본 게이트/IC→`ic-*` 종류→칩), `pnav` 경로, `#partCats`=경로 줄(‹ `data-up`, `data-go`), 폴더 `data-pf`, 칩 `data-pt`, 검색은 전체. 휴대폰은 폴더 한 줄(`.pgrid.folds`)
 ✓ IC 106종(+59): HC판 복제 `hcClone`, 오픈 컬렉터 `ocGate`(03·05·07·09), 126·132·73·109·273·373·374·595·165·194·163·393·42·148·158·83·688·244·240. 분류 `CATS`에 `shift` 추가
 ✓ IC 검증 `breadboard/tests/verify74.js` 106/106 통과(새 칩 기준 모델 추가, 일부러 넣은 버그 잡는 것 확인). 수정: RBO(`ls47`·74LS48), `UP192`/`DN192`, 프리셋·클리어 X 처리, 칩별 전원 범위 경고, NE555 문턱 VCC 추종
@@ -57,6 +58,6 @@
 ## 참조
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `/home/user/3rd-/breadboard/README.md` 설명서 / `/home/user/3rd-/breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` 작업 규칙
 - 시험: `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` — t(예제) t5(74LS) t6(555) t7(sync10) t8(편집) t11(보드 여러 장) t13(파일 배치) t14(보드 이동·꺾기) t15(자동 배치) t16(전선 차선) t18(scope 예제) t19(일시 정지) t20(100V) t21(터치·계측기·길 따라 전선) t22(7세그·부품 창) t23(속성) t24(배치·클럭 레일) t25(저장)
-- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30; do node $t.js | tail -1; done`
+- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31; do node $t.js | tail -1; done`
 - 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제 바로 열기: 끝에 `#scope`, `#sync10` 등)
 - 브랜치: `ccr-957126bc-kqjtgb` (= main `76135b3`), 저장소 `co2maker-cyber/3rd-`
