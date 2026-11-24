@@ -706,6 +706,7 @@ const RT=new Map(); // 실행 중 상태(저장 안 함)
 const rt=c=>{let r=RT.get(c.id);if(!r){r={};RT.set(c.id,r);}return r;};
 let tool='select', pending=null, hover=null, sel=null, drag=null, lastPt=null;
 const SEL=new Set();let wireDrag=null,boxSel=null,erase=null,rightDown=null,clip=null,dnd=null;
+let pendPts=[],lastPtrType='mouse'; // 전선을 그리는 도중에 찍은 꺾는 점들
 let sigMode=store.get('sig',false);
 const opt=Object.assign({wire:'#D93A3A',ohms:330,led:'red',hz:1,seg:'cc',farad:4.7e-5},store.get('opt',{}));
 const hist=[];
@@ -871,23 +872,49 @@ function renderBoards(){$('gB').innerHTML=DEFS+S.boards.map(B=>`<g transform="tr
 svg.innerHTML=`<g id="gB"></g><g id="gH"></g><g id="gC"></g><g id="gO"></g>`;
 const gH=document.getElementById('gH'),gC=document.getElementById('gC'),gO=document.getElementById('gO');
 const LVCOL=['var(--lo)','var(--hi)','var(--xx)','var(--zz)','var(--sh)'];
-/* 점퍼선: 곧은 직선. 꺾는 점(pts)이 있으면 그 점들을 차례로 잇는 꺾은선 */
-function wirePath(a,b,pts){return'M'+[a,...(pts||[]),b].map(q=>q.x+' '+q.y).join('L');}
+/* 점퍼선: 곧은 직선. 꺾는 점이 있으면 그 점들을 차례로 잇고, 모서리는 둥글게 굴린다 */
+function wirePath(a,b,pts){const P=[a,...(pts||[]),b],f=v=>Math.round(v*10)/10;let d='M'+P[0].x+' '+P[0].y;
+  for(let i=1;i<P.length-1;i++){const p=P[i],q=P[i-1],n=P[i+1],l1=Math.hypot(p.x-q.x,p.y-q.y),l2=Math.hypot(n.x-p.x,n.y-p.y),r=Math.min(9,l1/2,l2/2);
+    if(r<1){d+='L'+p.x+' '+p.y;continue;}
+    d+='L'+f(p.x+(q.x-p.x)/l1*r)+' '+f(p.y+(q.y-p.y)/l1*r)+'Q'+p.x+' '+p.y+' '+f(p.x+(n.x-p.x)/l2*r)+' '+f(p.y+(n.y-p.y)/l2*r);}
+  return d+'L'+P[P.length-1].x+' '+P[P.length-1].y;}
+/* ── 전선 자동 경로 ──
+   손으로 꺾지 않은 전선이 다른 전선·부품과 같은 직선 위에서 겹치면, 서로 다른 차선으로 살짝 비켜 가게 해서
+   경로가 하나하나 보이게 한다. 결과는 ROUTES(전선 id → 꺾는 점들)에 담고 저장하지는 않는다. */
+let ROUTES=new Map();
+function buildRoutes(){ROUTES=new Map();const items=[];
+  for(const c of S.comps){if(!TWO.has(c.t)||(c.t==='wire'&&c.pts&&c.pts.length))continue;const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);if(!a||!b)continue;
+    const len=Math.hypot(b.x-a.x,b.y-a.y);if(len<1)continue;items.push({c,a,b,len,ux:(b.x-a.x)/len,uy:(b.y-a.y)/len,fixed:c.t!=='wire',lane:0});}
+  if(items.length<2)return;
+  items.sort((p,q)=>(q.fixed-p.fixed)||(p.len-q.len)||(p.c.id-q.c.id));
+  // 두 선이 같은 직선 위에 있고 구간이 겹치는가
+  const clash=(w,j)=>{if(Math.abs(w.ux*j.uy-w.uy*j.ux)>.02)return false;const dist=p=>Math.abs((p.x-w.a.x)*w.uy-(p.y-w.a.y)*w.ux);if(dist(j.a)>3||dist(j.b)>3)return false;
+    const t=p=>(p.x-w.a.x)*w.ux+(p.y-w.a.y)*w.uy,t0=t(j.a),t1=t(j.b);return Math.min(t0,t1)<w.len-2&&Math.max(t0,t1)>2;};
+  const done=[];
+  for(const w of items){if(!w.fixed){let k=0;while(done.some(j=>j.lane===k&&clash(w,j)))k++;w.lane=k;
+      if(k>0){let nx=-w.uy,ny=w.ux;if(ny>0||(Math.abs(ny)<1e-6&&nx<0)){nx=-nx;ny=-ny;}   // 첫 차선은 위쪽(세로선이면 오른쪽)
+        const off=(k%2?1:-1)*Math.ceil(k/2)*7,d=Math.min(10,w.len/3);
+        ROUTES.set(w.c.id,[{x:w.a.x+w.ux*d+nx*off,y:w.a.y+w.uy*d+ny*off},{x:w.b.x-w.ux*d+nx*off,y:w.b.y-w.uy*d+ny*off}]);}}
+    done.push(w);}}
+/* 전선이 실제로 그려지는 꺾는 점들: 손으로 꺾은 점이 있으면 그것, 없으면 자동 경로 */
+const routePts=c=>c.pts&&c.pts.length?c.pts:(ROUTES.get(c.id)||[]);
+/* 자동 경로를 손으로 고치기 시작할 때, 그 경로를 전선에 옮겨 적는다 */
+function ownPts(c){if(!(c.pts&&c.pts.length))c.pts=(ROUTES.get(c.id)||[]).map(q=>({x:q.x,y:q.y}));return c.pts;}
 function twoTerm(a,b){const dx=b.x-a.x,dy=b.y-a.y;return{mx:(a.x+b.x)/2,my:(a.y+b.y)/2,len:Math.hypot(dx,dy),ang:Math.atan2(dy,dx)*180/Math.PI};}
 function compSVG(c,now){
   const id=c.id,ph=pinHoles(c).map(h=>HOLES.get(h));const isSel=SEL.has(id),one=isSel&&SEL.size===1;let s='';
   const ia=(c.t==='btn'||c.t==='sw')?' ia':'';
   if(c.t==='wire'){const [a,b]=ph;let col=c.color;
     if(sigMode){const lv=levelOfHole(a.id).v;col=LVCOL[lv];}
-    const d=wirePath(a,b,c.pts);
+    const R=routePts(c),d=wirePath(a,b,R);
     if(isSel)s+=`<path d="${d}" fill="none" stroke="#1F8FFF" stroke-opacity=".45" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`;
     s+=`<g class="c" data-id="${id}"><path d="${d}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"${sigMode&&levelOfHole(a.id).v===SH?' class="blink"':''}/>
       <path d="${d}" fill="none" stroke="transparent" stroke-width="12"/>
       <circle cx="${a.x}" cy="${a.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/><circle cx="${b.x}" cy="${b.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/></g>`;
-    if(one){const L=[a,...(c.pts||[]),b];for(let k=0;k<L.length-1;k++){const u=L[k],v=L[k+1];if(Math.hypot(v.x-u.x,v.y-u.y)<30)continue;
+    if(one){const L=[a,...R,b];for(let k=0;k<L.length-1;k++){const u=L[k],v=L[k+1];if(Math.hypot(v.x-u.x,v.y-u.y)<30)continue;
         s+=`<circle class="end" data-mid="${id}:${k}" cx="${(u.x+v.x)/2}" cy="${(u.y+v.y)/2}" r="4.6" fill="#fff" stroke="#1F8FFF" stroke-width="1.5" stroke-dasharray="2.6 2" style="cursor:crosshair"><title>끌면 여기서 전선이 꺾여요</title></circle>`;}
-      s+=endHandles(c,ph);(c.pts||[]).forEach((q,k)=>s+=`<rect class="end" data-bend="${id}:${k}" x="${q.x-4.5}" y="${q.y-4.5}" width="9" height="9" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.6" style="cursor:move"><title>끌어서 옮기기 · 더블클릭하면 지워져요</title></rect>`);}
+      s+=endHandles(c,ph);R.forEach((q,k)=>s+=`<rect class="end" data-bend="${id}:${k}" x="${q.x-4.5}" y="${q.y-4.5}" width="9" height="9" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.6" style="cursor:move"><title>끌어서 옮기기 · 더블클릭하면 지워져요</title></rect>`);}
     return s;}
   if(TWO.has(c.t)){const [a,b]=ph,{mx,my,len,ang}=twoTerm(a,b);
     if(isSel)s+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1F8FFF" stroke-opacity=".35" stroke-width="20" stroke-linecap="round" pointer-events="none"/>`;
@@ -970,7 +997,7 @@ function syncSel(){
   else SEL.clear();}
 function setSelIds(ids){SEL.clear();ids.forEach(i=>SEL.add(i));sel=SEL.size===1?{type:'comp',id:[...SEL][0]}:SEL.size?{type:'multi'}:null;}
 function render(){
-  syncSel();LBL=labels();const now=performance.now()/1000;
+  syncSel();LBL=labels();buildRoutes();const now=performance.now()/1000;
   // 와이어를 가장 위에 그림
   const order=[...S.comps].sort((a,b)=>(a.t==='wire')-(b.t==='wire'));
   gC.innerHTML=order.map(c=>compSVG(c,now)).join('');
@@ -986,8 +1013,11 @@ function renderOverlay(){
       if(g){const A=HOLES.get(g.pins[0]),Bh=HOLES.get(g.pins[g.h-1]),E=HOLES.get(g.pins[g.pins.length-1]),x1=A.x-9,x2=Bh.x+9;s+=`<rect class="ghost${g.ok?'':' bad'}" x="${x1}" y="${E.y-6}" width="${x2-x1}" height="${A.y-E.y+12}" rx="4"/>`;
         for(const id of g.pins){const h=HOLES.get(id);if(h)s+=`<circle cx="${h.x}" cy="${h.y}" r="3" fill="${o.has(id)?'#C2362F':'#18A06F'}"/>`;}}}
     if(pending){const a=HOLES.get(pending);s+=`<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;
-      const t=hover&&hover.id!==pending?landing(hover,o,pending)||hover:null;
-      if(t)s+=tool==='wire'?`<path d="${wirePath(a,t)}" fill="none" stroke="${opt.wire}" stroke-width="4" stroke-opacity=".6" stroke-linecap="round" stroke-dasharray="6 4"/>`
+      let t=hover&&hover.id!==pending?landing(hover,o,pending)||hover:null;
+      if(tool==='wire'){if(!t&&lastPt&&!hover)t={x:Math.round(lastPt.x/5)*5,y:Math.round(lastPt.y/5)*5,bend:true};
+        for(const q of pendPts)s+=`<rect x="${q.x-4}" y="${q.y-4}" width="8" height="8" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.5"/>`;
+        if(t&&t.bend)s+=`<rect x="${t.x-4}" y="${t.y-4}" width="8" height="8" rx="1.5" fill="#fff" fill-opacity=".6" stroke="#1F8FFF" stroke-width="1.5" stroke-dasharray="2.5 2"/>`;}
+      if(t)s+=tool==='wire'?`<path d="${wirePath(a,t,pendPts)}" fill="none" stroke="${opt.wire}" stroke-width="4" stroke-opacity=".6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>`
         :`<line x1="${a.x}" y1="${a.y}" x2="${t.x}" y2="${t.y}" stroke="#1F8FFF" stroke-width="2" stroke-dasharray="5 4"/>`;}
     if(hover&&(TWO.has(tool)||tool==='clk'||tool==='wire')&&hover.id!==pending){const t=landing(hover,o,pending);s+=`<circle cx="${(t||hover).x}" cy="${(t||hover).y}" r="5.5" fill="none" stroke="${t?'#1F8FFF':'#C2362F'}" stroke-width="2"/>`;}
   }
@@ -1071,7 +1101,7 @@ function renderInfo(){const box=$('info');
   else box.innerHTML=helpHTML();
   renderLive();}
 function partDesc(c){return{
-  wire:'두 구멍을 전기적으로 이어요. 양 끝의 파란 점을 끌어 옮기고, 전선은 곧은 직선이에요. 고른 뒤 가운데의 점선 동그라미를 끌면 그 자리에서 꺾여요(흰 네모를 끌어 모양 바꾸기, 더블클릭하면 지우기).',
+  wire:'두 구멍을 전기적으로 이어요. 양 끝의 파란 점을 끌어 옮기고, 겹치는 전선은 저절로 살짝 비켜 가서 경로가 보여요. 고른 뒤 가운데의 점선 동그라미를 끌면 그 자리에서 둥글게 꺾여요(흰 네모를 끌어 모양 바꾸기, 더블클릭하면 지우기).',
   res:`${ohmTx(c.ohms)} 저항. LED에 흐르는 전류를 제한하거나, 입력을 HIGH/LOW로 약하게 끌어당기는(풀업·풀다운) 데 써요.`,
   led:'애노드(+, 처음 누른 쪽)가 캐소드(−)보다 높은 전압이면 켜져요. 저항과 직렬로 연결하세요.',
   btn:'누르고 있는 동안만 양쪽이 이어져요(선택 도구로 눌러 보세요). 풀다운 저항과 함께 쓰면 누를 때 HIGH가 돼요.',
@@ -1150,7 +1180,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li>스위치·버튼·저항·LED 로 입력과 출력을 만들고, <b>선택</b> 도구로 스위치를 눌러 결과를 확인하세요.</li>
 <li>부품을 누르면 [속성]에 핀마다 현재 상태(<span class="lv H">1</span> HIGH, <span class="lv L">0</span> LOW, <span class="lv Z">—</span> 떠 있음, <span class="lv X">?</span> 알 수 없음)가 실시간으로 나와요.</li>
 <li><b>지우기</b>: 부품을 선택하고 <kbd>Delete</kbd>, 선택하면 뜨는 막대의 [삭제], 오른쪽 클릭 메뉴, 또는 <b>지우개</b>(<kbd>E</kbd>)로 누르거나 문질러서 지워요.</li>
-<li><b>전선</b>: 선택 도구에서 빈 구멍을 누른 채 다른 구멍까지 끌면 바로 그려져요. 전선은 곧은 직선으로 그려져요. 전선을 고르면 가운데에 점선 동그라미가 보이는데, 그걸 끌면 전선이 꺾여요(전선을 더블클릭해도 돼요). 꺾는 점(흰 네모)은 끌어서 옮기고, 더블클릭하거나 다시 일직선에 놓으면 없어져요.</li>
+<li><b>전선</b>: 선택 도구에서 빈 구멍을 누른 채 다른 구멍까지 끌면 바로 그려져요. 같은 줄에서 겹치는 전선은 저절로 비켜 가서 경로가 하나하나 보여요. <b>꺾기</b>: 전선 도구로 그리는 도중에 구멍 사이 빈 곳을 누르면 거기서 꺾이고, 다 그린 전선은 골라서 가운데 점선 동그라미를 끌면 꺾여요(더블클릭해도 돼요). 꺾는 점(흰 네모)은 끌어서 옮기고, 더블클릭하거나 다시 일직선에 놓으면 없어져요.</li>
 <li><b>여러 개</b>: 보드 밖 빈 곳을 끌어 범위 선택, <kbd>Shift</kbd>+클릭으로 더하기, <kbd>Ctrl</kbd>+<kbd>A</kbd> 모두 선택. 방향키로 한 칸씩 옮기고 <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd>로 복사·붙여넣기·복제해요.</li>
 <li>위쪽 부품 줄의 부품을 보드로 <b>끌어다 놓을</b> 수도 있어요. [파일로 부품 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
 <li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드는 가장자리나 가운데 홈을 끌거나, [보드 이동] 도구(M)로 아무 데나 끌면 꽂힌 부품과 함께 옮겨져요. 이름표를 누르면 종류 바꾸기·삭제 메뉴가 떠요. 보드끼리 전선으로 이어도 돼요.</li>
@@ -1222,7 +1252,7 @@ function pinoutMini(d){const n=d.pins.length,h=n/2;let l='',r='';
 function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선택</b> · 구멍에서 끌면 전선 · 부품을 끌어 옮기기 · 보드 가장자리를 끌면 보드 이동 · 보드 밖을 끌면 범위 선택 · 오른쪽 클릭 메뉴',
   move:'<b>보드 이동</b> · 브레드보드를 끌어서 옮기세요 (꽂힌 부품도 함께 가요) · 보드 밖을 끌면 화면 이동 · Esc: 선택 도구로',
   erase:'<b>지우개</b> · 지울 전선이나 부품을 누르거나, 누른 채 문질러서 지우세요 (Esc: 선택 도구로)',
-  wire:pending?'<b>전선</b> · 이어 줄 두 번째 구멍을 누르세요 (Esc 취소)':'<b>전선</b> · 첫 번째 구멍을 누르세요',
+  wire:pending?'<b>전선</b> · 이어 줄 두 번째 구멍을 누르세요 · 구멍 사이 빈 곳을 누르면 거기서 꺾여요 (Esc 취소)':'<b>전선</b> · 첫 번째 구멍을 누르세요',
   res:pending?'<b>저항</b> · 다른 쪽 다리를 꽂을 구멍을 누르세요':'<b>저항</b> · 한쪽 다리를 꽂을 구멍을 누르세요',
   led:pending?'<b>LED</b> · 이제 <b>캐소드(−, 짧은 다리)</b> 구멍을 누르세요':'<b>LED</b> · 먼저 <b>애노드(+, 긴 다리)</b> 구멍을 누르세요',
   btn:pending?'<b>버튼</b> · 다른 쪽 다리 구멍을 누르세요':'<b>버튼</b> · 한쪽 다리 구멍을 누르세요',
@@ -1267,12 +1297,13 @@ function toolName(){return tool==='select'?'선택':tool==='move'?'보드 이동
 function boardAt(p){let best=S.boards[0],bd=1e18;for(const B of S.boards){const bx=boardBox(B),dx=Math.max(bx.x0-p.x,0,p.x-bx.x1),dy=Math.max(bx.y0-p.y,0,p.y-bx.y1),d=dx*dx+dy*dy;if(d<bd){bd=d;best=B;}}return best;}
 function gridAt(p,forceB){const B=forceB?boardById(forceB):boardAt(p),t=BTYPES[B.type];const lx=p.x-B.x,ly=p.y-B.y;
   const c=Math.max(1,Math.min(t.cols,Math.round((lx-X0)/P)+1));let ri=2,bd=1e9;ROWS.forEach((r,i)=>{if(isRail(r)&&!t.rails)return;const d=Math.abs(ROWY[r]-ly);if(d<bd){bd=d;ri=i;}});return{ri,c,b:B.id};}
-function nearHole(p){const {ri,c,b}=gridAt(p);let h=holeAt(ri,c,b);if(!h)return null;return Math.hypot(h.x-p.x,h.y-p.y)<11?h:null;}
+/* 전선 도구로 두 번째 구멍을 고르는 중에는(마우스) 구멍을 좁게 잡아서, 구멍 사이 빈 곳을 누르면 꺾는 점이 되게 한다 */
+function nearHole(p){const {ri,c,b}=gridAt(p);let h=holeAt(ri,c,b);if(!h)return null;const rad=tool==='wire'&&pending&&lastPtrType!=='touch'?7:11;return Math.hypot(h.x-p.x,h.y-p.y)<rad?h:null;}
 function setStatus(){const st=$('status');$('sCoord').textContent=hover?`${S.boards.length>1?'보드 '+hover.b+' · ':''}열 ${hover.c} · 행 ${isRail(hover.r)?hover.r.toUpperCase():hover.r}`:'—';if(!hover){return;}
   const {v,w,a,volt}=levelOfHole(hover.id);const o=occ();const cid=o.get(hover.id);let who='';
   if(cid){const c=compById(cid),k=pinHoles(c).indexOf(hover.id),nm=pinNames(c)[k];who=` · <span>${esc(LBL.get(cid))} ${c.t==='ic'?esc(c.chip)+' '+(k+1)+'번 핀 '+pinHTML(nm):esc(compName(c))+' '+esc(nm)}</span>`;}
   st.innerHTML=`<b>${esc(holeName(hover.id))}</b>${who} <span class="k">·</span> ${lvBadge(v,w)} <span>${esc(lvText(v,w,a?volt:null))}</span>${!a&&volt!=null?` <span class="mono">${fmtV(volt)}</span>`:''}`;}
-svg.addEventListener('pointermove',e=>{
+svg.addEventListener('pointermove',e=>{lastPtrType=e.pointerType||'mouse';
   if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===2&&panState&&panState.pinch){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     zoomAt(d/panState.d,mx,my);view.x-=(mx-panState.mx)/view.s;view.y-=(my-panState.my)/view.s;applyView();panState.d=d;panState.mx=mx;panState.my=my;return;}
@@ -1290,7 +1321,7 @@ svg.addEventListener('pointermove',e=>{
   if(h!==hover){hover=h;setStatus();}renderOverlay();updTip(e);});
 svg.addEventListener('pointerleave',()=>{$('tip').hidden=true;if(drag||panState||wireDrag||boxSel||erase||rightDown)return;hover=null;lastPt=null;renderOverlay();});
 svg.addEventListener('contextmenu',e=>e.preventDefault());
-svg.addEventListener('pointerdown',e=>{
+svg.addEventListener('pointerdown',e=>{lastPtrType=e.pointerType||'mouse';
   closeMenu();
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===2){const [a,b]=[...ptrs.values()];if(drag){const c=compById(drag.id);if(c&&c.t==='btn')rt(c).pressed=false;drag=null;}
@@ -1344,15 +1375,15 @@ function place(h,p){if(tool==='move')return;const o=occ();
     addComp({t:'gate',kind:tool.slice(5),pins:g.hs.map(h=>h.id)});sel={type:'comp',id:S.nextId-1};renderInfo();render();if(g.shift)toast('겹치지 않게 가장 가까운 빈자리에 놓았어요');return;}
   if(tool.startsWith('ic:')||tool==='seg7'){const g=ghostAt(p);if(!g)return;if(!g.ok){toast('겹치지 않게 놓을 빈자리가 없어요 · 부품을 정리하거나 브레드보드를 추가해 보세요');return;}
     addComp(tool==='seg7'?{t:'seg7',col:g.col,b:g.b,ca:opt.seg==='ca'}:{t:'ic',chip:tool.slice(3),col:g.col,b:g.b});sel={type:'comp',id:S.nextId-1};renderInfo();render();if(g.shift)toast('겹치지 않게 가장 가까운 빈자리에 놓았어요');return;}
-  if(!h)return;
+  if(!h){if(tool==='wire'&&pending&&p){pendPts.push({x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});renderOverlay();}return;}
   if(pending&&h.id===pending){pending=null;renderHint();renderOverlay();return;}
   // 누른 구멍이 차 있으면 같은 줄(전기적으로 같은 곳)의 빈 구멍에 대신 꽂는다
   {const t=landing(h,o,pending);if(!t){toast('구멍 '+holeName(h.id)+'와 이어진 줄에 빈 구멍이 없어요');return;}
    if(t!==h)toast(`${holeName(h.id)}에는 이미 부품이 있어서, 이어진 빈 구멍 ${holeName(t.id)}에 꽂았어요`);h=t;}
   if(tool==='clk'){addComp({t:'clk',pins:[h.id],hz:opt.hz});return;}
-  if(!pending){pending=h.id;renderHint();renderOverlay();return;}
+  if(!pending){pending=h.id;pendPts=[];renderHint();renderOverlay();return;}
   const c={t:tool,pins:[pending,h.id]};
-  if(tool==='wire')c.color=opt.wire;if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led')c.color=opt.led;if(tool==='sw')c.on=false;
+  if(tool==='wire'){c.color=opt.wire;if(pendPts.length)c.pts=pendPts;pendPts=[];}if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led')c.color=opt.led;if(tool==='sw')c.on=false;
   pending=tool==='wire'?null:null;addComp(c);renderHint();}
 function doDrag(p){
   if(drag.kind==='board'){const B=boardById(drag.id);if(!B)return;const nx=Math.round((drag.ox+p.x-drag.sx)/10)*10,ny=Math.round((drag.oy+p.y-drag.sy)/10)*10;
@@ -1360,16 +1391,16 @@ function doDrag(p){
     if(!drag.moved){pushHist();drag.moved=true;}
     if(slideBoard(B,nx,ny)){settle();render();}return;}
   const c=compById(drag.id);if(!c)return;
-  if(drag.kind==='mid'){if(c.t!=='wire'||Math.hypot(p.x-drag.p0.x,p.y-drag.p0.y)*view.s<4)return;pushHist();c.pts=c.pts||[];c.pts.splice(drag.k,0,{x:p.x,y:p.y});drag.kind='bend';drag.moved=true;}
-  if(drag.kind==='bend'){if(!c.pts)return;const q=bendSnap(c,drag.k,p);const o=c.pts[drag.k];if(o&&o.x===q.x&&o.y===q.y)return;
-    if(!drag.moved){pushHist();drag.moved=true;}c.pts[drag.k]=q;render();return;}
+  if(drag.kind==='mid'){if(c.t!=='wire'||Math.hypot(p.x-drag.p0.x,p.y-drag.p0.y)*view.s<4)return;pushHist();ownPts(c).splice(drag.k,0,{x:p.x,y:p.y});drag.kind='bend';drag.moved=true;}
+  if(drag.kind==='bend'){if(c.t!=='wire')return;const q=bendSnap(c,drag.k,p);const o=routePts(c)[drag.k];if(!o||(o.x===q.x&&o.y===q.y))return;
+    if(!drag.moved){pushHist();drag.moved=true;}ownPts(c)[drag.k]=q;render();return;}
   if(drag.kind==='end'){const h=nearHole(p);hover=h;if(!h||c.pins[drag.k]===h.id){renderOverlay();return;}
     const o=occ(c.id);if(o.has(h.id)||c.pins[1-drag.k]===h.id)return;
     if(!drag.moved){pushHist();drag.moved=true;}c.pins[drag.k]=h.id;settle();render();setStatus();return;}
   const g=gridAt(p),dr=g.ri-drag.start.ri,dc=g.c-drag.start.c,mp=g.b!==drag.start.b?{from:drag.start.b,to:g.b}:null;
   if(tryMove(drag.ids,drag.origs,dr,dc,()=>{if(!drag.moved){hist.push(JSON.stringify({comps:S.comps.map(x=>drag.origs.has(x.id)?drag.origs.get(x.id):x),power:S.power,nextId:S.nextId,boards:S.boards}));fut.length=0;syncHist();drag.moved=true;}},mp)){settle();render();}}
 /* 꺾는 점 위치: 5px 격자에 맞추고, 이웃 점과 가로·세로가 거의 같으면 딱 맞춰서 직각으로 꺾기 쉽게 한다 */
-function wirePts(c){return[HOLES.get(c.pins[0]),...(c.pts||[]),HOLES.get(c.pins[1])];}
+function wirePts(c){return[HOLES.get(c.pins[0]),...routePts(c),HOLES.get(c.pins[1])];}
 function bendSnap(c,k,p){const q={x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5},L=wirePts(c);
   for(const n of [L[k],L[k+2]]){if(!n)continue;if(Math.abs(p.x-n.x)<6)q.x=n.x;if(Math.abs(p.y-n.y)<6)q.y=n.y;}return q;}
 /* 부품 하나를 (행 dr, 열 dc)만큼 옮긴 결과. 옮길 수 없으면 null */
@@ -1455,7 +1486,7 @@ function renderFbar(){const fb=$('fbar');
   if(key!==fbKey){fbKey=key;
     fb.innerHTML=`<b>${list.length>1?list.length+'개 선택':esc(LBL.get(list[0].id)+' '+compName(list[0]))}</b><button class="del" data-a="del" title="삭제 (Delete)">${TRASH}삭제</button><button data-a="dup" title="복제 (Ctrl+D)">복제</button>`
       +(wires?`<span class="sep"></span>${WIRE_COLORS.map(col=>`<button class="swc" data-col="${col}" style="background:${col}" aria-pressed="${list.every(c=>c.color===col)}" aria-label="전선 색"></button>`).join('')}`:'')
-      +(bent?`<span class="sep"></span><button data-a="straight" title="꺾는 점 모두 지우기">곧게 펴기</button>`:'')
+      +(bent?`<span class="sep"></span><button data-a="straight" title="손으로 꺾은 점을 모두 지우고 자동 경로로 되돌려요">꺾은 점 지우기</button>`:'')
       +(wires&&list.length===1&&!bent?`<small>가운데 동그라미를 끌면 꺾여요</small>`:'');
     fb.querySelectorAll('button').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const a=b.dataset.a;
       if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='straight')straightenSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
@@ -1503,11 +1534,11 @@ let lastTap=null;
 function handleDbl(e){if(tool!=='select')return false;const p=svgPt(e);
   // 첫 클릭 뒤에 다시 그려져서 e.target이 바뀔 수 있으므로 포인터 아래 요소를 직접 찾는다
   const under=document.elementsFromPoint(e.clientX,e.clientY).filter(x=>svg.contains(x));
-  const b=under.map(x=>x.closest('[data-bend]')).find(Boolean);if(b){const [id,k]=b.dataset.bend.split(':').map(Number);const c=compById(id);if(!c||!c.pts)return false;pushHist();c.pts.splice(k,1);if(!c.pts.length)delete c.pts;commit(true);return true;}
+  const b=under.map(x=>x.closest('[data-bend]')).find(Boolean);if(b){const [id,k]=b.dataset.bend.split(':').map(Number);const c=compById(id);if(!c||!routePts(c)[k])return false;pushHist();ownPts(c).splice(k,1);if(!c.pts.length)delete c.pts;commit(true);return true;}
   const g=under.map(x=>x.closest('[data-id]')).find(x=>x&&gC.contains(x));if(!g)return false;const c=compById(+g.dataset.id);if(!c||c.t!=='wire')return false;
-  const a=HOLES.get(c.pins[0]),bb=HOLES.get(c.pins[1]),Lp=[a,...(c.pts||[]),bb];let best=0,bd=1e9;
+  const Lp=wirePts(c);let best=0,bd=1e9;
   for(let i=0;i<Lp.length-1;i++){const d=segDist(p,Lp[i],Lp[i+1]);if(d<bd){bd=d;best=i;}}
-  pushHist();c.pts=c.pts||[];c.pts.splice(best,0,{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});sel={type:'comp',id:c.id};commit(true);
+  pushHist();ownPts(c).splice(best,0,{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});sel={type:'comp',id:c.id};commit(true);
   toast('꺾는 점을 만들었어요 · 흰 네모를 끌어 모양을 바꿔요');return true;}
 function endDrag(){if(!drag)return;
   if(drag.kind==='board'){const d=drag;drag=null;if(!d.moved){if(d.menu)openBoardMenu(d.id,d.cx,d.cy);else if(tool==='select'){sel=null;render();renderInfo();}return;}commit(true);return;}
