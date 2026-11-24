@@ -722,7 +722,7 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textar
 function syncPower(){$('pwr').setAttribute('aria-pressed',S.power);$('pwrTx').textContent=S.power?'전원 켜짐 (5V)':'전원 꺼짐';}
 $('pwr').onclick=()=>{S.power=!S.power;if(!S.power)for(const r of RT.values()){r.st=null;r.out=null;}commit(true);};
 $('undo').onclick=undo;$('undo').disabled=true;
-$('clr').onclick=()=>{if(!S.comps.length)return;if(!confirm('보드의 모든 부품을 지울까요? (실행 취소로 되돌릴 수 있어요)'))return;pushHist();S.comps=[];RT.clear();sel=null;commit(true);};
+$('clr').onclick=()=>{if(!S.comps.length)return;pushHist();S.comps=[];RT.clear();sel=null;commit(true);toast('모두 지웠어요 · 실행 취소로 되돌릴 수 있어요');};
 $('sig').setAttribute('aria-pressed',sigMode);
 $('sig').onclick=()=>{sigMode=!sigMode;store.set('sig',sigMode);$('sig').setAttribute('aria-pressed',sigMode);$('sig').classList.toggle('pri',sigMode);render();};
 $('sig').classList.toggle('pri',sigMode);
@@ -735,8 +735,7 @@ function loadComps(list,keepHist){if(!keepHist)pushHist();const ok=[];const used
     if(!hs.every(id=>HOLES.has(id))||hs.some(id=>used.has(id)))continue;hs.forEach(id=>used.add(id));ok.push(c);}
   let id=1;ok.forEach(c=>c.id=id++);S.comps=ok;S.nextId=id;RT.clear();sel=null;commit(true);}
 $('ex').onchange=()=>{const k=$('ex').value;$('ex').value='';if(!k)return;
-  if(S.comps.length&&!confirm('지금 회로를 지우고 예제를 불러올까요? (실행 취소로 되돌릴 수 있어요)'))return;
-  S.power=true;loadComps(EXAMPLES[k]());toast('예제를 불러왔어요');};
+  S.power=true;loadComps(EXAMPLES[k]());toast('예제를 불러왔어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');};
 function setZoom(z){zoom=Math.max(.5,Math.min(2.2,z));svg.style.width=W*zoom+'px';svg.style.height=H*zoom+'px';$('zv').textContent=Math.round(zoom*100)+'%';store.set('zoom',zoom);}
 $('zi').onclick=()=>setZoom(zoom+.1);$('zo').onclick=()=>setZoom(zoom-.1);
 
