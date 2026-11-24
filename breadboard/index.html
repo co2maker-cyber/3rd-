@@ -98,10 +98,32 @@ details.sec>summary span{margin-left:auto;font-family:var(--mono);font-weight:50
 #bb .c{cursor:move}
 #bb.place .c:not(.ia){pointer-events:none}
 #bb .c.ia{cursor:pointer}
+#bb:not(.place):not(.erase) .c:hover{filter:drop-shadow(0 0 2px #1F8FFF) drop-shadow(0 0 1px #1F8FFF)}
+#bb.erase{cursor:cell}
+#bb.erase .c{cursor:cell}
+#bb.erase .c:hover{filter:drop-shadow(0 0 3px #E5484D) drop-shadow(0 0 1px #E5484D);opacity:.75}
+.tip{position:absolute;z-index:4;pointer-events:none;background:var(--fg);color:var(--chrome);font:600 11.5px var(--mono);padding:2px 7px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.fbar{position:absolute;z-index:5;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px;max-width:calc(100% - 20px);background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.fbar b{font:600 12px var(--mono);padding:0 6px;white-space:nowrap}
+.fbar button{display:inline-flex;align-items:center;gap:4px;border:1px solid transparent;background:none;border-radius:5px;padding:4px 8px;font-size:12px;white-space:nowrap}
+.fbar button:hover{background:var(--sunk);border-color:var(--line)}
+.fbar button.del{color:var(--bad)}
+.fbar button svg{width:15px;height:15px}
+.fbar .sep{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
+.fbar .swc{width:18px;height:18px;padding:0;border-radius:4px;border:2px solid var(--panel);outline:1px solid var(--line)}
+.fbar .swc[aria-pressed="true"]{outline:2px solid var(--accent)}
+.fbar small{color:var(--muted);font-size:11px;padding:0 4px;white-space:nowrap}
+.cmenu{position:fixed;z-index:20;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:4px;display:flex;flex-direction:column}
+.cmenu button{display:flex;justify-content:space-between;gap:16px;border:0;background:none;text-align:left;padding:6px 10px;border-radius:5px;font-size:12.5px}
+.cmenu button:hover{background:var(--accent-soft)}
+.cmenu button.del{color:var(--bad)}
+.cmenu button kbd{color:var(--muted)}
+.cmenu .sws{display:flex;gap:4px;padding:6px 10px;flex-wrap:wrap}
+.cmenu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
 .navhud{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px}
 .navhud button{width:30px;height:30px;border-radius:5px;border:1px solid var(--line);background:var(--panel);font-size:15px;line-height:1;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .navhud button:hover{border-color:var(--accent)}
-.vlabel{position:absolute;left:10px;top:8px;font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none;background:color-mix(in srgb,var(--bg) 70%,transparent);padding:1px 6px;border-radius:3px}
+.vlabel{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none;background:color-mix(in srgb,var(--bg) 70%,transparent);padding:1px 6px;border-radius:3px}
 /* 오른쪽 탭 */
 .tabs{display:flex;background:var(--chrome);border-bottom:1px solid var(--line);flex:none}
 .tabs button{flex:1;border:0;border-right:1px solid var(--line2);background:none;padding:7px 6px;font-size:12px;font-weight:600;color:var(--muted);display:flex;gap:6px;align-items:center;justify-content:center}
@@ -222,6 +244,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     </div>
     <div class="grp">
       <button class="tbtn" data-tool="select" title="선택·이동 (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z" fill="currentColor"/></svg>선택</button>
+      <button class="tbtn" data-tool="erase" title="지우개 (E): 누르거나 문질러서 삭제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4l6 6-9 9H6l-3-3z"/><path d="M9 9l6 6M11 19h9"/></svg>지우개</button>
       <button class="tbtn" data-tool="wire" title="전선 (W)"><svg viewBox="0 0 24 24" fill="none" stroke="#D93A3A" stroke-width="2.4" stroke-linecap="round"><path d="M4 18Q12 2 20 18"/></svg>전선</button>
     </div>
     <div class="grp">
@@ -266,6 +289,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   <main class="canvas" id="bw">
     <svg id="bb" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="vlabel">평면도 · 브레드보드 830</div>
+    <div class="tip" id="tip" hidden></div>
+    <div class="fbar" id="fbar" hidden></div>
     <div class="navhud">
       <button id="hzi" title="확대" aria-label="확대">+</button>
       <button id="hzo" title="축소" aria-label="축소">−</button>
@@ -295,6 +320,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   </footer>
 </div>
 <div class="toast" id="toast"></div>
+<div class="cmenu" id="cmenu" role="menu" hidden></div>
 
 <script>
 'use strict';
@@ -577,6 +603,7 @@ let S={comps:[],power:true,nextId:1};
 const RT=new Map(); // 실행 중 상태(저장 안 함)
 const rt=c=>{let r=RT.get(c.id);if(!r){r={};RT.set(c.id,r);}return r;};
 let tool='select', pending=null, hover=null, sel=null, drag=null, lastPt=null;
+const SEL=new Set();let wireDrag=null,boxSel=null,erase=null,rightDown=null,clip=null,dnd=null;
 let sigMode=store.get('sig',false);
 const opt=Object.assign({wire:'#D93A3A',ohms:330,led:'red',hz:1,seg:'cc',farad:4.7e-5},store.get('opt',{}));
 const hist=[];
@@ -737,23 +764,25 @@ function boardSVG(){
 svg.innerHTML=`<g id="gB">${boardSVG()}</g><g id="gH"></g><g id="gC"></g><g id="gO"></g>`;
 const gH=document.getElementById('gH'),gC=document.getElementById('gC'),gO=document.getElementById('gO');
 const LVCOL=['var(--lo)','var(--hi)','var(--xx)','var(--zz)','var(--sh)'];
-function wirePath(a,b){const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;const off=Math.min(22,len*.2);
+function wirePath(a,b,pts){if(pts&&pts.length)return'M'+[a,...pts,b].map(q=>q.x+' '+q.y).join('L');const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;const off=Math.min(22,len*.2);
   let nx=-dy/len,ny=dx/len;if(ny>0||(Math.abs(ny)<1e-6&&nx<0)){nx=-nx;ny=-ny;}
   return`M${a.x} ${a.y} Q${(a.x+b.x)/2+nx*off} ${(a.y+b.y)/2+ny*off} ${b.x} ${b.y}`;}
 function twoTerm(a,b){const dx=b.x-a.x,dy=b.y-a.y;return{mx:(a.x+b.x)/2,my:(a.y+b.y)/2,len:Math.hypot(dx,dy),ang:Math.atan2(dy,dx)*180/Math.PI};}
 function compSVG(c,now){
-  const id=c.id,ph=pinHoles(c).map(h=>HOLES.get(h));const isSel=sel&&sel.type==='comp'&&sel.id===id;let s='';
+  const id=c.id,ph=pinHoles(c).map(h=>HOLES.get(h));const isSel=SEL.has(id),one=isSel&&SEL.size===1;let s='';
   const ia=(c.t==='btn'||c.t==='sw')?' ia':'';
   if(c.t==='wire'){const [a,b]=ph;let col=c.color;
     if(sigMode){const lv=levelOfHole(a.id).v;col=LVCOL[lv];}
-    const d=wirePath(a,b);
-    s+=`<g class="c" data-id="${id}"><path d="${d}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="6.5" stroke-linecap="round"/>
-      <path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round"${sigMode&&levelOfHole(a.id).v===SH?' class="blink"':''}/>
+    const d=wirePath(a,b,c.pts);
+    if(isSel)s+=`<path d="${d}" fill="none" stroke="#1F8FFF" stroke-opacity=".45" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`;
+    s+=`<g class="c" data-id="${id}"><path d="${d}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"${sigMode&&levelOfHole(a.id).v===SH?' class="blink"':''}/>
       <path d="${d}" fill="none" stroke="transparent" stroke-width="12"/>
       <circle cx="${a.x}" cy="${a.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/><circle cx="${b.x}" cy="${b.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/></g>`;
-    if(isSel)s+=endHandles(c,ph);
+    if(one){s+=endHandles(c,ph);(c.pts||[]).forEach((q,k)=>s+=`<rect class="end" data-bend="${id}:${k}" x="${q.x-4.5}" y="${q.y-4.5}" width="9" height="9" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.6" style="cursor:move"><title>끌어서 옮기기 · 더블클릭하면 지워져요</title></rect>`);}
     return s;}
   if(TWO.has(c.t)){const [a,b]=ph,{mx,my,len,ang}=twoTerm(a,b);
+    if(isSel)s+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1F8FFF" stroke-opacity=".35" stroke-width="20" stroke-linecap="round" pointer-events="none"/>`;
     s+=`<g class="c${ia}" data-id="${id}"><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#9EA4AB" stroke-width="2"/>
       <circle cx="${a.x}" cy="${a.y}" r="2.6" fill="#B9BEC4"/><circle cx="${b.x}" cy="${b.y}" r="2.6" fill="#B9BEC4"/>
       <g transform="translate(${mx} ${my}) rotate(${ang})">`;
@@ -773,7 +802,7 @@ function compSVG(c,now){
     else if(c.t==='btn'){const pr=rt(c).pressed;
       s+=`<rect x="-9" y="-9" width="18" height="18" rx="2.5" fill="#2B2F35"/><circle r="${pr?4.6:5.6}" fill="${pr?'#8E2A2A':'#D94040'}" stroke="#000" stroke-opacity=".35"/>`;}
     else if(c.t==='sw'){s+=`<rect x="-12" y="-6.5" width="24" height="13" rx="2.5" fill="#2B2F35"/><rect x="${c.on?1.5:-10.5}" y="-4.5" width="9" height="9" rx="1.5" fill="${c.on?'#4CC79C':'#E9ECEF'}"/>`;}
-    s+=`</g></g>`;if(isSel)s+=endHandles(c,ph);return s;}
+    s+=`</g></g>`;if(one)s+=endHandles(c,ph);return s;}
   if(c.t==='gate'){s+=gateSVG(c.kind,ph,id,rt(c).out);if(isSel){const a=ph[0],y=ph[ph.length-1];s+=`<rect class="selbox" x="${a.x-9}" y="${a.y-44}" width="${y.x-a.x+18}" height="52" rx="4"/>`;}return s;}
   if(c.t==='clk'){const a=ph[0],v=S.power?clkVal(c,now):-1;const bx=a.x-20,by=a.y-34;
     s+=`<g class="c" data-id="${id}"><line x1="${a.x}" y1="${a.y}" x2="${a.x}" y2="${by+18}" stroke="#9EA4AB" stroke-width="2"/><circle cx="${a.x}" cy="${a.y}" r="2.6" fill="#B9BEC4"/>
@@ -827,12 +856,17 @@ function gateSVG(kind,ph,id,out,ghost){
   s+=`<text x="${a.x-3}" y="${cy-8}" font-size="7.5" font-weight="700" fill="#6B6455" font-family="var(--mono)">${kind}</text></g>`;
   return s;}
 function endHandles(c,ph){return ph.map((p,k)=>`<circle class="end" data-end="${c.id}:${k}" cx="${p.x}" cy="${p.y}" r="6" fill="#1F8FFF" fill-opacity=".25" stroke="#1F8FFF" stroke-width="1.5" style="cursor:move"/>`).join('');}
+function syncSel(){
+  if(sel&&sel.type==='comp'){if(!compById(sel.id)){sel=null;SEL.clear();}else{SEL.clear();SEL.add(sel.id);}}
+  else if(sel&&sel.type==='multi'){for(const id of [...SEL])if(!compById(id))SEL.delete(id);if(SEL.size===1)sel={type:'comp',id:[...SEL][0]};else if(!SEL.size)sel=null;}
+  else SEL.clear();}
+function setSelIds(ids){SEL.clear();ids.forEach(i=>SEL.add(i));sel=SEL.size===1?{type:'comp',id:[...SEL][0]}:SEL.size?{type:'multi'}:null;}
 function render(){
-  LBL=labels();const now=performance.now()/1000;
+  syncSel();LBL=labels();const now=performance.now()/1000;
   // 와이어를 가장 위에 그림
   const order=[...S.comps].sort((a,b)=>(a.t==='wire')-(b.t==='wire'));
   gC.innerHTML=order.map(c=>compSVG(c,now)).join('');
-  renderOverlay();renderWarns();renderLive();renderObjs();}
+  renderOverlay();renderWarns();renderLive();renderObjs();renderFbar();}
 function renderOverlay(){
   let s='',hs='';
   if(hover&&SIM.netOf){const net=SIM.netOf[hover.i];
@@ -851,6 +885,10 @@ function renderOverlay(){
   if(lastPt&&!panState){const cx=hover?hover.x:lastPt.x,cy=hover?hover.y:lastPt.y;
     s+=`<line class="cross" x1="-6000" x2="7000" y1="${cy}" y2="${cy}"/><line class="cross" y1="-6000" y2="7000" x1="${cx}" x2="${cx}"/>`;
     if(hover)s+=`<rect x="${cx-7}" y="${cy-7}" width="14" height="14" fill="none" stroke="var(--cross)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>`;}
+  if(wireDrag&&wireDrag.moved){const a=wireDrag.from;s+=`<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;
+    if(hover&&hover.id!==a.id){const bad=occ().has(hover.id);s+=`<path d="${wirePath(a,hover)}" fill="none" stroke="${opt.wire}" stroke-width="4.5" stroke-opacity=".75" stroke-linecap="round"/><circle cx="${hover.x}" cy="${hover.y}" r="6" fill="none" stroke="${bad?'#C2362F':'#1F8FFF'}" stroke-width="2"/>`;}}
+  if(boxSel&&boxSel.moved){const x=Math.min(boxSel.x0,boxSel.x1),y=Math.min(boxSel.y0,boxSel.y1);
+    s+=`<rect x="${x}" y="${y}" width="${Math.abs(boxSel.x1-boxSel.x0)}" height="${Math.abs(boxSel.y1-boxSel.y0)}" fill="#1F8FFF" fill-opacity=".08" stroke="#1F8FFF" stroke-width="1.2" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>`;}
   if(sel&&sel.type==='hole'){const h=HOLES.get(sel.id);s+=`<circle cx="${h.x}" cy="${h.y}" r="7" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;}
   gH.innerHTML=hs;gO.innerHTML=s;}
 function gateGhost(pt){if(!pt)return null;const {ri,c}=gridAt(pt);const cols=gatePinCols(tool.slice(5));const r=ROWS[ri];
@@ -870,6 +908,12 @@ function renderWarns(){const w=SIM.warns;const bad=w.some(x=>x[0]==='bad');const
   $('sSim').textContent=!S.power?'● 전원 꺼짐':SIM.unstable?'● 발진 중':bad?'● 단락/충돌':w.length?`● 경고 ${w.length}건`:'● 시뮬레이션 정상';
   $('warns').innerHTML=w.length?w.map(([k,t])=>`<li class="${k}">${esc(t)}</li>`).join(''):`<li class="ok">${S.comps.length?'문제가 보이지 않아요. 회로가 정상적으로 동작 중이에요.':'보드가 비어 있어요. 왼쪽에서 부품을 골라 꽂아 보세요.'}</li>`;}
 function renderInfo(){const box=$('info');
+  syncSel();
+  if(sel&&sel.type==='multi'){const ids=[...SEL];
+    box.innerHTML=`<div class="ttl"><b>${ids.length}개 선택됨</b></div><p class="desc">${ids.map(id=>esc(LBL.get(id)||'')).join(', ')}</p>
+      <p class="desc">끌거나 방향키로 함께 옮기고, Delete로 한꺼번에 지워요. Shift+클릭으로 선택에서 빼거나 더할 수 있어요.</p>
+      <div class="row"><button class="btn" id="mdup">복제 (Ctrl+D)</button><button class="btn" id="mcopy">복사 (Ctrl+C)</button><button class="btn bad" id="mdel">모두 삭제 (Delete)</button></div>`;
+    $('mdup').onclick=dupSel;$('mcopy').onclick=copySel;$('mdel').onclick=delSel;return;}
   if(sel&&sel.type==='comp'){const c=compById(sel.id);if(!c){sel=null;return renderInfo();}
     let h=`<div class="ttl"><b>${esc(LBL.get(c.id)||'')} ${esc(compName(c))}</b><span>${c.t==='ic'?esc(CHIPS[c.chip].title):''}</span></div>`;
     if(tab==='warn')showTab('info');
@@ -883,7 +927,7 @@ function renderInfo(){const box=$('info');
   else box.innerHTML=helpHTML();
   renderLive();}
 function partDesc(c){return{
-  wire:'두 구멍을 전기적으로 이어요. 양 끝의 파란 점을 끌어 옮길 수 있어요.',
+  wire:'두 구멍을 전기적으로 이어요. 양 끝의 파란 점을 끌어 옮기고, 전선을 더블클릭하면 꺾는 점이 생겨요(흰 네모를 끌어 모양 바꾸기, 더블클릭하면 지우기).',
   res:`${ohmTx(c.ohms)} 저항. LED에 흐르는 전류를 제한하거나, 입력을 HIGH/LOW로 약하게 끌어당기는(풀업·풀다운) 데 써요.`,
   led:'애노드(+, 처음 누른 쪽)가 캐소드(−)보다 높은 전압이면 켜져요. 저항과 직렬로 연결하세요.',
   btn:'누르고 있는 동안만 양쪽이 이어져요(선택 도구로 눌러 보세요). 풀다운 저항과 함께 쓰면 누를 때 HIGH가 돼요.',
@@ -961,9 +1005,12 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li>모든 IC는 <b>VCC를 + 레일</b>, <b>GND를 − 레일</b>에 연결해야 동작해요.</li>
 <li>스위치·버튼·저항·LED 로 입력과 출력을 만들고, <b>선택</b> 도구로 스위치를 눌러 결과를 확인하세요.</li>
 <li>부품을 누르면 [속성]에 핀마다 현재 상태(<span class="lv H">1</span> HIGH, <span class="lv L">0</span> LOW, <span class="lv Z">—</span> 떠 있음, <span class="lv X">?</span> 알 수 없음)가 실시간으로 나와요.</li>
-<li>부품은 끌어서 옮기고, Delete 키나 오른쪽 클릭으로 지워요.</li>
-<li>화면: 휠로 확대/축소, 빈 곳을 끌거나 휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰은 두 손가락으로 확대.</li>
-<li>단축키: <kbd>V</kbd> 선택 <kbd>W</kbd> 전선 <kbd>R</kbd> 저항 <kbd>L</kbd> LED <kbd>B</kbd> 버튼 <kbd>S</kbd> 스위치 <kbd>C</kbd> 클럭 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 실행 취소/다시 실행</li>
+<li><b>지우기</b>: 부품을 선택하고 <kbd>Delete</kbd>, 선택하면 뜨는 막대의 [삭제], 오른쪽 클릭 메뉴, 또는 <b>지우개</b>(<kbd>E</kbd>)로 누르거나 문질러서 지워요.</li>
+<li><b>전선</b>: 선택 도구에서 빈 구멍을 누른 채 다른 구멍까지 끌면 바로 그려져요. 전선을 더블클릭하면 꺾는 점이 생기고, 그 점을 끌어 모양을 바꾸거나 더블클릭해서 지워요.</li>
+<li><b>여러 개</b>: 보드 밖 빈 곳을 끌어 범위 선택, <kbd>Shift</kbd>+클릭으로 더하기, <kbd>Ctrl</kbd>+<kbd>A</kbd> 모두 선택. 방향키로 한 칸씩 옮기고 <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd>로 복사·붙여넣기·복제해요.</li>
+<li>라이브러리의 부품을 보드로 <b>끌어다 놓을</b> 수도 있어요.</li>
+<li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰은 두 손가락으로 확대.</li>
+<li>단축키: <kbd>V</kbd> 선택 <kbd>W</kbd> 전선 <kbd>R</kbd> 저항 <kbd>L</kbd> LED <kbd>B</kbd> 버튼 <kbd>S</kbd> 스위치 <kbd>C</kbd> 클럭 <kbd>E</kbd> 지우개 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 실행 취소/다시 실행</li>
 <li>IC를 선택하면 <b>데이터시트 기준 핀 배치도</b>가 나오고, 보드 위 다리에도 핀 이름이 표시돼요.</li></ol>
 <div class="legend"><span><span class="lv H">1</span>HIGH 5V</span><span><span class="lv L">0</span>LOW 0V</span><span><span class="lv Z">—</span>연결 안 됨</span><span><span class="lv X">?</span>알 수 없음</span><span><span class="lv S">!</span>단락</span></div>
 <p class="desc" style="margin-top:10px">회로는 브라우저에 자동 저장돼요. 다른 기기로 옮기려면 [파일로 저장]을 쓰세요.</p>`;}
@@ -972,6 +1019,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 const ICO={
   cap:'<svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="#1F3E8C"/><path d="M14 3.1A8 8 0 0 1 14 16.9Z" fill="#B9C7E6"/></svg>',
   select:'<svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z" fill="currentColor"/></svg>',
+  erase:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.8"><path d="M14 4l6 6-9 9H6l-3-3z"/><path d="M9 9l6 6"/></svg>',
   wire:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M3 14Q12 0 21 14" fill="none" stroke="#D93A3A" stroke-width="3" stroke-linecap="round"/></svg>',
   res:'<svg width="24" height="12" viewBox="0 0 24 12"><line x1="0" y1="6" x2="24" y2="6" stroke="#999" stroke-width="1.5"/><rect x="5" y="2" width="14" height="8" rx="3.5" fill="#D8C08E"/><rect x="8" y="2" width="2" height="8" fill="#F07A00"/><rect x="12" y="2" width="2" height="8" fill="#F07A00"/><rect x="15" y="2" width="1.6" height="8" fill="#7B4A1E"/></svg>',
   led:'<svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7" fill="#FF3B30"/><circle cx="6.5" cy="6.5" r="2" fill="#fff" opacity=".8"/></svg>',
@@ -980,7 +1028,7 @@ const ICO={
   clk:'<svg width="24" height="14" viewBox="0 0 24 14"><path d="M1 12h5V2h6v10h6V2h5" fill="none" stroke="#1F5E8C" stroke-width="2"/></svg>',
   seg7:'<svg width="16" height="20" viewBox="0 0 16 20"><rect width="16" height="20" rx="2" fill="#1A1C1F"/><path d="M5 3h6M4 4v5M12 4v5M5 10h6M4 11v5M12 11v5M5 17h6" stroke="#FF3B30" stroke-width="1.8"/></svg>',
   ic:'<svg width="26" height="16" viewBox="0 0 26 16"><rect x="1" y="3" width="24" height="10" rx="1.5" fill="#26292E"/><path d="M1 6a2 2 0 0 1 0 4z" fill="#000"/>'+[4,9,14,19].map(x=>`<rect x="${x}" y="0" width="2.5" height="3" fill="#AAB"/><rect x="${x}" y="13" width="2.5" height="3" fill="#AAB"/>`).join('')+'</svg>'};
-const TOOLS=[['select','선택·이동','스위치를 누르고 부품을 옮겨요','V'],['wire','전선','구멍 두 개를 이어요','W']];
+const TOOLS=[['select','선택·이동','구멍에서 끌면 전선, 빈 곳을 끌면 범위 선택','V'],['wire','전선','구멍 두 개를 잇거나 끌어서 그려요','W'],['erase','지우개','누르거나 문질러서 지워요','E']];
 const PARTS=[['res','저항','220Ω ~ 10kΩ','R'],['led','LED','+ 쪽부터 누르세요','L'],['btn','푸시 버튼','누르는 동안 연결','B'],['sw','토글 스위치','켜고 끄기','S'],['clk','클럭 발생기','0.5 ~ 10Hz 펄스','C'],['cap','커패시터','10nF ~ 470µF (+ 쪽부터)','K'],['seg7','7세그먼트','캐소드형 · 애노드형','']];
 function itemBtn([k,b,sm,kb],ico){return`<button class="it" data-tool="${k}" aria-pressed="false"><span class="ic">${ico}</span><span class="tx"><b>${esc(b)}</b><small>${esc(sm)}</small></span>${kb?`<kbd>${kb}</kbd>`:''}</button>`;}
 $('tools').innerHTML=TOOLS.map(t=>itemBtn(t,ICO[t[0]])).join('');
@@ -991,10 +1039,14 @@ $('gates').innerHTML=Object.values(GATES).map(d=>itemBtn(['gate:'+d.name,d.name,
   $('chips').innerHTML=CATS.map(([k,t])=>{const list=sorted.filter(d=>d.cat===k);if(!list.length)return'';
     return`<details class="sec"${k==='gate'||k==='disp'||k==='timer'?' open':''}><summary>IC · ${t} <span>${list.length}</span></summary><div class="items">${list.map(d=>itemBtn(['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ICO.ic)).join('')}</div></details>`;}).join('');}
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+document.querySelectorAll('.it[data-tool]').forEach(b=>{const t=b.dataset.tool;if(['select','wire','erase'].includes(t))return;b.draggable=true;b.title='누르거나 보드로 끌어다 놓으세요';
+  b.addEventListener('dragstart',e=>{dnd=t;try{e.dataTransfer.setData('text/plain',t);e.dataTransfer.effectAllowed='copy';}catch(_){}});b.addEventListener('dragend',()=>{dnd=null;});});
+$('bw').addEventListener('dragover',e=>{if(!dnd)return;e.preventDefault();try{e.dataTransfer.dropEffect='copy';}catch(_){}if(tool!==dnd)setTool(dnd);lastPt=svgPt(e);hover=nearHole(lastPt);renderOverlay();});
+$('bw').addEventListener('drop',e=>{if(!dnd)return;e.preventDefault();lastPt=svgPt(e);hover=nearHole(lastPt);const t=dnd;dnd=null;if(tool!==t)setTool(t);place(hover,lastPt);});
 $('ng').textContent=Object.keys(GATES).length;
 function setTool(t){tool=t;pending=null;
   document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
-  svg.classList.toggle('place',t!=='select');renderOpts();renderHint();renderOverlay();}
+  svg.classList.toggle('place',t!=='select'&&t!=='erase');svg.classList.toggle('erase',t==='erase');closeMenu();renderOpts();renderHint();renderOverlay();}
 function renderOpts(){const o=$('opts');let h='',t='옵션';
   if(tool==='wire'){t='전선 색';h=`<div class="sw">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-k="wire" data-v="${col}" aria-pressed="${opt.wire===col}" aria-label="색"></button>`).join('')}</div>`;}
   else if(tool==='res'){t='저항 값';h=`<div class="seg">${OHMS.map(v=>`<button data-k="ohms" data-v="${v}" aria-pressed="${opt.ohms===v}">${ohmTx(v)}</button>`).join('')}</div>`;}
@@ -1009,7 +1061,8 @@ function renderOpts(){const o=$('opts');let h='',t='옵션';
 function pinoutMini(d){const n=d.pins.length,h=n/2;let l='',r='';
   for(let i=0;i<h;i++){l+=`<div style="font-size:12px"><code>${i+1}</code> ${pinHTML(d.pins[i])}</div>`;r+=`<div style="font-size:12px;text-align:right">${pinHTML(d.pins[n-1-i])} <code>${n-i}</code></div>`;}
   return`<div>${l}</div><div>${r}</div><p class="desc" style="grid-column:1/-1;margin:6px 0 0">왼쪽 열은 아래쪽(f줄) 핀, 오른쪽 열은 위쪽(e줄) 핀이에요.</p>`;}
-function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선택</b> · 부품을 눌러 정보를 보고, 끌어서 옮겨요. 스위치·버튼은 눌러서 조작해요.',
+function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선택</b> · 구멍에서 끌면 전선 · 부품을 끌어 옮기기 · 빈 곳을 끌면 범위 선택 · Shift+클릭 여러 개 선택 · 오른쪽 클릭 메뉴',
+  erase:'<b>지우개</b> · 지울 전선이나 부품을 누르거나, 누른 채 문질러서 지우세요 (Esc: 선택 도구로)',
   wire:pending?'<b>전선</b> · 이어 줄 두 번째 구멍을 누르세요 (Esc 취소)':'<b>전선</b> · 첫 번째 구멍을 누르세요',
   res:pending?'<b>저항</b> · 다른 쪽 다리를 꽂을 구멍을 누르세요':'<b>저항</b> · 한쪽 다리를 꽂을 구멍을 누르세요',
   led:pending?'<b>LED</b> · 이제 <b>캐소드(−, 짧은 다리)</b> 구멍을 누르세요':'<b>LED</b> · 먼저 <b>애노드(+, 긴 다리)</b> 구멍을 누르세요',
@@ -1039,7 +1092,7 @@ let toastT;function toast(t){const e=$('toast');e.textContent=t;e.classList.add(
 const view={x:0,y:0,s:1};let panState=null;const ptrs=new Map();
 const cw=()=>$('bw').clientWidth,ch=()=>$('bw').clientHeight;
 function applyView(){const w=Math.max(1,cw()),h=Math.max(1,ch());svg.setAttribute('viewBox',`${view.x} ${view.y} ${w/view.s} ${h/view.s}`);
-  const z=Math.round(view.s*100)+'%';$('zv').textContent=z;$('sZoom').textContent=z;}
+  const z=Math.round(view.s*100)+'%';$('zv').textContent=z;$('sZoom').textContent=z;if(typeof renderFbar==='function'&&SEL.size)renderFbar();}
 function fitView(){const w=cw(),h=ch();if(!w||!h)return;view.s=Math.max(.2,Math.min(3,Math.min(w/(W+40),h/(H+40))));
   view.x=W/2-w/view.s/2;view.y=H/2-h/view.s/2;applyView();}
 function zoomAt(f,cx,cy){const r=svg.getBoundingClientRect();if(cx===undefined){cx=r.left+r.width/2;cy=r.top+r.height/2;}
@@ -1049,7 +1102,7 @@ function svgPt(e){const r=svg.getBoundingClientRect();return{x:view.x+(e.clientX
 let spaceDown=false;
 svg.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?.05:.0015)),e.clientX,e.clientY);lastPt=svgPt(e);renderOverlay();},{passive:false});
 new ResizeObserver(()=>{const r=svg.getBoundingClientRect();if(!r.width)return;applyView();}).observe($('bw'));
-function toolName(){return tool==='select'?'선택':tool==='wire'?'전선':tool.startsWith('ic:')?tool.slice(3):tool.startsWith('gate:')?tool.slice(5)+' 게이트':(TNAME[tool]||tool);}
+function toolName(){return tool==='select'?'선택':tool==='wire'?'전선':tool==='erase'?'지우개':tool.startsWith('ic:')?tool.slice(3):tool.startsWith('gate:')?tool.slice(5)+' 게이트':(TNAME[tool]||tool);}
 function gridAt(p){const c=Math.max(1,Math.min(N,Math.round((p.x-X0)/P)+1));let ri=0,bd=1e9;ROWS.forEach((r,i)=>{const d=Math.abs(ROWY[r]-p.y);if(d<bd){bd=d;ri=i;}});return{ri,c};}
 function nearHole(p){const {ri,c}=gridAt(p);const h=holeAt(ri,c);return h&&Math.hypot(h.x-p.x,h.y-p.y)<11?h:null;}
 function setStatus(){const st=$('status');$('sCoord').textContent=hover?`열 ${hover.c} · 행 ${isRail(hover.r)?hover.r.toUpperCase():hover.r}`:'—';if(!hover){return;}
@@ -1060,29 +1113,48 @@ svg.addEventListener('pointermove',e=>{
   if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===2&&panState&&panState.pinch){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     zoomAt(d/panState.d,mx,my);view.x-=(mx-panState.mx)/view.s;view.y-=(my-panState.my)/view.s;applyView();panState.d=d;panState.mx=mx;panState.my=my;return;}
+  if(rightDown){const dx=e.clientX-rightDown.sx,dy=e.clientY-rightDown.sy;if(!rightDown.moved&&Math.hypot(dx,dy)>5){rightDown.moved=true;svg.classList.add('panning');$('tip').hidden=true;}
+    if(rightDown.moved){view.x=rightDown.vx-dx/view.s;view.y=rightDown.vy-dy/view.s;applyView();}return;}
   if(panState){const dx=e.clientX-panState.sx,dy=e.clientY-panState.sy;
     if(!panState.on&&Math.hypot(dx,dy)>5){panState.on=true;svg.classList.add('panning');}
     if(panState.on){view.x=panState.vx-dx/view.s;view.y=panState.vy-dy/view.s;applyView();return;}}
   const p=svgPt(e);lastPt=p;const h=nearHole(p);
-  if(drag){doDrag(p);return;}
-  if(h!==hover){hover=h;setStatus();}renderOverlay();});
-svg.addEventListener('pointerleave',()=>{if(drag||panState)return;hover=null;lastPt=null;renderOverlay();});
-svg.addEventListener('contextmenu',e=>{const g=e.target.closest('[data-id]');if(g){e.preventDefault();delComp(+g.dataset.id);}});
+  if(drag){doDrag(p);updTip(e);return;}
+  if(erase){eraseAt(e);return;}
+  if(wireDrag){if(h!==hover){hover=h;setStatus();}if(!wireDrag.moved&&Math.hypot(e.clientX-wireDrag.sx,e.clientY-wireDrag.sy)>4){wireDrag.moved=true;renderFbar();}renderOverlay();updTip(e);return;}
+  if(boxSel){boxSel.x1=p.x;boxSel.y1=p.y;if(!boxSel.moved&&Math.hypot(e.clientX-boxSel.sx,e.clientY-boxSel.sy)>4){boxSel.moved=true;renderFbar();}renderOverlay();return;}
+  if(h!==hover){hover=h;setStatus();}renderOverlay();updTip(e);});
+svg.addEventListener('pointerleave',()=>{$('tip').hidden=true;if(drag||panState||wireDrag||boxSel||erase||rightDown)return;hover=null;lastPt=null;renderOverlay();});
+svg.addEventListener('contextmenu',e=>e.preventDefault());
 svg.addEventListener('pointerdown',e=>{
+  closeMenu();
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===2){const [a,b]=[...ptrs.values()];if(drag){const c=compById(drag.id);if(c&&c.t==='btn')rt(c).pressed=false;drag=null;}
     panState={pinch:true,on:true,d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2};return;}
   if(e.button===1||e.button===2&&false||spaceDown){e.preventDefault();panState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,on:true,force:true};svg.classList.add('panning');svg.setPointerCapture(e.pointerId);return;}
+  if(e.button===2){const g=e.target.closest('[data-id]');rightDown={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,id:g?+g.dataset.id:null,cx:e.clientX,cy:e.clientY,p:svgPt(e)};svg.setPointerCapture(e.pointerId);return;}
   if(e.button&&e.button!==0)return;const p=svgPt(e);lastPt=p;const h=nearHole(p);hover=h;setStatus();
+  if(tool==='erase'){erase={hit:false};eraseAt(e);svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
+  // 더블클릭(같은 자리 0.4초 안 두 번): 전선에 꺾는 점 추가 · 꺾는 점 지우기
+  {const t=performance.now(),dbl=lastTap&&t-lastTap.t<400&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<6;lastTap={t,x:e.clientX,y:e.clientY};
+   if(dbl&&handleDbl(e)){lastTap=null;e.preventDefault();return;}}
+  const bendEl=e.target.closest('[data-bend]');
+  if(bendEl){const [id,k]=bendEl.dataset.bend.split(':').map(Number);drag={kind:'bend',id,k,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
   const endEl=e.target.closest('[data-end]');const g=e.target.closest('[data-id]');
-  if(endEl){const [id,k]=endEl.dataset.end.split(':').map(Number);drag={kind:'end',id,k,moved:false,start:null};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
+  if(endEl&&!bendEl){const [id,k]=endEl.dataset.end.split(':').map(Number);drag={kind:'end',id,k,moved:false,start:null};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
   if(g){const c=compById(+g.dataset.id);
+    if(tool==='select'&&e.shiftKey){const n=new Set(SEL);n.has(c.id)?n.delete(c.id):n.add(c.id);setSelIds([...n]);render();renderInfo();return;}
     if(tool==='select'||c.t==='btn'||c.t==='sw'){
-      if(c.t==='btn'){rt(c).pressed=true;settle();render();}
-      const changedSel=!(sel&&sel.id===c.id);sel={type:'comp',id:c.id};
-      drag={kind:'move',id:c.id,start:gridAt(p),orig:JSON.parse(JSON.stringify(c)),moved:false,hist:false};
-      svg.setPointerCapture(e.pointerId);e.preventDefault();if(changedSel){render();renderInfo();}return;}}
-  // 빈 곳: 끌면 화면 이동, 그냥 누르면 선택/배치
+      if(c.t==='btn'){rt(c).pressed=true;settle();}
+      if(!(SEL.has(c.id)&&SEL.size>1))sel={type:'comp',id:c.id};
+      syncSel();const ids=[...SEL];
+      drag={kind:'move',id:c.id,ids,origs:new Map(ids.map(i=>[i,JSON.parse(JSON.stringify(compById(i)))])),start:gridAt(p),moved:false};
+      svg.setPointerCapture(e.pointerId);e.preventDefault();render();renderInfo();return;}}
+  const mouse=e.pointerType==='mouse'||e.pointerType==='pen';
+  // 마우스: 빈 구멍에서 끌면 전선, 보드 밖 빈 곳을 끌면 범위 선택
+  if(mouse&&!e.shiftKey&&h&&(tool==='select'||tool==='wire')&&!occ().has(h.id)){wireDrag={from:h,sx:e.clientX,sy:e.clientY,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
+  if(mouse&&tool==='select'){boxSel={x0:p.x,y0:p.y,x1:p.x,y1:p.y,add:e.shiftKey,h,moved:false,sx:e.clientX,sy:e.clientY};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
+  // 터치: 끌면 화면 이동, 그냥 누르면 선택/배치
   panState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,on:false,h,p};svg.setPointerCapture(e.pointerId);});
 function endPan(e){if(!panState)return false;const ps=panState;panState=null;svg.classList.remove('panning');
   if(ps.on||ps.force||ps.pinch)return true;
@@ -1101,24 +1173,136 @@ function place(h,p){const o=occ();
   if(tool==='wire')c.color=opt.wire;if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led')c.color=opt.led;if(tool==='sw')c.on=false;
   pending=tool==='wire'?null:null;addComp(c);renderHint();}
 function doDrag(p){const c=compById(drag.id);if(!c)return;
+  if(drag.kind==='bend'){if(!c.pts)return;const q={x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};const o=c.pts[drag.k];if(o&&o.x===q.x&&o.y===q.y)return;
+    if(!drag.moved){pushHist();drag.moved=true;}c.pts[drag.k]=q;render();return;}
   if(drag.kind==='end'){const h=nearHole(p);hover=h;if(!h||c.pins[drag.k]===h.id){renderOverlay();return;}
     const o=occ(c.id);if(o.has(h.id)||c.pins[1-drag.k]===h.id)return;
     if(!drag.moved){pushHist();drag.moved=true;}c.pins[drag.k]=h.id;settle();render();setStatus();return;}
-  const g=gridAt(p),dr=g.ri-drag.start.ri,dc=g.c-drag.start.c;const O=drag.orig;let next;
-  if(c.t==='ic'||c.t==='seg7'){const n=pinHoles(O).length/2,col=O.col+dc;if(col<1||col+n-1>N)return;next={col};}
-  else{const ps=O.pins.map(id=>{const h=HOLES.get(id);return holeAt(h.ri+dr,h.c+dc);});if(ps.some(x=>!x))return;if(c.t==='gate'&&ps.some(h=>isRail(h.r)))return;
-    // 레일 ↔ 본판을 넘나들 때 구멍이 없으면 멈춤
-    next={pins:ps.map(h=>h.id)};}
-  const test=Object.assign({},c,next);if(JSON.stringify(pinHoles(test))===JSON.stringify(pinHoles(c)))return;
-  const o=occ(c.id);if(pinHoles(test).some(id=>o.has(id)))return;
-  if(!drag.moved){hist.push(JSON.stringify({comps:S.comps.map(x=>x.id===c.id?O:x),power:S.power,nextId:S.nextId}));fut.length=0;syncHist();drag.moved=true;}
-  Object.assign(c,next);settle();render();}
+  const g=gridAt(p),dr=g.ri-drag.start.ri,dc=g.c-drag.start.c;
+  if(tryMove(drag.ids,drag.origs,dr,dc,()=>{if(!drag.moved){hist.push(JSON.stringify({comps:S.comps.map(x=>drag.origs.has(x.id)?drag.origs.get(x.id):x),power:S.power,nextId:S.nextId}));fut.length=0;syncHist();drag.moved=true;}})){settle();render();}}
+/* 부품 하나를 (행 dr, 열 dc)만큼 옮긴 결과. 옮길 수 없으면 null */
+function shiftComp(O,dr,dc){
+  if(O.t==='ic'||O.t==='seg7'){const n=pinHoles(O).length/2,col=O.col+dc;if(col<1||col+n-1>N)return null;return{col};}
+  const ps=O.pins.map(id=>{const h=HOLES.get(id);return holeAt(h.ri+dr,h.c+dc);});if(ps.some(x=>!x))return null;
+  if(O.t==='gate'&&ps.some(h=>isRail(h.r)))return null;
+  const next={pins:ps.map(h=>h.id)};
+  if(O.pts&&O.pts.length){const h0=HOLES.get(O.pins[0]),dx=ps[0].x-h0.x,dy=ps[0].y-h0.y;next.pts=O.pts.map(q=>({x:q.x+dx,y:q.y+dy}));}
+  return next;}
+function tryMove(ids,origs,dr,dc,before){const fixed=ids.some(id=>{const t=origs.get(id).t;return t==='ic'||t==='seg7';});if(fixed)dr=0;
+  const idset=new Set(ids),o=new Map();for(const c of S.comps)if(!idset.has(c.id))for(const h of pinHoles(c))o.set(h,c.id);
+  const nexts=[],used=new Set();let same=true;
+  for(const id of ids){const O=origs.get(id),nx=shiftComp(O,dr,dc);if(!nx)return false;const test=Object.assign({},O,nx),hs=pinHoles(test);
+    for(const h of hs){if(o.has(h)||used.has(h))return false;used.add(h);}
+    const cur=compById(id);if(JSON.stringify(hs)!==JSON.stringify(pinHoles(cur)))same=false;nexts.push([cur,nx]);}
+  if(same)return false;if(before)before();for(const [c,nx] of nexts)Object.assign(c,nx);return true;}
+function nudge(dr,dc){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;const origs=new Map(ids.map(i=>[i,JSON.parse(JSON.stringify(compById(i)))]));
+  if(tryMove(ids,origs,dr,dc,pushHist))commit(true);else toast('그쪽으로는 옮길 수 없어요 (구멍이 없거나 다른 부품이 있어요)');}
+/* 지우기 · 복사 · 붙여넣기 */
+function delSel(){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;pushHist();const set=new Set(ids);S.comps=S.comps.filter(c=>!set.has(c.id));ids.forEach(i=>RT.delete(i));
+  sel=null;SEL.clear();commit(true);toast(ids.length>1?`${ids.length}개를 지웠어요 · Ctrl+Z로 되돌려요`:'지웠어요 · Ctrl+Z로 되돌려요');}
+function eraseAt(e){const el=document.elementsFromPoint(e.clientX,e.clientY).map(x=>x.closest&&x.closest('[data-id]')).find(x=>x&&gC.contains(x));if(!el)return;
+  const id=+el.dataset.id;if(!compById(id))return;if(!erase.hit){pushHist();erase.hit=true;}
+  S.comps=S.comps.filter(c=>c.id!==id);RT.delete(id);SEL.delete(id);if(sel&&sel.id===id)sel=null;settle();render();}
+function selComps(){return S.comps.filter(c=>SEL.has(c.id));}
+function copySel(){const list=selComps();if(!list.length)return;clip=JSON.parse(JSON.stringify(list));toast(`${list.length}개를 복사했어요 · Ctrl+V로 붙여넣어요`);}
+function pasteList(list,dr0,dc0){if(!list||!list.length)return false;const fixed=list.some(c=>c.t==='ic'||c.t==='seg7');const cand=[];
+  if(dr0!=null)cand.push([fixed?0:dr0,dc0]);
+  for(let d=1;d<=N;d++){for(const dc of [d,-d])cand.push([0,dc]);if(!fixed)for(const r of [1,-1,2,-2,3,-3,5,-5,10,-10])cand.push([r,0],[r,d],[r,-d]);}
+  const o=occ();
+  for(const [dr,dc] of cand){const out=[],used=new Set();let ok=true;
+    for(const O of list){const nx=shiftComp(O,dr,dc);if(!nx){ok=false;break;}const c=Object.assign(JSON.parse(JSON.stringify(O)),nx);
+      for(const h of pinHoles(c)){if(o.has(h)||used.has(h)){ok=false;break;}used.add(h);}if(!ok)break;out.push(c);}
+    if(!ok)continue;pushHist();const ids=[];for(const c of out){c.id=S.nextId++;if(c.t==='sw')c.on=!!c.on;S.comps.push(c);ids.push(c.id);}
+    setSelIds(ids);setTool('select');commit(true);toast(`${ids.length}개를 붙여넣었어요`);return true;}
+  toast('붙여넣을 빈자리가 없어요');return false;}
+function pasteClip(at){if(!clip){toast('먼저 Ctrl+C로 복사하세요');return;}
+  if(at){const a=HOLES.get(pinHoles(clip[0])[0]),g=gridAt(at);pasteList(clip,g.ri-a.ri,g.c-a.c);}else pasteList(clip);}
+function dupSel(){const list=selComps();if(!list.length){toast('먼저 복제할 부품을 선택하세요');return;}pasteList(JSON.parse(JSON.stringify(list)));}
+function recolorSel(col){const ws=selComps().filter(c=>c.t==='wire');if(!ws.length)return;pushHist();ws.forEach(c=>c.color=col);opt.wire=col;store.set('opt',opt);commit(true);}
+function straightenSel(){const ws=selComps().filter(c=>c.t==='wire'&&c.pts);if(!ws.length)return;pushHist();ws.forEach(c=>delete c.pts);commit(true);}
+/* 선택 막대 (선택한 부품 위에 뜸) */
+const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>';
+let fbKey='';
+function selBBox(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const add=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
+  for(const c of selComps()){for(const id of pinHoles(c)){const h=HOLES.get(id);add(h.x,h.y);}(c.pts||[]).forEach(q=>add(q.x,q.y));
+    if(c.t==='wire'&&!(c.pts&&c.pts.length)){const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);add((a.x+b.x)/2,Math.min(a.y,b.y)-24);}
+    if(c.t==='ic')add(colX(c.col),ROWY.e-14);
+    if(c.t==='seg7')add(colX(c.col),MID-32);if(c.t==='gate'||c.t==='clk'){const h=HOLES.get(c.pins[0]);add(h.x,h.y-40);}}
+  return{x0,y0,x1,y1};}
+function renderFbar(){const fb=$('fbar');
+  if(!SEL.size||tool!=='select'||drag||wireDrag||boxSel||erase||rightDown||(panState&&panState.on)){fb.hidden=true;return;}
+  const list=selComps();if(!list.length){fb.hidden=true;return;}
+  const wires=list.every(c=>c.t==='wire'),bent=list.some(c=>c.t==='wire'&&c.pts);
+  const key=list.map(c=>c.id+':'+(c.color||'')+(c.pts?'b':'')).join(',');
+  if(key!==fbKey){fbKey=key;
+    fb.innerHTML=`<b>${list.length>1?list.length+'개 선택':esc(LBL.get(list[0].id)+' '+compName(list[0]))}</b><button class="del" data-a="del" title="삭제 (Delete)">${TRASH}삭제</button><button data-a="dup" title="복제 (Ctrl+D)">복제</button>`
+      +(wires?`<span class="sep"></span>${WIRE_COLORS.map(col=>`<button class="swc" data-col="${col}" style="background:${col}" aria-pressed="${list.every(c=>c.color===col)}" aria-label="전선 색"></button>`).join('')}`:'')
+      +(bent?`<span class="sep"></span><button data-a="straight" title="꺾는 점 모두 지우기">곧게 펴기</button>`:'')
+      +(wires&&list.length===1&&!bent?`<small>더블클릭하면 꺾는 점</small>`:'');
+    fb.querySelectorAll('button').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const a=b.dataset.a;
+      if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='straight')straightenSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
+  fb.hidden=false;}
+/* 마우스를 올린 핀 이름표 */
+function updTip(e){const tp=$('tip');if(!hover||e.pointerType==='touch'){tp.hidden=true;return;}
+  const cid=occ().get(hover.id);let t=holeName(hover.id);
+  if(cid){const c=compById(cid),k=pinHoles(c).indexOf(hover.id),nm=pinNames(c)[k];
+    t+=' · '+(LBL.get(cid)||'')+' '+(c.t==='ic'?c.chip+' '+(k+1)+'번 '+(nm[0]==='~'?nm.slice(1)+'̅':nm):compName(c)+' '+nm);}
+  const r=$('bw').getBoundingClientRect();tp.textContent=t;tp.hidden=false;
+  let x=e.clientX-r.left+14,y=e.clientY-r.top+16;if(x+tp.offsetWidth>r.width-6)x=e.clientX-r.left-tp.offsetWidth-10;if(y+24>r.height)y=e.clientY-r.top-28;
+  tp.style.left=x+'px';tp.style.top=y+'px';}
+/* 오른쪽 클릭 메뉴 */
+function closeMenu(){const m=$('cmenu');if(m&&!m.hidden){m.hidden=true;m.innerHTML='';}}
+function openMenu(cx,cy,items,swatches){const m=$('cmenu');
+  m.innerHTML=items.map((it,i)=>it==='-'?'<hr>':`<button role="menuitem" data-i="${i}" class="${it.del?'del':''}"><span>${it.label}</span>${it.k?`<kbd>${it.k}</kbd>`:''}</button>`).join('')
+    +(swatches?`<hr><div class="sws">${WIRE_COLORS.map(col=>`<button class="swc" data-col="${col}" style="width:20px;height:20px;padding:0;border-radius:4px;background:${col};outline:1px solid var(--line)" aria-label="전선 색"></button>`).join('')}</div>`:'');
+  m.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.i];closeMenu();it.fn();});
+  m.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{closeMenu();recolorSel(b.dataset.col);});
+  m.hidden=false;const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.min(cx,innerWidth-w-8)+'px';m.style.top=Math.min(cy,innerHeight-h-8)+'px';}
+function openCtx(r){
+  if(r.id!=null&&compById(r.id)){if(!SEL.has(r.id))sel={type:'comp',id:r.id};if(tool!=='select')setTool('select');syncSel();render();renderInfo();
+    const list=selComps(),wires=list.every(c=>c.t==='wire');const items=[
+      {label:list.length>1?`${list.length}개 삭제`:'삭제',k:'Delete',del:true,fn:delSel},{label:'복제',k:'Ctrl+D',fn:dupSel},{label:'복사',k:'Ctrl+C',fn:copySel}];
+    if(list.some(c=>c.t==='wire'&&c.pts))items.push({label:'꺾는 점 모두 지우기',fn:straightenSel});
+    if(list.length===1&&list[0].t==='sw')items.push('-',{label:list[0].on?'스위치 끄기':'스위치 켜기',fn:()=>{list[0].on=!list[0].on;commit(true);}});
+    openMenu(r.cx,r.cy,items,wires);return;}
+  const items=[];if(clip)items.push({label:`여기에 붙여넣기 (${clip.length}개)`,k:'Ctrl+V',fn:()=>pasteClip(r.p)});
+  items.push({label:'모두 선택',k:'Ctrl+A',fn:()=>{setSelIds(S.comps.map(c=>c.id));render();renderInfo();}},{label:'화면에 맞춤',k:'F',fn:fitView});
+  if(SEL.size)items.push('-',{label:'선택 해제',k:'Esc',fn:()=>{sel=null;render();renderInfo();}});
+  openMenu(r.cx,r.cy,items,false);}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#cmenu'))closeMenu();},true);
+window.addEventListener('blur',closeMenu);
+function finishWire(){const w=wireDrag;wireDrag=null;const h=hover;
+  if(w.moved){if(h&&h.id!==w.from.id){if(occ().has(h.id)){toast('구멍 '+holeName(h.id)+'에는 이미 다른 부품이 꽂혀 있어요');renderOverlay();return;}
+      pending=null;addComp({t:'wire',pins:[w.from.id,h.id],color:opt.wire});renderHint();}else renderOverlay();return;}
+  if(tool==='select'){sel={type:'hole',id:w.from.id};render();renderInfo();}else place(w.from,lastPt);}
+function finishBox(){const b=boxSel;boxSel=null;
+  if(!b.moved){if(!b.add)sel=b.h?{type:'hole',id:b.h.id}:null;render();renderInfo();return;}
+  const x0=Math.min(b.x0,b.x1),x1=Math.max(b.x0,b.x1),y0=Math.min(b.y0,b.y1),y1=Math.max(b.y0,b.y1),inn=(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+  const ids=S.comps.filter(c=>pinHoles(c).some(id=>{const h=HOLES.get(id);return inn(h.x,h.y);})||(c.pts||[]).some(q=>inn(q.x,q.y))).map(c=>c.id);
+  setSelIds(b.add?[...new Set([...SEL,...ids])]:ids);render();renderInfo();}
+function segDist(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy||1;let t=((p.x-a.x)*dx+(p.y-a.y)*dy)/l;t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
+let lastTap=null;
+function handleDbl(e){if(tool!=='select')return false;const p=svgPt(e);
+  // 첫 클릭 뒤에 다시 그려져서 e.target이 바뀔 수 있으므로 포인터 아래 요소를 직접 찾는다
+  const under=document.elementsFromPoint(e.clientX,e.clientY).filter(x=>svg.contains(x));
+  const b=under.map(x=>x.closest('[data-bend]')).find(Boolean);if(b){const [id,k]=b.dataset.bend.split(':').map(Number);const c=compById(id);if(!c||!c.pts)return false;pushHist();c.pts.splice(k,1);if(!c.pts.length)delete c.pts;commit(true);return true;}
+  const g=under.map(x=>x.closest('[data-id]')).find(x=>x&&gC.contains(x));if(!g)return false;const c=compById(+g.dataset.id);if(!c||c.t!=='wire')return false;
+  const a=HOLES.get(c.pins[0]),bb=HOLES.get(c.pins[1]),Lp=[a,...(c.pts||[]),bb];let best=0,bd=1e9;
+  for(let i=0;i<Lp.length-1;i++){const d=segDist(p,Lp[i],Lp[i+1]);if(d<bd){bd=d;best=i;}}
+  pushHist();c.pts=c.pts||[];c.pts.splice(best,0,{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});sel={type:'comp',id:c.id};commit(true);
+  toast('꺾는 점을 만들었어요 · 흰 네모를 끌어 모양을 바꿔요');return true;}
 function endDrag(){if(!drag)return;const c=compById(drag.id);
   if(c&&drag.kind==='move'){if(c.t==='btn'){rt(c).pressed=false;}
     if(c.t==='sw'&&!drag.moved){c.on=!c.on;}}
   drag=null;commit(true);}
-svg.addEventListener('pointerup',e=>{ptrs.delete(e.pointerId);if(panState&&panState.pinch){if(!ptrs.size)panState=null;return;}if(endPan(e))return;endDrag();});
-svg.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);if(panState){panState=null;svg.classList.remove('panning');}endDrag();});
+svg.addEventListener('pointerup',e=>{ptrs.delete(e.pointerId);if(panState&&panState.pinch){if(!ptrs.size)panState=null;return;}
+  if(rightDown){const r=rightDown;rightDown=null;svg.classList.remove('panning');if(!r.moved)openCtx(r);else renderFbar();return;}
+  if(erase){const hit=erase.hit;erase=null;if(hit)commit(true);return;}
+  if(wireDrag){finishWire();return;}
+  if(boxSel){finishBox();return;}
+  if(endPan(e))return;endDrag();});
+svg.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);if(panState){panState=null;svg.classList.remove('panning');}
+  if(rightDown){rightDown=null;svg.classList.remove('panning');}if(erase){const hit=erase.hit;erase=null;if(hit)commit(true);}wireDrag=null;boxSel=null;endDrag();renderOverlay();});
 svg.addEventListener('auxclick',e=>e.preventDefault());
 
 /* ───────── 키보드·상단 버튼 ───────── */
@@ -1129,10 +1313,18 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textar
   if(!e.ctrlKey&&!e.metaKey&&(e.key==='+'||e.key==='=')){zoomAt(1.2);return;}
   if(!e.ctrlKey&&!e.metaKey&&(e.key==='-'||e.key==='_')){zoomAt(1/1.2);return;}
   if(!e.ctrlKey&&!e.metaKey&&e.key.toLowerCase()==='f'){fitView();return;}
+  const kk=e.key.toLowerCase(),mod=e.ctrlKey||e.metaKey;
+  if(mod&&kk==='a'){e.preventDefault();setTool('select');setSelIds(S.comps.map(c=>c.id));render();renderInfo();return;}
+  if(mod&&kk==='c'){if(SEL.size){e.preventDefault();copySel();}return;}
+  if(mod&&kk==='x'){if(SEL.size){e.preventDefault();copySel();delSel();}return;}
+  if(mod&&kk==='v'){e.preventDefault();pasteClip();return;}
+  if(mod&&kk==='d'){e.preventDefault();dupSel();return;}
   if(e.ctrlKey||e.metaKey||e.altKey)return;
-  if(e.key==='Escape'){if(pending){pending=null;renderHint();renderOverlay();}else if(tool!=='select')setTool('select');else{sel=null;render();renderInfo();}return;}
-  if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.type==='comp'){e.preventDefault();delComp(sel.id);return;}
-  const m={v:'select',w:'wire',r:'res',l:'led',b:'btn',s:'sw',c:'clk',k:'cap'}[e.key.toLowerCase()];if(m)setTool(m);});
+  const AR={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
+  if(AR&&SEL.size&&tool==='select'){e.preventDefault();nudge(AR[0],AR[1]);return;}
+  if(e.key==='Escape'){if(!$('cmenu').hidden){closeMenu();return;}if(wireDrag||boxSel){wireDrag=null;boxSel=null;renderOverlay();return;}if(pending){pending=null;renderHint();renderOverlay();}else if(tool!=='select')setTool('select');else{sel=null;render();renderInfo();}return;}
+  if((e.key==='Delete'||e.key==='Backspace')&&SEL.size){e.preventDefault();delSel();return;}
+  const m={v:'select',w:'wire',r:'res',l:'led',b:'btn',s:'sw',c:'clk',k:'cap',e:'erase'}[e.key.toLowerCase()];if(m)setTool(m);});
 document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;svg.style.cursor='';}});
 function syncPower(){$('pwr').setAttribute('aria-pressed',S.power);$('pwrTx').textContent=S.power?'전원 ON':'전원 OFF';}
 $('pwr').onclick=()=>{S.power=!S.power;if(!S.power)for(const r of RT.values()){r.st=null;r.out=null;}commit(true);};
@@ -1152,7 +1344,7 @@ function loadComps(list,keepHist){if(!keepHist)pushHist();const ok=[];const used
 $('ex').onchange=()=>{const k=$('ex').value;$('ex').value='';if(!k)return;
   S.power=true;loadComps(EXAMPLES[k]());toast('예제를 불러왔어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');};
 $('zi').onclick=$('hzi').onclick=()=>zoomAt(1.2);$('zo').onclick=$('hzo').onclick=()=>zoomAt(1/1.2);$('fit').onclick=$('hfit').onclick=fitView;
-$('delb').onclick=()=>{if(sel&&sel.type==='comp')delComp(sel.id);else toast('먼저 지울 부품을 선택하세요');};
+$('delb').onclick=()=>{if(SEL.size)delSel();else{setTool('erase');toast('지우개 도구: 지울 전선이나 부품을 누르세요');}};
 $('redo').onclick=()=>redo();
 /* 테마 */
 function setTheme(t){document.documentElement.dataset.theme=t;store.set('theme',t);$('theme').textContent=t==='dark'?'밝은 화면':'어두운 화면';}
@@ -1169,9 +1361,9 @@ function renderObjs(){$('ocount').textContent=S.comps.length;$('sCount').textCon
   $('objlist').innerHTML=S.comps.length?[...S.comps].sort((a,b)=>(a.t==='wire')-(b.t==='wire')).map(c=>{let dot='transparent';
     if(c.t==='ic')dot=!S.power?'var(--zz)':rt(c).pw?'var(--ok)':'var(--bad)';else if(c.t==='led')dot=(SIM.led.get(c.id)||{}).lit?(LEDC[c.color]||LEDC.red)[0]:'transparent';
     else if(c.t==='wire')dot=c.color;else if(c.t==='sw')dot=c.on?'var(--ok)':'var(--zz)';
-    return`<button class="orow" data-oid="${c.id}" aria-selected="${!!(sel&&sel.id===c.id)}"><span class="k">${esc(LBL.get(c.id))}</span><span>${esc(compName(c))}</span><span class="loc">${esc(compLoc(c))}</span><span class="d" style="background:${dot}"></span></button>`;}).join('')
+    return`<button class="orow" data-oid="${c.id}" aria-selected="${SEL.has(c.id)}"><span class="k">${esc(LBL.get(c.id))}</span><span>${esc(compName(c))}</span><span class="loc">${esc(compLoc(c))}</span><span class="d" style="background:${dot}"></span></button>`;}).join('')
     :'<p class="desc">보드에 부품이 없어요.</p>';
-  $('objlist').querySelectorAll('[data-oid]').forEach(b=>{b.onclick=()=>{sel={type:'comp',id:+b.dataset.oid};render();renderInfo();};
+  $('objlist').querySelectorAll('[data-oid]').forEach(b=>{b.onclick=e=>{const id=+b.dataset.oid;if(e.shiftKey){const n=new Set(SEL);n.has(id)?n.delete(id):n.add(id);setSelIds([...n]);}else sel={type:'comp',id};render();renderInfo();};
     b.ondblclick=()=>{const c=compById(+b.dataset.oid);const hs=pinHoles(c).map(id=>HOLES.get(id));const mx=hs.reduce((a,h)=>a+h.x,0)/hs.length,my=hs.reduce((a,h)=>a+h.y,0)/hs.length;
       view.s=Math.max(view.s,1.6);view.x=mx-cw()/view.s/2;view.y=my-ch()/view.s/2;applyView();};});}
 document.querySelector('[data-tab="obj"]').addEventListener('click',()=>renderObjs());
