@@ -210,6 +210,9 @@ html,body{touch-action:manipulation;overscroll-behavior:none}
 .navhud{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px}
 .navhud button{width:30px;height:30px;border-radius:5px;border:1px solid var(--line);background:var(--panel);font-size:15px;line-height:1;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .navhud button:hover{border-color:var(--accent)}
+.sbadge{position:absolute;left:12px;top:10px;z-index:4;display:flex;align-items:center;gap:3px;font-size:12px;color:#fff;background:#B45309;border-radius:6px;padding:3px 4px 3px 10px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.sbadge b{margin-right:4px}.sbadge button{min-width:26px;height:22px;border:0;border-radius:4px;background:rgba(255,255,255,.16);color:#fff;font:700 13px var(--sans,inherit);cursor:pointer;padding:0 5px}
+.sbadge button.on{background:#fff;color:#B45309}.sbadge button:hover{background:rgba(255,255,255,.32)}.sbadge button.on:hover{background:#fff}
 .pbadge{position:absolute;right:12px;top:10px;z-index:4;font-size:12px;font-weight:700;color:#fff;background:#C2410C;border-radius:6px;padding:4px 10px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .numin{display:inline-flex;align-items:center;gap:5px;margin:0 8px 6px 0}.numin input{width:86px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--fg);font:600 13px var(--mono)}
 .legal{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line2);margin-top:12px;padding-top:10px;line-height:1.55}
@@ -362,6 +365,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     <div class="grp">
       <button class="tbtn pwr" id="pwr" aria-pressed="true" title="전원 켜기/끄기"><span class="led"></span><span id="pwrTx">전원 ON</span></button>
       <button class="tbtn" id="pause" aria-pressed="false" title="일시 정지 / 계속 (P): 클럭·함수 발생기·커패시터·오실로스코프의 시간을 멈춰요"><svg viewBox="0 0 24 24"><path d="M7 4h4v16H7zM14 4h4v16h-4z" fill="currentColor"/></svg><span>일시 정지</span></button>
+      <button class="tbtn" id="slow" aria-pressed="false" title="슬로우 모드 (O): 슬로우 비디오처럼 느리게 돌리면서, 신호가 전선을 따라 칩을 하나씩 건너가는 길을 보여 줘요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 13V8.5M12 13l3 2M10 2.5h4"/></svg><span>슬로우</span></button>
       <select class="ex" id="addBoard" aria-label="브레드보드 추가" title="브레드보드를 하나 더 놓아요">
         <option value="">＋ 브레드보드 추가…</option>
         <option value="full">풀 사이즈 830홀 (63열)</option>
@@ -397,6 +401,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 
   <main class="canvas" id="bw">
     <div class="pbadge" id="pbadge" hidden>⏸ 일시 정지 중</div>
+    <div class="sbadge" id="sbadge" hidden><b>슬로우</b><button data-rate="0.5" title="2배 느리게">½</button><button data-rate="0.25" class="on" title="4배 느리게">¼</button><button data-rate="0.1" title="10배 느리게">⅒</button><button data-x title="슬로우 끄기">✕</button></div>
 <svg id="bb" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="vlabel">평면도 · 브레드보드 830</div>
     <div class="tip" id="tip" hidden></div>
@@ -842,9 +847,12 @@ let SIM={netOf:null,lvl:new Map(),weak:new Set(),unstable:false,warns:[],led:new
 function makeUF(n){const p=new Int32Array(n);for(let i=0;i<n;i++)p[i]=i;
   const f=x=>{while(p[x]!==x){p[x]=p[p[x]];x=p[x];}return x;};return{f,u(a,b){a=f(a);b=f(b);if(a!==b)p[a]=b;}};}
 /* 시뮬레이션 시계. 일시 정지하면 시간이 멈추고(클럭·함수 발생기·커패시터·오실로스코프), 계속하면 멈춘 곳에서 이어진다 */
-let paused=false,tOff=0,tHold=0;
-const simNow=()=>paused?tHold:performance.now()/1000-tOff;
-function setPaused(v){if(v===paused)return;if(v){tHold=simNow();paused=true;}else{tOff=performance.now()/1000-tHold;paused=false;}
+let paused=false,tHold=0,simBase=performance.now()/1000,realBase=simBase;
+/* 슬로우 모드: 시간을 느리게(rate배) 흘리고, 칩은 한 단계씩만 계산해서 신호가 칩을 하나씩 건너가는 모습을 보여 준다 */
+const SLOW={on:false,rate:.25,last:0,ms:560};
+const simNow=()=>paused?tHold:simBase+(performance.now()/1000-realBase)*(SLOW.on?SLOW.rate:1);
+function rebaseTime(){if(!paused){simBase=simNow();realBase=performance.now()/1000;}}
+function setPaused(v){if(v===paused)return;if(v){tHold=simNow();paused=true;}else{simBase=tHold;realBase=performance.now()/1000;paused=false;}
   const b=document.getElementById('pause');if(b){b.setAttribute('aria-pressed',paused);b.querySelector('span').textContent=paused?'계속':'일시 정지';
     b.querySelector('svg').innerHTML=paused?'<path d="M7 4l13 8-13 8z" fill="currentColor"/>':'<path d="M7 4h4v16H7zM14 4h4v16h-4z" fill="currentColor"/>';}
   const pb=document.getElementById('pbadge');if(pb)pb.hidden=!paused;
@@ -925,8 +933,12 @@ function settle(){
     volt=V;
   }
   resolve();analogStep();
-  let stable=false;
-  for(let it=0;it<80;it++){
+  let stable=false,iters=80,stepChips=[];
+  if(SLOW.on){const tn=performance.now(),hz=Math.max(0,...clks.map(c=>+c.hz||0),...fgs.map(c=>+c.hz||0));
+    // 한 단계 간격: 기본 140ms÷속도, 단 가장 빠른 클럭의 반주기 안에 세 번은 계산되게(엣지를 놓치지 않게)
+    SLOW.ms=Math.max(60,Math.min(140/SLOW.rate,hz?1000/(2*hz*SLOW.rate)/3:1e9));
+    if(paused||tn-SLOW.last<SLOW.ms)iters=0;else{iters=1;SLOW.last=tn;}}
+  for(let it=0;it<iters;it++){
     resolve();let changed=false;
     for(const c of ics){const d=defOf(c),r=rt(c),hs=ph.get(c.id);
       const lv=k=>{const v=lvl.get(netOf[hs[k]]);return v===undefined?Z:v;};
@@ -938,12 +950,15 @@ function settle(){
         const o=d.eval(g,r.st,va);out=d.pins.map(p=>p in o?o[p]:Z);}
       else r.st=null;
       const prev=r.out;
-      if(!(prev===out||(prev&&out&&prev.every((v,k)=>v===out[k]))))changed=true;
+      if(!(prev===out||(prev&&out&&prev.every((v,k)=>v===out[k])))){changed=true;stepChips.push(c.id);}
       r.out=out;r.pw=pw;}
     if(!changed){stable=true;break;}
   }
   resolve();
-  SIM.netOf=netOf;SIM.lvl=lvl;SIM.weak=weak;SIM.unstable=!stable;SIM.ph=ph;SIM.volt=volt;SIM.vOf=vOf;
+  SIM.netOf=netOf;SIM.lvl=lvl;SIM.weak=weak;SIM.unstable=SLOW.on?false:!stable;SIM.ph=ph;SIM.volt=volt;SIM.vOf=vOf;
+  // 슬로우 모드: 아직 더 퍼져 나갈 신호가 있으면 pending (계산을 건너뛴 때도 입력이 바뀌었을 수 있으니 한 번 더)
+  SIM.pending=SLOW.on&&(iters===0||!stable);SIM.stepped=iters===1;
+  findFlows(ph,netOf,lvl,ics,psus,clks,fgs,stepChips);
   // 결과 해석
   const W_=[];const lvAt=i=>{const v=lvl.get(netOf[i]);return v===undefined?Z:v;};
   SIM.led=new Map();SIM.seg=new Map();
@@ -993,6 +1008,62 @@ function settle(){
   if(!S.power)W_.unshift(['warn','전원이 꺼져 있어요. 위쪽 [전원] 버튼을 눌러 켜세요.']);
   SIM.warns=W_;
 }
+/* ───────── 슬로우 모드: 신호가 지나가는 길 ─────────
+   값이 바뀐 줄(net)마다, 그 줄을 움직이는 곳(칩 출력·전원 레일·계측기 단자·클럭)에서 출발해
+   전선을 따라 몇 번째로 닿는지(BFS 깊이)를 구하고, 그 순서대로 전선 위를 빛이 흘러가게 그린다 */
+const WLV=new Map();let FLOWQ=null;
+function findFlows(ph,netOf,lvl,ics,psus,clks,fgs,stepChips){
+  const chg=new Map(),wires=[];
+  for(const c of S.comps){const link=c.t==='wire'||(c.t==='sw'&&c.on)||(c.t==='btn'&&rt(c).pressed);if(!link)continue;
+    const hs=ph.get(c.id);if(!hs)continue;const net=netOf[hs[0]],v=lvl.get(net);wires.push({c,hs,net});
+    if(c.t!=='wire')continue;const pv=WLV.get(c.id);WLV.set(c.id,v);
+    if(SLOW.on&&pv!==undefined&&pv!==v&&v!==undefined)chg.set(net,v);}
+  if(!SLOW.on)return;
+  if(!chg.size&&!stepChips.length)return;
+  const items=[];
+  for(const [net,v] of chg){const src=new Set(),add=i=>{if(netOf[i]===net)src.add(baseRep[i]);};
+    for(const c of ics){const o=rt(c).out;if(!o)continue;const hs=ph.get(c.id);o.forEach((x,k)=>{if(x!==Z)add(hs[k]);});}
+    if(S.power&&!psus.length)for(const R_ of RAILS)add(R_.i);
+    for(const c of [...psus,...fgs])ph.get(c.id).forEach(add);
+    for(const c of clks)add(ph.get(c.id)[0]);
+    if(!src.size)for(const c of S.comps)if(c.t==='res')ph.get(c.id).forEach(add);
+    const W=wires.filter(w=>w.net===net),adj=new Map(),lk=(a,b,w)=>{if(!adj.has(a))adj.set(a,[]);adj.get(a).push([b,w]);};
+    for(const w of W){const a=baseRep[w.hs[0]],b=baseRep[w.hs[1]];lk(a,b,w);lk(b,a,w);}
+    if(!src.size&&W.length)src.add(baseRep[W[0].hs[0]]);
+    const dep=new Map(),q=[...src];src.forEach(x=>dep.set(x,0));
+    while(q.length){const x=q.shift();for(const [y] of adj.get(x)||[])if(!dep.has(y)){dep.set(y,dep.get(x)+1);q.push(y);}}
+    for(const w of W){if(w.c.t!=='wire')continue;const da=dep.get(baseRep[w.hs[0]]),db=dep.get(baseRep[w.hs[1]]);
+      const rev=(db??1e9)<(da??1e9);items.push({id:w.c.id,v,rev,order:Math.min(da??0,db??0)});}}
+  FLOWQ={items,chips:stepChips.slice(),ms:SLOW.ms};}
+let FLOWS=[],flowRAF=0;
+function clearFlows(){FLOWS=[];FLOWQ=null;const g=document.getElementById('gF');if(g)g.innerHTML='';}
+function launchFlows(){const Q=FLOWQ;FLOWQ=null;if(!Q||!SLOW.on)return;const g=document.getElementById('gF');if(!g)return;
+  const NS='http://www.w3.org/2000/svg',t0=performance.now(),span=Q.ms*.85,maxO=Math.max(0,...Q.items.map(x=>x.order))+1,dur=Math.max(60,span/maxO);
+  const mk=(tag,at)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);g.appendChild(e);return e;};
+  for(const it of Q.items){const c=S.comps.find(x=>x.id===it.id);if(!c)continue;const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);if(!a||!b)continue;
+    const d=wirePath(a,b,routePts(c)),col=LVCOL[it.v];
+    const glow=mk('path',{d,fill:'none',stroke:col,'stroke-width':12,'stroke-opacity':.28,'stroke-linecap':'round','stroke-linejoin':'round'});
+    const p=mk('path',{d,fill:'none',stroke:col,'stroke-width':5.5,'stroke-linecap':'round','stroke-linejoin':'round'});
+    const dot=mk('circle',{r:6.5,fill:'#fff',stroke:col,'stroke-width':3});
+    const L=p.getTotalLength()||1;[p,glow].forEach(e=>e.setAttribute('stroke-dasharray',`${L} ${L}`));
+    FLOWS.push({p,glow,dot,L,rev:it.rev,t0:t0+it.order*dur,dur,end:t0+Q.ms*1.6});}
+  for(const id of Q.chips){const c=S.comps.find(x=>x.id===id),r=c&&bodyRect(c);if(!r)continue;
+    const e=mk('rect',{x:r.x0-4,y:r.y0-4,width:r.x1-r.x0+8,height:r.y1-r.y0+8,rx:8,fill:'none',stroke:'#F5A524','stroke-width':3.5});
+    FLOWS.push({chip:e,t0,dur:Q.ms,end:t0+Q.ms*1.2});}
+  if(!flowRAF)flowRAF=requestAnimationFrame(tickFlows);}
+function tickFlows(){flowRAF=0;const t=performance.now();
+  FLOWS=FLOWS.filter(f=>{const els=f.chip?[f.chip]:[f.p,f.glow,f.dot];
+    if(t>=f.end){els.forEach(e=>e.remove());return false;}
+    const fade=Math.min(1,Math.max(0,(f.end-t)/(f.chip?f.dur*.9:f.dur*1.5)));
+    if(f.chip){f.chip.setAttribute('stroke-opacity',fade);return true;}
+    const k=Math.min(1,Math.max(0,(t-f.t0)/f.dur)),x=k*f.L,o=f.rev?x-f.L:f.L-x;
+    f.p.setAttribute('stroke-dashoffset',o);f.glow.setAttribute('stroke-dashoffset',o);
+    const pt=f.p.getPointAtLength(f.rev?f.L-x:x);f.dot.setAttribute('cx',pt.x);f.dot.setAttribute('cy',pt.y);
+    f.dot.setAttribute('opacity',k>0&&k<1?1:0);[f.p,f.glow].forEach(e=>e.setAttribute('opacity',k>0?fade:0));return true;});
+  if(FLOWS.length)flowRAF=requestAnimationFrame(tickFlows);}
+function setSlow(on,rate){rebaseTime();if(rate)SLOW.rate=rate;SLOW.on=on;SLOW.last=0;if(!on)clearFlows();
+  const b=$('slow');if(b)b.setAttribute('aria-pressed',on);const sb=$('sbadge');if(sb){sb.hidden=!on;sb.querySelectorAll('[data-rate]').forEach(x=>x.classList.toggle('on',+x.dataset.rate===SLOW.rate));}
+  settle();render();}
 const levelOfHole=id=>{if(!SIM.netOf)return Z;const net=SIM.netOf[HOLES.get(id).i];const v=SIM.lvl.get(net);return{v:v===undefined?Z:v,w:SIM.weak.has(net),net,a:SIM.volt&&SIM.volt.has(net),volt:SIM.vOf?SIM.vOf(net):null};};
 
 /* ───────── 그리기 ───────── */
@@ -1022,7 +1093,7 @@ function oneBoardSVG(B){const t=BTYPES[B.type],Wb=bW(B.type),N_=t.cols,cx=c=>X0+
 function boardTab(B){const t=BTYPES[B.type],y=(t.rails?4:60)-26,label=`보드 ${B.id} · ${t.name}`;const w=label.length*7.4+34;
   return`<g class="btab" data-board="${B.id}" transform="translate(${B.x+4} ${B.y+y})"><title>끌면 보드가 옮겨지고, 누르면 메뉴가 떠요</title><rect width="${w}" height="20" rx="5"/><text x="9" y="14">${esc(label)}</text><path d="M${w-15} 8l4 4 4-4" fill="none" stroke-width="1.6"/></g>`;}
 function renderBoards(){$('gB').innerHTML=DEFS+S.boards.map(B=>`<g transform="translate(${B.x} ${B.y})">${oneBoardSVG(B)}</g>`).join('')+S.boards.map(boardTab).join('');}
-svg.innerHTML=`<g id="gB"></g><g id="gH"></g><g id="gC"></g><g id="gO"></g>`;
+svg.innerHTML=`<g id="gB"></g><g id="gH"></g><g id="gC"></g><g id="gF" pointer-events="none"></g><g id="gO"></g>`;
 const gH=document.getElementById('gH'),gC=document.getElementById('gC'),gO=document.getElementById('gO');
 const LVCOL=['var(--lo)','var(--hi)','var(--xx)','var(--zz)','var(--sh)'];
 /* 점퍼선: 곧은 직선. 꺾는 점이 있으면 그 점들을 차례로 잇고, 모서리는 둥글게 굴린다 */
@@ -1211,6 +1282,7 @@ function render(){
   // 와이어를 가장 위에 그림
   const order=[...S.comps].sort((a,b)=>(a.t==='wire')-(b.t==='wire'));
   gC.innerHTML=order.map(c=>compSVG(c,now)).join('');
+  if(FLOWQ)launchFlows();
   renderOverlay();renderWarns();renderLive();renderObjs();renderFbar();}
 function renderOverlay(){
   let s='',hs='';
@@ -1290,7 +1362,7 @@ const lvText=(v,w,a)=>a!=null?(['LOW','HIGH'][v]||'')+' · 아날로그 '+fmtV(a
 const pinHTML=nm=>nm[0]==='~'?`<span class="ov">${esc(nm.slice(1))}</span>`:esc(nm);
 function renderWarns(){const all=SIM.warns,w=all.filter(x=>x[0]!=='info');const bad=w.some(x=>x[0]==='bad');const wc=$('wcount');wc.textContent=w.length;wc.className='cnt'+(w.length?(bad?' b':' w'):'');
   {const bd=$('wbadge');bd.hidden=!w.length;bd.textContent=w.length;bd.className='bdg'+(bad?' b':'');}
-  $('sSim').textContent=!S.power?'● 전원 꺼짐':paused?'⏸ 일시 정지':SIM.unstable?'● 발진 중':bad?'● 단락/충돌':w.length?`● 경고 ${w.length}건`:'● 시뮬레이션 정상';
+  $('sSim').textContent=!S.power?'● 전원 꺼짐':paused?'⏸ 일시 정지':SLOW.on?`● 슬로우 ×${({0.5:'½',0.25:'¼',0.1:'⅒'})[SLOW.rate]}`:SIM.unstable?'● 발진 중':bad?'● 단락/충돌':w.length?`● 경고 ${w.length}건`:'● 시뮬레이션 정상';
   $('warns').innerHTML=all.length?all.map(([k,t])=>`<li class="${k}">${esc(t)}</li>`).join(''):`<li class="ok">${S.comps.length?'문제가 보이지 않아요. 회로가 정상적으로 동작 중이에요.':'보드가 비어 있어요. [부품 고르기]에서 부품을 골라 꽂아 보세요.'}</li>`;}
 function renderInfo(){const box=$('info');
   syncSel();
@@ -1940,10 +2012,14 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textar
   if(AR&&SEL.size&&tool==='select'){e.preventDefault();nudge(AR[0],AR[1]);return;}
   if(e.key==='Escape'){if(!$('cmenu').hidden){closeMenu();return;}if(wireDrag||boxSel){wireDrag=null;boxSel=null;renderOverlay();return;}if(pending){pending=null;renderHint();renderOverlay();}else if(tool!=='select')setTool('select');else if(sel){sel=null;render();renderInfo();}else if(!$('dock').hidden)closeDock();return;}
   if((e.key==='Delete'||e.key==='Backspace')&&SEL.size){e.preventDefault();delSel();return;}
-  const m={p:'__pause',v:'select',m:'move',w:'wire',r:'res',l:'led',b:'btn',s:'sw',c:'clk',k:'cap',e:'erase'}[e.key.toLowerCase()];if(m==='__pause'){togglePause();return;}if(m)setTool(m);});
+  const m={p:'__pause',o:'__slow',v:'select',m:'move',w:'wire',r:'res',l:'led',b:'btn',s:'sw',c:'clk',k:'cap',e:'erase'}[e.key.toLowerCase()];if(m==='__pause'){togglePause();return;}if(m==='__slow'){toggleSlow();return;}if(m)setTool(m);});
 document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;svg.style.cursor='';}});
 function togglePause(){setPaused(!paused);toast(paused?'일시 정지했어요 · 시간이 멈춰 있어요. 스위치나 배선은 그대로 바꿀 수 있어요':'다시 실행해요');}
 $('pause').onclick=togglePause;
+function toggleSlow(){setSlow(!SLOW.on);toast(SLOW.on?`슬로우 모드: ${({0.5:'2',0.25:'4',0.1:'10'})[SLOW.rate]}배 느리게 돌려요. 신호가 지나가는 전선은 빛이 흐르고, 출력이 바뀐 칩은 주황 테두리가 깜박여요`:'보통 속도로 돌아왔어요');}
+$('slow').onclick=toggleSlow;
+$('sbadge').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if('x' in b.dataset){toggleSlow();return;}
+  setSlow(true,+b.dataset.rate);toast(`${({0.5:'2',0.25:'4',0.1:'10'})[SLOW.rate]}배 느리게 돌려요`);});
 function syncPower(){$('pwr').setAttribute('aria-pressed',S.power);$('pwrTx').textContent=S.power?'전원 ON':'전원 OFF';}
 $('pwr').onclick=()=>{S.power=!S.power;if(!S.power)for(const r of RT.values()){r.st=null;r.out=null;}commit(true);};
 $('undo').onclick=undo;
@@ -2398,6 +2474,7 @@ const EXAMPLES={
   renderRibbon();fitView();requestAnimationFrame(fitView);setTool('select');syncPower();renderInfo();
   let lastSig='';
   setInterval(()=>{if(!S.power||drag||paused)return;const now=simNow();
+    if(SLOW.on&&SIM.pending&&performance.now()-SLOW.last>=SLOW.ms){settle();render();}
     const clks=S.comps.filter(c=>c.t==='clk'||c.t==='fg'),caps=S.comps.some(c=>c.t==='cap'),oscs=S.comps.some(c=>c.t==='osc');
     const ana=caps||S.comps.some(c=>c.t==='fg'&&c.wave!=='sq'); // 전압이 연속으로 바뀌는 회로
     if(!clks.length&&!SIM.unstable&&!caps&&!oscs)return;
