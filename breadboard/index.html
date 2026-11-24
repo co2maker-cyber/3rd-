@@ -241,6 +241,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
         <option value="adder">④ 1비트 전가산기 (74HC86·08·32)</option>
         <option value="gates">⑤ 기본 게이트 비교 (AND·OR·XOR·NOT)</option>
         <option value="ls47">⑥ 스위치로 숫자 표시 (74LS47 + 공통 애노드)</option>
+        <option value="ls90">⑦ 10진 카운터 (74LS90 → 74LS47 → 7세그)</option>
       </select>
     </div>
   </nav>
@@ -252,7 +253,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
       <details class="sec" open><summary>도구</summary><div class="items" id="tools"></div></details>
       <details class="sec" open><summary>부품</summary><div class="items" id="parts"></div></details>
       <details class="sec" open><summary>기본 게이트 <span id="ng"></span></summary><div class="items" id="gates"></div></details>
-      <details class="sec" open><summary>논리 IC <span id="nc"></span></summary><div class="items" id="chips"></div></details>
+      <div id="chips"></div>
     </div>
     <div class="optbox" id="optCard">
       <div class="dhead">도구 옵션 · <b id="optTitle"></b></div>
@@ -408,6 +409,122 @@ function ls47(name,vmax){def({name,title:'BCD→7세그먼트 디코더 (오픈 
     else{const v=toNum(d);if(v===0&&rbi===L)set(()=>Z);else set(i=>SEG47[v][i]==='1'?L:Z);}
     return o;}});}
 ls47('74LS47','15V');ls47('74LS46','30V');
+
+/* ───────── 74LS 시리즈 ───────── */
+const TTLN=' TTL(74LS)이라 아무 데도 연결하지 않은 입력은 HIGH로 읽혀요.';
+const NCR={NC:'연결 없음 (NC)'};
+function lsClone(hc,ls,extra){const h=CHIPS[hc];def(Object.assign({},h,{name:ls,ttl:true,outs:[...h.outs],roles:Object.assign({},h.roles),desc:h.desc+TTLN},extra||{}));}
+['00','02','04','08','32','86','74','138','161','283'].forEach(n=>lsClone('74HC'+n,'74LS'+n));
+lsClone('74HC04','74LS14',{title:'NOT 게이트 ×6 (슈미트 트리거)',desc:'슈미트 트리거 입력 인버터 6개. 논리 동작은 NOT과 같고, 실제 칩은 느리게 변하거나 잡음 섞인 신호를 깨끗하게 바꿔 줘요.'+TTLN});
+const ANDn=a=>a.reduce(AND),ORn=a=>a.reduce(OR);
+function gateN(name,title,kind,red,expr,pins,groups){def({name,title,kind,expr,pins,ttl:true,roles:NCR,fn:(...a)=>red(a),outs:groups.map(g=>g[1]),
+  gates:groups.map(([ins,out])=>({ins,out})),desc:`${groups[0][0].length}입력 ${kind} 게이트가 ${groups.length}개 들어 있어요. Y = ${expr}.`+TTLN,
+  eval(g){const o={};for(const t of this.gates)o[t.out]=red(t.ins.map(g));return o;}});}
+const P3=['1A','1B','2A','2B','2C','2Y','GND','3Y','3A','3B','3C','1Y','1C','VCC'],G3=[[['1A','1B','1C'],'1Y'],[['2A','2B','2C'],'2Y'],[['3A','3B','3C'],'3Y']];
+const P4=['1A','1B','NC','1C','1D','1Y','GND','2Y','2A','2B','NC','2C','2D','VCC'],G4=[[['1A','1B','1C','1D'],'1Y'],[['2A','2B','2C','2D'],'2Y']];
+gateN('74LS10','3입력 NAND ×3','NAND',a=>NOT(ANDn(a)),'NOT(A·B·C)',P3,G3);
+gateN('74LS11','3입력 AND ×3','AND',ANDn,'A·B·C',P3,G3);
+gateN('74LS27','3입력 NOR ×3','NOR',a=>NOT(ORn(a)),'NOT(A+B+C)',P3,G3);
+gateN('74LS20','4입력 NAND ×2','NAND',a=>NOT(ANDn(a)),'NOT(A·B·C·D)',P4,G4);
+gateN('74LS21','4입력 AND ×2','AND',ANDn,'A·B·C·D',P4,G4);
+gateN('74LS30','8입력 NAND','NAND',a=>NOT(ANDn(a)),'NOT(A·B·C·D·E·F·G·H)',['A','B','C','D','E','F','GND','Y','NC','NC','G','H','NC','VCC'],[[['A','B','C','D','E','F','G','H'],'Y']]);
+def({name:'74LS125',title:'3상태 버퍼 ×4',ttl:true,pins:['~1C','1A','1Y','~2C','2A','2Y','GND','3Y','3A','~3C','4Y','4A','~4C','VCC'],outs:['1Y','2Y','3Y','4Y'],
+  desc:'C̅가 LOW이면 Y = A, HIGH이면 출력이 끊겨요(High-Z). 여러 출력을 한 줄에 번갈아 연결할 때 써요.'+TTLN,
+  roles:{'~1C':'출력 허용 (LOW)','~2C':'출력 허용 (LOW)','~3C':'출력 허용 (LOW)','~4C':'출력 허용 (LOW)'},
+  eval(g){const o={};for(const n of [1,2,3,4]){const c=g('~'+n+'C');o[n+'Y']=c===L?g(n+'A'):c===Hh?Z:X;}return o;}});
+def({name:'74LS75',title:'4비트 D 래치',ttl:true,pins:['~1Q','1D','2D','C34','VCC','3D','4D','~4Q','4Q','3Q','~3Q','GND','C12','~2Q','2Q','1Q'],
+  outs:['1Q','~1Q','2Q','~2Q','3Q','~3Q','4Q','~4Q'],
+  desc:'허용 입력(C)이 HIGH인 동안은 Q가 D를 그대로 따라가고, LOW가 되는 순간의 값을 붙잡아 둬요. VCC가 5번, GND가 12번 핀이라 위치에 주의하세요.'+TTLN,
+  roles:{C12:'1·2번 래치 허용 (HIGH면 통과)',C34:'3·4번 래치 허용 (HIGH면 통과)'},init:()=>({q:[L,L,L,L]}),
+  eval(g,st){const o={};for(let k=0;k<4;k++){const c=g(k<2?'C12':'C34');if(c===Hh)st.q[k]=g((k+1)+'D');else if(c===X)st.q[k]=X;
+    o[(k+1)+'Q']=st.q[k];o['~'+(k+1)+'Q']=NOT(st.q[k]);}return o;}});
+def({name:'74LS112',title:'JK 플립플롭 ×2 (하강 에지)',ttl:true,pins:['1CLK','1K','1J','~1PRE','1Q','~1Q','~2Q','GND','2Q','~2PRE','2J','2K','2CLK','~2CLR','~1CLR','VCC'],
+  outs:['1Q','~1Q','2Q','~2Q'],
+  desc:'클럭이 HIGH→LOW로 떨어지는 순간 J·K에 따라 동작해요: 00 유지, 01 리셋(Q=0), 10 세트(Q=1), 11 반전(토글). PRE̅·CLR̅는 LOW일 때 바로 동작해요.'+TTLN,
+  roles:{'1CLK':'클럭 (하강 에지)','2CLK':'클럭 (하강 에지)','~1PRE':'설정 (LOW면 Q=1)','~2PRE':'설정 (LOW면 Q=1)','~1CLR':'초기화 (LOW면 Q=0)','~2CLR':'초기화 (LOW면 Q=0)'},
+  init:()=>({q1:L,q2:L,p1:X,p2:X}),
+  eval(g,st){const o={};for(const n of [1,2]){const clr=g('~'+n+'CLR'),pre=g('~'+n+'PRE'),clk=g(n+'CLK'),j=g(n+'J'),k=g(n+'K');let q=st['q'+n];
+    const fall=st['p'+n]===Hh&&clk===L;st['p'+n]=clk;
+    if(clr===L&&pre===L){o[n+'Q']=Hh;o['~'+n+'Q']=Hh;continue;}
+    if(clr===L)q=L;else if(pre===L)q=Hh;else if(clr===X||pre===X)q=X;
+    else if(fall){if(j===X||k===X)q=X;else if(j&&k)q=NOT(q);else if(j)q=Hh;else if(k)q=L;}
+    st['q'+n]=q;o[n+'Q']=q;o['~'+n+'Q']=NOT(q);}return o;}});
+def({name:'74LS164',title:'8비트 직렬입력·병렬출력 시프트 레지스터',ttl:true,pins:['A','B','QA','QB','QC','QD','GND','CLK','~CLR','QE','QF','QG','QH','VCC'],
+  outs:['QA','QB','QC','QD','QE','QF','QG','QH'],
+  desc:'클럭이 올라갈 때마다 QA→QB→…→QH 로 한 칸씩 밀리고, QA에는 A·B(둘 다 HIGH면 1)가 들어가요. CLR̅가 LOW면 모두 0.'+TTLN,
+  roles:{A:'직렬 데이터 입력',B:'직렬 데이터 입력 (A와 AND)',CLK:'클럭 (상승 에지)','~CLR':'초기화 (LOW면 0)'},init:()=>({q:Array(8).fill(L),p:X}),
+  eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const clr=g('~CLR');
+    if(clr===L)st.q.fill(L);else if(clr===X)st.q.fill(X);else if(rise){st.q.pop();st.q.unshift(AND(g('A'),g('B')));}
+    const o={};'ABCDEFGH'.split('').forEach((c,i)=>o['Q'+c]=st.q[i]);return o;}});
+def({name:'74LS175',title:'D 플립플롭 ×4 (공통 클럭)',ttl:true,pins:['~CLR','1Q','~1Q','1D','2D','~2Q','2Q','GND','CLK','3Q','~3Q','3D','4D','~4Q','4Q','VCC'],
+  outs:['1Q','~1Q','2Q','~2Q','3Q','~3Q','4Q','~4Q'],
+  desc:'클럭이 올라가는 순간 4개의 D 값을 한꺼번에 Q에 저장해요. CLR̅가 LOW면 모두 0.'+TTLN,
+  roles:{CLK:'클럭 (상승 에지)','~CLR':'초기화 (LOW면 0)'},init:()=>({q:[L,L,L,L],p:X}),
+  eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const clr=g('~CLR');
+    if(clr===L)st.q.fill(L);else if(clr===X)st.q.fill(X);else if(rise)st.q=[1,2,3,4].map(n=>g(n+'D'));
+    const o={};st.q.forEach((v,k)=>{o[(k+1)+'Q']=v;o['~'+(k+1)+'Q']=NOT(v);});return o;}});
+function ripple(name,title,mod,pins,desc){def({name,title,ttl:true,pins,outs:['QA','QB','QC','QD'],desc:desc+TTLN,
+  roles:Object.assign({CKA:'클럭 A (하강 에지) → QA',CKB:'클럭 B (하강 에지) → QB·QC·QD',R01:'0으로 리셋 (R01·R02 둘 다 HIGH)',R02:'0으로 리셋 (R01·R02 둘 다 HIGH)',R91:'9로 설정 (R91·R92 둘 다 HIGH)',R92:'9로 설정 (R91·R92 둘 다 HIGH)'},NCR),
+  init:()=>({a:0,b:0,pa:X,pb:X,x:false}),
+  eval(g,st){const ca=g('CKA'),cb=g('CKB');const fa=st.pa===Hh&&ca===L,fb=st.pb===Hh&&cb===L;st.pa=ca;st.pb=cb;
+    const r0=AND(g('R01'),g('R02')),r9=mod===5?AND(g('R91'),g('R92')):L;
+    if(r9===Hh){st.a=1;st.b=4;st.x=false;}else if(r0===Hh){st.a=0;st.b=0;st.x=false;}else if(r0===X||r9===X)st.x=true;
+    else{if(fa)st.a^=1;if(fb)st.b=(st.b+1)%mod;}
+    if(st.x)return{QA:X,QB:X,QC:X,QD:X};return{QA:st.a,QB:st.b&1,QC:(st.b>>1)&1,QD:(st.b>>2)&1};}});}
+ripple('74LS90','10진 카운터 (리플)',5,['CKB','R01','R02','NC','VCC','R91','R92','QC','QB','GND','QD','QA','NC','CKA'],
+  'QA를 CKB(1번)에 연결하고 CKA(14번)에 클럭을 넣으면 0~9를 세는 10진 카운터가 돼요(하강 에지). R0·R9 핀을 − 에 연결해야 세기 시작해요(떠 있으면 리셋 상태로 멈춤). VCC는 5번, GND는 10번 핀이에요.');
+ripple('74LS93','4비트 2진 카운터 (리플)',8,['CKB','R01','R02','NC','VCC','NC','NC','QC','QB','GND','QD','QA','NC','CKA'],
+  'QA를 CKB(1번)에 연결하고 CKA(14번)에 클럭을 넣으면 0~15를 세요(하강 에지). R01·R02를 − 에 연결해야 세기 시작해요. VCC는 5번, GND는 10번 핀이에요.');
+function updown(name,title,mod){def({name,title,ttl:true,pins:['B','QB','QA','DOWN','UP','QC','QD','GND','D','C','~LOAD','~CO','~BO','CLR','A','VCC'],
+  outs:['QA','QB','QC','QD','~CO','~BO'],
+  desc:`UP에 클럭을 넣으면 1씩 늘고(DOWN은 HIGH 유지), DOWN에 넣으면 1씩 줄어요(0~${mod-1}). CLR은 HIGH일 때 0으로 만들기 때문에 − 에 연결해야 세기 시작해요. LOAD̅가 LOW면 DCBA를 바로 불러와요.`+TTLN,
+  roles:{UP:'올려 세기 클럭 (상승 에지)',DOWN:'내려 세기 클럭 (상승 에지)',CLR:'초기화 (HIGH면 0)','~LOAD':'불러오기 (LOW면 DCBA)','~CO':`자리올림 (${mod-1}에서 UP이 LOW일 때 LOW)`,'~BO':'자리빌림 (0에서 DOWN이 LOW일 때 LOW)',A:'불러올 값 비트0',B:'불러올 값 비트1',C:'불러올 값 비트2',D:'불러올 값 비트3'},
+  init:()=>({n:0,pu:X,pd:X}),
+  eval(g,st){const up=g('UP'),dn=g('DOWN'),ru=st.pu===L&&up===Hh,rd=st.pd===L&&dn===Hh;st.pu=up;st.pd=dn;const clr=g('CLR'),ld=g('~LOAD');
+    if(clr===Hh)st.n=0;else if(clr===X)st.n=-1;else if(ld===L){const d=['A','B','C','D'].map(g);st.n=anyX(d)?-1:toNum(d)%16;}else if(ld===X)st.n=-1;
+    else if(st.n>=0){if(ru&&dn===Hh)st.n=(st.n+1)%mod;else if(rd&&up===Hh)st.n=(st.n-1+mod)%mod;}
+    const b=k=>st.n<0?X:(st.n>>k)&1;
+    return{QA:b(0),QB:b(1),QC:b(2),QD:b(3),'~CO':st.n<0?X:(st.n===mod-1&&up===L)?L:Hh,'~BO':st.n<0?X:(st.n===0&&dn===L)?L:Hh};}});}
+updown('74LS192','10진 업/다운 카운터',10);updown('74LS193','4비트 업/다운 카운터',16);
+def({name:'74LS139',title:'2→4 디코더 ×2',ttl:true,pins:['~1G','1A','1B','~1Y0','~1Y1','~1Y2','~1Y3','GND','~2Y3','~2Y2','~2Y1','~2Y0','2B','2A','~2G','VCC'],
+  outs:['~1Y0','~1Y1','~1Y2','~1Y3','~2Y0','~2Y1','~2Y2','~2Y3'],
+  desc:'B A 가 나타내는 번호(0~3)의 출력 하나만 LOW가 돼요. G̅가 LOW일 때만 동작하고, HIGH면 출력이 모두 HIGH예요.'+TTLN,
+  roles:{'~1G':'허용 (LOW)','~2G':'허용 (LOW)'},
+  eval(g){const o={};for(const n of [1,2]){const en=g('~'+n+'G'),s=[g(n+'A'),g(n+'B')];
+    for(let k=0;k<4;k++)o['~'+n+'Y'+k]=en===Hh?Hh:(en===X||anyX(s))?X:(toNum(s)===k?L:Hh);}return o;}});
+def({name:'74LS151',title:'8→1 멀티플렉서',ttl:true,pins:['D3','D2','D1','D0','Y','W','~G','GND','C','B','A','D7','D6','D5','D4','VCC'],outs:['Y','W'],
+  desc:'C B A 로 고른 번호(0~7)의 D 입력을 Y로 내보내요(W는 Y의 반대). G̅가 LOW일 때만 동작해요.'+TTLN,
+  roles:{A:'선택 비트0',B:'선택 비트1',C:'선택 비트2','~G':'허용 (LOW)',W:'반전 출력 (Y̅)'},
+  eval(g){const en=g('~G'),s=['A','B','C'].map(g);let y;if(en===Hh)y=L;else if(en===X||anyX(s))y=X;else y=g('D'+toNum(s));return{Y:y,W:NOT(y)};}});
+def({name:'74LS153',title:'4→1 멀티플렉서 ×2',ttl:true,pins:['~1G','B','1C3','1C2','1C1','1C0','1Y','GND','2Y','2C0','2C1','2C2','2C3','A','~2G','VCC'],outs:['1Y','2Y'],
+  desc:'공통 선택 입력 B A 로 고른 번호(0~3)의 C 입력을 각 Y로 내보내요. G̅가 LOW일 때만 동작(HIGH면 Y=0).'+TTLN,
+  roles:{A:'선택 비트0 (공통)',B:'선택 비트1 (공통)','~1G':'허용 (LOW)','~2G':'허용 (LOW)'},
+  eval(g){const s=[g('A'),g('B')],o={};for(const n of [1,2]){const en=g('~'+n+'G');o[n+'Y']=en===Hh?L:(en===X||anyX(s))?X:g(n+'C'+toNum(s));}return o;}});
+def({name:'74LS157',title:'2→1 멀티플렉서 ×4',ttl:true,pins:['S','1A','1B','1Y','2A','2B','2Y','GND','3Y','3B','3A','4Y','4B','4A','~G','VCC'],outs:['1Y','2Y','3Y','4Y'],
+  desc:'S가 LOW면 A 입력들을, HIGH면 B 입력들을 Y로 내보내요. G̅가 HIGH면 Y가 모두 0이에요.'+TTLN,
+  roles:{S:'선택 (LOW=A, HIGH=B)','~G':'허용 (LOW)'},
+  eval(g){const sl=g('S'),en=g('~G'),o={};for(const n of [1,2,3,4])o[n+'Y']=en===Hh?L:(en===X||sl===X)?X:g(n+(sl?'B':'A'));return o;}});
+def({name:'74LS85',title:'4비트 크기 비교기',ttl:true,pins:['B3','A<Bi','A=Bi','A>Bi','A>B','A=B','A<B','GND','B0','A0','B1','A1','A2','B2','A3','VCC'],outs:['A>B','A=B','A<B'],
+  desc:'A3A2A1A0 과 B3B2B1B0 을 비교해 A>B, A=B, A<B 중 하나를 HIGH로 내보내요. 한 개만 쓸 때는 A=B 입력(3번)을 HIGH, A>B·A<B 입력은 LOW로 두세요(여러 개를 이어 붙일 때 쓰는 단).'+TTLN,
+  roles:{'A<Bi':'단 연결 입력 A<B','A=Bi':'단 연결 입력 A=B','A>Bi':'단 연결 입력 A>B','A>B':'A가 더 큼','A=B':'같음','A<B':'A가 더 작음'},
+  eval(g){const a=['A0','A1','A2','A3'].map(g),b=['B0','B1','B2','B3'].map(g),ig=g('A>Bi'),ie=g('A=Bi'),il=g('A<Bi');
+    if(anyX(a)||anyX(b))return{'A>B':X,'A=B':X,'A<B':X};const A=toNum(a),B=toNum(b);
+    if(A>B)return{'A>B':Hh,'A=B':L,'A<B':L};if(A<B)return{'A>B':L,'A=B':L,'A<B':Hh};
+    if(ie===Hh)return{'A>B':L,'A=B':Hh,'A<B':L};if(ie===X)return{'A>B':X,'A=B':X,'A<B':X};return{'A>B':NOT(il),'A=B':L,'A<B':NOT(ig)};}});
+def({name:'74LS48',title:'BCD→7세그먼트 디코더 (공통 캐소드용)',ttl:true,pins:['B','C','~LT','~BI','~RBI','D','A','GND','e','d','c','b','a','g','f','VCC'],
+  outs:['a','b','c','d','e','f','g'],
+  desc:'74LS47과 핀 배치가 같지만 켤 획의 출력이 HIGH(내부 풀업)라 공통 캐소드 7세그먼트와 써요. 10~15는 특수 모양, 15는 꺼짐.'+TTLN,
+  roles:{A:'숫자 비트0 (1)',B:'숫자 비트1 (2)',C:'숫자 비트2 (4)',D:'숫자 비트3 (8)','~LT':'전체 점등 시험 (LOW면 8)','~BI':'끄기 (LOW면 모두 꺼짐)','~RBI':'0 지우기 (LOW이고 입력이 0이면 꺼짐)'},
+  eval(g){const o={},set=f=>'abcdefg'.split('').forEach((s,i)=>o[s]=f(i));const bi=g('~BI'),lt=g('~LT'),d=['A','B','C','D'].map(g),rbi=g('~RBI');
+    if(bi===L)set(()=>L);else if(bi===X)set(()=>X);else if(lt===L)set(()=>Hh);else if(lt===X||anyX(d))set(()=>X);
+    else{const v=toNum(d);if(v===0&&rbi===L)set(()=>L);else set(i=>SEG47[v][i]==='1'?Hh:L);}return o;}});
+/* 분류 */
+const CATS=[['gate','게이트'],['ff','플립플롭·래치·시프트'],['cnt','카운터'],['mux','디코더·멀티플렉서'],['math','연산·비교'],['buf','버퍼'],['disp','7세그먼트 디코더']];
+const CATMAP={'00':'gate','02':'gate','04':'gate','08':'gate','10':'gate','11':'gate','14':'gate','20':'gate','21':'gate','27':'gate','30':'gate','32':'gate','86':'gate',
+  '74':'ff','75':'ff','112':'ff','164':'ff','175':'ff','90':'cnt','93':'cnt','161':'cnt','192':'cnt','193':'cnt','138':'mux','139':'mux','151':'mux','153':'mux','157':'mux',
+  '283':'math','85':'math','125':'buf','4511':'disp','47':'disp','46':'disp','48':'disp'};
+const chipNum=n=>n.replace(/^(74HC|74LS|CD)/,'');
+Object.values(CHIPS).forEach(d=>d.cat=CATMAP[chipNum(d.name)]||'gate');
 const SEG7PINS=['e','d','COM','c','dp','b','a','COM','f','g'];
 /* 단독 기본 게이트 (전원 연결 없이 동작하는 이상적인 게이트 모듈) */
 const GATES={};
@@ -732,12 +849,12 @@ function renderLive(){const box=$('live');if(!box)return;
       <p class="desc">${rails.length?'전원 레일과 연결됨: '+[...new Set(rails)].join(', ')+'<br>':''}${m.length?'같은 줄에 연결된 핀:<br>'+m.join('<br>'):'이 줄에 꽂힌 부품 핀이 없어요.'}</p>`;return;}
   if(!(sel&&sel.type==='comp'))return;const c=compById(sel.id);if(!c)return;const hs=pinHoles(c);
   if(c.t==='ic'||c.t==='gate'){const d=defOf(c),r=rt(c);
-    const row=k=>{const nm=d.pins[k],{v,w}=levelOfHole(hs[k]);const flt=d.ttl?' <span style="color:var(--muted)">(떠 있음 → TTL이라 HIGH로 읽음)</span>':' <span style="color:var(--xx)">(떠 있음)</span>';const role=nm===d.vcc?'전원 +':nm===d.gnd?'전원 −':d.roles[nm]||(d.outs.has(nm)?'출력':'입력');
-      const io=nm===d.vcc||nm===d.gnd?'':d.outs.has(nm)?'→':'←';
-      return`<tr><td class="n">${k+1}</td><td class="p">${pinHTML(nm)}</td><td class="r">${io} ${esc(role)}${(!d.outs.has(nm)&&v===Z&&nm!==d.vcc&&nm!==d.gnd)?flt:''}</td><td>${lvBadge(v,w)}</td></tr>`;};
+    const row=k=>{const nm=d.pins[k],{v,w}=levelOfHole(hs[k]);const flt=d.ttl?' <span style="color:var(--muted)">(떠 있음 → H)</span>':' <span style="color:var(--xx)">(떠 있음)</span>';const role=nm===d.vcc?'전원 +':nm===d.gnd?'전원 −':nm==='NC'?'연결 없음 (NC)':d.roles[nm]||(d.outs.has(nm)?'출력':'입력');
+      const io=nm===d.vcc||nm===d.gnd||nm==='NC'?'':d.outs.has(nm)?'→':'←';
+      return`<tr><td class="n">${k+1}</td><td class="p">${pinHTML(nm)}</td><td class="r">${io} ${esc(role)}${(!d.outs.has(nm)&&v===Z&&nm!==d.vcc&&nm!==d.gnd&&nm!=='NC')?flt:''}</td><td>${lvBadge(v,w)}</td></tr>`;};
     let h=d.free?`<p class="desc">상태: ${S.power?'<b style="color:var(--ok)">동작 중</b> (전원 연결 필요 없음)':'전원 꺼짐'}</p>`:`<p class="desc">상태: ${!S.power?'전원 꺼짐':r.pw?'<b style="color:var(--ok)">전원 정상</b>':'<b style="color:var(--bad)">전원 없음</b>'}</p>`;
     if(d.gates&&r.pw){h+=`<div class="gates">${d.gates.map((g,i)=>{const iv=g.ins.map(p=>levelOfHole(hs[d.idx[p]]).v),ov=levelOfHole(hs[d.idx[g.out]]).v;
-      return`<div>${d.free?'':'게이트'+(i+1)+': '}${g.ins.map((p,j)=>(d.free?p:p.slice(1))+'='+lvBadge(iv[j])).join(' ')} → Y=${lvBadge(ov)}</div>`;}).join('')}</div>`;}
+      return`<div>${d.free?'':'게이트'+(i+1)+': '}${g.ins.map((p,j)=>p.replace(/^\d/,'')+'='+lvBadge(iv[j])).join(' ')} → Y=${lvBadge(ov)}</div>`;}).join('')}</div>`;}
     if(!d.free)h+=`<h3 style="margin:10px 0 2px">핀 배치도 (데이터시트 기준)</h3>${pinoutSVG(d,hs.map(id=>levelOfHole(id).v))}<p class="desc" style="font-size:11.5px">보드에서는 노치가 왼쪽을 향해요 → 1~${d.pins.length/2}번은 아래쪽 f줄(왼→오), ${d.pins.length/2+1}~${d.pins.length}번은 위쪽 e줄(오→왼).</p>`;
     h+=`<table><thead><tr><th>핀</th><th>이름</th><th>역할</th><th>상태</th></tr></thead><tbody>${d.pins.map((_,k)=>row(k)).join('')}</tbody></table>`;
     if(d.gates)h+=truthTable(d);
@@ -763,8 +880,10 @@ function pinoutSVG(d,lv){const n=d.pins.length,h=n/2,pt=21,top=30,bw=84,bx=104,V
   s+=`<text x="${VW/2}" y="${VH-6}" text-anchor="middle" font-size="10" fill="var(--muted)">위에서 본 모습 (Top view) · 노치가 위쪽</text></svg>`;
   return s;}
 const LVCOLS=['var(--lo)','var(--hi)','var(--xx)','var(--zz)','var(--sh)'];
-function truthTable(d){const k=d.gates[0].ins.length,rows=[];for(let i=0;i<(1<<k);i++){const v=[...Array(k)].map((_,j)=>(i>>(k-1-j))&1);rows.push([...v,k===1?d.fn(v[0]):d.fn(v[0],v[1])]);}
-  return`<div class="tt"><h3 style="margin:10px 0 4px">진리표</h3><table><thead><tr>${k===1?'<th>A</th>':'<th>A</th><th>B</th>'}<th>Y</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+function truthTable(d){const ins=d.gates[0].ins.map(p=>p.replace(/^\d/,'')),k=ins.length,rows=[];
+  if(k>4)return`<p class="desc" style="margin-top:8px">진리표: 입력이 모두 1일 때만 Y = 0, 나머지는 모두 Y = 1 (Y = ${esc(d.expr)})</p>`;
+  for(let i=0;i<(1<<k);i++){const v=[...Array(k)].map((_,j)=>(i>>(k-1-j))&1);rows.push([...v,d.fn(...v)]);}
+  return`<div class="tt"><h3 style="margin:10px 0 4px">진리표</h3><table><thead><tr>${ins.map(n=>`<th>${n}</th>`).join('')}<th>Y</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li>왼쪽에서 <b>IC</b>를 고르고 보드 가운데 홈 위를 누르면 칩이 꽂혀요. 1번 핀은 왼쪽 아래(홈 쪽 점)예요.</li>
 <li><b>전선</b> 도구로 구멍 두 개를 차례로 눌러 연결해요. a~e, f~j 는 세로 다섯 구멍끼리 안에서 이어져 있고, 맨 위·아래 레일은 가로로 이어져 있어요.</li>
@@ -796,9 +915,11 @@ $('tools').innerHTML=TOOLS.map(t=>itemBtn(t,ICO[t[0]])).join('');
 $('parts').innerHTML=PARTS.map(t=>itemBtn(t,ICO[t[0]])).join('');
 const gIco=k=>`<svg width="30" height="16" viewBox="20 -10 64 30">${gateSVG(k,(k==='NOT'?[0,80]:[0,20,80]).map(x=>({x,y:30})),0,null,false).replace(/<rect[^>]*\/>/,'')}</svg>`;
 $('gates').innerHTML=Object.values(GATES).map(d=>itemBtn(['gate:'+d.name,d.name,'Y = '+d.expr,''],gIco(d.name))).join('');
-$('chips').innerHTML=Object.values(CHIPS).map(d=>itemBtn(['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ICO.ic)).join('');
+{const fam=d=>d.name.startsWith('74LS')?1:d.name.startsWith('74HC')?0:2,sorted=Object.values(CHIPS).sort((a,b)=>(+chipNum(a.name)-+chipNum(b.name))||fam(a)-fam(b));
+  $('chips').innerHTML=CATS.map(([k,t])=>{const list=sorted.filter(d=>d.cat===k);if(!list.length)return'';
+    return`<details class="sec"${k==='gate'||k==='disp'?' open':''}><summary>IC · ${t} <span>${list.length}</span></summary><div class="items">${list.map(d=>itemBtn(['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ICO.ic)).join('')}</div></details>`;}).join('');}
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
-$('ng').textContent=Object.keys(GATES).length;$('nc').textContent=Object.keys(CHIPS).length;
+$('ng').textContent=Object.keys(GATES).length;
 function setTool(t){tool=t;pending=null;
   document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
   svg.classList.toggle('place',t!=='select');renderOpts();renderHint();renderOverlay();}
@@ -1000,6 +1121,16 @@ const EXAMPLES={
     w('b22','g22',BLU),R('i22','i25'),{t:'led',pins:['j25','bn25'],color:'green'},
     w('b30','g30',BLU),R('i30','i32'),{t:'led',pins:['j32','bn32'],color:'yellow'},
     w('b38','g38',BLU),R('i38','i40'),{t:'led',pins:['j40','bn40'],color:'blue'}],
+  ls90:()=>[
+    {t:'ic',chip:'74LS90',col:4},{t:'ic',chip:'74LS47',col:20},{t:'seg7',col:35,ca:true},
+    // 74LS90: VCC 5번(f8), GND 10번(e8), R0·R9 → −
+    w('j8','bp8',RED),w('a8','tn8',BLK),w('j5','bn5',BLK),w('j6','bn7',BLK),w('j9','bn9',BLK),w('j10','bn10',BLK),
+    {t:'clk',pins:['b4'],hz:2},          // CKA(14번, e4)에 클럭
+    w('c6','g4',GRN),                     // QA(12번) → CKB(1번) : 10진 연결
+    w('d6','g26',YEL),w('d9','g20',ORG),w('d10','g21',GRN),w('d7','g25',BLU),
+    w('a20','tp20',RED),w('j27','bn27',BLK),w('j22','bp22',RED),w('j23','bp23',RED),w('j24','bp25',RED),
+    w('a23','a38',PUR),w('b24','b39',PUR),w('b25','h38',PUR),w('c26','i36',PUR),w('d27','j35',PUR),w('c21','c36',PUR),w('d22','d35',PUR),
+    {t:'res',pins:['j37','bp37'],ohms:330}],
   ls47:()=>[
     {t:'ic',chip:'74LS47',col:20},{t:'seg7',col:35,ca:true},
     w('a20','tp20',RED),w('j27','bn27',BLK),w('j22','bp22',RED),w('j23','bp23',RED),w('j24','bp25',RED),

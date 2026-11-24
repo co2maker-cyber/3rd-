@@ -14,7 +14,13 @@
 | 종류 | 부품 |
 |---|---|
 | 기본 게이트 | AND · OR · NOT · NAND · NOR · XOR · XNOR 단독 게이트 (전원 연결 없이 동작하는 연습용 모듈, 진리표 표시) |
-| 논리 IC | 74HC00(NAND) · 74HC02(NOR) · 74HC04(NOT) · 74HC08(AND) · 74HC32(OR) · 74HC86(XOR) · 74HC74(D 플립플롭) · 74HC161(4비트 카운터) · 74HC138(3→8 디코더) · 74HC283(4비트 가산기) · CD4511(BCD→7세그 디코더) · 74LS47 / 74LS46(BCD→7세그 디코더, 오픈 컬렉터, 공통 애노드용) |
+| 74HC (CMOS) | 00 NAND · 02 NOR · 04 NOT · 08 AND · 32 OR · 86 XOR · 74 D 플립플롭 · 161 4비트 카운터 · 138 3→8 디코더 · 283 4비트 가산기, CD4511 BCD→7세그(공통 캐소드용) |
+| 74LS (TTL) 게이트 | 00 · 02 · 04 · 08 · 32 · 86, 14 슈미트 NOT, 10 3입력 NAND, 11 3입력 AND, 27 3입력 NOR, 20 4입력 NAND, 21 4입력 AND, 30 8입력 NAND |
+| 74LS 플립플롭·래치·시프트 | 74 D 플립플롭, 75 4비트 래치, 112 JK 플립플롭(하강 에지), 164 8비트 시프트 레지스터, 175 4중 D 플립플롭 |
+| 74LS 카운터 | 90 10진(리플), 93 4비트(리플), 161 4비트 동기, 192 10진 업/다운, 193 4비트 업/다운 |
+| 74LS 디코더·MUX | 138 3→8, 139 2→4 ×2, 151 8→1, 153 4→1 ×2, 157 2→1 ×4 |
+| 74LS 연산·비교·버퍼 | 283 4비트 가산기, 85 4비트 비교기, 125 3상태 버퍼 |
+| 74LS 7세그 디코더 | 47 / 46 (오픈 컬렉터, 공통 애노드용), 48 (공통 캐소드용) |
 | 기본 부품 | 전선, 저항(220Ω~10kΩ), LED(4색), 푸시 버튼, 토글 스위치, 클럭 발생기(0.5~10Hz), 7세그먼트(공통 캐소드 / 공통 애노드) |
 
 ## 화면 구성 (CAD 형식)
@@ -39,6 +45,24 @@ IC를 선택하면 [속성]에 데이터시트와 같은 형식(위에서 본 �
 | 74HC283 | 16 VCC, 8 GND | S2 B2 A2 S1 A1 B1 C0 GND C4 S4 B4 A4 S3 A3 B3 VCC |
 | CD4511 | 16 VDD, 8 VSS | B C LT̅ BI̅ LE D A VSS e d c b a g f VDD |
 | 74LS47 / 74LS46 | 16 VCC, 8 GND | B C LT̅ BI̅/RBO̅ RBI̅ D A GND e̅ d̅ c̅ b̅ a̅ g̅ f̅ VCC |
+| 74LS48 | 16 VCC, 8 GND | B C LT̅ BI̅/RBO̅ RBI̅ D A GND e d c b a g f VCC |
+| 74LS10 / 11 / 27 | 14 VCC, 7 GND | 1A 1B 2A 2B 2C 2Y GND 3Y 3A 3B 3C 1Y 1C VCC |
+| 74LS20 / 21 | 14 VCC, 7 GND | 1A 1B NC 1C 1D 1Y GND 2Y 2A 2B NC 2C 2D VCC |
+| 74LS30 | 14 VCC, 7 GND | A B C D E F GND Y NC NC G H NC VCC |
+| 74LS14 | 14 VCC, 7 GND | 74HC04와 같음 |
+| 74LS125 | 14 VCC, 7 GND | 1C̅ 1A 1Y 2C̅ 2A 2Y GND 3Y 3A 3C̅ 4Y 4A 4C̅ VCC |
+| 74LS75 | **5 VCC, 12 GND** | 1Q̅ 1D 2D 3C·4C VCC 3D 4D 4Q̅ 4Q 3Q 3Q̅ GND 1C·2C 2Q̅ 2Q 1Q |
+| 74LS112 | 16 VCC, 8 GND | 1CLK 1K 1J 1PRE̅ 1Q 1Q̅ 2Q̅ GND 2Q 2PRE̅ 2J 2K 2CLK 2CLR̅ 1CLR̅ VCC |
+| 74LS164 | 14 VCC, 7 GND | A B QA QB QC QD GND CLK CLR̅ QE QF QG QH VCC |
+| 74LS175 | 16 VCC, 8 GND | CLR̅ 1Q 1Q̅ 1D 2D 2Q̅ 2Q GND CLK 3Q 3Q̅ 3D 4D 4Q̅ 4Q VCC |
+| 74LS90 | **5 VCC, 10 GND** | CKB R0(1) R0(2) NC VCC R9(1) R9(2) QC QB GND QD QA NC CKA |
+| 74LS93 | **5 VCC, 10 GND** | CKB R0(1) R0(2) NC VCC NC NC QC QB GND QD QA NC CKA |
+| 74LS192 / 193 | 16 VCC, 8 GND | B QB QA DOWN UP QC QD GND D C LOAD̅ CO̅ BO̅ CLR A VCC |
+| 74LS139 | 16 VCC, 8 GND | 1G̅ 1A 1B 1Y̅0 1Y̅1 1Y̅2 1Y̅3 GND 2Y̅3 2Y̅2 2Y̅1 2Y̅0 2B 2A 2G̅ VCC |
+| 74LS151 | 16 VCC, 8 GND | D3 D2 D1 D0 Y W G̅ GND C B A D7 D6 D5 D4 VCC |
+| 74LS153 | 16 VCC, 8 GND | 1G̅ B 1C3 1C2 1C1 1C0 1Y GND 2Y 2C0 2C1 2C2 2C3 A 2G̅ VCC |
+| 74LS157 | 16 VCC, 8 GND | S 1A 1B 1Y 2A 2B 2Y GND 3Y 3B 3A 4Y 4B 4A G̅ VCC |
+| 74LS85 | 16 VCC, 8 GND | B3 A<Bin A=Bin A>Bin A>Bout A=Bout A<Bout GND B0 A0 B1 A1 A2 B2 A3 VCC |
 
 ## 조작법
 - 왼쪽에서 도구/부품을 고르고 보드를 누르면 꽂힙니다. 두 다리 부품은 구멍 두 개를 차례로 누릅니다(LED는 애노드(+)부터).
@@ -63,6 +87,7 @@ IC를 선택하면 [속성]에 데이터시트와 같은 형식(위에서 본 �
 4. 1비트 전가산기 (74HC86 · 08 · 32)
 5. 기본 게이트 비교 — 스위치 2개로 AND · OR · XOR · NOT 결과를 LED로 비교
 6. 스위치로 숫자 표시 (74LS47 + 공통 애노드 7세그먼트) — DCBA 스위치 4개로 0~15 표시
+7. 10진 카운터 (74LS90 → 74LS47 → 공통 애노드 7세그먼트) — QA를 CKB에 이어 0~9 반복
 
 ## 실제 회로와 다른 점
 - 디지털 논리 수준(HIGH/LOW)만 계산합니다. 전류·전압 강하·시간 지연은 계산하지 않습니다.
