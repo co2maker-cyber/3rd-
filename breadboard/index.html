@@ -241,6 +241,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
         <option value="adder">④ 1비트 전가산기 (74HC86·08·32)</option>
         <option value="gates">⑤ 기본 게이트 비교 (AND·OR·XOR·NOT)</option>
         <option value="ls47">⑥ 스위치로 숫자 표시 (74LS47 + 공통 애노드)</option>
+        <option value="sync10">⑨ 동기식 10진 업 카운터 (74LS76 ×2 + 74LS08)</option>
         <option value="t555">⑧ 555 타이머 LED 깜박이 (비안정)</option>
         <option value="ls90">⑦ 10진 카운터 (74LS90 → 74LS47 → 7세그)</option>
       </select>
@@ -450,6 +451,12 @@ def({name:'74LS112',title:'JK 플립플롭 ×2 (하강 에지)',ttl:true,pins:['
     if(clr===L)q=L;else if(pre===L)q=Hh;else if(clr===X||pre===X)q=X;
     else if(fall){if(j===X||k===X)q=X;else if(j&&k)q=NOT(q);else if(j)q=Hh;else if(k)q=L;}
     st['q'+n]=q;o[n+'Q']=q;o['~'+n+'Q']=NOT(q);}return o;}});
+def({name:'74LS76',title:'JK 플립플롭 ×2 (프리셋·클리어, 하강 에지)',ttl:true,
+  pins:['1CLK','~1PRE','~1CLR','1J','VCC','2CLK','~2PRE','~2CLR','2J','~2Q','2Q','2K','GND','~1Q','1Q','1K'],outs:['1Q','~1Q','2Q','~2Q'],
+  desc:'클럭이 HIGH→LOW로 떨어지는 순간 J·K에 따라 동작해요: 00 유지, 01 리셋(Q=0), 10 세트(Q=1), 11 반전(토글). PRE̅가 LOW면 Q=1, CLR̅가 LOW면 Q=0(둘 다 LOW면 Q와 Q̅가 모두 1). VCC가 5번, GND가 13번 핀이라 위치에 주의하세요.'+TTLN,
+  roles:{'1CLK':'클럭 (하강 에지)','2CLK':'클럭 (하강 에지)','~1PRE':'프리셋 (LOW면 Q=1)','~2PRE':'프리셋 (LOW면 Q=1)','~1CLR':'클리어 (LOW면 Q=0)','~2CLR':'클리어 (LOW면 Q=0)'},
+  init:()=>({q1:L,q2:L,p1:X,p2:X}),
+  eval(g,st){return CHIPS['74LS112'].eval.call(this,g,st);}});
 def({name:'74LS164',title:'8비트 직렬입력·병렬출력 시프트 레지스터',ttl:true,pins:['A','B','QA','QB','QC','QD','GND','CLK','~CLR','QE','QF','QG','QH','VCC'],
   outs:['QA','QB','QC','QD','QE','QF','QG','QH'],
   desc:'클럭이 올라갈 때마다 QA→QB→…→QH 로 한 칸씩 밀리고, QA에는 A·B(둘 다 HIGH면 1)가 들어가요. CLR̅가 LOW면 모두 0.'+TTLN,
@@ -530,7 +537,7 @@ def({name:'NE555',title:'타이머 (비안정·단안정)',ttl:true,is555:true,p
 /* 분류 */
 const CATS=[['timer','타이머'],['gate','게이트'],['ff','플립플롭·래치·시프트'],['cnt','카운터'],['mux','디코더·멀티플렉서'],['math','연산·비교'],['buf','버퍼'],['disp','7세그먼트 디코더']];
 const CATMAP={'00':'gate','02':'gate','04':'gate','08':'gate','10':'gate','11':'gate','14':'gate','20':'gate','21':'gate','27':'gate','30':'gate','32':'gate','86':'gate',
-  '74':'ff','75':'ff','112':'ff','164':'ff','175':'ff','90':'cnt','93':'cnt','161':'cnt','192':'cnt','193':'cnt','138':'mux','139':'mux','151':'mux','153':'mux','157':'mux',
+  '74':'ff','75':'ff','76':'ff','112':'ff','164':'ff','175':'ff','90':'cnt','93':'cnt','161':'cnt','192':'cnt','193':'cnt','138':'mux','139':'mux','151':'mux','153':'mux','157':'mux',
   '283':'math','85':'math','125':'buf','4511':'disp','47':'disp','46':'disp','48':'disp','NE555':'timer'};
 const chipNum=n=>n.replace(/^(74HC|74LS|CD|NE)/,'');
 Object.values(CHIPS).forEach(d=>d.cat=CATMAP[chipNum(d.name)]||CATMAP[d.name]||'gate');
@@ -1188,6 +1195,34 @@ const EXAMPLES={
     w('b22','g22',BLU),R('i22','i25'),{t:'led',pins:['j25','bn25'],color:'green'},
     w('b30','g30',BLU),R('i30','i32'),{t:'led',pins:['j32','bn32'],color:'yellow'},
     w('b38','g38',BLU),R('i38','i40'),{t:'led',pins:['j40','bn40'],color:'blue'}],
+  sync10:()=>[
+    // 그림 7-9: U2·U3 = 74LS76 (JK 플립플롭 4개), U1 = 74LS08 (AND 3개 사용)
+    // J0=K0=1 · J1=Q0·Q̅3, K1=Q0 · J2=K2=Q0·Q1 · J3=Q0·Q1·Q2, K3=Q0
+    {t:'ic',chip:'74LS76',col:8},{t:'ic',chip:'74LS76',col:20},{t:'ic',chip:'74LS08',col:32},
+    // 전원: 74LS76은 VCC 5번(f12, f24), GND 13번(e11, e23)
+    w('j12','bp13',RED),w('a11','tn11',BLK),w('j24','bp25',RED),w('a23','tn23',BLK),w('a32','tp32',RED),w('j38','bn38',BLK),
+    // FF0: J0 = K0 = VCC
+    w('i11','bp11',RED),w('a8','tp8',RED),
+    // 공통 CLK (노랑) · PR (주황) · CLR (보라)
+    {t:'clk',pins:['j8'],hz:1},w('g8','g13',YEL),w('h13','h20',YEL),w('g20','g25',YEL),
+    w('h9','h14',ORG),w('i14','i21',ORG),w('h21','h26',ORG),
+    w('i10','i15',PUR),w('j15','j22',PUR),w('i22','i27',PUR),
+    // PR 스위치(2열) · CLR 스위치(4열): 켜면 HIGH, 끄면 1kΩ 풀다운으로 LOW
+    {t:'sw',pins:['tp2','a2'],on:true},w('e2','f2',ORG),R('j2','bn2',1000),w('g2','j9',ORG),
+    {t:'sw',pins:['tp4','a4'],on:true},w('e4','f4',PUR),R('j4','bn4',1000),w('g4','j10',PUR),
+    // K1 = Q0, K3 = Q0
+    w('d9','d12',GRN),w('c9','c24',GRN),
+    // U1:A  Q0·Q̅3 → J1
+    w('b9','g32',GRN),w('d26','g33',BLU),w('g34','d15',BLU),
+    // U1:B  Q0·Q1 → J2, K2
+    w('h32','g35',GRN),w('d13','g36',BLU),w('g37','g23',BLU),w('h23','d20',BLU),
+    // U1:C  (Q0·Q1)·Q2 → J3
+    w('h37','d37',BLU),w('d21','d36',GRN),w('d38','d27',BLU),
+    // 출력 LED: Q3 Q2 Q1 Q0 (왼쪽이 높은 자리)
+    w('a25','a41',RED),R('e41','f41',330),{t:'led',pins:['j41','bn41'],color:'red'},
+    w('a21','a43',RED),R('e43','f43',330),{t:'led',pins:['j43','bn43'],color:'yellow'},
+    w('a13','a45',RED),R('e45','f45',330),{t:'led',pins:['j45','bn45'],color:'green'},
+    w('a9','a47',RED),R('e47','f47',330),{t:'led',pins:['j47','bn47'],color:'blue'}],
   t555:()=>[
     // NE555 (1 GND f20, 2 TRIG f21, 3 OUT f22, 4 RESET f23, 5 CTRL e23, 6 THRES e22, 7 DISCH e21, 8 VCC e20)
     {t:'ic',chip:'NE555',col:20},
