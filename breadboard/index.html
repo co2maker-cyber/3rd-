@@ -2171,6 +2171,7 @@ function openMenu(cx,cy,items,swatches){const m=$('cmenu');
   m.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{closeMenu();recolorSel(b.dataset.col);});
   m.hidden=false;const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.min(cx,innerWidth-w-8)+'px';m.style.top=Math.min(cy,innerHeight-h-8)+'px';}
 function openCtx(r){
+  if(r.id!=null&&compById(r.id)&&INST.has(compById(r.id).t)){sel={type:'comp',id:r.id};if(tool!=='select')setTool('select');syncSel();render();renderInfo();openDock('info');return;}   // 계측기·전원: 바로 속성 창
   if(r.id!=null&&compById(r.id)){if(!SEL.has(r.id))sel={type:'comp',id:r.id};if(tool!=='select')setTool('select');syncSel();render();renderInfo();
     const list=selComps(),wires=list.every(c=>c.t==='wire');const items=[
       {label:list.length>1?`${list.length}개 삭제`:'삭제',k:'Delete',del:true,fn:delSel},{label:'복제',k:'Ctrl+D',fn:dupSel},{label:'복사',k:'Ctrl+C',fn:copySel}];
@@ -2451,7 +2452,8 @@ function migrateInst(list){const out=[],seen=new Set();let nk=0;for(const c of l
     if(!Number.isFinite(c.k)||seen.has(c.k))c.k=++nk;seen.add(c.k);const was=c.pins;c.pins=termIds(c);out.push(c);
     if(old.length&&Array.isArray(was))was.forEach((h,i)=>{if(typeof h==='string'&&!isTerm(h)&&c.pins[i])out.push({t:'wire',pins:[c.pins[i],h],color:JWIRE[c.t][i]});});}
   return out;}
-function loadComps(list,keepHist,boards){if(!keepHist)pushHist();setBoards(boards);const ok=[];const used=new Set();
+function loadComps(list,keepHist,boards){if(typeof schLoad==='function')schLoad(null,true);   // 새 회로를 불러오면 회로도도 새로(브레드보드를 따라 다시 그림)
+if(!keepHist)pushHist();setBoards(boards);const ok=[];const used=new Set();
   list=migrateInst(list.filter(Boolean));const tids=new Set(list.filter(c=>INST.has(c.t)&&Number.isFinite(c.x)&&Number.isFinite(c.y)).flatMap(c=>c.pins));
   for(const c of list){if(c.t==='ic'&&!CHIPS[c.chip])continue;if(c.t==='gate'&&!GATES[c.kind])continue;if(!PREFIX[c.t])continue;if(INST.has(c.t)){if(!Number.isFinite(c.x)||!Number.isFinite(c.y))continue;Object.assign(c,{...IDEF[c.t](),...c});}let hs;try{hs=pinHoles(c);}catch(e){continue;}
     if(!hs.every(id=>HOLES.has(id)||tids.has(id))||hs.some(id=>!isTerm(id)&&used.has(id)))continue;hs.forEach(id=>used.add(id));ok.push(c);}
@@ -2981,7 +2983,7 @@ function sSync(){$('sUndo').disabled=!shist.length;$('sRedo').disabled=!sfut.len
 function sApply(t){const o=JSON.parse(t);SCH.parts=o.parts;SCH.wires=o.wires;SCH.nextId=o.nextId;SRT.clear();if(ssel&&!(ssel.type==='part'?spart(ssel.id):SCH.wires.some(w=>w.id===ssel.id)))ssel=null;sSync();sCommit();}
 function sUndo(){if(!shist.length)return;sfut.push(ssnap());sApply(shist.pop());}
 function sRedo(){if(!sfut.length)return;shist.push(ssnap());sApply(sfut.pop());}
-function sCommit(){store.set('sch',schData());renderSch();}
+function sCommit(){schApplyToBoard();store.set('sch',schData());renderSch();}
 const schData=()=>({parts:SCH.parts,wires:SCH.wires,nextId:SCH.nextId,link:SCH.link,sig:SCH.sig});
 function schLoad(o,quiet){SCH.parts=o&&Array.isArray(o.parts)?JSON.parse(JSON.stringify(o.parts)):[];SCH.wires=o&&Array.isArray(o.wires)?JSON.parse(JSON.stringify(o.wires)):[];
   SCH.nextId=o&&o.nextId||Math.max(0,...SCH.parts.map(p=>p.id),...SCH.wires.map(w=>w.id))+1;SRT.clear();
@@ -2990,21 +2992,21 @@ function schLoad(o,quiet){SCH.parts=o&&Array.isArray(o.parts)?JSON.parse(JSON.st
 const boardSig=()=>JSON.stringify(S.comps.map(c=>c.t==='wire'?['w',...c.pins]:Object.assign({},c,{x:undefined,y:undefined})));
 function schUnlink(){if(!SCH.link)return;const had=SCH.parts.some(p=>p.bid);SCH.link=false;schLinkLabel();
   if(had)toast('회로도를 직접 고쳐서, 이제 브레드보드를 따라 저절로 바뀌지 않아요 · [보드에서 가져오기]로 다시 맞출 수 있어요');}
-function schLinkLabel(){const v=document.querySelector('#sw .vlabel');if(v)v.textContent=SCH.link&&SCH.parts.some(p=>p.bid)?'회로도 · 브레드보드를 따라 그림':'회로도 · 기호';}
+function schLinkLabel(){const v=document.querySelector('#sw .vlabel');if(v)v.textContent=SCH.link?'회로도 · 브레드보드와 함께 바뀜':'회로도 · 브레드보드와 따로 (보드에서 가져오기·보드로 보내기로 다시 이어요)';}
 /* 회로도로 바꿀 때: 브레드보드를 따라가는 회로도(또는 빈 회로도)면 브레드보드가 바뀐 만큼 다시 그린다 */
 function schAutoSync(){const sig=boardSig();if(!(SCH.link||!SCH.parts.length)||sig===SCH.sig)return;
   const has=S.comps.some(c=>c.t!=='wire'&&!INST.has(c.t));
   if(has)boardToSch(true);else if(SCH.parts.some(p=>p.bid)){sPush();SCH.parts=[];SCH.wires=[];SRT.clear();SCH.sig=sig;SCH.link=true;sCommit();}else SCH.sig=sig;}
 function schNew(t){if(t==='vcc'||t==='gnd')return{t};if(t.startsWith('ic:'))return{t:'ic',chip:t.slice(3)};if(t.startsWith('gate:'))return{t:'gate',kind:t.slice(5)};
   const o={t};if(t==='res')o.ohms=opt.ohms;if(t==='led')o.color=opt.led;if(t==='clk')o.hz=opt.hz;if(t==='cap')o.farad=opt.farad;if(t==='sw')o.on=false;if(t==='seg7')o.ca=opt.seg==='ca';return o;}
-function schAddPart(t,x,y){sPush();schUnlink();const p=Object.assign({id:SCH.nextId++,x:snapG(x),y:snapG(y),rot:0},schNew(t));
+function schAddPart(t,x,y){sPush();const p=Object.assign({id:SCH.nextId++,x:snapG(x),y:snapG(y),rot:0},schNew(t));
   // 다른 기호와 겹치면 아래로 비켜 놓는다
   for(let k=0;k<40&&SCH.parts.some(o=>{const a=partBox(o),b=partBox(p);return a.x0<b.x1&&b.x0<a.x1&&a.y0<b.y1&&b.y0<a.y1;});k++)p.y+=SG*2;
   SCH.parts.push(p);ssel={type:'part',id:p.id};sCommit();return p;}
-function schAddWire(a,b){if(a.p===b.p&&a.k===b.k)return false;schUnlink();
+function schAddWire(a,b){if(a.p===b.p&&a.k===b.k)return false;
   if(SCH.wires.some(w=>(w.a.p===a.p&&w.a.k===a.k&&w.b.p===b.p&&w.b.k===b.k)||(w.a.p===b.p&&w.a.k===b.k&&w.b.p===a.p&&w.b.k===a.k)))return false;
   sPush();SCH.wires.push({id:SCH.nextId++,a:{p:a.p,k:a.k},b:{p:b.p,k:b.k}});sCommit();return true;}
-function schDelSel(){if(!ssel)return;sPush();schUnlink();if(ssel.type==='part'){const id=ssel.id;SCH.parts=SCH.parts.filter(p=>p.id!==id);SCH.wires=SCH.wires.filter(w=>w.a.p!==id&&w.b.p!==id);SRT.delete(id);}
+function schDelSel(){if(!ssel)return;sPush();if(ssel.type==='part'){const id=ssel.id;SCH.parts=SCH.parts.filter(p=>p.id!==id);SCH.wires=SCH.wires.filter(w=>w.a.p!==id&&w.b.p!==id);SRT.delete(id);}
   else SCH.wires=SCH.wires.filter(w=>w.id!==ssel.id);ssel=null;sCommit();}
 function schRotSel(){if(!ssel||ssel.type!=='part')return;const p=spart(ssel.id);if(!p)return;sPush();p.rot=((p.rot||0)+90)%360;sCommit();}
 function schPick(t){if(INST.has(t)){toast('계측기는 브레드보드에서만 써요. 회로도에서는 VCC·GND 기호로 전원을 나타내요');return;}
@@ -3012,7 +3014,7 @@ function schPick(t){if(INST.has(t)){toast('계측기는 브레드보드에서만
 function setVM(m){VM=m;document.querySelector('.app').classList.toggle('sch',m==='sch');document.querySelectorAll('.vmode [data-vm]').forEach(b=>b.setAttribute('aria-selected',b.dataset.vm===m));
   store.set('vm',m);stool=null;spend=null;
   if(m==='sch'){schAutoSync();schLinkLabel();$('sMode').textContent='회로도';$('status').textContent='핀 위로 커서를 옮기면 파랗게 표시돼요 · 핀을 누르고 다른 핀을 누르면 선이 이어져요';schHint();requestAnimationFrame(()=>{if(!schFitted){schFitted=true;schFit();}else renderSch();});}
-  else{renderHint();render();renderInfo();syncPower();requestAnimationFrame(fitView);}}
+  else{$('status').textContent='구멍 위로 커서를 옮기면 연결 상태가 표시됩니다';renderHint();render();renderInfo();syncPower();requestAnimationFrame(fitView);}}
 let schFitted=false;
 function schHint(){$('hint').innerHTML='<b>회로도</b> · [부품]으로 기호 놓기 · 핀을 누르고 다른 핀을 누르면 선 · 기호를 끌어 옮기기 · 스위치는 누르면 켜고 꺼요 · 빈 곳을 끌면 화면 이동';}
 
@@ -3028,7 +3030,7 @@ function renderSfbar(){const fb=$('sfbar');if(!ssel||sdrag){fb.hidden=true;retur
   else h=`<b>선</b><button data-sa="straight" title="가운데 구간을 원래 자리로">곧게</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button><small>선을 끌면 가운데 구간이 옮겨져요</small>`;
   fb.innerHTML=h;fb.hidden=false;
   fb.querySelectorAll('[data-sa]').forEach(b=>b.onclick=()=>{const a=b.dataset.sa;if(a==='del')schDelSel();else if(a==='rot')schRotSel();else if(a==='straight'){const w=SCH.wires.find(x=>x.id===ssel.id);if(w){sPush();delete w.off;sCommit();}}});
-  fb.querySelectorAll('[data-sv]').forEach(s=>s.onchange=()=>{const p=spart(ssel.id);if(!p)return;sPush();schUnlink();const k=s.dataset.sv;p[k]=k==='color'?s.value:k==='ca'?s.value==='1':+s.value;sCommit();});}
+  fb.querySelectorAll('[data-sv]').forEach(s=>s.onchange=()=>{const p=spart(ssel.id);if(!p)return;sPush();const k=s.dataset.sv;p[k]=k==='color'?s.value:k==='ca'?s.value==='1':+s.value;sCommit();});}
 
 /* ── 누르기·끌기 ── */
 function schTarget(e){const t=e.target;const pin=t.closest&&t.closest('[data-pin]');if(pin){const [p,k]=pin.dataset.pin.split(':').map(Number);return{type:'pin',p,k};}
@@ -3071,6 +3073,72 @@ function schUp(e){sptrs.delete(e.pointerId);if(span&&span.pinch){if(sptrs.size<2
   if(D.tg.type==='wire'){ssel={type:'wire',id:D.tg.id};renderSch();return;}
   ssel=null;renderSch();}
 
+/* ── 회로도 → 브레드보드 바로 반영 ──
+   브레드보드를 통째로 다시 꽂지 않고, 바뀐 만큼만 고친다(직접 정리해 둔 배치를 지키기 위해).
+   ① 회로도에서 지운 부품은 뺀다 ② 값(저항·LED 색·스위치·클럭…)을 옮긴다 ③ 새 부품은 빈자리에 꽂는다(IC는 전원 핀을 레일에)
+   ④ 회로도에서 끊은 연결: 양쪽 줄의 부품이 회로도에서 서로 다른 연결이면 그 전선을 뺀다 ⑤ 회로도에서 이은 연결: 빈 구멍끼리 전선(90°)을 더한다 */
+let schApplying=false;
+function schApplyToBoard(){if(!SCH.link||schApplying)return;schApplying=true;try{_schApply();}finally{schApplying=false;}}
+function _schApply(){syncTerms();const notes=[],real=SCH.parts.filter(p=>p.t!=='vcc'&&p.t!=='gnd');let changed=false,pushed=false;
+  const touch=()=>{if(!pushed){pushHist();pushed=true;}changed=true;};
+  // ① 지운 부품
+  const keep=new Set(real.map(p=>p.bid).filter(Boolean));
+  const gone=S.comps.filter(c=>c.t!=='wire'&&!INST.has(c.t)&&!keep.has(c.id));
+  if(gone.length){touch();const ids=new Set(gone.map(c=>c.id));S.comps=S.comps.filter(c=>!ids.has(c.id));gone.forEach(c=>RT.delete(c.id));}
+  for(const p of real)if(p.bid&&!compById(p.bid))delete p.bid;
+  // ② 값
+  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
+  // ③ 새 부품
+  const added=[];
+  for(const p of real){if(p.bid)continue;const c=schPlaceOnBoard(p);if(!c){notes.push(`${schLabels().get(p.id)}: 브레드보드에 빈자리가 없어 꽂지 못했어요`);continue;}
+    touch();c.id=S.nextId++;S.comps.push(c);p.bid=c.id;added.push(c);}
+  // 구멍 → 회로도 연결 이름(전원은 VCC/GND)
+  const N=schNets(false),pw=new Map();for(const p of SCH.parts)if(p.t==='vcc'||p.t==='gnd')pw.set(N.net(p.id,0),p.t==='vcc'?'VCC':'GND');
+  const lab=new Map(),pinsOfNet=new Map();
+  for(const p of real){const c=compById(p.bid);if(!c)continue;const hs=pinHoles(c),d=c.t==='ic'?CHIPS[c.chip]:null;
+    if(d){const hv=HOLES.get(hs[d.idx[d.vcc]]),hg=HOLES.get(hs[d.idx[d.gnd]]);if(hv)lab.set(hv.i,'VCC');if(hg)lab.set(hg.i,'GND');}
+    for(const q of symOf(p).pins){const h=HOLES.get(hs[q.k]);if(!h)continue;const n=N.net(p.id,q.k),L_=pw.get(n)||'n'+n;lab.set(h.i,L_);if(!pinsOfNet.has(L_))pinsOfNet.set(L_,[]);pinsOfNet.get(L_).push(h);}}
+  const stripLab=i=>{const set=new Set(),r=baseRep[i];for(const [hi,L_] of lab)if(baseRep[hi]===r)set.add(L_);const h=HL[i];if(h&&isRail(h.r))set.add(h.r[1]==='p'?'VCC':'GND');return set;};
+  // 같은 줄에 서로 다른 연결의 다리가 꽂혀 있으면 전선으로는 못 고친다
+  const strips=new Map();for(const [hi,L_] of lab){const r=baseRep[hi];if(!strips.has(r))strips.set(r,new Set());strips.get(r).add(L_);}
+  for(const [r,set] of strips)if(set.size>1&&!isRail(HL[r].r))notes.push(`${holeName(HL[r].id)} 줄에 회로도에서 따로인 다리들이 함께 꽂혀 있어요 · 브레드보드에서 한쪽을 옮겨 주세요`);
+  // ④ 끊은 연결
+  for(const w of S.comps.filter(c=>c.t==='wire')){const [a,b]=w.pins.map(id=>HOLES.get(id));if(!a||!b||a.term||b.term)continue;
+    const A=stripLab(a.i),B=stripLab(b.i);if(A.size&&B.size&&![...A].some(x=>B.has(x))){touch();S.comps=S.comps.filter(c=>c!==w);}}
+  // ⑤ 이은 연결
+  const SIGC=['#E8B820','#E57A1F','#2E9E5B','#2F6FDB','#8B5CD6'];let ci=0;
+  const uf=()=>{const u=makeUF(HL.length);for(let i=0;i<HL.length;i++)u.u(i,baseRep[i]);for(const c of S.comps)if(c.t==='wire'){const [x,y]=c.pins.map(id=>HOLES.get(id));if(x&&y)u.u(x.i,y.i);}return u;};
+  const freeIn=h=>{const o=occ(),top=h.ri<=6,rows=isRail(h.r)?[h.r]:top?['b','c','d','a','e']:['i','h','g','j','f'];
+    if(isRail(h.r)){for(let d=0;d<70;d++)for(const cc of [h.c-d,h.c+d]){const id=pref(h.b)+h.r+cc;if(HOLES.has(id)&&!o.has(id))return HOLES.get(id);}return null;}
+    for(const r of rows){const id=pref(h.b)+r+h.c;if(HOLES.has(id)&&!o.has(id))return HOLES.get(id);}return null;};
+  const addW=(h1,h2,color)=>{const a=freeIn(h1),b=freeIn(h2);if(!a||!b)return false;touch();const w={t:'wire',pins:[a.id,b.id],color,id:S.nextId++};S.comps.push(w);
+    buildRoutes();const r=autoRoute(a,b,'180');if(r.length)w.pts=r;return true;};
+  const railFor=(h,L_)=>{const B=boardById(h.b);if(!B||!BTYPES[B.type].rails)return null;const r=(h.ri<=6?'t':'b')+(L_==='VCC'?'p':'n');
+    for(let d=0;d<70;d++)for(const cc of [h.c-d,h.c+d]){const id=pref(h.b)+r+cc;if(HOLES.has(id))return HOLES.get(id);}return null;};
+  // 새 IC의 전원 핀
+  for(const c of added){if(c.t!=='ic')continue;const d=CHIPS[c.chip],hs=pinHoles(c);for(const [nm,L_] of [[d.vcc,'VCC'],[d.gnd,'GND']]){const h=HOLES.get(hs[d.idx[nm]]),rh=h&&railFor(h,L_);
+    if(h&&rh&&uf().f(h.i)!==uf().f(rh.i))addW(h,rh,L_==='VCC'?'#D93A3A':'#24282D');}}
+  for(const [L_,hs] of pinsOfNet){
+    if(L_==='VCC'||L_==='GND'){for(const h of hs){const rh=railFor(h,L_);if(!rh){notes.push(`${holeName(h.id)}: 이 보드에는 전원 레일이 없어요`);continue;}const u=uf();if(u.f(h.i)!==u.f(rh.i))addW(h,rh,L_==='VCC'?'#D93A3A':'#24282D');}continue;}
+    if(hs.length<2)continue;const color=SIGC[ci++%SIGC.length];const sorted=[...hs].sort((x,y)=>x.b-y.b||x.c-y.c||x.ri-y.ri);
+    for(let i=1;i<sorted.length;i++){const u=uf();if(u.f(sorted[i].i)===u.f(sorted[0].i))continue;
+      // 이미 이어진 무리 중 가장 가까운 것과 잇는다
+      let best=null,bd=1e9;for(let j=0;j<i;j++){const d=Math.abs(sorted[j].x-sorted[i].x)+Math.abs(sorted[j].y-sorted[i].y);if(d<bd){bd=d;best=sorted[j];}}
+      if(!addW(best,sorted[i],color))notes.push(`${holeName(sorted[i].id)}: 빈 구멍이 모자라 전선을 잇지 못했어요`);}}
+  if(changed){commit(true);SCH.sig=boardSig();store.set('sch',schData());}
+  if(notes.length)toast('브레드보드 반영: '+notes[0]+(notes.length>1?` 외 ${notes.length-1}개`:''));}
+/* 새 부품을 브레드보드 빈자리에: IC·7세그는 가운데 홈, 게이트 모듈은 빈 줄, 다리 둘인 부품은 위·아래 줄이 모두 비어 있는 열에 홈을 걸쳐서 */
+function schPlaceOnBoard(p){const B=S.boards[0],pt={x:B.x+bW(B.type)/2,y:B.y+MID},t0=tool;
+  try{if(p.t==='ic'||p.t==='seg7'){tool=p.t==='ic'?'ic:'+p.chip:'seg7';const g=ghostAt(pt);if(!g||!g.ok)return null;return p.t==='ic'?{t:'ic',chip:p.chip,col:g.col,b:g.b}:{t:'seg7',col:g.col,b:g.b,ca:!!p.ca};}
+    if(p.t==='gate'){tool='gate:'+p.kind;const g=gateGhost(pt);if(!g||!g.ok)return null;return{t:'gate',kind:p.kind,pins:g.hs.map(h=>h.id)};}}finally{tool=t0;}
+  const o=occ(),rects=bodyRects(),emptyStrip=(b,c,top)=>(top?'abcde':'fghij').split('').every(r=>!o.has(pref(b)+r+c));
+  for(const Bd of S.boards){const N_=BTYPES[Bd.type].cols;for(let c=1;c<=N_;c++){
+    if(p.t==='clk'){if(!emptyStrip(Bd.id,c,true))continue;const t={t:'clk',pins:[pref(Bd.id)+'c'+c],hz:p.hz||1};if(fitsHere(t,o,rects))return t;continue;}
+    if(!emptyStrip(Bd.id,c,true)||!emptyStrip(Bd.id,c,false))continue;
+    if(c>1&&(!emptyStrip(Bd.id,c-1,true)||!emptyStrip(Bd.id,c-1,false))&&c<N_)continue;   // 옆 열과 한 칸 띄워서(보기 좋게)
+    const t={t:p.t,pins:[pref(Bd.id)+'e'+c,pref(Bd.id)+'f'+c]};
+    for(const k of ['ohms','color','farad','on','ca'])if(p[k]!==undefined)t[k]=p[k];if(fitsHere(t,o,rects))return t;}}
+  return null;}
 /* ── 브레드보드로 보내기: 회로도 → 부품·연결 목록 → 자동 배치 ── */
 function schToSpec(){const LB=schLabels(),parts=[],refOf=new Map(),errors=[];
   for(const p of SCH.parts){if(p.t==='vcc'||p.t==='gnd')continue;const ref=LB.get(p.id).replace(/[^A-Za-z0-9_]/g,'');refOf.set(p.id,ref);
