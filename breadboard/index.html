@@ -33,8 +33,8 @@ html,body{margin:0;height:100%}
 body{background:var(--chrome);color:var(--fg);font-family:var(--sans);font-size:13px;line-height:1.45;overflow:hidden}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer}
-.app{display:grid;height:100vh;height:100dvh;grid-template-columns:250px minmax(0,1fr) 320px;grid-template-rows:auto auto minmax(0,1fr) auto auto;
-  grid-template-areas:"title title title" "tool tool tool" "left canvas right" "cmd cmd cmd" "stat stat stat"}
+.app{display:grid;height:100vh;height:100dvh;grid-template-columns:minmax(0,1fr) 320px;grid-template-rows:auto auto auto minmax(0,1fr) auto auto;
+  grid-template-areas:"title title" "tool tool" "rib rib" "canvas right" "cmd cmd" "stat stat"}
 /* 제목줄 */
 .titlebar{grid-area:title;display:flex;align-items:center;gap:10px;padding:5px max(12px,env(safe-area-inset-left,0px));background:var(--chrome);border-bottom:1px solid var(--line)}
 .logo{width:22px;height:22px;flex:none;border-radius:5px;background:#F4F1E8;border:1px solid #CFC8B4;display:grid;grid-template-columns:repeat(3,4px);gap:2px;place-content:center}
@@ -46,7 +46,7 @@ button{cursor:pointer}
 .titlebar a:hover{color:var(--fg)}
 /* 도구 막대 */
 .toolbar{grid-area:tool;display:flex;align-items:stretch;gap:0;flex-wrap:wrap;background:var(--panel);border-bottom:1px solid var(--line);padding:3px max(8px,env(safe-area-inset-left,0px))}
-.grp{display:flex;align-items:center;gap:2px;padding:0 8px;border-right:1px solid var(--line2);position:relative}
+.grp{display:flex;align-items:center;gap:2px;padding:0 8px;border-right:1px solid var(--line2);position:relative;flex-wrap:wrap;min-width:0;max-width:100%}
 .grp:last-child{border-right:0}
 .grp>.gl{position:absolute;left:8px;bottom:-1px;font-size:9px;color:var(--muted);letter-spacing:.06em;display:none}
 .tbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:44px;height:42px;padding:2px 6px;border:1px solid transparent;border-radius:5px;background:none;font-size:11px;color:var(--fg);white-space:nowrap}
@@ -61,7 +61,53 @@ button{cursor:pointer}
 select.ex{height:30px;align-self:center;border:1px solid var(--line);background:var(--surface);border-radius:5px;padding:0 6px;font-size:12.5px;max-width:240px}
 /* 독 */
 .dock{background:var(--panel);display:flex;flex-direction:column;min-height:0;min-width:0}
-.dock.left{grid-area:left;border-right:1px solid var(--line)}
+/* 파일로 부품 배치 대화상자 */
+.modal{position:fixed;inset:0;z-index:30;background:rgba(10,12,15,.55);display:grid;place-items:center;padding:16px}
+.mbox{width:min(760px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column}
+.mhead{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.mhead b{font-size:15px;flex:1}
+.mbody{padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.drop.on{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.drop b{color:var(--fg)}
+.imsg{font-size:13px;border-radius:8px;padding:8px 12px;background:var(--sunk);min-height:20px}
+.imsg.ok{background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.imsg.bad{background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.imsg.busy::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);border-right-color:transparent;animation:spin .8s linear infinite;margin-right:8px;vertical-align:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.imsg.busy::before{animation:none}}
+#impText{width:100%;min-height:220px;resize:vertical;font:12.5px/1.5 var(--mono);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px}
+#impText:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.mfoot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--panel)}
+.mfoot .sp{flex:1}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.fmt{font-size:12.5px;color:var(--muted)}
+.fmt summary{cursor:pointer;color:var(--fg);font-weight:600}
+.fmt pre{font:12px/1.5 var(--mono);background:var(--sunk);padding:8px 10px;border-radius:6px;overflow-x:auto;color:var(--fg)}
+.ires{margin:0;padding-left:18px;font-size:12.5px}
+/* 부품 리본 (위쪽) */
+.ribbon{grid-area:rib;background:var(--panel);border-bottom:1px solid var(--line);min-width:0;display:flex;flex-direction:column}
+.rtop{display:flex;align-items:center;gap:8px;padding:4px max(8px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line2);min-width:0}
+.rtabs{display:flex;gap:2px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:none}
+.rtabs::-webkit-scrollbar{display:none}
+.rtabs button{flex:none;border:0;background:none;padding:5px 10px;border-radius:5px;font-size:12.5px;white-space:nowrap;color:var(--muted);font-weight:600;display:flex;gap:5px;align-items:center}
+.rtabs button:hover{background:var(--sunk);color:var(--fg)}
+.rtabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.rtabs .cnt{font-size:10px}
+.rtop .search{margin:0;width:220px;flex:none}
+.upl{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:5px;padding:5px 12px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.upl:hover{filter:brightness(1.08)}
+.upl svg{width:15px;height:15px}
+.rbody{display:flex;align-items:stretch;min-width:0}
+.ritems{display:flex;gap:6px;overflow-x:auto;padding:6px max(8px,env(safe-area-inset-left,0px));flex:1;min-width:0;scrollbar-width:thin;align-items:center}
+.ritems .it{flex:none;width:auto;max-width:230px;border:1px solid var(--line2);background:var(--surface);padding:4px 10px 4px 6px;border-radius:6px}
+.ritems .it[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.ritems .empty{color:var(--muted);font-size:12.5px;padding:6px}
+.ropts{flex:none;max-width:46%;display:flex;align-items:center;gap:10px;border-left:1px solid var(--line2);padding:4px 12px;overflow-x:auto;min-width:0}
+.ropts .olab{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.ropts .opts{flex-direction:row;align-items:center;padding:0;gap:8px;flex-wrap:nowrap}
+.ropts .opts .desc{margin:0;white-space:nowrap;font-size:12px}
+.ropts .opts .sw,.ropts .opts .seg{flex-wrap:nowrap}
 .dock.right{grid-area:right;border-left:1px solid var(--line)}
 .dhead{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--chrome);border-bottom:1px solid var(--line);flex:none}
 .dhead b{color:var(--fg);text-transform:none;letter-spacing:0;font-size:12px}
@@ -194,10 +240,11 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 /* 좁은 화면: 위아래로 쌓고 페이지 스크롤 */
 @media (max-width:900px){
   body{overflow:auto}
-  .app{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 50vh auto auto auto auto;grid-template-areas:"title" "tool" "canvas" "cmd" "left" "right" "stat"}
+  .app{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto 56vh auto auto auto;grid-template-areas:"title" "tool" "rib" "canvas" "cmd" "right" "stat"}
+  .rbody{flex-direction:column}.ropts{max-width:none;border-left:0;border-top:1px solid var(--line2)}
   .dock.left,.dock.right{border:0;border-top:1px solid var(--line)}
-  .lib{max-height:320px}.pane{max-height:none}
-  .tbtn{min-width:38px;font-size:10.5px}.grp{padding:0 4px}
+  .pane{max-height:none}.rtop{flex-wrap:wrap}.rtop .search{width:100%;order:3}
+  .tbtn{min-width:38px;font-size:10.5px}.grp{padding:0 4px}select.ex{max-width:calc(50vw - 40px);min-width:0}
   .titlebar .doc{display:none}
   .statusbar .hide-s{display:none}
 }
@@ -214,6 +261,11 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .ghost{fill:color-mix(in srgb,#18A06F 18%,transparent);stroke:#18A06F;stroke-width:1.5;stroke-dasharray:4 3}
 .ghost.bad{fill:color-mix(in srgb,#C2362F 15%,transparent);stroke:#C2362F}
 #gO,#gH{pointer-events:none}
+.btab{cursor:move}
+.btab rect{fill:var(--panel);stroke:var(--line)}
+.btab text{font:600 11px var(--sans);fill:var(--fg)}
+.btab path{stroke:var(--muted)}
+.btab:hover rect{stroke:var(--accent)}
 .cross{stroke:var(--cross);stroke-width:.8;stroke-dasharray:6 4;opacity:.55;vector-effect:non-scaling-stroke}
 .selbox{fill:none;stroke:#1F8FFF;stroke-width:1.6;stroke-dasharray:4 3}
 @keyframes bl{50%{opacity:.25}}.blink{animation:bl .6s steps(2) infinite}
@@ -235,7 +287,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
       <button class="tbtn bad" id="clr" title="새로 만들기 (모두 지우기)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M12 11v6M9 14h6"/></svg>새로</button>
       <button class="tbtn" id="imp" title="파일 열기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h6l2 2h10v10H3z"/></svg>열기</button>
       <button class="tbtn" id="exp" title="파일로 저장"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h12l3 3v15H5z"/><path d="M8 3v5h8V3M8 21v-7h9v7"/></svg>저장</button>
-      <input type="file" id="file" accept=".json,application/json" hidden>
+      <input type="file" id="file" accept=".json,application/json,image/*,.txt,.csv" hidden>
     </div>
     <div class="grp">
       <button class="tbtn" id="undo" title="실행 취소 (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 7L4 12l5 5"/><path d="M4 12h11a5 5 0 0 1 0 10h-3"/></svg>취소</button>
@@ -256,6 +308,13 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     </div>
     <div class="grp">
       <button class="tbtn pwr" id="pwr" aria-pressed="true" title="전원 켜기/끄기"><span class="led"></span><span id="pwrTx">전원 ON</span></button>
+      <select class="ex" id="addBoard" aria-label="브레드보드 추가" title="브레드보드를 하나 더 놓아요">
+        <option value="">＋ 브레드보드 추가…</option>
+        <option value="full">풀 사이즈 830홀 (63열)</option>
+        <option value="std">표준 50열 (약 670홀)</option>
+        <option value="half">하프 400홀 (30열)</option>
+        <option value="mini">미니 170홀 (17열, 레일 없음)</option>
+      </select>
       <select class="ex" id="ex" aria-label="예제 회로">
         <option value="">예제 불러오기…</option>
         <option value="nand">① NAND 게이트 시험 (74HC00)</option>
@@ -271,20 +330,17 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     </div>
   </nav>
 
-  <aside class="dock left">
-    <div class="dhead">라이브러리</div>
-    <input class="search" id="search" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색">
-    <div class="lib" id="lib">
-      <details class="sec" open><summary>도구</summary><div class="items" id="tools"></div></details>
-      <details class="sec" open><summary>부품</summary><div class="items" id="parts"></div></details>
-      <details class="sec" open><summary>기본 게이트 <span id="ng"></span></summary><div class="items" id="gates"></div></details>
-      <div id="chips"></div>
+  <section class="ribbon" aria-label="부품 고르기">
+    <div class="rtop">
+      <div class="rtabs" role="tablist" id="rtabs"></div>
+      <input class="search" id="search" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색">
+      <button class="upl" id="upl" title="회로도 사진, 부품·연결 목록 파일을 올리면 자동으로 배치해요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>파일로 부품 배치</button>
     </div>
-    <div class="optbox" id="optCard">
-      <div class="dhead">도구 옵션 · <b id="optTitle"></b></div>
-      <div class="opts" id="opts"></div>
+    <div class="rbody">
+      <div class="ritems" id="ritems" role="tabpanel"></div>
+      <div class="ropts" id="optCard"><span class="olab" id="optTitle"></span><div class="opts" id="opts"></div></div>
     </div>
-  </aside>
+  </section>
 
   <main class="canvas" id="bw">
     <svg id="bb" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -321,29 +377,71 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 </div>
 <div class="toast" id="toast"></div>
 <div class="cmenu" id="cmenu" role="menu" hidden></div>
+<div class="modal" id="impDlg" hidden role="dialog" aria-modal="true" aria-labelledby="impTitle">
+  <div class="mbox">
+    <div class="mhead"><b id="impTitle">파일로 부품 배치</b><button class="btn" id="impX">닫기</button></div>
+    <div class="mbody">
+      <div class="drop" id="drop">
+        <div><b>회로도 사진</b>(PNG·JPG) 또는 <b>부품·연결 목록</b>(TXT·CSV·JSON)을 여기로 끌어다 놓으세요</div>
+        <div><button class="btn" id="impPick">파일 선택</button> <input type="file" id="impFile" hidden accept="image/png,image/jpeg,image/webp,image/gif,.txt,.csv,.json,.md,.net,text/plain,application/json"></div>
+        <div id="impCap" style="font-size:12px"></div>
+      </div>
+      <div class="imsg" id="impMsg">파일을 올리거나 아래 칸에 목록을 직접 쓰세요. 배치하기 전에 읽은 내용을 확인하고 고칠 수 있어요.</div>
+      <label for="impText" style="font-size:12px;font-weight:700;color:var(--muted)">부품·연결 목록 (직접 고쳐도 돼요)</label>
+      <textarea id="impText" spellcheck="false" placeholder="# 부품&#10;U1 74LS08&#10;R1 저항 330&#10;D1 LED red&#10;# 연결&#10;N1: U1.3, R1.1&#10;N2: R1.2, D1.A&#10;GND: D1.K"></textarea>
+      <details class="fmt"><summary>목록 쓰는 법</summary>
+        <p>한 줄에 부품 하나 또는 연결 하나를 써요. <code>#</code>로 시작하는 줄은 메모예요.</p>
+<pre># 부품: 이름  종류  [값]
+U1  74LS08            ← IC 이름 (74LS·74HC·CD4511·NE555 등)
+R1  저항  330         ← 220 · 330 · 1k · 4.7k · 10k · 47k · 100k · 1M
+D1  LED  red          ← red · green · yellow · blue
+SW1 스위치 on          ← on 이면 켜진 채로 시작
+BTN1 버튼 · C1 커패시터 47u · CLK1 클럭 1 · DS1 7세그 anode
+G1  AND               ← 단독 게이트 (AND OR NOT NAND NOR XOR XNOR)
+
+# 연결: [이름:] 핀, 핀, 핀 ...
+VCC: U1.14            ← VCC/GND는 + / − 레일로 이어져요
+N1: U1.3, R1.1        ← IC는 핀 번호(데이터시트 기준)
+N2: R1.2 - D1.A       ← LED는 A(+) / K(−), 2단자 부품은 1 / 2
+GND: D1.K</pre>
+        <p>IC의 전원 핀(VCC·GND)을 빠뜨리면 자동으로 레일에 이어요. CSV는 <code>ref,type,value</code> 형식의 부품 줄도 읽어요.</p></details>
+    </div>
+    <div class="mfoot"><button class="btn" id="impEx">예시 넣기 (동기식 10진 카운터)</button><span class="sp"></span><button class="btn" id="impStop" hidden>멈추기</button><button class="btn pri" id="impGo">보드에 배치하기</button></div>
+  </div>
+</div>
 
 <script>
 'use strict';
 /* ───────── 보드 기하 ───────── */
-const N=50, P=20, X0=36, W=X0*2+(N-1)*P, H=384;
+const P=20, X0=36;
+/* 브레드보드 종류: 열 수와 전원 레일 유무 */
+const BTYPES={
+  std:{name:'표준 50열',short:'50열',cols:50,rails:true,holes:'약 670홀'},
+  full:{name:'풀 사이즈 830홀',short:'830',cols:63,rails:true,holes:'830홀'},
+  half:{name:'하프 400홀',short:'400',cols:30,rails:true,holes:'400홀'},
+  mini:{name:'미니 170홀',short:'170',cols:17,rails:false,holes:'170홀 · 전원 레일 없음'}};
+const bW=t=>X0*2+(BTYPES[t].cols-1)*P;
 const ROWS=['tn','tp','a','b','c','d','e','f','g','h','i','j','bn','bp'];
 const ROWY={tn:28,tp:48,a:90,b:110,c:130,d:150,e:170,f:214,g:234,h:254,i:274,j:294,bn:336,bp:356};
 const MID=192;
-const colX=c=>X0+(c-1)*P;
 const isRail=r=>r.length===2;
 const railHas=c=>(c-1)%6!==5;
-const HOLES=new Map(), HL=[];
-for(const r of ROWS)for(let c=1;c<=N;c++){
-  if(isRail(r)&&!railHas(c))continue;
-  const h={id:r+c,r,c,ri:ROWS.indexOf(r),x:colX(c),y:ROWY[r],i:HL.length};HOLES.set(h.id,h);HL.push(h);
-}
-const baseKey=h=>isRail(h.r)?h.r:(h.ri<=6?'T':'B')+h.c;
-const baseRep=(()=>{const m=new Map();return HL.map(h=>{const k=baseKey(h);if(!m.has(k))m.set(k,h.i);return m.get(k);});})();
-const RAIL={tn:HOLES.get('tn1').i,tp:HOLES.get('tp1').i,bn:HOLES.get('bn1').i,bp:HOLES.get('bp1').i};
-const holeAt=(ri,c)=>ri>=0&&ri<ROWS.length?HOLES.get(ROWS[ri]+c):undefined;
-function holeName(id){const h=HOLES.get(id);if(!h)return id;
-  if(isRail(h.r))return (h.r[0]==='t'?'위쪽 ':'아래쪽 ')+(h.r[1]==='p'?'+':'−')+' 레일 '+h.c;
-  return h.r+h.c;}
+const pref=b=>b===1?'':b+':';
+/* 보드 목록(S.boards)에서 구멍 표를 만든다. 보드 1의 구멍 이름은 'a12', 다른 보드는 '2:a12' */
+const HOLES=new Map(), HL=[];let baseRep=[],RAILS=[];
+const boardById=id=>S.boards.find(b=>b.id===id);
+function boardBox(B){const t=BTYPES[B.type],w=bW(B.type);return t.rails?{x0:B.x+4,y0:B.y+4,x1:B.x+w-4,y1:B.y+380}:{x0:B.x+4,y0:B.y+60,x1:B.x+w-4,y1:B.y+324};}
+function buildHoles(){HOLES.clear();HL.length=0;const m=new Map();baseRep=[];RAILS=[];
+  for(const B of S.boards){const t=BTYPES[B.type];
+    for(const r of ROWS){if(isRail(r)&&!t.rails)continue;
+      for(let c=1;c<=t.cols;c++){if(isRail(r)&&!railHas(c))continue;
+        const h={id:pref(B.id)+r+c,b:B.id,r,c,ri:ROWS.indexOf(r),x:B.x+X0+(c-1)*P,y:B.y+ROWY[r],i:HL.length};HOLES.set(h.id,h);HL.push(h);
+        const k=B.id+'|'+(isRail(r)?r:(h.ri<=6?'T':'B')+c);if(!m.has(k))m.set(k,h.i);baseRep.push(m.get(k));
+        if(isRail(r)&&c===1+(r[1]==='p'||r[1]==='n'?0:0)&&!RAILS.some(x=>x.b===B.id&&x.r===r))RAILS.push({b:B.id,r,i:h.i,lv:r[1]==='p'?1:0});}}}}
+const holeAt=(ri,c,b=1)=>ri>=0&&ri<ROWS.length?HOLES.get(pref(b)+ROWS[ri]+c):undefined;
+function holeName(id){const h=HOLES.get(id);if(!h)return id;const bp=S.boards.length>1?'보드'+h.b+' ':'';
+  if(isRail(h.r))return bp+(h.r[0]==='t'?'위쪽 ':'아래쪽 ')+(h.r[1]==='p'?'+':'−')+' 레일 '+h.c;
+  return bp+h.r+h.c;}
 
 /* ───────── 논리값 ───────── */
 const L=0,Hh=1,X=2,Z=3,SH=4;
@@ -599,7 +697,8 @@ const TWO=new Set(['wire','res','led','btn','sw','cap']);
 /* ───────── 상태 ───────── */
 const KEY='bblab.v1';
 const store={get(k,d){try{const v=localStorage.getItem(KEY+'.'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(KEY+'.'+k,JSON.stringify(v));}catch(e){}}};
-let S={comps:[],power:true,nextId:1};
+let S={comps:[],power:true,nextId:1,boards:[{id:1,type:'std',x:0,y:0}]};
+buildHoles();
 const RT=new Map(); // 실행 중 상태(저장 안 함)
 const rt=c=>{let r=RT.get(c.id);if(!r){r={};RT.set(c.id,r);}return r;};
 let tool='select', pending=null, hover=null, sel=null, drag=null, lastPt=null;
@@ -610,7 +709,7 @@ const hist=[];
 
 function pinHoles(c){
   if(c.t==='ic'||c.t==='seg7'){const n=c.t==='ic'?CHIPS[c.chip].pins.length:10,h=n/2,a=[];
-    for(let k=0;k<n;k++)a.push(k<h?'f'+(c.col+k):'e'+(c.col+n-1-k));return a;}
+    const pf=pref(c.b||1);for(let k=0;k<n;k++)a.push(k<h?pf+'f'+(c.col+k):pf+'e'+(c.col+n-1-k));return a;}
   return c.pins;}
 const pinNames=c=>c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:['1','2'];
 function occ(except){const m=new Map();for(const c of S.comps){if(c.id===except)continue;for(const h of pinHoles(c))m.set(h,c.id);}return m;}
@@ -639,7 +738,7 @@ function settle(){
   const combine=m=>(m&1)&&(m&2)?SH:(m&4)?X:(m&2)?Hh:L;
   function resolve(){
     const m=new Map(),add=(net,v)=>m.set(net,(m.get(net)||0)|(1<<v));
-    if(S.power){add(netOf[RAIL.tp],Hh);add(netOf[RAIL.bp],Hh);add(netOf[RAIL.tn],L);add(netOf[RAIL.bn],L);
+    if(S.power){for(const R_ of RAILS)add(netOf[R_.i],R_.lv?Hh:L);
       for(const c of clks)add(netOf[ph.get(c.id)[0]],clkVal(c,now));}
     for(const c of ics){const o=rt(c).out;if(!o)continue;const hs=ph.get(c.id);
       for(let k=0;k<o.length;k++)if(o[k]!==Z)add(netOf[hs[k]],o[k]);}
@@ -717,7 +816,7 @@ function settle(){
   SIM.led=new Map();SIM.seg=new Map();
   const shortNets=new Set();for(const [net,v] of lvl)if(v===SH&&!weak.has(net))shortNets.add(net);
   if(S.power){
-    const railShort=[RAIL.tp,RAIL.bp,RAIL.tn,RAIL.bn].some(i=>shortNets.has(netOf[i]));
+    const railShort=RAILS.some(R_=>shortNets.has(netOf[R_.i]));
     if(railShort)W_.push(['bad','전원 단락! + 레일과 − 레일이 전선이나 스위치로 바로 이어져 있어요. 실제 회로라면 전원 장치가 꺼지거나 부품이 탈 수 있어요.']);
     else if(shortNets.size)W_.push(['bad','출력 충돌! 한 줄에 HIGH와 LOW가 동시에 들어오고 있어요(출력끼리 또는 출력과 전원이 바로 연결됨). 해당 전선은 자주색으로 깜박여요.']);
   }
@@ -743,25 +842,30 @@ const levelOfHole=id=>{if(!SIM.netOf)return Z;const net=SIM.netOf[HOLES.get(id).
 const svg=document.getElementById('bb');
 
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-function boardSVG(){
-  let s=`<defs><filter id="glow" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="4"/></filter>
-  <linearGradient id="icg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34383E"/><stop offset="1" stop-color="#1D2024"/></linearGradient></defs>`;
-  s+=`<pattern id="gmin" width="20" height="20" patternUnits="userSpaceOnUse" x="${X0}" y="${ROWY.a}"><path d="M20 0H0V20" fill="none" class="gmin"/></pattern>
-  <pattern id="gmaj" width="100" height="100" patternUnits="userSpaceOnUse" x="${X0}" y="${ROWY.a}"><rect width="100" height="100" fill="url(#gmin)"/><path d="M100 0H0V100" fill="none" class="gmaj"/></pattern>
-  <rect x="-6000" y="-6000" width="13000" height="13000" fill="url(#gmaj)"/>
-  <rect x="9" y="11" width="${W-8}" height="${H-8}" rx="10" fill="#000" opacity=".22"/>`;
-  s+=`<rect class="bbody" x="4" y="4" width="${W-8}" height="${H-8}" rx="10"/>`;
-  s+=`<rect class="groove" x="10" y="${MID-7}" width="${W-20}" height="14" rx="3"/>`;
-  s+=`<line x1="10" x2="${W-10}" y1="70" y2="70" stroke="#E3DDCC"/><line x1="10" x2="${W-10}" y1="314" y2="314" stroke="#E3DDCC"/>`;
-  const rl=(y,col)=>`<line x1="${X0-8}" x2="${W-X0+8}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;
-  s+=rl(16,'#3E63DD')+rl(60,'#E5484D')+rl(324,'#3E63DD')+rl(368,'#E5484D');
-  for(const [r,t,col] of [['tn','−','#3E63DD'],['tp','+','#E5484D'],['bn','−','#3E63DD'],['bp','+','#E5484D']]){
-    s+=`<text class="rlab" x="16" y="${ROWY[r]+4}" text-anchor="middle" fill="${col}">${t}</text><text class="rlab" x="${W-16}" y="${ROWY[r]+4}" text-anchor="middle" fill="${col}">${t}</text>`;}
-  for(const r of 'abcdefghij')s+=`<text class="rl" x="18" y="${ROWY[r]+3}" text-anchor="middle">${r}</text><text class="rl" x="${W-18}" y="${ROWY[r]+3}" text-anchor="middle">${r}</text>`;
-  for(let c=1;c<=N;c++)if(c===1||c%5===0)s+=`<text class="rl" x="${colX(c)}" y="78" text-anchor="middle">${c}</text><text class="rl" x="${colX(c)}" y="312" text-anchor="middle">${c}</text>`;
-  for(const h of HL)s+=`<rect class="hole" x="${h.x-3.5}" y="${h.y-3.5}" width="7" height="7" rx="1.6"/>`;
+const DEFS=`<defs><filter id="glow" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="4"/></filter>
+  <linearGradient id="icg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34383E"/><stop offset="1" stop-color="#1D2024"/></linearGradient>
+  <pattern id="gmin" width="20" height="20" patternUnits="userSpaceOnUse" x="${X0}" y="${ROWY.a}"><path d="M20 0H0V20" fill="none" class="gmin"/></pattern>
+  <pattern id="gmaj" width="100" height="100" patternUnits="userSpaceOnUse" x="${X0}" y="${ROWY.a}"><rect width="100" height="100" fill="url(#gmin)"/><path d="M100 0H0V100" fill="none" class="gmaj"/></pattern></defs>
+  <rect x="-20000" y="-20000" width="44000" height="44000" fill="url(#gmaj)"/>`;
+/* 보드 하나를 보드 좌표(0,0 기준)로 그린다 */
+function oneBoardSVG(B){const t=BTYPES[B.type],Wb=bW(B.type),N_=t.cols,cx=c=>X0+(c-1)*P;
+  const y0=t.rails?4:60,y1=t.rails?380:324;let s='';
+  s+=`<rect x="9" y="${y0+7}" width="${Wb-8}" height="${y1-y0}" rx="10" fill="#000" opacity=".22"/>`;
+  s+=`<rect class="bbody" x="4" y="${y0}" width="${Wb-8}" height="${y1-y0}" rx="10"/>`;
+  s+=`<rect class="groove" x="10" y="${MID-7}" width="${Wb-20}" height="14" rx="3"/>`;
+  if(t.rails){s+=`<line x1="10" x2="${Wb-10}" y1="70" y2="70" stroke="#E3DDCC"/><line x1="10" x2="${Wb-10}" y1="314" y2="314" stroke="#E3DDCC"/>`;
+    const rl=(y,col)=>`<line x1="${X0-8}" x2="${Wb-X0+8}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;
+    s+=rl(16,'#3E63DD')+rl(60,'#E5484D')+rl(324,'#3E63DD')+rl(368,'#E5484D');
+    for(const [r,tx,col] of [['tn','−','#3E63DD'],['tp','+','#E5484D'],['bn','−','#3E63DD'],['bp','+','#E5484D']]){
+      s+=`<text class="rlab" x="16" y="${ROWY[r]+4}" text-anchor="middle" fill="${col}">${tx}</text><text class="rlab" x="${Wb-16}" y="${ROWY[r]+4}" text-anchor="middle" fill="${col}">${tx}</text>`;}}
+  for(const r of 'abcdefghij')s+=`<text class="rl" x="18" y="${ROWY[r]+3}" text-anchor="middle">${r}</text><text class="rl" x="${Wb-18}" y="${ROWY[r]+3}" text-anchor="middle">${r}</text>`;
+  for(let c=1;c<=N_;c++)if(c===1||c%5===0)s+=`<text class="rl" x="${cx(c)}" y="78" text-anchor="middle">${c}</text><text class="rl" x="${cx(c)}" y="312" text-anchor="middle">${c}</text>`;
+  for(const h of HL)if(h.b===B.id)s+=`<rect class="hole" x="${h.x-B.x-3.5}" y="${h.y-B.y-3.5}" width="7" height="7" rx="1.6"/>`;
   return s;}
-svg.innerHTML=`<g id="gB">${boardSVG()}</g><g id="gH"></g><g id="gC"></g><g id="gO"></g>`;
+function boardTab(B){const t=BTYPES[B.type],y=(t.rails?4:60)-26,label=`보드 ${B.id} · ${t.name}`;const w=label.length*7.4+34;
+  return`<g class="btab" data-board="${B.id}" transform="translate(${B.x+4} ${B.y+y})"><rect width="${w}" height="20" rx="5"/><text x="9" y="14">${esc(label)}</text><path d="M${w-15} 8l4 4 4-4" fill="none" stroke-width="1.6"/></g>`;}
+function renderBoards(){$('gB').innerHTML=DEFS+S.boards.map(B=>`<g transform="translate(${B.x} ${B.y})">${oneBoardSVG(B)}</g>`).join('')+S.boards.map(boardTab).join('');}
+svg.innerHTML=`<g id="gB"></g><g id="gH"></g><g id="gC"></g><g id="gO"></g>`;
 const gH=document.getElementById('gH'),gC=document.getElementById('gC'),gO=document.getElementById('gO');
 const LVCOL=['var(--lo)','var(--hi)','var(--xx)','var(--zz)','var(--sh)'];
 function wirePath(a,b,pts){if(pts&&pts.length)return'M'+[a,...pts,b].map(q=>q.x+' '+q.y).join('L');const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;const off=Math.min(22,len*.2);
@@ -810,7 +914,7 @@ function compSVG(c,now){
       <circle cx="${bx+7}" cy="${by+9}" r="3" fill="${v===1?'#7CFFB2':'#16374F'}"/>
       <text x="${bx+24}" y="${by+12.5}" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="var(--mono)">${c.hz}Hz</text></g>`;
     if(isSel)s+=`<rect class="selbox" x="${bx-3}" y="${by-3}" width="46" height="${a.y-by+7}" rx="4"/>`;return s;}
-  if(c.t==='ic'||c.t==='seg7'){const n=ph.length,h=n/2,x1=colX(c.col)-9,x2=colX(c.col+h-1)+9;
+  if(c.t==='ic'||c.t==='seg7'){const n=ph.length,h=n/2,x1=ph[0].x-9,x2=ph[h-1].x+9,MID=(ph[0].y+ph[n-1].y)/2,EY=ph[n-1].y,FY=ph[0].y;
     s+=`<g class="c" data-id="${id}">`;
     if(c.t==='ic')for(const p of ph)s+=p.y>MID?`<rect x="${p.x-3}" y="${MID+10}" width="6" height="${p.y-MID-7}" rx="1" fill="#B8BEC6"/>`:`<rect x="${p.x-3}" y="${p.y-3}" width="6" height="${MID-p.y-7}" rx="1" fill="#B8BEC6"/>`;
     if(c.t==='ic'){const pw=rt(c).pw;
@@ -829,9 +933,9 @@ function compSVG(c,now){
       for(const [k,r] of Object.entries(segs))s+=`<rect x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" rx="2" fill="${col}" fill-opacity="${on[k]?1:.1}"/>`;
       s+=`<circle cx="${Rx+7}" cy="${B+1}" r="2.6" fill="${col}" fill-opacity="${on.dp?1:.1}"/><text x="${x1+4}" y="${MID-24}" font-size="7" fill="#888" font-family="var(--mono)">${c.ca?'CA':'CC'}</text>`;}
     s+=`</g>`;
-    if(isSel&&c.t==='ic'){const d=CHIPS[c.chip];ph.forEach((p,k)=>{const up=p.y<MID,ty=up?ROWY.e-11:ROWY.f+12,t=d.pins[k],ov=t[0]==='~',tx=ov?t.slice(1):t;
+    if(isSel&&c.t==='ic'){const d=CHIPS[c.chip];ph.forEach((p,k)=>{const up=p.y<MID,ty=up?EY-11:FY+12,t=d.pins[k],ov=t[0]==='~',tx=ov?t.slice(1):t;
       s+=`<g pointer-events="none"><rect x="${p.x-9.5}" y="${ty-6}" width="19" height="9" rx="2" fill="#1F8FFF"/><text x="${p.x}" y="${ty+1}" text-anchor="middle" font-size="${tx.length>3?5.2:6.4}" font-weight="700" fill="#fff" font-family="var(--mono)"${ov?' text-decoration="overline"':''}>${esc(tx)}</text></g>`;});}
-    if(isSel)s+=`<rect class="selbox" x="${x1-4}" y="${(c.t==='ic'?ROWY.e:MID-32)-6}" width="${x2-x1+8}" height="${(c.t==='ic'?ROWY.f-ROWY.e:64)+12}" rx="4"/>`;
+    if(isSel)s+=`<rect class="selbox" x="${x1-4}" y="${(c.t==='ic'?EY:MID-32)-6}" width="${x2-x1+8}" height="${(c.t==='ic'?FY-EY:64)+12}" rx="4"/>`;
     return s;}
   return s;}
 function gateSVG(kind,ph,id,out,ghost){
@@ -875,7 +979,7 @@ function renderOverlay(){
     if(tool.startsWith('gate:')){const g=gateGhost(lastPt);if(g){s+=gateSVG(tool.slice(5),g.hs,0,null,true);
         if(!g.ok)s+=g.hs.map(h=>`<circle cx="${h.x}" cy="${h.y}" r="4" fill="${o.has(h.id)?'#C2362F':'#18A06F'}"/>`).join('');}}
     if(tool.startsWith('ic:')||tool==='seg7'){const g=ghostAt(lastPt);
-      if(g){const x1=colX(g.col)-9,x2=colX(g.col+g.h-1)+9;s+=`<rect class="ghost${g.ok?'':' bad'}" x="${x1}" y="${ROWY.e-6}" width="${x2-x1}" height="${ROWY.f-ROWY.e+12}" rx="4"/>`;
+      if(g){const A=HOLES.get(g.pins[0]),Bh=HOLES.get(g.pins[g.h-1]),E=HOLES.get(g.pins[g.pins.length-1]),x1=A.x-9,x2=Bh.x+9;s+=`<rect class="ghost${g.ok?'':' bad'}" x="${x1}" y="${E.y-6}" width="${x2-x1}" height="${A.y-E.y+12}" rx="4"/>`;
         for(const id of g.pins){const h=HOLES.get(id);if(h)s+=`<circle cx="${h.x}" cy="${h.y}" r="3" fill="${o.has(id)?'#C2362F':'#18A06F'}"/>`;}}}
     if(pending){const a=HOLES.get(pending);s+=`<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;
       if(hover&&hover.id!==pending)s+=tool==='wire'?`<path d="${wirePath(a,hover)}" fill="none" stroke="${opt.wire}" stroke-width="4" stroke-opacity=".6" stroke-linecap="round" stroke-dasharray="6 4"/>`
@@ -891,13 +995,13 @@ function renderOverlay(){
     s+=`<rect x="${x}" y="${y}" width="${Math.abs(boxSel.x1-boxSel.x0)}" height="${Math.abs(boxSel.y1-boxSel.y0)}" fill="#1F8FFF" fill-opacity=".08" stroke="#1F8FFF" stroke-width="1.2" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>`;}
   if(sel&&sel.type==='hole'){const h=HOLES.get(sel.id);s+=`<circle cx="${h.x}" cy="${h.y}" r="7" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;}
   gH.innerHTML=hs;gO.innerHTML=s;}
-function gateGhost(pt){if(!pt)return null;const {ri,c}=gridAt(pt);const cols=gatePinCols(tool.slice(5));const r=ROWS[ri];
-  if(isRail(r))return null;const c0=Math.max(1,Math.min(N-4,c-2));const hs=cols.map(k=>holeAt(ri,c0+k));if(hs.some(h=>!h))return null;
+function gateGhost(pt){if(!pt)return null;const {ri,c,b}=gridAt(pt);const cols=gatePinCols(tool.slice(5));const r=ROWS[ri];
+  if(isRail(r))return null;const c0=Math.max(1,Math.min(BTYPES[boardById(b).type].cols-4,c-2));const hs=cols.map(k=>holeAt(ri,c0+k,b));if(hs.some(h=>!h))return null;
   const o=occ();return{hs,ok:hs.every(h=>!o.has(h.id))};}
-function ghostAt(pt){if(!pt)return null;const n=tool==='seg7'?10:CHIPS[tool.slice(3)].pins.length,h=n/2;
-  let col=Math.round((pt.x-X0)/P)+1-Math.floor((h-1)/2);col=Math.max(1,Math.min(N-h+1,col));
-  const pins=pinHoles({t:tool==='seg7'?'seg7':'ic',chip:tool.slice(3),col});const o=occ();
-  return{col,h,pins,ok:pins.every(id=>!o.has(id))};}
+function ghostAt(pt){if(!pt)return null;const n=tool==='seg7'?10:CHIPS[tool.slice(3)].pins.length,h=n/2;const g=gridAt(pt),N_=BTYPES[boardById(g.b).type].cols;
+  if(h>N_)return null;let col=g.c-Math.floor((h-1)/2);col=Math.max(1,Math.min(N_-h+1,col));
+  const pins=pinHoles({t:tool==='seg7'?'seg7':'ic',chip:tool.slice(3),col,b:g.b});const o=occ();
+  return{col,h,b:g.b,pins,ok:pins.every(id=>!o.has(id))};}
 
 /* ───────── 오른쪽 패널 ───────── */
 const $=id=>document.getElementById(id);
@@ -924,6 +1028,9 @@ function renderInfo(){const box=$('info');
     h+=`<div class="row"><button class="btn bad" id="del">삭제 (Delete)</button></div>`;
     box.innerHTML=h;bindProps(c);$('del').onclick=()=>delComp(c.id);}
   else if(sel&&sel.type==='hole'){box.innerHTML=`<div class="ttl"><b>구멍 ${esc(holeName(sel.id))}</b></div><div id="live"></div>`;}
+  else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];
+    box.innerHTML=`<div class="ttl"><b>${esc(d.name)}</b><span>${esc(d.title)}</span></div><p class="desc">${esc(d.desc)}</p><h3 style="margin:10px 0 2px">핀 배치도 (데이터시트 기준)</h3>${pinoutSVG(d)}<p class="desc" style="font-size:11.5px">보드 가운데 홈 위를 누르면 꽂혀요. 보드에서는 노치가 왼쪽을 향해요.</p>`;}
+  else if(tool.startsWith('gate:')){const d=GATES[tool.slice(5)];box.innerHTML=`<div class="ttl"><b>${esc(d.name)} 게이트</b></div><p class="desc">${esc(d.desc)}</p>${truthTable(d)}`;}
   else box.innerHTML=helpHTML();
   renderLive();}
 function partDesc(c){return{
@@ -955,7 +1062,7 @@ function netMembers(net){const out=[];for(const c of S.comps){const hs=SIM.ph.ge
   return out;}
 function renderLive(){const box=$('live');if(!box)return;
   if(sel&&sel.type==='hole'){const {v,w,net}=levelOfHole(sel.id);const m=netMembers(net);
-    const rails=[['tp','+ 전원 (5V)'],['bp','+ 전원 (5V)'],['tn','− 전원 (GND, 0V)'],['bn','− 전원 (GND, 0V)']].filter(([r])=>SIM.netOf[RAIL[r]]===net).map(x=>x[1]);
+    const rails=RAILS.filter(R_=>SIM.netOf[R_.i]===net).map(R_=>R_.lv?'+ 전원 (5V)':'− 전원 (GND, 0V)');
     box.innerHTML=`<p class="desc">상태: ${lvBadge(v,w)} ${esc(lvText(v,w))}</p>
       <p class="desc">${rails.length?'전원 레일과 연결됨: '+[...new Set(rails)].join(', ')+'<br>':''}${m.length?'같은 줄에 연결된 핀:<br>'+m.join('<br>'):'이 줄에 꽂힌 부품 핀이 없어요.'}</p>`;return;}
   if(!(sel&&sel.type==='comp'))return;const c=compById(sel.id);if(!c)return;const hs=pinHoles(c);
@@ -1000,7 +1107,7 @@ function truthTable(d){const ins=d.gates[0].ins.map(p=>p.replace(/^\d/,'')),k=in
   for(let i=0;i<(1<<k);i++){const v=[...Array(k)].map((_,j)=>(i>>(k-1-j))&1);rows.push([...v,d.fn(...v)]);}
   return`<div class="tt"><h3 style="margin:10px 0 4px">진리표</h3><table><thead><tr>${ins.map(n=>`<th>${n}</th>`).join('')}<th>Y</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function helpHTML(){return`<h3>사용법</h3><ol class="help">
-<li>왼쪽에서 <b>IC</b>를 고르고 보드 가운데 홈 위를 누르면 칩이 꽂혀요. 1번 핀은 왼쪽 아래(홈 쪽 점)예요.</li>
+<li>위쪽 부품 줄에서 <b>IC</b>를 고르고 보드 가운데 홈 위를 누르면 칩이 꽂혀요. 1번 핀은 왼쪽 아래(홈 쪽 점)예요.</li>
 <li><b>전선</b> 도구로 구멍 두 개를 차례로 눌러 연결해요. a~e, f~j 는 세로 다섯 구멍끼리 안에서 이어져 있고, 맨 위·아래 레일은 가로로 이어져 있어요.</li>
 <li>모든 IC는 <b>VCC를 + 레일</b>, <b>GND를 − 레일</b>에 연결해야 동작해요.</li>
 <li>스위치·버튼·저항·LED 로 입력과 출력을 만들고, <b>선택</b> 도구로 스위치를 눌러 결과를 확인하세요.</li>
@@ -1008,7 +1115,8 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>지우기</b>: 부품을 선택하고 <kbd>Delete</kbd>, 선택하면 뜨는 막대의 [삭제], 오른쪽 클릭 메뉴, 또는 <b>지우개</b>(<kbd>E</kbd>)로 누르거나 문질러서 지워요.</li>
 <li><b>전선</b>: 선택 도구에서 빈 구멍을 누른 채 다른 구멍까지 끌면 바로 그려져요. 전선을 더블클릭하면 꺾는 점이 생기고, 그 점을 끌어 모양을 바꾸거나 더블클릭해서 지워요.</li>
 <li><b>여러 개</b>: 보드 밖 빈 곳을 끌어 범위 선택, <kbd>Shift</kbd>+클릭으로 더하기, <kbd>Ctrl</kbd>+<kbd>A</kbd> 모두 선택. 방향키로 한 칸씩 옮기고 <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd>로 복사·붙여넣기·복제해요.</li>
-<li>라이브러리의 부품을 보드로 <b>끌어다 놓을</b> 수도 있어요.</li>
+<li>위쪽 부품 줄의 부품을 보드로 <b>끌어다 놓을</b> 수도 있어요. [파일로 부품 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
+<li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드 이름표를 끌면 옮겨지고, 누르면 종류 바꾸기·삭제 메뉴가 떠요. 보드끼리 전선으로 이어도 돼요.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰은 두 손가락으로 확대.</li>
 <li>단축키: <kbd>V</kbd> 선택 <kbd>W</kbd> 전선 <kbd>R</kbd> 저항 <kbd>L</kbd> LED <kbd>B</kbd> 버튼 <kbd>S</kbd> 스위치 <kbd>C</kbd> 클럭 <kbd>E</kbd> 지우개 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 실행 취소/다시 실행</li>
 <li>IC를 선택하면 <b>데이터시트 기준 핀 배치도</b>가 나오고, 보드 위 다리에도 핀 이름이 표시돼요.</li></ol>
@@ -1031,32 +1139,44 @@ const ICO={
 const TOOLS=[['select','선택·이동','구멍에서 끌면 전선, 빈 곳을 끌면 범위 선택','V'],['wire','전선','구멍 두 개를 잇거나 끌어서 그려요','W'],['erase','지우개','누르거나 문질러서 지워요','E']];
 const PARTS=[['res','저항','220Ω ~ 10kΩ','R'],['led','LED','+ 쪽부터 누르세요','L'],['btn','푸시 버튼','누르는 동안 연결','B'],['sw','토글 스위치','켜고 끄기','S'],['clk','클럭 발생기','0.5 ~ 10Hz 펄스','C'],['cap','커패시터','10nF ~ 470µF (+ 쪽부터)','K'],['seg7','7세그먼트','캐소드형 · 애노드형','']];
 function itemBtn([k,b,sm,kb],ico){return`<button class="it" data-tool="${k}" aria-pressed="false"><span class="ic">${ico}</span><span class="tx"><b>${esc(b)}</b><small>${esc(sm)}</small></span>${kb?`<kbd>${kb}</kbd>`:''}</button>`;}
-$('tools').innerHTML=TOOLS.map(t=>itemBtn(t,ICO[t[0]])).join('');
-$('parts').innerHTML=PARTS.map(t=>itemBtn(t,ICO[t[0]])).join('');
+
 const gIco=k=>`<svg width="30" height="16" viewBox="20 -10 64 30">${gateSVG(k,(k==='NOT'?[0,80]:[0,20,80]).map(x=>({x,y:30})),0,null,false).replace(/<rect[^>]*\/>/,'')}</svg>`;
-$('gates').innerHTML=Object.values(GATES).map(d=>itemBtn(['gate:'+d.name,d.name,'Y = '+d.expr,''],gIco(d.name))).join('');
-{const fam=d=>d.name.startsWith('74LS')?1:d.name.startsWith('74HC')?0:2,sorted=Object.values(CHIPS).sort((a,b)=>(+chipNum(a.name)-+chipNum(b.name))||fam(a)-fam(b));
-  $('chips').innerHTML=CATS.map(([k,t])=>{const list=sorted.filter(d=>d.cat===k);if(!list.length)return'';
-    return`<details class="sec"${k==='gate'||k==='disp'||k==='timer'?' open':''}><summary>IC · ${t} <span>${list.length}</span></summary><div class="items">${list.map(d=>itemBtn(['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ICO.ic)).join('')}</div></details>`;}).join('');}
-document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
-document.querySelectorAll('.it[data-tool]').forEach(b=>{const t=b.dataset.tool;if(['select','wire','erase'].includes(t))return;b.draggable=true;b.title='누르거나 보드로 끌어다 놓으세요';
-  b.addEventListener('dragstart',e=>{dnd=t;try{e.dataTransfer.setData('text/plain',t);e.dataTransfer.effectAllowed='copy';}catch(_){}});b.addEventListener('dragend',()=>{dnd=null;});});
+
+/* 부품 리본: 분류 탭 + 가로 목록 */
+const CATALOG=(()=>{const fam=d=>d.name.startsWith('74LS')?1:d.name.startsWith('74HC')?0:2,sorted=Object.values(CHIPS).sort((a,b)=>(+chipNum(a.name)-+chipNum(b.name))||fam(a)-fam(b));
+  const tabs=[{k:'basic',label:'도구·부품',items:[...TOOLS,...PARTS].map(t=>({t,ico:ICO[t[0]]}))},
+    {k:'gates',label:'기본 게이트',items:Object.values(GATES).map(d=>({t:['gate:'+d.name,d.name,'Y = '+d.expr,''],ico:gIco(d.name)}))}];
+  for(const [k,label] of CATS){const list=sorted.filter(d=>d.cat===k);if(list.length)tabs.push({k:'ic-'+k,label:'IC '+label,items:list.map(d=>({t:['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ico:ICO.ic}))});}
+  return tabs;})();
+let rtab=store.get('rtab','basic');if(!CATALOG.some(t=>t.k===rtab))rtab='basic';
+function renderRibbon(){const q=$('search').value.trim().toLowerCase();
+  $('rtabs').innerHTML=CATALOG.map(t=>`<button role="tab" data-rtab="${t.k}" aria-selected="${!q&&t.k===rtab}">${esc(t.label)}${t.k.startsWith('ic-')?` <span class="cnt">${t.items.length}</span>`:''}</button>`).join('');
+  $('rtabs').querySelectorAll('[data-rtab]').forEach(b=>b.onclick=()=>{rtab=b.dataset.rtab;store.set('rtab',rtab);$('search').value='';renderRibbon();});
+  const items=q?CATALOG.flatMap(t=>t.items).filter(it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]).toLowerCase().includes(q)):CATALOG.find(t=>t.k===rtab).items;
+  $('ritems').innerHTML=items.length?items.map(it=>itemBtn(it.t,it.ico)).join(''):'<span class="empty">찾는 부품이 없어요. 이름 일부(예: 47, AND, 카운터)로 검색해 보세요.</span>';
+  $('ritems').querySelectorAll('[data-tool]').forEach(b=>{const t=b.dataset.tool;b.onclick=()=>setTool(t);b.setAttribute('aria-pressed',t===tool);
+    if(['select','wire','erase'].includes(t))return;b.draggable=true;b.title='누르거나 보드로 끌어다 놓으세요';
+    b.addEventListener('dragstart',e=>{dnd=t;try{e.dataTransfer.setData('text/plain',t);e.dataTransfer.effectAllowed='copy';}catch(_){}});b.addEventListener('dragend',()=>{dnd=null;});});}
+$('ritems').addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){$('ritems').scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
+$('search').addEventListener('input',renderRibbon);
+document.querySelectorAll('.toolbar [data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
 $('bw').addEventListener('dragover',e=>{if(!dnd)return;e.preventDefault();try{e.dataTransfer.dropEffect='copy';}catch(_){}if(tool!==dnd)setTool(dnd);lastPt=svgPt(e);hover=nearHole(lastPt);renderOverlay();});
 $('bw').addEventListener('drop',e=>{if(!dnd)return;e.preventDefault();lastPt=svgPt(e);hover=nearHole(lastPt);const t=dnd;dnd=null;if(tool!==t)setTool(t);place(hover,lastPt);});
-$('ng').textContent=Object.keys(GATES).length;
 function setTool(t){tool=t;pending=null;
   document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
-  svg.classList.toggle('place',t!=='select'&&t!=='erase');svg.classList.toggle('erase',t==='erase');closeMenu();renderOpts();renderHint();renderOverlay();}
+  svg.classList.toggle('place',t!=='select'&&t!=='erase');svg.classList.toggle('erase',t==='erase');closeMenu();renderOpts();renderHint();renderOverlay();
+  if(!sel&&typeof renderInfo==='function')renderInfo();}
 function renderOpts(){const o=$('opts');let h='',t='옵션';
   if(tool==='wire'){t='전선 색';h=`<div class="sw">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-k="wire" data-v="${col}" aria-pressed="${opt.wire===col}" aria-label="색"></button>`).join('')}</div>`;}
   else if(tool==='res'){t='저항 값';h=`<div class="seg">${OHMS.map(v=>`<button data-k="ohms" data-v="${v}" aria-pressed="${opt.ohms===v}">${ohmTx(v)}</button>`).join('')}</div>`;}
   else if(tool==='led'){t='LED 색';h=`<div class="seg">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-k="led" data-v="${k}" aria-pressed="${opt.led===k}">${n}</button>`).join('')}</div>`;}
-  else if(tool==='cap'){t='용량';h=`<div class="seg">${FARADS.map(v=>`<button data-k="farad" data-v="${v}" aria-pressed="${opt.farad===v}">${capTx(v)}</button>`).join('')}</div><p class="desc" style="margin:0">1µF 이상은 전해(극성 있음, + 쪽부터 누르기), 그보다 작으면 세라믹이에요.</p>`;}
+  else if(tool==='cap'){t='용량';h=`<div class="seg">${FARADS.map(v=>`<button data-k="farad" data-v="${v}" aria-pressed="${opt.farad===v}">${capTx(v)}</button>`).join('')}</div><p class="desc">1µF 이상은 전해(+ 쪽부터)</p>`;}
   else if(tool==='clk'){t='클럭 속도';h=`<div class="seg">${HZ.map(v=>`<button data-k="hz" data-v="${v}" aria-pressed="${opt.hz===v}">${v}Hz</button>`).join('')}</div>`;}
-  else if(tool==='seg7'){t='7세그먼트 종류';h=`<div class="seg"><button data-k="seg" data-v="cc" aria-pressed="${opt.seg!=='ca'}">공통 캐소드</button><button data-k="seg" data-v="ca" aria-pressed="${opt.seg==='ca'}">공통 애노드</button></div><p class="desc" style="margin:0">캐소드형은 CD4511, 애노드형은 74LS47·46 과 써요.</p>`;}
-  else if(tool.startsWith('gate:')){const d=GATES[tool.slice(5)];t=d.name+' 게이트';h=`<p class="desc" style="margin:0">${esc(d.desc)}</p>`+truthTable(d);}
-  else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];t=d.name;h=`<p class="desc" style="margin:0">${esc(d.desc)}</p>${pinoutSVG(d)}`;}
-  $('optCard').hidden=!h;$('optTitle').textContent=t;o.innerHTML=h;
+  else if(tool==='seg7'){t='7세그먼트 종류';h=`<div class="seg"><button data-k="seg" data-v="cc" aria-pressed="${opt.seg!=='ca'}">공통 캐소드</button><button data-k="seg" data-v="ca" aria-pressed="${opt.seg==='ca'}">공통 애노드</button></div><p class="desc">캐소드형은 CD4511·74LS48, 애노드형은 74LS47·46</p>`;}
+  else if(tool.startsWith('gate:')){const d=GATES[tool.slice(5)];t=d.name+' 게이트';h=`<p class="desc">Y = ${esc(d.expr)} · 진리표는 오른쪽 [속성]</p>`;}
+  else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];t=d.name;h=`<p class="desc">${esc(d.title)} · ${d.pins.length}핀 · 핀 배치도는 오른쪽 [속성]</p>`;}
+  if(!h){t='';h=`<p class="desc">${tool==='select'?'부품을 고르거나, 보드로 끌어다 놓으세요':tool==='erase'?'지울 것을 누르거나 문지르세요':''}</p>`;}
+  $('optTitle').textContent=t;o.innerHTML=h;
   o.querySelectorAll('button[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;opt[k]=k==='ohms'||k==='hz'||k==='farad'?+b.dataset.v:b.dataset.v;store.set('opt',opt);renderOpts();});}
 function pinoutMini(d){const n=d.pins.length,h=n/2;let l='',r='';
   for(let i=0;i<h;i++){l+=`<div style="font-size:12px"><code>${i+1}</code> ${pinHTML(d.pins[i])}</div>`;r+=`<div style="font-size:12px;text-align:right">${pinHTML(d.pins[n-1-i])} <code>${n-i}</code></div>`;}
@@ -1074,14 +1194,14 @@ function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선
   $('hint').innerHTML=tool.startsWith('ic:')?`<b>${tool.slice(3)}</b> · 가운데 홈을 걸치도록 놓을 위치를 누르세요 (1번 핀이 왼쪽 아래)`:H_[tool];}
 
 /* ───────── 편집 ───────── */
-const snap=()=>JSON.stringify({comps:S.comps,power:S.power,nextId:S.nextId});
+const snap=()=>JSON.stringify({comps:S.comps,power:S.power,nextId:S.nextId,boards:S.boards});
 const fut=[];
 function pushHist(){hist.push(snap());if(hist.length>100)hist.shift();fut.length=0;syncHist();}
 function syncHist(){$('undo').disabled=!hist.length;$('redo').disabled=!fut.length;}
-function applySnap(t){const s=JSON.parse(t);S.comps=s.comps;S.nextId=s.nextId;S.power=s.power;RT.clear();if(sel&&sel.type==='comp'&&!compById(sel.id))sel=null;syncHist();commit(true);}
+function applySnap(t){const s=JSON.parse(t);S.comps=s.comps;S.nextId=s.nextId;S.power=s.power;if(s.boards){S.boards=s.boards;buildHoles();renderBoards();}RT.clear();if(sel&&sel.type==='comp'&&!compById(sel.id))sel=null;syncHist();commit(true);}
 function redo(){if(!fut.length)return;hist.push(snap());applySnap(fut.pop());}
 function undo(){if(!hist.length)return;fut.push(snap());applySnap(hist.pop());}
-function save(){store.set('circuit',{comps:S.comps,power:S.power,nextId:S.nextId});}
+function save(){store.set('circuit',{comps:S.comps,power:S.power,nextId:S.nextId,boards:S.boards});}
 function commit(info){save();settle();render();if(info)renderInfo();syncPower();}
 function addComp(c){pushHist();c.id=S.nextId++;S.comps.push(c);commit(true);}
 function delComp(id){pushHist();S.comps=S.comps.filter(c=>c.id!==id);RT.delete(id);if(sel&&sel.id===id)sel=null;commit(true);}
@@ -1093,8 +1213,9 @@ const view={x:0,y:0,s:1};let panState=null;const ptrs=new Map();
 const cw=()=>$('bw').clientWidth,ch=()=>$('bw').clientHeight;
 function applyView(){const w=Math.max(1,cw()),h=Math.max(1,ch());svg.setAttribute('viewBox',`${view.x} ${view.y} ${w/view.s} ${h/view.s}`);
   const z=Math.round(view.s*100)+'%';$('zv').textContent=z;$('sZoom').textContent=z;if(typeof renderFbar==='function'&&SEL.size)renderFbar();}
-function fitView(){const w=cw(),h=ch();if(!w||!h)return;view.s=Math.max(.2,Math.min(3,Math.min(w/(W+40),h/(H+40))));
-  view.x=W/2-w/view.s/2;view.y=H/2-h/view.s/2;applyView();}
+function boardsBox(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const B of S.boards){const b=boardBox(B);x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0-30);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}return{x0,y0,x1,y1};}
+function fitView(){const w=cw(),h=ch();if(!w||!h)return;const b=boardsBox(),bw_=b.x1-b.x0+40,bh_=b.y1-b.y0+40;view.s=Math.max(.15,Math.min(3,Math.min(w/bw_,h/bh_)));
+  view.x=(b.x0+b.x1)/2-w/view.s/2;view.y=(b.y0+b.y1)/2-h/view.s/2;applyView();}
 function zoomAt(f,cx,cy){const r=svg.getBoundingClientRect();if(cx===undefined){cx=r.left+r.width/2;cy=r.top+r.height/2;}
   const px=view.x+(cx-r.left)/view.s,py=view.y+(cy-r.top)/view.s;view.s=Math.max(.2,Math.min(6,view.s*f));
   view.x=px-(cx-r.left)/view.s;view.y=py-(cy-r.top)/view.s;applyView();}
@@ -1103,9 +1224,12 @@ let spaceDown=false;
 svg.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?.05:.0015)),e.clientX,e.clientY);lastPt=svgPt(e);renderOverlay();},{passive:false});
 new ResizeObserver(()=>{const r=svg.getBoundingClientRect();if(!r.width)return;applyView();}).observe($('bw'));
 function toolName(){return tool==='select'?'선택':tool==='wire'?'전선':tool==='erase'?'지우개':tool.startsWith('ic:')?tool.slice(3):tool.startsWith('gate:')?tool.slice(5)+' 게이트':(TNAME[tool]||tool);}
-function gridAt(p){const c=Math.max(1,Math.min(N,Math.round((p.x-X0)/P)+1));let ri=0,bd=1e9;ROWS.forEach((r,i)=>{const d=Math.abs(ROWY[r]-p.y);if(d<bd){bd=d;ri=i;}});return{ri,c};}
-function nearHole(p){const {ri,c}=gridAt(p);const h=holeAt(ri,c);return h&&Math.hypot(h.x-p.x,h.y-p.y)<11?h:null;}
-function setStatus(){const st=$('status');$('sCoord').textContent=hover?`열 ${hover.c} · 행 ${isRail(hover.r)?hover.r.toUpperCase():hover.r}`:'—';if(!hover){return;}
+/* 점이 속한(없으면 가장 가까운) 보드 안의 행·열. forceB로 보드를 고정할 수 있다 */
+function boardAt(p){let best=S.boards[0],bd=1e18;for(const B of S.boards){const bx=boardBox(B),dx=Math.max(bx.x0-p.x,0,p.x-bx.x1),dy=Math.max(bx.y0-p.y,0,p.y-bx.y1),d=dx*dx+dy*dy;if(d<bd){bd=d;best=B;}}return best;}
+function gridAt(p,forceB){const B=forceB?boardById(forceB):boardAt(p),t=BTYPES[B.type];const lx=p.x-B.x,ly=p.y-B.y;
+  const c=Math.max(1,Math.min(t.cols,Math.round((lx-X0)/P)+1));let ri=2,bd=1e9;ROWS.forEach((r,i)=>{if(isRail(r)&&!t.rails)return;const d=Math.abs(ROWY[r]-ly);if(d<bd){bd=d;ri=i;}});return{ri,c,b:B.id};}
+function nearHole(p){const {ri,c,b}=gridAt(p);let h=holeAt(ri,c,b);if(!h)return null;return Math.hypot(h.x-p.x,h.y-p.y)<11?h:null;}
+function setStatus(){const st=$('status');$('sCoord').textContent=hover?`${S.boards.length>1?'보드 '+hover.b+' · ':''}열 ${hover.c} · 행 ${isRail(hover.r)?hover.r.toUpperCase():hover.r}`:'—';if(!hover){return;}
   const {v,w,a,volt}=levelOfHole(hover.id);const o=occ();const cid=o.get(hover.id);let who='';
   if(cid){const c=compById(cid),k=pinHoles(c).indexOf(hover.id),nm=pinNames(c)[k];who=` · <span>${esc(LBL.get(cid))} ${c.t==='ic'?esc(c.chip)+' '+(k+1)+'번 핀 '+pinHTML(nm):esc(compName(c))+' '+esc(nm)}</span>`;}
   st.innerHTML=`<b>${esc(holeName(hover.id))}</b>${who} <span class="k">·</span> ${lvBadge(v,w)} <span>${esc(lvText(v,w,a?volt:null))}</span>${!a&&volt!=null?` <span class="mono">${fmtV(volt)}</span>`:''}`;}
@@ -1132,6 +1256,9 @@ svg.addEventListener('pointerdown',e=>{
   if(ptrs.size===2){const [a,b]=[...ptrs.values()];if(drag){const c=compById(drag.id);if(c&&c.t==='btn')rt(c).pressed=false;drag=null;}
     panState={pinch:true,on:true,d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2};return;}
   if(e.button===1||e.button===2&&false||spaceDown){e.preventDefault();panState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,on:true,force:true};svg.classList.add('panning');svg.setPointerCapture(e.pointerId);return;}
+  const tabEl=e.target.closest('[data-board]');
+  if(tabEl){const id=+tabEl.dataset.board;if(e.button===2){openBoardMenu(id,e.clientX,e.clientY);return;}if(e.button&&e.button!==0)return;
+    const B=boardById(id),p0=svgPt(e);drag={kind:'board',id,sx:p0.x,sy:p0.y,ox:B.x,oy:B.y,cx:e.clientX,cy:e.clientY,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
   if(e.button===2){const g=e.target.closest('[data-id]');rightDown={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,id:g?+g.dataset.id:null,cx:e.clientX,cy:e.clientY,p:svgPt(e)};svg.setPointerCapture(e.pointerId);return;}
   if(e.button&&e.button!==0)return;const p=svgPt(e);lastPt=p;const h=nearHole(p);hover=h;setStatus();
   if(tool==='erase'){erase={hit:false};eraseAt(e);svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
@@ -1163,7 +1290,7 @@ function place(h,p){const o=occ();
   if(tool.startsWith('gate:')){const g=gateGhost(p);if(!g)return;if(!g.ok){toast('이미 다른 부품이 꽂힌 구멍이 있어요');return;}
     addComp({t:'gate',kind:tool.slice(5),pins:g.hs.map(h=>h.id)});sel={type:'comp',id:S.nextId-1};renderInfo();render();return;}
   if(tool.startsWith('ic:')||tool==='seg7'){const g=ghostAt(p);if(!g)return;if(!g.ok){toast('이미 다른 부품이 꽂힌 구멍이 있어요');return;}
-    addComp(tool==='seg7'?{t:'seg7',col:g.col,ca:opt.seg==='ca'}:{t:'ic',chip:tool.slice(3),col:g.col});sel={type:'comp',id:S.nextId-1};renderInfo();render();return;}
+    addComp(tool==='seg7'?{t:'seg7',col:g.col,b:g.b,ca:opt.seg==='ca'}:{t:'ic',chip:tool.slice(3),col:g.col,b:g.b});sel={type:'comp',id:S.nextId-1};renderInfo();render();return;}
   if(!h)return;
   if(o.has(h.id)){toast('구멍 '+holeName(h.id)+'에는 이미 다른 부품이 꽂혀 있어요');return;}
   if(tool==='clk'){addComp({t:'clk',pins:[h.id],hz:opt.hz});return;}
@@ -1172,31 +1299,59 @@ function place(h,p){const o=occ();
   const c={t:tool,pins:[pending,h.id]};
   if(tool==='wire')c.color=opt.wire;if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led')c.color=opt.led;if(tool==='sw')c.on=false;
   pending=tool==='wire'?null:null;addComp(c);renderHint();}
-function doDrag(p){const c=compById(drag.id);if(!c)return;
+function doDrag(p){
+  if(drag.kind==='board'){const B=boardById(drag.id);if(!B)return;const nx=Math.round((drag.ox+p.x-drag.sx)/10)*10,ny=Math.round((drag.oy+p.y-drag.sy)/10)*10;
+    if(!drag.moved&&Math.hypot(p.x-drag.sx,p.y-drag.sy)*view.s<4)return;
+    if(!drag.moved){pushHist();drag.moved=true;}if(moveBoard(B,nx,ny)){settle();render();}return;}
+  const c=compById(drag.id);if(!c)return;
   if(drag.kind==='bend'){if(!c.pts)return;const q={x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};const o=c.pts[drag.k];if(o&&o.x===q.x&&o.y===q.y)return;
     if(!drag.moved){pushHist();drag.moved=true;}c.pts[drag.k]=q;render();return;}
   if(drag.kind==='end'){const h=nearHole(p);hover=h;if(!h||c.pins[drag.k]===h.id){renderOverlay();return;}
     const o=occ(c.id);if(o.has(h.id)||c.pins[1-drag.k]===h.id)return;
     if(!drag.moved){pushHist();drag.moved=true;}c.pins[drag.k]=h.id;settle();render();setStatus();return;}
-  const g=gridAt(p),dr=g.ri-drag.start.ri,dc=g.c-drag.start.c;
-  if(tryMove(drag.ids,drag.origs,dr,dc,()=>{if(!drag.moved){hist.push(JSON.stringify({comps:S.comps.map(x=>drag.origs.has(x.id)?drag.origs.get(x.id):x),power:S.power,nextId:S.nextId}));fut.length=0;syncHist();drag.moved=true;}})){settle();render();}}
+  const g=gridAt(p),dr=g.ri-drag.start.ri,dc=g.c-drag.start.c,mp=g.b!==drag.start.b?{from:drag.start.b,to:g.b}:null;
+  if(tryMove(drag.ids,drag.origs,dr,dc,()=>{if(!drag.moved){hist.push(JSON.stringify({comps:S.comps.map(x=>drag.origs.has(x.id)?drag.origs.get(x.id):x),power:S.power,nextId:S.nextId,boards:S.boards}));fut.length=0;syncHist();drag.moved=true;}},mp)){settle();render();}}
 /* 부품 하나를 (행 dr, 열 dc)만큼 옮긴 결과. 옮길 수 없으면 null */
-function shiftComp(O,dr,dc){
-  if(O.t==='ic'||O.t==='seg7'){const n=pinHoles(O).length/2,col=O.col+dc;if(col<1||col+n-1>N)return null;return{col};}
-  const ps=O.pins.map(id=>{const h=HOLES.get(id);return holeAt(h.ri+dr,h.c+dc);});if(ps.some(x=>!x))return null;
+function shiftComp(O,dr,dc,mp){const mb=b=>mp&&b===mp.from?mp.to:b;
+  if(O.t==='ic'||O.t==='seg7'){const nb=mb(O.b||1),n=pinHoles(O).length/2,col=O.col+dc;if(col<1||col+n-1>BTYPES[boardById(nb).type].cols)return null;return{col,b:nb};}
+  const ps=O.pins.map(id=>{const h=HOLES.get(id);return h&&holeAt(h.ri+dr,h.c+dc,mb(h.b));});if(ps.some(x=>!x))return null;
   if(O.t==='gate'&&ps.some(h=>isRail(h.r)))return null;
   const next={pins:ps.map(h=>h.id)};
   if(O.pts&&O.pts.length){const h0=HOLES.get(O.pins[0]),dx=ps[0].x-h0.x,dy=ps[0].y-h0.y;next.pts=O.pts.map(q=>({x:q.x+dx,y:q.y+dy}));}
   return next;}
-function tryMove(ids,origs,dr,dc,before){const fixed=ids.some(id=>{const t=origs.get(id).t;return t==='ic'||t==='seg7';});if(fixed)dr=0;
+function tryMove(ids,origs,dr,dc,before,mp){const fixed=ids.some(id=>{const t=origs.get(id).t;return t==='ic'||t==='seg7';});if(fixed)dr=0;
   const idset=new Set(ids),o=new Map();for(const c of S.comps)if(!idset.has(c.id))for(const h of pinHoles(c))o.set(h,c.id);
   const nexts=[],used=new Set();let same=true;
-  for(const id of ids){const O=origs.get(id),nx=shiftComp(O,dr,dc);if(!nx)return false;const test=Object.assign({},O,nx),hs=pinHoles(test);
+  for(const id of ids){const O=origs.get(id),nx=shiftComp(O,dr,dc,mp);if(!nx)return false;const test=Object.assign({},O,nx),hs=pinHoles(test);
     for(const h of hs){if(o.has(h)||used.has(h))return false;used.add(h);}
     const cur=compById(id);if(JSON.stringify(hs)!==JSON.stringify(pinHoles(cur)))same=false;nexts.push([cur,nx]);}
   if(same)return false;if(before)before();for(const [c,nx] of nexts)Object.assign(c,nx);return true;}
 function nudge(dr,dc){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;const origs=new Map(ids.map(i=>[i,JSON.parse(JSON.stringify(compById(i)))]));
   if(tryMove(ids,origs,dr,dc,pushHist))commit(true);else toast('그쪽으로는 옮길 수 없어요 (구멍이 없거나 다른 부품이 있어요)');}
+/* 브레드보드 추가·종류 변경·삭제·이동 */
+function boardsOverlap(B,skip){const a=boardBox(B);return S.boards.some(o=>{if(o.id===skip)return false;const b=boardBox(o);return a.x0<b.x1+20&&b.x0<a.x1+20&&a.y0-30<b.y1+20&&b.y0-30<a.y1+20;});}
+function addBoard(type,where){const id=Math.max(0,...S.boards.map(b=>b.id))+1,t=BTYPES[type];const bb=boardsBox();
+  let B;if(where==='right'){B={id,type,x:Math.round((bb.x1+60)/10)*10,y:S.boards[0].y};}
+  else{const minX=Math.min(...S.boards.map(b=>b.x));B={id,type,x:minX,y:Math.round((bb.y1+70-(t.rails?4:60))/10)*10};}
+  pushHist();S.boards.push(B);buildHoles();renderBoards();commit(true);fitView();toast(`보드 ${id} (${t.name})를 놓았어요 · 이름표를 끌어 옮길 수 있어요`);}
+function boardUsage(id){let maxC=0,rails=false;for(const c of S.comps)for(const h of pinHoles(c)){const H_=HOLES.get(h);if(H_&&H_.b===id){maxC=Math.max(maxC,H_.c);if(isRail(H_.r))rails=true;}}return{maxC,rails};}
+function changeBoardType(id,type){const B=boardById(id),t=BTYPES[type];if(!B||B.type===type)return;const u=boardUsage(id);
+  if(u.maxC>t.cols){toast(`이 보드는 ${u.maxC}열까지 부품이 꽂혀 있어서 ${t.name}(${t.cols}열)로 바꿀 수 없어요`);return;}
+  if(u.rails&&!t.rails){toast('전원 레일에 꽂힌 부품이 있어서 레일이 없는 미니 보드로 바꿀 수 없어요');return;}
+  pushHist();B.type=type;buildHoles();renderBoards();commit(true);toast(`보드 ${id}를 ${t.name}로 바꿨어요`);}
+function deleteBoard(id){if(S.boards.length<2){toast('보드가 하나뿐이라 지울 수 없어요');return;}
+  const gone=S.comps.filter(c=>pinHoles(c).some(h=>{const H_=HOLES.get(h);return H_&&H_.b===id;}));pushHist();
+  const set=new Set(gone.map(c=>c.id));S.comps=S.comps.filter(c=>!set.has(c.id));set.forEach(i=>RT.delete(i));S.boards=S.boards.filter(b=>b.id!==id);
+  sel=null;SEL.clear();buildHoles();renderBoards();commit(true);fitView();toast(`보드 ${id}를 지웠어요${gone.length?` (꽂혀 있던 부품 ${gone.length}개 포함)`:''} · Ctrl+Z로 되돌려요`);}
+function moveBoard(B,nx,ny){const dx=nx-B.x,dy=ny-B.y;if(!dx&&!dy)return false;const test={...B,x:nx,y:ny};if(boardsOverlap(test,B.id))return false;
+  for(const c of S.comps)if(c.t==='wire'&&c.pts&&c.pins.every(h=>{const H_=HOLES.get(h);return H_&&H_.b===B.id;}))c.pts=c.pts.map(q=>({x:q.x+dx,y:q.y+dy}));
+  B.x=nx;B.y=ny;buildHoles();renderBoards();return true;}
+function openBoardMenu(id,cx,cy){const B=boardById(id);if(!B)return;
+  const items=Object.entries(BTYPES).filter(([k])=>k!==B.type).map(([k,t])=>({label:`종류 바꾸기 → ${t.name}`,fn:()=>changeBoardType(id,k)}));
+  items.push('-',{label:'오른쪽에 같은 보드 추가',fn:()=>addBoard(B.type,'right')},{label:'아래에 같은 보드 추가',fn:()=>addBoard(B.type,'below')});
+  if(S.boards.length>1)items.push('-',{label:`보드 ${id} 삭제`,del:true,fn:()=>deleteBoard(id)});
+  openMenu(cx,cy,items,false);}
+$('addBoard').onchange=()=>{const t=$('addBoard').value;$('addBoard').value='';if(t)addBoard(t,'below');};
 /* 지우기 · 복사 · 붙여넣기 */
 function delSel(){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;pushHist();const set=new Set(ids);S.comps=S.comps.filter(c=>!set.has(c.id));ids.forEach(i=>RT.delete(i));
   sel=null;SEL.clear();commit(true);toast(ids.length>1?`${ids.length}개를 지웠어요 · Ctrl+Z로 되돌려요`:'지웠어요 · Ctrl+Z로 되돌려요');}
@@ -1205,18 +1360,18 @@ function eraseAt(e){const el=document.elementsFromPoint(e.clientX,e.clientY).map
   S.comps=S.comps.filter(c=>c.id!==id);RT.delete(id);SEL.delete(id);if(sel&&sel.id===id)sel=null;settle();render();}
 function selComps(){return S.comps.filter(c=>SEL.has(c.id));}
 function copySel(){const list=selComps();if(!list.length)return;clip=JSON.parse(JSON.stringify(list));toast(`${list.length}개를 복사했어요 · Ctrl+V로 붙여넣어요`);}
-function pasteList(list,dr0,dc0){if(!list||!list.length)return false;const fixed=list.some(c=>c.t==='ic'||c.t==='seg7');const cand=[];
+function pasteList(list,dr0,dc0,mp){if(!list||!list.length)return false;const fixed=list.some(c=>c.t==='ic'||c.t==='seg7');const cand=[];
   if(dr0!=null)cand.push([fixed?0:dr0,dc0]);
-  for(let d=1;d<=N;d++){for(const dc of [d,-d])cand.push([0,dc]);if(!fixed)for(const r of [1,-1,2,-2,3,-3,5,-5,10,-10])cand.push([r,0],[r,d],[r,-d]);}
+  for(let d=1;d<=63;d++){for(const dc of [d,-d])cand.push([0,dc]);if(!fixed)for(const r of [1,-1,2,-2,3,-3,5,-5,10,-10])cand.push([r,0],[r,d],[r,-d]);}
   const o=occ();
-  for(const [dr,dc] of cand){const out=[],used=new Set();let ok=true;
-    for(const O of list){const nx=shiftComp(O,dr,dc);if(!nx){ok=false;break;}const c=Object.assign(JSON.parse(JSON.stringify(O)),nx);
+  for(const [k_,[dr,dc]] of cand.entries()){const out=[],used=new Set();let ok=true;const m_=k_===0?mp:null;
+    for(const O of list){const nx=shiftComp(O,dr,dc,m_);if(!nx){ok=false;break;}const c=Object.assign(JSON.parse(JSON.stringify(O)),nx);
       for(const h of pinHoles(c)){if(o.has(h)||used.has(h)){ok=false;break;}used.add(h);}if(!ok)break;out.push(c);}
     if(!ok)continue;pushHist();const ids=[];for(const c of out){c.id=S.nextId++;if(c.t==='sw')c.on=!!c.on;S.comps.push(c);ids.push(c.id);}
     setSelIds(ids);setTool('select');commit(true);toast(`${ids.length}개를 붙여넣었어요`);return true;}
   toast('붙여넣을 빈자리가 없어요');return false;}
 function pasteClip(at){if(!clip){toast('먼저 Ctrl+C로 복사하세요');return;}
-  if(at){const a=HOLES.get(pinHoles(clip[0])[0]),g=gridAt(at);pasteList(clip,g.ri-a.ri,g.c-a.c);}else pasteList(clip);}
+  if(at){const a=HOLES.get(pinHoles(clip[0])[0]),g=gridAt(at);if(!a){pasteList(clip);return;}pasteList(clip,g.ri-a.ri,g.c-a.c,a.b!==g.b?{from:a.b,to:g.b}:null);}else pasteList(clip);}
 function dupSel(){const list=selComps();if(!list.length){toast('먼저 복제할 부품을 선택하세요');return;}pasteList(JSON.parse(JSON.stringify(list)));}
 function recolorSel(col){const ws=selComps().filter(c=>c.t==='wire');if(!ws.length)return;pushHist();ws.forEach(c=>c.color=col);opt.wire=col;store.set('opt',opt);commit(true);}
 function straightenSel(){const ws=selComps().filter(c=>c.t==='wire'&&c.pts);if(!ws.length)return;pushHist();ws.forEach(c=>delete c.pts);commit(true);}
@@ -1226,8 +1381,7 @@ let fbKey='';
 function selBBox(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const add=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
   for(const c of selComps()){for(const id of pinHoles(c)){const h=HOLES.get(id);add(h.x,h.y);}(c.pts||[]).forEach(q=>add(q.x,q.y));
     if(c.t==='wire'&&!(c.pts&&c.pts.length)){const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);add((a.x+b.x)/2,Math.min(a.y,b.y)-24);}
-    if(c.t==='ic')add(colX(c.col),ROWY.e-14);
-    if(c.t==='seg7')add(colX(c.col),MID-32);if(c.t==='gate'||c.t==='clk'){const h=HOLES.get(c.pins[0]);add(h.x,h.y-40);}}
+    if(c.t==='ic'||c.t==='seg7'){const hs=pinHoles(c),E=HOLES.get(hs[hs.length-1]);add(E.x,E.y-(c.t==='ic'?14:22));}if(c.t==='gate'||c.t==='clk'){const h=HOLES.get(c.pins[0]);add(h.x,h.y-40);}}
   return{x0,y0,x1,y1};}
 function renderFbar(){const fb=$('fbar');
   if(!SEL.size||tool!=='select'||drag||wireDrag||boxSel||erase||rightDown||(panState&&panState.on)){fb.hidden=true;return;}
@@ -1291,7 +1445,9 @@ function handleDbl(e){if(tool!=='select')return false;const p=svgPt(e);
   for(let i=0;i<Lp.length-1;i++){const d=segDist(p,Lp[i],Lp[i+1]);if(d<bd){bd=d;best=i;}}
   pushHist();c.pts=c.pts||[];c.pts.splice(best,0,{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});sel={type:'comp',id:c.id};commit(true);
   toast('꺾는 점을 만들었어요 · 흰 네모를 끌어 모양을 바꿔요');return true;}
-function endDrag(){if(!drag)return;const c=compById(drag.id);
+function endDrag(){if(!drag)return;
+  if(drag.kind==='board'){const d=drag;drag=null;if(!d.moved){openBoardMenu(d.id,d.cx,d.cy);return;}commit(true);return;}
+  const c=compById(drag.id);
   if(c&&drag.kind==='move'){if(c.t==='btn'){rt(c).pressed=false;}
     if(c.t==='sw'&&!drag.moved){c.on=!c.on;}}
   drag=null;commit(true);}
@@ -1306,7 +1462,7 @@ svg.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);if(panState){p
 svg.addEventListener('auxclick',e=>e.preventDefault());
 
 /* ───────── 키보드·상단 버튼 ───────── */
-document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea'))return;
+document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||!$('impDlg').hidden)return;
   if((e.ctrlKey||e.metaKey)&&(e.key.toLowerCase()==='y'||(e.shiftKey&&e.key.toLowerCase()==='z'))){e.preventDefault();redo();return;}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
   if(e.key===' '){e.preventDefault();spaceDown=true;svg.style.cursor='grab';return;}
@@ -1329,20 +1485,27 @@ document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;svg.style.
 function syncPower(){$('pwr').setAttribute('aria-pressed',S.power);$('pwrTx').textContent=S.power?'전원 ON':'전원 OFF';}
 $('pwr').onclick=()=>{S.power=!S.power;if(!S.power)for(const r of RT.values()){r.st=null;r.out=null;}commit(true);};
 $('undo').onclick=undo;
-$('clr').onclick=()=>{if(!S.comps.length)return;pushHist();S.comps=[];RT.clear();sel=null;commit(true);toast('모두 지웠어요 · 실행 취소로 되돌릴 수 있어요');};
+$('clr').onclick=()=>{if(!S.comps.length&&S.boards.length===1)return;pushHist();S.comps=[];RT.clear();sel=null;setBoards(null);commit(true);fitView();toast('모두 지웠어요 · 실행 취소로 되돌릴 수 있어요');};
 $('sig').setAttribute('aria-pressed',sigMode);
 $('sig').onclick=()=>{sigMode=!sigMode;store.set('sig',sigMode);$('sig').setAttribute('aria-pressed',sigMode);$('sig').classList.toggle('pri',sigMode);render();};
 $('sig').classList.toggle('pri',sigMode);
-$('exp').onclick=()=>{const blob=new Blob([JSON.stringify({app:'breadboard-lab',v:1,comps:S.comps},null,1)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='breadboard-circuit.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+$('exp').onclick=async()=>{const data=JSON.stringify({app:'breadboard-lab',v:2,boards:S.boards,comps:S.comps},null,1),fn='breadboard-circuit.json';
+  // claude.ai 미리보기 안에서는 downloads 기능으로, 그 밖에서는 일반 다운로드로 저장
+  let dl=null;try{dl=window.claude&&await window.claude.use('downloads');}catch(_){}
+  if(dl){try{await dl.save({filename:fn,data});toast('파일로 저장했어요');}catch(e){toast('저장을 취소했거나 저장할 수 없어요');}return;}
+  const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
 $('imp').onclick=()=>$('file').click();
-$('file').onchange=async()=>{const f=$('file').files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.comps))throw 0;loadComps(d.comps);toast('회로를 불러왔어요');}catch(e){toast('이 파일은 읽을 수 없어요');}$('file').value='';};
-function loadComps(list,keepHist){if(!keepHist)pushHist();const ok=[];const used=new Set();
+$('file').onchange=async()=>{const f=$('file').files[0];$('file').value='';if(!f)return;let d=null;try{if(!/^image\//.test(f.type))d=JSON.parse(await f.text());}catch(_){}
+  if(d&&Array.isArray(d.comps)){loadComps(d.comps,false,d.boards);fitView();toast('회로를 불러왔어요');}else openImport(f);};
+const DEFAULT_BOARDS=()=>[{id:1,type:'std',x:0,y:0}];
+function setBoards(bs){const ok=Array.isArray(bs)&&bs.length&&bs.every(b=>b&&BTYPES[b.type]&&Number.isFinite(b.id)&&Number.isFinite(b.x)&&Number.isFinite(b.y));
+  S.boards=ok?bs.map(b=>({id:b.id,type:b.type,x:b.x,y:b.y})):DEFAULT_BOARDS();if(!S.boards.some(b=>b.id===1))S.boards[0].id=1;buildHoles();renderBoards();}
+function loadComps(list,keepHist,boards){if(!keepHist)pushHist();setBoards(boards);const ok=[];const used=new Set();
   for(const c of list){if(c.t==='ic'&&!CHIPS[c.chip])continue;if(c.t==='gate'&&!GATES[c.kind])continue;if(!PREFIX[c.t])continue;let hs;try{hs=pinHoles(c);}catch(e){continue;}
     if(!hs.every(id=>HOLES.has(id))||hs.some(id=>used.has(id)))continue;hs.forEach(id=>used.add(id));ok.push(c);}
   let id=1;ok.forEach(c=>c.id=id++);S.comps=ok;S.nextId=id;RT.clear();sel=null;commit(true);}
 $('ex').onchange=()=>{const k=$('ex').value;$('ex').value='';if(!k)return;
-  S.power=true;loadComps(EXAMPLES[k]());toast('예제를 불러왔어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');};
+  S.power=true;loadComps(EXAMPLES[k](),false,null);fitView();toast('예제를 불러왔어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');};
 $('zi').onclick=$('hzi').onclick=()=>zoomAt(1.2);$('zo').onclick=$('hzo').onclick=()=>zoomAt(1/1.2);$('fit').onclick=$('hfit').onclick=fitView;
 $('delb').onclick=()=>{if(SEL.size)delSel();else{setTool('erase');toast('지우개 도구: 지울 전선이나 부품을 누르세요');}};
 $('redo').onclick=()=>redo();
@@ -1368,9 +1531,213 @@ function renderObjs(){$('ocount').textContent=S.comps.length;$('sCount').textCon
       view.s=Math.max(view.s,1.6);view.x=mx-cw()/view.s/2;view.y=my-ch()/view.s/2;applyView();};});}
 document.querySelector('[data-tab="obj"]').addEventListener('click',()=>renderObjs());
 /* 라이브러리 검색 */
-$('search').addEventListener('input',()=>{const q=$('search').value.trim().toLowerCase();
-  document.querySelectorAll('#lib details.sec').forEach(d=>{let any=false;d.querySelectorAll('.it').forEach(b=>{const m=!q||b.textContent.toLowerCase().includes(q);b.hidden=!m;any=any||m;});
-    d.hidden=!any;if(q&&any)d.open=true;});});
+
+
+/* ───────── 파일로 부품 배치 ───────── */
+const POWER_P=/^(VCC|VDD|V\+|\+?5V|\+5|PWR|POWER|전원\+?)$/i,POWER_N=/^(GND|VSS|0V|V-|GROUND|접지)$/i;
+const near=(list,v)=>list.reduce((a,b)=>Math.abs(Math.log(b/v))<Math.abs(Math.log(a/v))?b:a);
+function parseOhms(v){const m=String(v||'').replace(/Ω|ohms?|옴|\s/gi,'').match(/^([\d.]+)\s*([kKmMrR]?)([\d]*)$/);if(!m)return 330;let n=parseFloat(m[1]);const u=m[2].toLowerCase();if(u==='k')n*=1e3;else if(u==='m')n*=1e6;if(m[3])n+=parseFloat('0.'+m[3])*(u==='k'?1e3:u==='m'?1e6:1);return near(OHMS,n||330);}
+function parseFarad(v){const s_=String(v||'').replace(/\s|F$/gi,'');let m=s_.match(/^([\d.]+)\s*([pnuµm]?)/i);if(!m)return 4.7e-5;let n=parseFloat(m[1]);const u=(m[2]||'').toLowerCase();
+  if(!u&&/^\d{2}[1-6]$/.test(s_))n=parseInt(s_.slice(0,2))*Math.pow(10,+s_[2])*1e-12;else n*=({p:1e-12,n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[u]||1e-6);return near(FARADS,n);}
+function normPart(type,value){const ty=String(type||'').trim(),T=ty.toUpperCase().replace(/[\s_]/g,''),v=String(value||'').trim();
+  if(/^(R|RES|RESISTOR|저항)$/.test(T))return{t:'res',ohms:parseOhms(v)};
+  if(/^(LED|발광다이오드|D)$/.test(T)){const c=/green|초록|녹/i.test(v)?'green':/yellow|노랑|황/i.test(v)?'yellow':/blue|파랑|청/i.test(v)?'blue':'red';return{t:'led',color:c};}
+  if(/^(SW|SWITCH|TOGGLE|스위치|토글|토글스위치|DIP|LOGICSTATE)$/.test(T))return{t:'sw',on:/^(on|1|켜짐|켬|high|h)$/i.test(v)};
+  if(/^(BTN|BUTTON|PUSH|PUSHBUTTON|버튼|푸시버튼|택트|택트스위치)$/.test(T))return{t:'btn'};
+  if(/^(C|CAP|CAPACITOR|커패시터|콘덴서)$/.test(T))return{t:'cap',farad:parseFarad(v)};
+  if(/^(CLK|CLOCK|클럭|OSC|OSCILLATOR|클럭발생기)$/.test(T))return{t:'clk',hz:near(HZ,parseFloat(v)||1)};
+  if(/^(SEG7|7SEG|7SEGMENT|7-SEGMENT|FND|7세그|7세그먼트)$/.test(T.replace(/-/g,'')))return{t:'seg7',ca:/anode|애노드|^ca$/i.test(v)};
+  if(GATES[T])return{t:'gate',kind:T};
+  if(CHIPS[ty])return{t:'ic',chip:ty};
+  const k=Object.keys(CHIPS).find(n=>n.toUpperCase()===T);if(k)return{t:'ic',chip:k};
+  if(/555/.test(T))return{t:'ic',chip:'NE555'};
+  if(/4511/.test(T))return{t:'ic',chip:'CD4511'};
+  const m=T.match(/^(?:SN|DM|MC)?74(LS|HC|HCT|ALS|AS|F|S|AC|ACT)?(\d+)/);if(m){const num=m[2],fam=m[1]==='LS'||!m[1]?['74LS','74HC']:['74HC','74LS'];
+    for(const f of fam)if(CHIPS[f+num])return{t:'ic',chip:f+num};const any=Object.keys(CHIPS).find(n=>chipNum(n)===num);if(any)return{t:'ic',chip:any};}
+  return null;}
+function pinIndex(_,c,pin){let P_=String(pin).trim(),U=P_.toUpperCase();
+  if(c.t==='ic'){const d=CHIPS[c.chip];if(/^\d+$/.test(U)){const n=+U;return n>=1&&n<=d.pins.length?n-1:-1;}
+    let bar=/^[~\/!]|'$|BAR$|_N$|̅/.test(U);let base=U.replace(/^[~\/!]|'$|BAR$|_N$|̅/g,'').replace(/̅/g,'');
+    const norm=x=>x.toUpperCase();const find=(b,x)=>d.pins.findIndex(p=>norm(p)===(b?'~':'')+x);
+    let i=find(bar,base);if(i<0)i=find(!bar,base);return i;}
+  if(c.t==='gate'){const pins=GATES[c.kind].pins;if(/^\d+$/.test(U))return +U-1<pins.length?+U-1:-1;return pins.indexOf(U);}
+  if(c.t==='seg7'){if(/^\d+$/.test(U))return +U>=1&&+U<=10?+U-1:-1;const l=P_.toLowerCase();return l==='com'?2:SEG7PINS.indexOf(l);}
+  if(c.t==='clk')return 0;
+  if(/^(1|A|\+|ANODE|애노드|P|POS)$/.test(U))return 0;if(/^(2|K|C|-|−|CATHODE|캐소드|N|NEG)$/.test(U))return 1;return -1;}
+/* 텍스트 목록 → {parts, nets, errors} */
+function parseSpec(text){const parts=[],nets=[],errors=[];const refs=new Map();
+  const PINRE=/^([A-Za-z][A-Za-z0-9_]*)\.([^\s,;]+)$/;
+  for(let raw of String(text).split(/\r?\n/)){let line=raw.replace(/\s(\/\/|←).*$/,'').trim();if(!line||line.startsWith('#')||line.startsWith('//'))continue;
+    if(/^ref\s*,\s*type/i.test(line))continue;
+    let name='',rest=line;const cm=line.match(/^([^:.,\s][^:,]*?)\s*:\s*(.+)$/);if(cm&&!/\./.test(cm[1])){name=cm[1].trim();rest=cm[2];}
+    const toks=rest.split(/\s*(?:,|;|\s-\s|\s–\s|\s—\s|->|<->|=>|\s)\s*/).filter(Boolean);
+    const pins=toks.filter(t=>PINRE.test(t));
+    if(pins.length&&(pins.length>=2||name)){nets.push({name,pins:pins.map(t=>{const m=t.match(PINRE);return{ref:m[1],pin:m[2]};})});continue;}
+    if(!name&&toks.length===1&&POWER_P.test(toks[0])===false&&PINRE.test(toks[0])){errors.push(`연결할 상대가 없는 줄: ${line}`);continue;}
+    const pt=line.split(/\s*,\s*|\s+/).filter(Boolean);
+    if(pt.length>=2&&/^[A-Za-z][A-Za-z0-9_]*$/.test(pt[0])){const np=normPart(pt[1],pt.slice(2).join(' '))||normPart(pt.slice(1).join(''),'');
+      if(!np){errors.push(`모르는 부품 종류: ${pt[0]} ${pt[1]}`);continue;}if(refs.has(pt[0])){errors.push(`이름이 겹쳐요: ${pt[0]}`);continue;}
+      const p_={ref:pt[0],...np};refs.set(pt[0],p_);parts.push(p_);continue;}
+    errors.push(`읽지 못한 줄: ${line}`);}
+  return{parts,nets,errors};}
+function specToText(sp){const L=['# 부품'];
+  for(const p of sp.parts||[]){if(!p||!p.ref||!p.type)continue;L.push(`${p.ref} ${p.type}${p.value!=null&&p.value!==''?' '+p.value:''}`);}
+  L.push('','# 연결');let k=1;
+  for(const n of sp.nets||[]){const pins=(Array.isArray(n)?n:n.pins||[]).filter(x=>typeof x==='string');if(!pins.length)continue;const nm=(!Array.isArray(n)&&n.name)?String(n.name).replace(/[:,]/g,''):'N'+(k++);L.push(`${nm}: ${pins.join(', ')}`);}
+  if(sp.notes&&sp.notes.length){L.push('','# 메모');for(const t of sp.notes)L.push('# '+String(t).replace(/\n/g,' '));}
+  return L.join('\n');}
+/* 자동 배치: IC는 가운데 홈, 2단자 부품은 홈을 걸쳐서, 그다음 연결대로 전선 */
+function autoLayout(spec){const report={placed:0,wires:0,fail:[],auto:[],boards:0};
+  const items=[...spec.parts].sort((a,b)=>{const o=x=>x.t==='ic'?0:x.t==='seg7'?1:x.t==='gate'?2:x.t==='clk'?4:3;return o(a)-o(b);});
+  const width=it=>it.t==='ic'?CHIPS[it.chip].pins.length/2+3:it.t==='seg7'?8:it.t==='gate'?7:2;
+  const COLS=BTYPES.full.cols;const boards=[{id:1,type:'full',x:0,y:0}];let b=1,col=3;
+  const place=[];for(const it of items){const w=width(it);if(col+w-1>COLS-1){b++;boards.push({id:b,type:'full',x:0,y:(b-1)*450});col=3;}place.push({it,b,col});col+=w;}
+  S.boards=boards;buildHoles();
+  const comps=[],byRef=new Map();let nid=1;const used=new Set();
+  for(const {it,b,col} of place){const pf=pref(b);let c;
+    if(it.t==='ic')c={t:'ic',chip:it.chip,col,b};
+    else if(it.t==='seg7')c={t:'seg7',col:col+1,b,ca:it.ca};
+    else if(it.t==='gate')c={t:'gate',kind:it.kind,pins:gatePinCols(it.kind).map(k=>pf+'c'+(col+k))};
+    else if(it.t==='clk')c={t:'clk',pins:[pf+'c'+col],hz:it.hz};
+    else{c={t:it.t,pins:[pf+'e'+col,pf+'f'+col]};if(it.t==='res')c.ohms=it.ohms;if(it.t==='led')c.color=it.color;if(it.t==='cap')c.farad=it.farad;if(it.t==='sw')c.on=!!it.on;}
+    c.id=nid++;comps.push(c);byRef.set(it.ref,c);pinHoles(c).forEach(h=>used.add(h));report.placed++;}
+  // 핀 → 줄(스트립) 노드
+  const stripOf=hid=>{const h=HOLES.get(hid);return{b:h.b,top:h.ri<=6,c:h.c,key:h.b+(h.ri<=6?'T':'B')+h.c};};
+  const freeIn=(st,pref_)=>{for(const r of pref_){const id=pref(st.b)+r+st.c;if(HOLES.has(id)&&!used.has(id))return id;}return null;};
+  const nets=spec.nets.map(n=>({name:n.name,pins:[...n.pins]}));
+  // IC 전원 핀이 연결 목록에 없으면 자동으로 추가
+  const mentioned=new Set();nets.forEach(n=>n.pins.forEach(p=>mentioned.add(p.ref+'#'+(()=>{const c=byRef.get(p.ref);return c?pinIndex(null,c,p.pin):-1;})())));
+  const pwr={'+':[],'-':[]};
+  for(const [ref,c] of byRef){if(c.t!=='ic')continue;const d=CHIPS[c.chip];let added=false;
+    for(const [nm,sign] of [[d.vcc,'+'],[d.gnd,'-']]){const i=d.idx[nm];if(!mentioned.has(ref+'#'+i)){pwr[sign].push({ref,pin:String(i+1)});added=true;}}
+    if(added)report.auto.push(ref);}
+  if(pwr['+'].length)nets.push({name:'VCC',pins:pwr['+']});if(pwr['-'].length)nets.push({name:'GND',pins:pwr['-']});
+  const SIGC=['#E8B820','#E57A1F','#2E9E5B','#2F6FDB','#8B5CD6','#E9ECEF'];let ci=0;
+  const addWire=(a,bh,color)=>{comps.push({t:'wire',pins:[a,bh],color,id:nid++});used.add(a);used.add(bh);report.wires++;};
+  for(const n of nets){const sign=POWER_P.test(n.name)?'+':POWER_N.test(n.name)?'-':null;
+    const nodes=[],seen=new Set();
+    for(const p of n.pins){const c=byRef.get(p.ref);if(!c){report.fail.push(`${p.ref}.${p.pin}: 부품 목록에 ${p.ref}가 없어요`);continue;}
+      const k=pinIndex(null,c,p.pin);if(k<0){report.fail.push(`${p.ref}.${p.pin}: 그런 핀이 없어요`);continue;}
+      const st=stripOf(pinHoles(c)[k]);if(seen.has(st.key))continue;seen.add(st.key);nodes.push(st);}
+    if(sign){for(const st of nodes){const hole=freeIn(st,st.top?['a','b','c','d']:['j','i','h','g']);
+        const rr=st.top?(sign==='+'?'tp':'tn'):(sign==='+'?'bp':'bn');let rh=null;
+        for(let d=0;d<COLS&&!rh;d++)for(const cc of [st.c-d,st.c+d]){const id=pref(st.b)+rr+cc;if(HOLES.has(id)&&!used.has(id)){rh=id;break;}}
+        if(!hole||!rh){report.fail.push(`${n.name}: ${st.c}열에 빈 구멍이 없어 전원을 잇지 못했어요`);continue;}
+        addWire(hole,rh,sign==='+'?'#D93A3A':'#24282D');}continue;}
+    if(nodes.length<2)continue;const color=SIGC[ci++%SIGC.length];
+    nodes.sort((x,y)=>x.b-y.b||x.c-y.c||(x.top?0:1)-(y.top?0:1));
+    for(let i=0;i<nodes.length-1;i++){const A=nodes[i],B=nodes[i+1];
+      const ha=freeIn(A,A.top?['b','c','d','a']:['i','h','g','j']),hb=freeIn(B,B.top?['b','c','d','a']:['i','h','g','j']);
+      if(!ha||!hb){report.fail.push(`${n.name||'연결'}: 빈 구멍이 모자라 일부 전선을 잇지 못했어요`);continue;}addWire(ha,hb,color);}}
+  report.boards=boards.length;return{comps,boards,report};}
+let impSample=null,impCtl=null;
+async function getSample(){try{return window.claude?await window.claude.use('sample'):null;}catch(_){return null;}}
+function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
+function openImport(file){$('impDlg').hidden=false;closeMenu();
+  getSample().then(async s_=>{impSample=s_;let lim=null;try{lim=s_&&await s_.limits();}catch(_){}
+    $('impCap').textContent=s_?(lim&&lim.images?'사진은 Claude가 읽어서 목록으로 바꿔 줘요 (처음 한 번 허용을 물어봐요).':'이 화면에서는 사진을 보낼 수 없어요. 텍스트 목록은 읽을 수 있어요.')
+      :'사진을 읽으려면 claude.ai에서 이 페이지를 열어야 해요. 여기서는 텍스트·CSV·JSON 목록을 바로 읽어요.';});
+  if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
+function closeImport(){if(impCtl)impCtl.abort();$('impDlg').hidden=true;}
+const CLAUDE_PROMPT=()=>`You convert a digital-logic circuit (a schematic image or a text description) into a parts list and netlist for a breadboard simulator.
+Reply with ONLY one JSON object, no other text:
+{"title": string, "parts": [{"ref": "U1", "type": "74LS08", "value": ""}], "nets": [{"name": "VCC", "pins": ["U1.14"]}, {"name": "N1", "pins": ["U1.3", "U2.9"]}], "notes": [string]}
+Supported part types:
+- ICs (use these exact names): ${Object.keys(CHIPS).join(', ')}
+- "resistor" (value e.g. "330", "10k"), "led" (value red|green|yellow|blue; pins A = anode, K = cathode), "switch" (toggle; pins 1, 2; value "on" to start closed), "button" (momentary; pins 1, 2), "capacitor" (value e.g. "47u"; pins + and -), "clock" (one pin OUT; value = Hz, e.g. "1"), "seg7" (value "cathode" or "anode"; pins a b c d e f g dp COM)
+- single gates: AND, OR, NOT, NAND, NOR, XOR, XNOR (pins A, B, Y; NOT has A, Y)
+Pin references are "REF.PIN". For ICs use the DIP pin NUMBER from the standard datasheet (for example "U2.15").
+Rules:
+- Schematics often hide IC power pins: add each IC's VCC/VDD pin to net "VCC" and its GND/VSS pin to net "GND".
+- Replace logic input terminals (logic-state sources, labelled inputs such as PR, CLR, A, B, DIP switches) with a "switch" between VCC and the signal plus a "resistor" of 10k from the signal to GND. For active-low preset/clear inputs that must normally be high, give the switch value "on".
+- Replace a clock source or CLK input terminal with a "clock" part (value "1").
+- Replace output probes, logic indicators and labelled outputs with an "led" (anode on the signal) and a 330 "resistor" from the LED cathode to GND.
+- If a chip is not supported, choose the closest supported equivalent with the same pinout and mention it in notes.
+- Each net other than VCC/GND lists at least two pins. Do not invent connections you cannot see.
+Write "title" and "notes" in Korean.`;
+async function askClaude(input,image){if(!impSample){impMsg('사진이나 자유 형식 글을 읽으려면 claude.ai에서 이 페이지를 열어야 해요. 위의 "목록 쓰는 법" 형식으로 쓰면 바로 배치할 수 있어요.','bad');return null;}
+  impCtl=new AbortController();$('impStop').hidden=false;$('impGo').disabled=true;
+  impMsg(image?'Claude가 회로도를 읽고 있어요. 1~2분쯤 걸릴 수 있어요.':'Claude가 글을 부품·연결 목록으로 정리하고 있어요.','busy');
+  try{const opts={signal:impCtl.signal};if(image)opts.images=[image];
+    const sp=await impSample.json(CLAUDE_PROMPT()+(input?'\n\nCircuit description:\n'+input.slice(0,60000):'\n\nThe attached image is the schematic.'),opts);
+    if(!sp||!Array.isArray(sp.parts)||!sp.parts.length){impMsg('회로에서 부품을 찾지 못했어요. 더 선명한 사진을 쓰거나 목록을 직접 써 주세요.','bad');return null;}
+    $('impText').value=specToText(sp);$('impText').scrollTop=0;const r=parseSpec($('impText').value);
+    impMsg(`${sp.title?sp.title+' · ':''}부품 ${r.parts.length}개, 연결 ${r.nets.length}개를 읽었어요. 아래 목록을 확인하고 [보드에 배치하기]를 누르세요. 잘못 읽은 부분은 직접 고칠 수 있어요.`,'ok');return sp;}
+  catch(e){const code=e&&e.code;
+    impMsg(code==='cancelled'?'멈췄어요.':code==='not_granted'||code==='sampling_disabled'?'Claude 사용이 허용되지 않아서 읽을 수 없어요. 목록을 직접 써 주세요.':code==='rate_limited'?'요청이 많아요. 잠시 뒤 다시 시도하세요.'
+      :code==='image_rejected'?'이 이미지는 읽을 수 없어요. JPG·PNG·WebP·GIF, 20MB 이하로 올려 주세요.':code==='images_unavailable'?'이 화면에서는 사진을 보낼 수 없어요. 목록을 직접 써 주세요.'
+      :code==='invalid_json'?'읽은 결과를 해석하지 못했어요. 다시 시도해 보세요.':'읽는 중 문제가 생겼어요. 다시 시도해 보세요.','bad');return null;}
+  finally{impCtl=null;$('impStop').hidden=true;$('impGo').disabled=false;}}
+async function handleImportFile(f){
+  if(/^image\//.test(f.type)){impMsg(`사진: ${f.name}`);await askClaude('',f);return;}
+  let txt='';try{txt=await f.text();}catch(_){impMsg('파일을 읽지 못했어요.','bad');return;}
+  if(/\.json$/i.test(f.name)||/^\s*[\[{]/.test(txt)){try{const d=JSON.parse(txt);
+      if(Array.isArray(d.comps)){closeImport();loadComps(d.comps,false,d.boards);fitView();toast('회로 파일을 불러왔어요');return;}
+      if(Array.isArray(d.parts)){$('impText').value=specToText(d);const r=parseSpec($('impText').value);impMsg(`부품 ${r.parts.length}개, 연결 ${r.nets.length}개를 읽었어요. 확인하고 [보드에 배치하기]를 누르세요.`,'ok');return;}}catch(_){}}
+  $('impText').value=txt;const r=parseSpec(txt);
+  if(r.parts.length){impMsg(`부품 ${r.parts.length}개, 연결 ${r.nets.length}개를 읽었어요${r.errors.length?` (읽지 못한 줄 ${r.errors.length}개)`:''}. 확인하고 [보드에 배치하기]를 누르세요.`,r.errors.length?'':'ok');return;}
+  await askClaude(txt,null);}
+function runImport(){const txt=$('impText').value;if(!txt.trim()){impMsg('먼저 파일을 올리거나 목록을 써 주세요.','bad');return;}
+  const r=parseSpec(txt);
+  if(!r.parts.length){if(impSample){askClaude(txt,null);return;}impMsg('부품을 하나도 읽지 못했어요. "목록 쓰는 법"의 형식을 확인해 주세요.'+(r.errors.length?' 예: '+r.errors[0]:''),'bad');return;}
+  pushHist();const prevBoards=S.boards;const out=autoLayout(r);
+  S.comps=out.comps;S.nextId=out.comps.length+1;S.power=true;RT.clear();sel=null;SEL.clear();renderBoards();commit(true);fitView();setTool('select');
+  const rep=out.report,probs=[...r.errors,...rep.fail];closeImport();
+  $('info').innerHTML=`<div class="ttl"><b>자동 배치 결과</b></div><p class="desc">부품 ${rep.placed}개와 전선 ${rep.wires}개를 브레드보드 ${rep.boards}장에 배치했어요. 이전 회로는 Ctrl+Z로 되돌릴 수 있어요.</p>`
+    +(rep.auto.length?`<p class="desc">전원 핀을 자동으로 레일에 이은 IC: ${esc(rep.auto.join(', '))}</p>`:'')
+    +(probs.length?`<h3>확인이 필요한 부분 ${probs.length}개</h3><ul class="ires">${probs.slice(0,30).map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:'<p class="desc">모든 연결을 이었어요.</p>')
+    +`<p class="desc">배치는 자동이라 전선이 겹쳐 보일 수 있어요. 전선을 더블클릭해 꺾는 점을 만들거나 색을 바꿔서 정리해 보세요.</p>`;showTab('info');
+  toast(probs.length?`배치했어요 · 확인이 필요한 부분 ${probs.length}개 (오른쪽 [속성])`:`부품 ${rep.placed}개, 전선 ${rep.wires}개를 배치했어요`);}
+const IMPORT_EXAMPLE=`# 동기식 10진 업 카운터 (74LS76 ×2 + 74LS08)
+# 부품
+U1 74LS08
+U2 74LS76
+U3 74LS76
+CLK1 클럭 1
+SW1 스위치 on
+SW2 스위치 on
+R1 저항 10k
+R2 저항 10k
+D1 LED red
+D2 LED yellow
+D3 LED green
+D4 LED blue
+R3 저항 330
+R4 저항 330
+R5 저항 330
+R6 저항 330
+# 연결 (74LS76: 1CLK=1 1PRE=2 1CLR=3 1J=4 2CLK=6 2PRE=7 2CLR=8 2J=9 2Q'=10 2Q=11 2K=12 1Q'=14 1Q=15 1K=16)
+VCC: U2.4, U2.16, SW1.1, SW2.1
+CLK: CLK1.OUT, U2.1, U2.6, U3.1, U3.6
+PR: SW1.2, R1.1, U2.2, U2.7, U3.2, U3.7
+CLR: SW2.2, R2.1, U2.3, U2.8, U3.3, U3.8
+Q0: U2.15, U1.1, U1.4, U2.12, U3.12, D4.A
+Q1: U2.11, U1.5, D3.A
+Q2: U3.15, U1.10, D2.A
+Q3: U3.11, D1.A
+NQ3: U3.10, U1.2
+J1: U1.3, U2.9
+J2: U1.6, U3.4, U3.16, U1.9
+J3: U1.8, U3.9
+L1: D1.K, R3.1
+L2: D2.K, R4.1
+L3: D3.K, R5.1
+L4: D4.K, R6.1
+GND: R1.2, R2.2, R3.2, R4.2, R5.2, R6.2`;
+$('upl').onclick=()=>openImport();
+$('impX').onclick=closeImport;
+$('impDlg').addEventListener('pointerdown',e=>{if(e.target===$('impDlg'))closeImport();});
+$('impPick').onclick=()=>$('impFile').click();
+$('impFile').onchange=()=>{const f=$('impFile').files[0];$('impFile').value='';if(f)handleImportFile(f);};
+$('impGo').onclick=runImport;$('impStop').onclick=()=>{if(impCtl)impCtl.abort();};
+$('impEx').onclick=()=>{$('impText').value=IMPORT_EXAMPLE;$('impText').scrollTop=0;const r=parseSpec(IMPORT_EXAMPLE);impMsg(`예시를 넣었어요 · 부품 ${r.parts.length}개, 연결 ${r.nets.length}개. [보드에 배치하기]를 누르세요.`,'ok');};
+{const dz=$('drop');['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('on');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,()=>dz.classList.remove('on')));
+  dz.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)handleImportFile(f);});}
+// 캔버스에 파일을 끌어다 놓아도 배치 창이 열린다
+$('bw').addEventListener('dragover',e=>{if(!dnd&&e.dataTransfer&&[...e.dataTransfer.types].includes('Files'))e.preventDefault();});
+$('bw').addEventListener('drop',e=>{if(dnd)return;const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f){e.preventDefault();openImport(f);}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('impDlg').hidden){e.stopImmediatePropagation();closeImport();}},true);
 
 /* ───────── 예제 회로 ───────── */
 const w=(a,b,color='#D93A3A')=>({t:'wire',pins:[a,b],color});
@@ -1508,10 +1875,10 @@ const EXAMPLES={
   window.addEventListener('hashchange',()=>{if(openHash(false)){fitView();}});
   const saved=store.get('circuit',null);
   if(openHash(true)){}
-  else if(saved&&Array.isArray(saved.comps)){S.power=saved.power!==false;loadComps(saved.comps,true);}
+  else if(saved&&Array.isArray(saved.comps)){S.power=saved.power!==false;loadComps(saved.comps,true,saved.boards);}
   else loadComps(EXAMPLES.nand(),true);
   hist.length=0;fut.length=0;syncHist();
-  fitView();requestAnimationFrame(fitView);setTool('select');syncPower();renderInfo();
+  renderRibbon();fitView();requestAnimationFrame(fitView);setTool('select');syncPower();renderInfo();
   let lastSig='';
   setInterval(()=>{if(!S.power||drag)return;const now=performance.now()/1000;
     const clks=S.comps.filter(c=>c.t==='clk'),caps=S.comps.some(c=>c.t==='cap');if(!clks.length&&!SIM.unstable&&!caps)return;
