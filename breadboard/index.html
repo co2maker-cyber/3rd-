@@ -69,6 +69,12 @@ rect.ssel{stroke-width:2;stroke-opacity:.8;stroke-dasharray:5 3;fill:#1F8FFF;fil
 .tutcard b{display:block;font-size:15px;margin:2px 0 6px}.tutcard p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--fg)}
 .tutstep{font:600 11px var(--mono);color:var(--accent)}
 .tutbtns{display:flex;gap:6px;align-items:center}.tutbtns .sp{flex:1}
+#valPop{position:fixed;z-index:60;width:250px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+#valPop .vh{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px}#valPop .vh span{flex:1}#valPop .vh button{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px}
+#valPop .vt{display:flex;gap:4px;padding:6px 8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}#valPop .vt button{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);border-radius:12px;background:none;color:var(--fg);cursor:pointer}#valPop .vt button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#valPop .vx{padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px}#valPop .vx input{width:100%}
+#valPop .vl{max-height:min(46vh,320px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px 6px 8px}#valPop .vd{font-size:10.5px;color:var(--muted);margin:6px 4px 2px}#valPop .vg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+#valPop .vg button{font-family:var(--mono);font-size:12.5px;padding:7px 2px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--fg);cursor:pointer}#valPop .vg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
 #sfbar select{font-size:12px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--fg)}
 [hidden]{display:none!important}
 html,body{margin:0;height:100%}
@@ -1455,7 +1461,7 @@ for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'C'+(i+1)),...rng(P*T,i=>S
 const RESPW={0.125:['1/8W',10,3.6],0.25:['1/4W',16,4.5],0.5:['1/2W',20,5.5],1:['1W',26,7],2:['2W',32,8.5],5:['5W 시멘트',40,11]};
 const RESMAT={carbon:['탄소 피막','#D8C08E','#A98F5C',5,'범용(풀업·풀다운, LED 전류 제한)에 쓰는 값싼 저항이에요. 오차 ±5%(4색 띠).'],metal:['금속 피막','#7FA7D6','#4E77A8',1,'오차가 ±1% 이하로 작고 잡음·온도 변화가 적어 정밀 아날로그·오디오·계측기에 써요(5색 띠).'],
   oxide:['산화 금속 피막','#A9B4C2','#6B7685',2,'열에 강하고 불에 잘 타지 않아 1~5W 중전력에 써요.'],wire:['권선 · 시멘트','#EDEDE8','#9A9A90',5,'5~20W 큰 전력, 돌입 전류 제한, 전류 측정에 써요. 코일처럼 감겨 있어 빠른 신호에는 맞지 않아요.']};
-const ESER={E6:[10,15,22,33,47,68],E12:[10,12,15,18,22,27,33,39,47,56,68,82],E24:[10,11,12,13,15,16,18,20,22,24,27,30,33,36,39,43,47,51,56,62,68,75,82,91],E96:rng(96,k=>Math.round(100*Math.pow(10,k/96)))};
+const ESER={E3:[10,22,47],E6:[10,15,22,33,47,68],E12:[10,12,15,18,22,27,33,39,47,56,68,82],E24:[10,11,12,13,15,16,18,20,22,24,27,30,33,36,39,43,47,51,56,62,68,75,82,91],E96:rng(96,k=>Math.round(100*Math.pow(10,k/96)))};
 function snapE(v,ser){const L_=ESER[ser]||ESER.E24,m=L_[0]>=100?100:10;const e=Math.floor(Math.log10(v)),base=Math.pow(10,e);let best=null,bd=1e9;
   for(const d of [-1,0,1])for(const x of L_){const c=x/m*base*Math.pow(10,d);const dd=Math.abs(Math.log(c/v));if(dd<bd){bd=dd;best=c;}}return +best.toPrecision(3);}
 function parseOhm(t){const m=/^\s*([\d.]+)\s*([kKmMrRΩ]?)\s*([\d]*)\s*(Ω|ohm)?\s*$/.exec(String(t));if(!m)return null;let v=parseFloat(m[1]);const u=m[2];if(u&&/[rR]/.test(u)&&m[3])v=parseFloat(m[1]+'.'+m[3]);
@@ -1467,6 +1473,39 @@ const CAPDK={c0g:['세라믹 C0G (1종)',0,50,'온도·전압에 따라 용량�
   alu:['알루미늄 전해',1,16,'큰 용량(µF~mF). 극성이 있어 몸통의 띠(−) 쪽을 낮은 전압에. 정격 전압은 쓰는 전압의 1.5배 이상으로.'],alubp:['알루미늄 전해 무극성 (BP)',0,50,'극성이 없는 전해 커패시터예요. 오디오 신호 연결(교류)·스피커 분배 회로용.'],
   tant:['탄탈',1,16,'작고 새는 전류가 적어요. 극성이 있고(+ 표시 쪽을 높은 전압에) 거꾸로 걸리거나 순간 과전압에 약해서, 정격 전압을 쓰는 전압의 2배 이상으로.'],film:['필름 (폴리에스터·폴리프로필렌)',0,100,'손실이 적고 높은 전압을 견디며, 속이 상해도 스스로 회복해요. 오디오 신호, 스너버, 공진 회로용.'],
   x2:['안전 규격 필름 X2',0,275,'교류 전원선 잡음 거르기 전용(275V 교류 인증). 선과 선 사이에는 X2, 선과 접지 사이에는 Y2를 써요. 전원선에는 인증품만!'],edlc:['슈퍼커패시터 (전기 이중층)',1,5.5,'0.1~100F의 아주 큰 용량이라 잠깐 배터리처럼 써요(시계 백업, 순간 정전 유지). 극성이 있고 정격 전압(2.7V/5.5V)이 낮아요.']};
+/* ── 값 고르기 창: 저항·커패시터·가변저항·저항 어레이를 누르면 그 아래로 스크롤되는 값 목록이 내려온다 ── */
+const eList=(ser,e0,e1)=>{const L=ESER[ser],m=L[0]>=100?100:10,out=[];for(let e=e0;e<=e1;e++)for(const x of L)out.push(+(x/m*Math.pow(10,e)).toPrecision(3));return out;};
+const RVAL=ser=>[...eList(ser,0,6),1e7];                       // 1Ω ~ 10MΩ
+const CVAL=ser=>[...eList(ser,-12,-4),1e-3,2.2e-3,4.7e-3,1e-2];   // 1pF ~ 10mF
+const EDLCV=[0.1,0.22,0.33,0.47,1,2.2,3.3,4.7,10,22,47,100];
+const POTVALL=[100,200,250,470,500,1000,2000,2500,4700,5000,10000,20000,25000,47000,50000,100000,200000,250000,470000,500000,1e6,2e6];
+const decOf=(v,cap)=>{if(cap){return v>=.01?'F (패럿)':v>=1e-6?'µF':v>=1e-9?'nF':'pF';}return v>=1e6?'MΩ':v>=1e3?'kΩ':'Ω';};
+function valSpec(o){if(o.t==='res')return{title:'저항 값',fmt:ohmTx,key:'ohms',skey:'ser',sers:['E6','E12','E24','E96'],ser:o.ser||'E24',list:RVAL};
+  if(o.t==='cap')return o.dk==='edlc'?{title:'용량 (슈퍼커패시터)',fmt:capTx,key:'farad',cap:1,list:()=>EDLCV}:{title:'용량',fmt:capTx,key:'farad',cap:1,skey:'cser',sers:['E3','E6','E12'],ser:o.cser||'E6',list:CVAL};
+  if(o.t==='px'&&PX[o.kind].pot)return{title:'가변저항 값',fmt:ohmTx,key:'ohms',list:()=>POTVALL,pot:1};
+  if(o.t==='px'&&o.kind.startsWith('sip'))return{title:'저항 값 (어레이 전체)',fmt:ohmTx,key:'ohms',skey:'ser',sers:['E6','E12','E24'],ser:o.ser||'E12',list:RVAL};
+  return null;}
+function closeValPop(){const e=$('valPop');if(e)e.remove();}
+// o: 부품(보드 c 또는 회로도 p), (sx,sy): 화면에서 부품 아래 가운데, apply(바꿀 값들 객체) → 저장
+function openValPop(o,sx,sy,apply){closeValPop();const sp=valSpec(o);if(!sp)return;let ser=sp.ser;const el=document.createElement('div');el.id='valPop';
+  const cur=()=>o[sp.key];
+  const draw=()=>{const L=sp.list(ser);let h=`<div class="vh"><span>${esc(sp.title)} · 지금 ${esc(sp.fmt(cur()))}</span><button aria-label="닫기" data-x>×</button></div>`;
+    if(sp.sers)h+=`<div class="vt">${sp.sers.map(k=>`<button data-ser="${k}" aria-pressed="${k===ser}">${k}${k==='E96'?' (±1%)':k==='E24'?' (±5%)':k==='E12'?' (±10%)':k==='E6'?' (±20%)':''}</button>`).join('')}</div>`;
+    if(sp.pot)h+=`<div class="vx">돌린 정도 <b>${Math.round((o.pos??.5)*100)}%</b> · ${esc(TAPER[o.taper||'B'][0])}<input type="range" min="0" max="100" value="${Math.round((o.pos??.5)*100)}" data-pos><div class="vt" style="border:0;padding:4px 0 0">${Object.keys(TAPER).map(k=>`<button data-tp="${k}" aria-pressed="${(o.taper||'B')===k}">${k} 커브</button>`).join('')}</div></div>`;
+    h+='<div class="vl">';let dec='';const near=L.reduce((b,v)=>Math.abs(Math.log(v/cur()))<Math.abs(Math.log(b/cur()))?v:b,L[0]);
+    for(const v of L){const d=decOf(v,sp.cap);if(d!==dec){if(dec)h+='</div>';h+=`<div class="vd">${d}</div><div class="vg">`;dec=d;}h+=`<button data-v="${v}" aria-pressed="${v===near&&Math.abs(v/cur()-1)<1e-3}">${esc(sp.fmt(v))}</button>`;}
+    el.innerHTML=h+'</div></div>';
+    el.querySelector('[data-x]').onclick=closeValPop;
+    el.querySelectorAll('[data-ser]').forEach(b=>b.onclick=()=>{ser=b.dataset.ser;draw();});
+    el.querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{apply({taper:b.dataset.tp});draw();});
+    const rg=el.querySelector('[data-pos]');if(rg){rg.oninput=()=>{apply({pos:+rg.value/100},true);el.querySelector('.vx b').textContent=rg.value+'%';};rg.onchange=()=>apply({pos:+rg.value/100});}
+    el.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const u={[sp.key]:+b.dataset.v};if(sp.skey)u[sp.skey]=ser;apply(u);closeValPop();});
+    const on=el.querySelector('.vg [aria-pressed="true"]')||el.querySelector(`.vg [data-v="${near}"]`);if(on)on.scrollIntoView({block:'center'});};
+  document.body.appendChild(el);draw();
+  const W=250,Hh=el.offsetHeight||360;let x=Math.max(8,Math.min(innerWidth-W-8,sx-W/2)),y=sy+8;if(y+Hh>innerHeight-8)y=Math.max(8,sy-Hh-40);el.style.left=x+'px';el.style.top=y+'px';
+  const on=el.querySelector('.vg [aria-pressed="true"]');if(on)on.scrollIntoView({block:'center'});}
+document.addEventListener('pointerdown',e=>{const el=$('valPop');if(el&&!el.contains(e.target))closeValPop();},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeValPop();});
 const capPol=c=>c.dk?CAPDK[c.dk][1]===1:c.farad>=1e-6;
 
 const CATS=[['gate','게이트'],['ff','플립플롭·래치'],['shift','시프트 레지스터'],['cnt','카운터'],['mux','디코더·인코더·멀티플렉서'],['math','연산·비교'],['buf','버퍼'],['disp','7세그먼트 디코더'],['ledx','LED 표시 소자'],['timer','타이머']];
@@ -3139,7 +3178,9 @@ function endDrag(){if(!drag)return;
     for(let i=1;i<pv.length-1;i++){const q=pv[i],a=keep.length?keep[keep.length-1]:pv[0];if(Math.hypot(q.x-a.x,q.y-a.y)<1||segDist(q,a,pv[i+1])<1)continue;keep.push(q);}
     if(keep.length)c.pts=keep;else delete c.pts;}
   if(c&&drag.kind==='move'){if(c.t==='btn'){rt(c).pressed=false;}
-    if(c.t==='px'){const d=PX[c.kind];if(rt(c).pr)rt(c).pr=0;else if(!drag.moved&&d.tap)d.tap(c,drag.side||0);}
+    if(c.t==='px'){const d=PX[c.kind];if(rt(c).pr)rt(c).pr=0;else if(!drag.moved&&d.tap&&!d.pot)d.tap(c,drag.side||0);}
+    if(!drag.moved&&tool==='select'&&!bchk&&valSpec(c)){const ph=pinHoles(c).map(h=>HOLES.get(h)),r=svg.getBoundingClientRect(),bx=ph.reduce((a,q)=>a+q.x,0)/ph.length,by=Math.max(...ph.map(q=>q.y));
+      const id=c.id;openValPop(c,r.left+(bx-view.x)*view.s,r.top+(by-view.y)*view.s+10,(u,live)=>{const cc=compById(id);if(!cc)return;if(live){Object.assign(cc,u);settle();render();return;}pushHist();Object.assign(cc,u);commit(true);});}
     if(c.t==='sw'&&!drag.moved){c.on=!c.on;}}
   drag=null;commit(true);}
 svg.addEventListener('pointerup',e=>{ptrs.delete(e.pointerId);if(panState&&panState.pinch){if(!ptrs.size)panState=null;return;}
@@ -3980,9 +4021,9 @@ function schRoutes(){const key=SCH.parts.map(p=>p.id+','+p.t+','+(p.chip||'')+',
   for(const it of items)mark([it.A,it.a1]),mark([it.B,it.b1]);   // 핀 끝 토막은 미리 차지
   items.sort((p,q)=>(Math.abs(p.a1.x-p.b1.x)+Math.abs(p.a1.y-p.b1.y))-(Math.abs(q.a1.x-q.b1.x)+Math.abs(q.a1.y-q.b1.y))||p.w.id-q.w.id);
     // 먼저 놓인 선이 길을 막으면, 막힌 선을 앞으로 당겨 처음부터 다시 놓는다(몇 번 해 보고 가장 많이 놓인 결과)
-  const save=[eh,ev,nh,nv,stop].map(x=>x.slice());let best=null,order=items;
-  for(let t=0;t<6;t++){[eh,ev,nh,nv,stop].forEach((x,k)=>x.set(save[k]));const got=new Map(),fail=[];
-    for(const it of order){const P=route(it);if(!P){fail.push(it);continue;}const pts=tidy(it.A,P,it.B);got.set(it.w.id,{A:it.A,B:it.B,pts,hz:false});mark([it.A,...pts,it.B]);}
+  const save=[eh,ev,nh,nv,stop].map(x=>x.slice());let best=null,order=items;const T0=performance.now(),BUDGET=1500;   // 아주 큰 회로는 시간 한도 안에서만(넘으면 남은 선은 예전 방식)
+  for(let t=0;t<6;t++){if(t&&performance.now()-T0>BUDGET/3)break;[eh,ev,nh,nv,stop].forEach((x,k)=>x.set(save[k]));const got=new Map(),fail=[];
+    for(const it of order){if(performance.now()-T0>BUDGET){fail.push(it);continue;}const P=route(it);if(!P){fail.push(it);continue;}const pts=tidy(it.A,P,it.B);got.set(it.w.id,{A:it.A,B:it.B,pts,hz:false});mark([it.A,...pts,it.B]);}
     if(!best||got.size>best.size)best=got;if(!fail.length)break;order=[...fail,...order.filter(it=>!fail.includes(it))];}
   for(const [k,v] of best)map.set(k,v);
   return map;}
@@ -4100,8 +4141,8 @@ function schAutoSync(){const sig=boardSig();if(!(SCH.link||!SCH.parts.length)||s
 function schNew(t){if(t==='vcc'||t==='gnd')return{t};if(t.startsWith('px:'))return Object.assign({t:'px',kind:t.slice(3)},PX[t.slice(3)].init());{const m=/^res@([\d.]+):(\w+)$/.exec(t);if(m){const o={t:'res',ohms:opt.ohms};if(+m[1]!==.25)o.pw=+m[1];if(m[2]!=='carbon')o.mat=m[2];return o;}const n=/^cap@(\w+)$/.exec(t);if(n)return{t:'cap',dk:n[1],farad:n[1]==='edlc'?1:opt.farad>=.01?1e-4:opt.farad};}if(t==='led3'||t==='led3a')return{t:'led3',ca:t==='led3a'};{const m=/^led([@#%])(.+)$/.exec(t);if(m){const o={t:'led',color:opt.led};o[{'@':'pk','#':'ln','%':'lk'}[m[1]]]=m[2];return o;}}if(t.startsWith('ic:'))return{t:'ic',chip:t.slice(3)};if(t.startsWith('gate:'))return{t:'gate',kind:t.slice(5)};
   const o={t};if(t==='res')o.ohms=opt.ohms;if(t==='led')o.color=opt.led;if(t==='clk')o.hz=opt.hz;if(t==='cap')o.farad=opt.farad;if(t==='sw')o.on=false;if(t==='seg7')o.ca=opt.seg==='ca';return o;}
 function schAddPart(t,x,y){sPush();const p=Object.assign({id:SCH.nextId++,x:snapG(x),y:snapG(y),rot:0},schNew(t));
-  // 다른 기호와 겹치면 아래로 비켜 놓는다
-  for(let k=0;k<40&&SCH.parts.some(o=>{const a=partBox(o),b=partBox(p);return a.x0<b.x1&&b.x0<a.x1&&a.y0<b.y1&&b.y0<a.y1;});k++)p.y+=SG*2;
+  // 다른 기호와 겹치면 가장 가까운 빈자리로
+  if(SCH.parts.some(o=>sHit(partBox(p),sBoxM(o))))schFreeSpot(p,SCH.parts);
   SCH.parts.push(p);ssel={type:'part',id:p.id};sCommit();return p;}
 function schAddWire(a,b){if(a.p===b.p&&a.k===b.k)return false;
   if(SCH.wires.some(w=>(w.a.p===a.p&&w.a.k===a.k&&w.b.p===b.p&&w.b.k===b.k)||(w.a.p===b.p&&w.a.k===b.k&&w.b.p===a.p&&w.b.k===a.k)))return false;
@@ -4184,12 +4225,14 @@ function schUp(e){sptrs.delete(e.pointerId);if(span&&span.pinch){if(sptrs.size<2
     else if(spend.p===D.tg.p&&spend.k===D.tg.k)spend=null;
     else{schAddWire(spend,D.tg);spend=null;}
     renderSch();return;}
-  if(D.moved){if(D.tg.type==='part'||D.tg.type==='wire')sCommit();else renderSch();return;}
+  if(D.moved){if(D.tg.type==='part'){if(schTidy([D.tg.id]))toast('다른 기호와 겹쳐서 바로 옆 빈자리로 옮겼어요');}if(D.tg.type==='part'||D.tg.type==='wire')sCommit();else renderSch();return;}
   // 그냥 누름
   if(spend){const n=pinNear(pt,16);if(n&&!(n.p===spend.p&&n.k===spend.k)){schAddWire(spend,n);spend=null;renderSch();return;}spend=null;renderSch();if(D.tg.type==='none')return;}
   if(D.tg.type==='part'){const p=spart(D.tg.id);const was=ssel&&ssel.type==='part'&&ssel.id===p.id;ssel={type:'part',id:p.id};
     if(p.t==='sw'){sPush();p.on=!p.on;sCommit();return;}
-    if(p.t==='px'){const d=PX[p.kind];if(d.pot){sPush();p.pos=(p.pos??.5)>=.95?0:Math.round(((p.pos??.5)+.1)*100)/100;sCommit();return;}if(d.tap){sPush();if(p.kind==='tog3')p.s=((p.s??1)+1)%3;else d.tap(p,.9);sCommit();return;}}renderSch();return;}
+    if(valSpec(p)){const g=schSvg().getBoundingClientRect(),b=partBox(p),id=p.id;renderSch();
+      openValPop(p,g.left+((b.x0+b.x1)/2-sv.x)*sv.s,g.top+(b.y1-sv.y)*sv.s+6,(u,live)=>{const q=spart(id);if(!q)return;if(live){Object.assign(q,u);renderSch();return;}sPush();Object.assign(q,u);sCommit();});return;}
+    if(p.t==='px'){const d=PX[p.kind];if(d.tap){sPush();if(p.kind==='tog3')p.s=((p.s??1)+1)%3;else d.tap(p,.9);sCommit();return;}}renderSch();return;}
   if(D.tg.type==='wire'){if(schk){ssel=null;schToggleDone(D.tg.id);return;}ssel={type:'wire',id:D.tg.id};renderSch();return;}
   ssel=null;renderSch();}
 
@@ -4282,11 +4325,22 @@ function schToBoard(){if(!SCH.parts.some(p=>p.t!=='vcc'&&p.t!=='gnd')){toast('�
 
 /* ── 브레드보드에서 가져오기: 꽂힌 회로를 읽어 회로도를 자동으로 그린다 ── */
 /* 전원 기호(VCC·GND) 자리: 핀에서 가까운 곳부터 찾되, 다른 기호와 겹치지 않고 사이에 선이 지나갈 틈이 남는 곳 */
+/* ── 회로도 기호 겹침 정리: 겹치면 가장 가까운 빈자리(20 간격 나선)로 옮긴다. 이름표 자리(위아래 14)와 사이 틈(10)까지 본다 ── */
+const sBoxM=p=>{const b=partBox(p);return{x0:b.x0-10,x1:b.x1+10,y0:b.y0-16,y1:b.y1+16};};
+const sHit=(a,b)=>a.x0<b.x1&&b.x0<a.x1&&a.y0<b.y1&&b.y0<a.y1;
+const SPIRAL=(()=>{const o=[];for(let dx=-40;dx<=40;dx++)for(let dy=-40;dy<=40;dy++)o.push([dx*20,dy*20]);return o.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));})();
+function schFreeSpot(p,others){const x0=p.x,y0=p.y,ob=others.map(sBoxM);
+  for(const [dx,dy] of SPIRAL){p.x=x0+dx;p.y=y0+dy;const b=partBox(p);if(!ob.some(o=>sHit(b,o)))return true;}p.x=x0;p.y=y0;return false;}
+function schTidy(only){const done=[];let moved=0;
+  for(const p of SCH.parts){if(only&&!only.includes(p.id)){done.push(p);continue;}const b=partBox(p);if(done.some(o=>sHit(b,sBoxM(o)))){if(schFreeSpot(p,done))moved++;}done.push(p);}
+  // 고른 기호만 옮길 때: 나중 기호와 겹쳐도 그 기호를 옮긴다
+  if(only){const fixed=SCH.parts.filter(p=>!only.includes(p.id));for(const p of SCH.parts.filter(p=>only.includes(p.id))){if(fixed.some(o=>sHit(partBox(p),sBoxM(o)))&&schFreeSpot(p,fixed))moved++;}}
+  return moved;}
 function placePw(s,P,pw){const up=pw==='vcc'?-30:30,tips=[];
   for(const o of SCH.parts)for(const q of symOf(o).pins){const T=pinPos(o,q.k);if(T)tips.push(T,{x:T.x+T.dx*10,y:T.y+T.dy*10});}
   const free=()=>{const b=partBox(s);return SCH.parts.every(o=>{const c=partBox(o);return b.x1+20<=c.x0||c.x1+20<=b.x0||b.y1+20<=c.y0||c.y1+20<=b.y0;})
     &&!tips.some(t=>t.x>b.x0-40&&t.x<b.x1+40&&t.y>b.y0-10&&t.y<b.y1+10);};   // 핀 끝과 기호 사이에 세로 차선 셋 이상
-  const D=[],SH=[0];for(let d=30;d<=270;d+=20)D.push(d);for(let k=20;k<=160;k+=20)SH.push(k,-k);
+  const D=[],SH=[0];for(let d=30;d<=410;d+=20)D.push(d);for(let k=20;k<=240;k+=20)SH.push(k,-k);
   const C=[];for(const d of D)for(const sh of SH)C.push([d,sh]);C.sort((p,q)=>(p[0]+Math.abs(p[1]))-(q[0]+Math.abs(q[1])));
   for(const [d,sh] of C){
     if(P.dx){s.x=snapG(P.x+P.dx*d);s.y=snapG(P.y+up+sh);}else{s.x=snapG(P.x+20+sh);s.y=snapG(P.y+P.dy*d+up);}
@@ -4316,8 +4370,8 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   for(const c of [...comps].sort((a,b)=>col(a)-col(b))){const p=Object.assign({id:nid++,x:X_[col(c)],y:0,rot:0,bid:c.id},schNew(c.t==='ic'?'ic:'+c.chip:c.t==='gate'?'gate:'+c.kind:c.t==='px'?'px:'+c.kind:c.t));
     for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','pw','mat','tol','dk','vr','ser'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
     if(sameKind(o,c)){p.x=o.x;p.y=o.y;p.rot=o.rot||0;}
-    else if(flow){const s=symOf(p),k=col(c);if(k!==fk){if(fk>=0){fx+=fw+200;}fy=0;fw=0;fk=k;}
-      if(fy>0&&fy+2*s.h>LIM){fx+=fw+200;fy=0;fw=0;}p.x=snapG(fx+s.w);p.y=snapG(fy+s.h+10);fy=p.y+s.h+60;fw=Math.max(fw,2*s.w);}
+    else if(flow){const s=symOf(p),k=col(c);if(k!==fk){if(fk>=0){fx+=fw+260;}fy=0;fw=0;fk=k;}
+      if(fy>0&&fy+2*s.h>LIM){fx+=fw+260;fy=0;fw=0;}p.x=snapG(fx+s.w);p.y=snapG(fy+s.h+10);fy=p.y+s.h+80;fw=Math.max(fw,2*s.w);}
     else{const s=symOf(p),k=col(c);p.y=snapG(yc[k]+s.h+10);yc[k]=p.y+s.h+40;}
     SCH.parts.push(p);map.set(c.id,p);}
   // 핀 → 줄(net)
@@ -4331,6 +4385,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
     if(list.length<2)continue;const L_=list.map(it=>({...it,P:pinPos(it.p,it.k)})).sort((a,b)=>a.P.x-b.P.x||a.P.y-b.P.y);
     for(let i=0;i<L_.length-1;i++){SCH.wires.push({id:nid++,a:{p:L_[i].p.id,k:L_[i].k},b:{p:L_[i+1].p.id,k:L_[i+1].k}});nw++;}}
   if(oldW.size)for(const w of SCH.wires){const o=oldW.get(wkey(w,SCH.parts));if(o)for(const k of ['col','done','off'])if(o[k])w[k]=o[k];}
+  schTidy();   // 기호끼리 겹치지 않게
   SCH.nextId=nid;SCH.link=true;SCH.sig=boardSig();ssel=null;spend=null;sCommit();schLinkLabel();
   if(auto){if(first)requestAnimationFrame(schFit);toast(first?`브레드보드 회로를 회로도로 그렸어요 (부품 ${comps.length}개) · 기호를 끌어 보기 좋게 옮기면 그 자리가 기억돼요`:'브레드보드에서 바뀐 것을 회로도에 반영했어요');return;}
   setVM('sch');schFit();
