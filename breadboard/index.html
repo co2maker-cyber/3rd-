@@ -591,11 +591,11 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
         <div class="airow"><button class="btn pri" id="aiCopy">AI용 부탁 문장 복사</button><button class="btn" id="gView">파일 만들기 안내서</button><button class="btn" id="gSave">안내서 내려받기 (.md)</button></div>
       </div>
       <div class="drop" id="drop">
-        <div><b>회로도 사진</b>(PNG·JPG), <b>부품·연결 목록</b>(TXT·CSV·JSON·MD) 또는 <b>AI가 만든 회로 파일</b>을 여기로 끌어다 놓으세요</div>
+        <div><b>부품·연결 목록</b>(TXT·CSV·JSON·MD) 또는 <b>AI가 만든 회로 파일</b>을 여기로 끌어다 놓으세요</div>
         <div><button class="btn" id="impPick">파일 선택</button> <input type="file" id="impFile" hidden accept="image/png,image/jpeg,image/webp,image/gif,.txt,.csv,.json,.md,.net,text/plain,application/json"></div>
-        <div id="impCap" style="font-size:12px"></div>
+        <div style="font-size:12px">회로도 사진은 이 CAD가 직접 읽지 않아요. 쓰는 AI에 사진과 [AI용 부탁 문장]을 함께 넣고, 받은 답을 여기에 넣어 주세요.</div>
       </div>
-      <p class="desc" style="margin:0;font-size:11.5px">본인이 만들었거나 사용 허락을 받은 회로도·자료만 올려 주세요(유료 교재·시험지·남의 비공개 도면은 올리지 마세요). 올린 사진과 글은 보드에 배치할 부품·연결을 읽어내는 데에만 쓰여요. 목록 파일은 이 브라우저 안에서만 처리하고, 사진이나 자유 형식 글은 읽기 위해 Claude에 전달돼요.</p>
+      <p class="desc" style="margin:0;font-size:11.5px">본인이 만들었거나 사용 허락을 받은 회로도·자료만 써 주세요(유료 교재·시험지·남의 비공개 도면은 쓰지 마세요). 올리거나 붙여 넣은 내용은 이 브라우저 안에서만 읽고, 밖으로 보내지 않아요.</p>
       <div class="imsg" id="impMsg">파일을 올리거나 아래 칸에 목록을 직접 쓰세요. 배치하기 전에 읽은 내용을 확인하고 고칠 수 있어요.</div>
       <label for="impText" style="font-size:12px;font-weight:700;color:var(--muted)">부품·연결 목록 (AI 답을 그대로 붙여 넣어도 되고, 직접 고쳐도 돼요)</label>
       <textarea id="impText" spellcheck="false" placeholder="# 부품&#10;U1 74LS08&#10;R1 저항 330&#10;D1 LED red&#10;# 연결&#10;N1: U1.3, R1.1&#10;N2: R1.2, D1.A&#10;GND: D1.K"></textarea>
@@ -616,7 +616,7 @@ N2: R1.2 - D1.A       ← LED는 A(+) / K(−), 2단자 부품은 1 / 2
 GND: D1.K</pre>
         <p>IC의 전원 핀(VCC·GND)을 빠뜨리면 자동으로 레일에 이어요. CSV는 <code>ref,type,value</code> 형식의 부품 줄도 읽어요.</p></details>
     </div>
-    <div class="mfoot"><button class="btn" id="impEx">예시 넣기 (동기식 10진 카운터)</button><span class="sp"></span><button class="btn" id="impStop" hidden>멈추기</button><button class="btn pri" id="impGo">보드에 배치하기</button></div>
+    <div class="mfoot"><button class="btn" id="impEx">예시 넣기 (동기식 10진 카운터)</button><span class="sp"></span><button class="btn pri" id="impGo">보드에 배치하기</button></div>
   </div>
 </div>
 
@@ -4124,46 +4124,12 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   if(typeof d.name==='string'&&d.name.trim()){curName=d.name.slice(0,40);store.set('name',curName);}else if(fname){curName=fname.replace(/\.(json|md|txt)$/i,'').slice(0,40);store.set('name',curName);}
   fitView();const got=S.comps.filter(c=>c.t!=='wire').length;
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
-let impSample=null,impCtl=null;
-async function getSample(){try{return window.claude?await window.claude.use('sample'):null;}catch(_){return null;}}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 function openImport(file){$('impDlg').hidden=false;closeMenu();
-  getSample().then(async s_=>{impSample=s_;let lim=null;try{lim=s_&&await s_.limits();}catch(_){}
-    $('impCap').textContent=s_?(lim&&lim.images?'사진은 Claude가 읽어서 목록으로 바꿔 줘요 (처음 한 번 허용을 물어봐요).':'이 화면에서는 사진을 보낼 수 없어요. 텍스트 목록은 읽을 수 있어요.')
-      :'사진을 읽으려면 claude.ai에서 이 페이지를 열어야 해요. 여기서는 텍스트·CSV·JSON 목록을 바로 읽어요.';});
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
-function closeImport(){if(impCtl)impCtl.abort();$('impDlg').hidden=true;}
-const CLAUDE_PROMPT=()=>`You convert a digital-logic circuit (a schematic image or a text description) into a parts list and netlist for a breadboard simulator.
-Reply with ONLY one JSON object, no other text:
-{"title": string, "parts": [{"ref": "U1", "type": "74LS08", "value": ""}], "nets": [{"name": "VCC", "pins": ["U1.14"]}, {"name": "N1", "pins": ["U1.3", "U2.9"]}], "notes": [string]}
-Supported part types:
-- ICs (use these exact names): ${Object.keys(CHIPS).join(', ')}
-- "resistor" (value e.g. "330", "10k"), "led" (value red|green|yellow|blue; pins A = anode, K = cathode), "switch" (toggle; pins 1, 2; value "on" to start closed), "button" (momentary; pins 1, 2), "capacitor" (value e.g. "47u"; pins + and -), "clock" (one pin OUT; value = Hz, e.g. "1"), "seg7" (value "cathode" or "anode"; pins a b c d e f g dp COM)
-- single gates: AND, OR, NOT, NAND, NOR, XOR, XNOR (pins A, B, Y; NOT has A, Y)
-Pin references are "REF.PIN". For ICs use the DIP pin NUMBER from the standard datasheet (for example "U2.15").
-Rules:
-- Schematics often hide IC power pins: add each IC's VCC/VDD pin to net "VCC" and its GND/VSS pin to net "GND".
-- Replace logic input terminals (logic-state sources, labelled inputs such as PR, CLR, A, B, DIP switches) with a "switch" between VCC and the signal plus a "resistor" of 10k from the signal to GND. For active-low preset/clear inputs that must normally be high, give the switch value "on".
-- Replace a clock source or CLK input terminal with a "clock" part (value "1").
-- Replace output probes, logic indicators and labelled outputs with an "led" (anode on the signal) and a 330 "resistor" from the LED cathode to GND.
-- If a chip is not supported, choose the closest supported equivalent with the same pinout and mention it in notes.
-- Each net other than VCC/GND lists at least two pins. Do not invent connections you cannot see.
-Write "title" and "notes" in Korean.`;
-async function askClaude(input,image){if(!impSample){impMsg('사진이나 자유 형식 글을 읽으려면 claude.ai에서 이 페이지를 열어야 해요. 위의 "목록 쓰는 법" 형식으로 쓰면 바로 배치할 수 있어요.','bad');return null;}
-  impCtl=new AbortController();$('impStop').hidden=false;$('impGo').disabled=true;
-  impMsg(image?'Claude가 회로도를 읽고 있어요. 1~2분쯤 걸릴 수 있어요.':'Claude가 글을 부품·연결 목록으로 정리하고 있어요.','busy');
-  try{const opts={signal:impCtl.signal};if(image)opts.images=[image];
-    const sp=await impSample.json(CLAUDE_PROMPT()+(input?'\n\nCircuit description:\n'+input.slice(0,60000):'\n\nThe attached image is the schematic.'),opts);
-    if(!sp||!Array.isArray(sp.parts)||!sp.parts.length){impMsg('회로에서 부품을 찾지 못했어요. 더 선명한 사진을 쓰거나 목록을 직접 써 주세요.','bad');return null;}
-    $('impText').value=specToText(sp);$('impText').scrollTop=0;const r=parseSpec($('impText').value);
-    impMsg(`${sp.title?sp.title+' · ':''}부품 ${r.parts.length}개, 연결 ${r.nets.length}개를 읽었어요. 아래 목록을 확인하고 [보드에 배치하기]를 누르세요. 잘못 읽은 부분은 직접 고칠 수 있어요.`,'ok');return sp;}
-  catch(e){const code=e&&e.code;
-    impMsg(code==='cancelled'?'멈췄어요.':code==='not_granted'||code==='sampling_disabled'?'Claude 사용이 허용되지 않아서 읽을 수 없어요. 목록을 직접 써 주세요.':code==='rate_limited'?'요청이 많아요. 잠시 뒤 다시 시도하세요.'
-      :code==='image_rejected'?'이 이미지는 읽을 수 없어요. JPG·PNG·WebP·GIF, 20MB 이하로 올려 주세요.':code==='images_unavailable'?'이 화면에서는 사진을 보낼 수 없어요. 목록을 직접 써 주세요.'
-      :code==='invalid_json'?'읽은 결과를 해석하지 못했어요. 다시 시도해 보세요.':'읽는 중 문제가 생겼어요. 다시 시도해 보세요.','bad');return null;}
-  finally{impCtl=null;$('impStop').hidden=true;$('impGo').disabled=false;}}
+function closeImport(){$('impDlg').hidden=true;}
 async function handleImportFile(f){
-  if(/^image\//.test(f.type)){impMsg(`사진: ${f.name}`);await askClaude('',f);return;}
+  if(/^image\//.test(f.type)){guideAskFor(`첨부한 회로도 사진(${f.name})의 회로`);impMsg(`사진(${f.name})은 이 CAD가 직접 읽지 않아요. [AI용 부탁 문장 복사]를 누르고, 쓰는 AI에 이 사진과 복사한 문장을 함께 넣어 주세요. 받은 답을 아래 칸에 붙여 넣으면 돼요.`,'');return;}
   let txt='';try{txt=await f.text();}catch(_){impMsg('파일을 읽지 못했어요.','bad');return;}
   const pl=pickPayload(txt);
   if(pl.json){if(Array.isArray(pl.json.comps)){applyCircuit(pl.json,f.name);return;}
@@ -4171,12 +4137,16 @@ async function handleImportFile(f){
     impMsg(`${pl.json.title?pl.json.title+' · ':''}부품 ${r.parts.length}개, 연결 ${r.nets.length}개를 읽었어요${pr.length?` (확인이 필요한 곳 ${pr.length}개: ${pr[0]})`:''}. 확인하고 [보드에 배치하기]를 누르세요.`,pr.length?'':'ok');return;}
   txt=pl.text;$('impText').value=txt;const r=parseSpec(txt);
   if(r.parts.length){impMsg(`부품 ${r.parts.length}개, 연결 ${r.nets.length}개를 읽었어요${r.errors.length?` (읽지 못한 줄 ${r.errors.length}개)`:''}. 확인하고 [보드에 배치하기]를 누르세요.`,r.errors.length?'':'ok');return;}
-  await askClaude(txt,null);}
+  notAList(txt);}
+/* 회로 설명(목록이 아닌 글)이면 위 AI 부탁 칸으로 옮기고 안내한다 */
+function guideAskFor(t){if(!$('aiAsk').value.trim())$('aiAsk').value=t.slice(0,2000);$('aiAsk').focus();}
+function notAList(txt){const r=parseSpec(txt);if(txt.trim().length>3)guideAskFor(txt.trim());
+  impMsg('부품·연결 목록으로 읽지 못했어요. 회로 설명이면 위 칸에 옮겨 두었으니 [AI용 부탁 문장 복사]를 눌러 쓰는 AI에 넣어 주세요. 목록이면 "목록 쓰는 법"의 형식을 확인해 주세요.'+(r.errors.length?' 예: '+r.errors[0]:''),'bad');}
 function runImport(){let txt=$('impText').value;if(!txt.trim()){impMsg('먼저 파일을 올리거나 목록을 써 주세요.','bad');return;}
   const pl=pickPayload(txt);if(pl.json&&Array.isArray(pl.json.comps)){applyCircuit(pl.json);return;}
   if(pl.json){txt=specToText(pl.json);$('impText').value=txt;}else if(pl.text!==txt){txt=pl.text;$('impText').value=txt;}
   const r=parseSpec(txt);
-  if(!r.parts.length){if(impSample){askClaude(txt,null);return;}impMsg('부품을 하나도 읽지 못했어요. "목록 쓰는 법"의 형식을 확인해 주세요.'+(r.errors.length?' 예: '+r.errors[0]:''),'bad');return;}
+  if(!r.parts.length){notAList(txt);return;}
   pushHist();const prevBoards=S.boards;const out=autoLayout(r);
   S.comps=out.comps;S.nextId=out.comps.length+1;S.power=true;RT.clear();sel=null;SEL.clear();renderBoards();commit(true);fitView();setTool('select');
   const rep=out.report,probs=[...r.errors,...rep.fail];closeImport();
@@ -4230,7 +4200,7 @@ $('impX').onclick=closeImport;
 $('impDlg').addEventListener('pointerdown',e=>{if(e.target===$('impDlg'))closeImport();});
 $('impPick').onclick=()=>$('impFile').click();
 $('impFile').onchange=()=>{const f=$('impFile').files[0];$('impFile').value='';if(f)handleImportFile(f);};
-$('impGo').onclick=runImport;$('impStop').onclick=()=>{if(impCtl)impCtl.abort();};
+$('impGo').onclick=runImport;
 $('impEx').onclick=()=>{$('impText').value=IMPORT_EXAMPLE;$('impText').scrollTop=0;const r=parseSpec(IMPORT_EXAMPLE);impMsg(`예시를 넣었어요 · 부품 ${r.parts.length}개, 연결 ${r.nets.length}개. [보드에 배치하기]를 누르세요.`,'ok');};
 {const dz=$('drop');['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('on');}));
   ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,()=>dz.classList.remove('on')));

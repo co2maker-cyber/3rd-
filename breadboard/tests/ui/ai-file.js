@@ -32,6 +32,12 @@ await p.click('#upl');await ctx.grantPermissions(['clipboard-read','clipboard-wr
 out.copy={msg:await p.$eval('#impMsg',e=>e.textContent.slice(0,30)),clip:await p.evaluate(async()=>{try{const t=await navigator.clipboard.readText();return t.slice(0,60)+' … '+t.length;}catch(e){return 'x '+e.message;}})};
 // 안내서 내려받기
 const [dl]=await Promise.all([p.waitForEvent('download',{timeout:3000}).catch(()=>null),p.click('#gSave')]);out.dl=dl?dl.suggestedFilename():null;
+// 사진·설명 글: CAD가 AI를 부르지 않고, 위 부탁 칸으로 옮겨 안내
+await p.fill('#aiAsk','');await p.setInputFiles('#impFile',{name:'sch.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71])});await p.waitForTimeout(200);
+out.img={ask:await p.inputValue('#aiAsk'),msg:(await p.$eval('#impMsg',e=>e.textContent)).slice(0,30)};
+await p.fill('#aiAsk','');await p.fill('#impText','스위치 두 개로 AND 시험하는 회로 만들어 줘');await p.click('#impGo');await p.waitForTimeout(150);
+out.free={ask:await p.inputValue('#aiAsk'),dlg:await p.$eval('#impDlg',e=>!e.hidden)};
+out.sampleCalls=await p.evaluate(()=>window.__calls.length);
 out.errs=errs;console.log(JSON.stringify(out,null,1));
-const ok=out.guide.tables>=9&&out.noAi.btn===null&&out.noAi.steps===3&&(await p.evaluate(()=>window.__calls.length))===0&&out.pasteB.dlg&&out.pasteB.n===13&&out.pasteB.lit[0]===true&&out.pasteA.lit[0]===false&&out.fileMd.n===13&&out.dl&&!errs.length;
+const ok=out.img.ask.includes('sch.png')&&out.free.ask.includes('AND')&&out.free.dlg&&out.sampleCalls===0&&out.guide.tables>=9&&out.noAi.btn===null&&out.noAi.steps===3&&(await p.evaluate(()=>window.__calls.length))===0&&out.pasteB.dlg&&out.pasteB.n===13&&out.pasteB.lit[0]===true&&out.pasteA.lit[0]===false&&out.fileMd.n===13&&out.dl&&!errs.length;
 console.log(ok?'t58 PASS':'t58 FAIL');await b.close();})();
