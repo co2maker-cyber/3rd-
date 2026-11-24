@@ -826,7 +826,7 @@ let tool='select', pending=null, hover=null, sel=null, drag=null, lastPt=null;
 const SEL=new Set();let wireDrag=null,boxSel=null,erase=null,rightDown=null,clip=null,dnd=null;
 let pendPts=[],lastPtrType='mouse'; // 전선을 그리는 도중에 찍은 꺾는 점들
 let sigMode=store.get('sig',false);
-const opt=Object.assign({wire:'#D93A3A',ohms:330,led:'red',hz:1,seg:'cc',farad:4.7e-5},store.get('opt',{}));
+const opt=Object.assign({ang:'180',wire:'#D93A3A',ohms:330,led:'red',hz:1,seg:'cc',farad:4.7e-5},store.get('opt',{}));
 const hist=[];
 
 function pinHoles(c){
@@ -1297,10 +1297,10 @@ function renderOverlay(){
         for(const id of g.pins){const h=HOLES.get(id);if(h)s+=`<circle cx="${h.x}" cy="${h.y}" r="3" fill="${o.has(id)?'#C2362F':'#18A06F'}"/>`;}}}
     if(pending){const a=HOLES.get(pending);s+=`<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;
       let t=hover&&hover.id!==pending?landing(hover,o,pending)||hover:null;
-      if(tool==='wire'){if(!t&&lastPt&&!hover)t={x:Math.round(lastPt.x/5)*5,y:Math.round(lastPt.y/5)*5,bend:true};
+      if(tool==='wire'){if(!t&&lastPt&&!hover){const r={x:Math.round(lastPt.x/5)*5,y:Math.round(lastPt.y/5)*5},pv=pendPts.length?pendPts[pendPts.length-1]:a;t=Object.assign(snapDir(pv,r,opt.ang),{bend:true});}
         for(const q of pendPts)s+=`<rect x="${q.x-4}" y="${q.y-4}" width="8" height="8" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.5"/>`;
         if(t&&t.bend)s+=`<rect x="${t.x-4}" y="${t.y-4}" width="8" height="8" rx="1.5" fill="#fff" fill-opacity=".6" stroke="#1F8FFF" stroke-width="1.5" stroke-dasharray="2.5 2"/>`;}
-      if(t)s+=tool==='wire'?`<path d="${wirePath(a,t,pendPts)}" fill="none" stroke="${opt.wire}" stroke-width="4" stroke-opacity=".6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>`
+      if(t)s+=tool==='wire'?`<path d="${wirePath(a,t,t.bend?pendPts:angRoute(a,pendPts,t))}" fill="none" stroke="${opt.wire}" stroke-width="4" stroke-opacity=".6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>`
         :`<line x1="${a.x}" y1="${a.y}" x2="${t.x}" y2="${t.y}" stroke="#1F8FFF" stroke-width="2" stroke-dasharray="5 4"/>`;}
     if(hover&&(TWO.has(tool)||tool==='clk'||tool==='wire')&&hover.id!==pending){const t=landing(hover,o,pending);s+=`<circle cx="${(t||hover).x}" cy="${(t||hover).y}" r="5.5" fill="none" stroke="${t?'#1F8FFF':'#C2362F'}" stroke-width="2"/>`;}
   }
@@ -1309,7 +1309,7 @@ function renderOverlay(){
     if(hover)s+=`<rect x="${cx-7}" y="${cy-7}" width="14" height="14" fill="none" stroke="var(--cross)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>`;}
   if(wireDrag&&wireDrag.moved){const a=wireDrag.from;s+=`<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;
     const col=termColor(a.id)||opt.wire;
-    if(hover&&hover.id!==a.id){const t=landing(hover,occ(),a.id),e=t||hover;s+=`<path d="${wirePath(a,e,tracePts(wireDrag.path,a,e))}" fill="none" stroke="${col}" stroke-width="4.5" stroke-opacity=".75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${e.x}" cy="${e.y}" r="6" fill="none" stroke="${t?'#1F8FFF':'#C2362F'}" stroke-width="2"/>`;}
+    if(hover&&hover.id!==a.id){const t=landing(hover,occ(),a.id),e=t||hover;s+=`<path d="${wirePath(a,e,routeFromPath(wireDrag.path,a,e))}" fill="none" stroke="${col}" stroke-width="4.5" stroke-opacity=".75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${e.x}" cy="${e.y}" r="6" fill="none" stroke="${t?'#1F8FFF':'#C2362F'}" stroke-width="2"/>`;}
     else if(lastPt&&!hover){const e={x:lastPt.x,y:lastPt.y};s+=`<path d="${wirePath(a,e,tracePts(wireDrag.path,a,e))}" fill="none" stroke="${col}" stroke-width="4.5" stroke-opacity=".5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>`;}}
   if(boxSel&&boxSel.moved){const x=Math.min(boxSel.x0,boxSel.x1),y=Math.min(boxSel.y0,boxSel.y1);
     s+=`<rect x="${x}" y="${y}" width="${Math.abs(boxSel.x1-boxSel.x0)}" height="${Math.abs(boxSel.y1-boxSel.y0)}" fill="#1F8FFF" fill-opacity=".08" stroke="#1F8FFF" stroke-width="1.2" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>`;}
@@ -1583,7 +1583,7 @@ function setTool(t){tool=t;pending=null;
   svg.classList.toggle('place',t!=='select'&&t!=='erase');svg.classList.toggle('erase',t==='erase');svg.classList.toggle('mvtool',t==='move');svg.classList.remove('bmove');closeMenu();renderOpts();renderHint();renderOverlay();
   if(!sel&&typeof renderInfo==='function')renderInfo();}
 function renderOpts(){const o=$('opts');let h='',t='옵션';
-  if(tool==='wire'){t='전선 색';h=`<div class="sw">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-k="wire" data-v="${col}" aria-pressed="${opt.wire===col}" aria-label="색"></button>`).join('')}</div>`;}
+  if(tool==='wire'){t='전선';h=`<div class="seg" title="전선 각도 (A 키로 180°↔45°)">${['180','45','free'].map(m=>`<button data-ang="${m}" aria-pressed="${opt.ang===m}">${ANGN[m]}</button>`).join('')}</div><div class="sw">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-k="wire" data-v="${col}" aria-pressed="${opt.wire===col}" aria-label="색"></button>`).join('')}</div>`;}
   else if(tool==='res'){t='저항 값';h=`<div class="seg">${OHMS.map(v=>`<button data-k="ohms" data-v="${v}" aria-pressed="${opt.ohms===v}">${ohmTx(v)}</button>`).join('')}</div>`;}
   else if(tool==='led'){t='LED 색';h=`<div class="seg">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-k="led" data-v="${k}" aria-pressed="${opt.led===k}">${n}</button>`).join('')}</div>`;}
   else if(tool==='cap'){t='용량';h=`<div class="seg">${FARADS.map(v=>`<button data-k="farad" data-v="${v}" aria-pressed="${opt.farad===v}">${capTx(v)}</button>`).join('')}</div><p class="desc">1µF 이상은 전해(+ 쪽부터)</p>`;}
@@ -1593,6 +1593,7 @@ function renderOpts(){const o=$('opts');let h='',t='옵션';
   else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];t=d.name;h=`<p class="desc">${esc(d.title)} · ${d.pins.length}핀 · 핀 배치도는 [속성] 창</p>`;}
   if(!h){t='';h=`<p class="desc">${tool==='select'?'부품을 고르거나, 보드로 끌어다 놓으세요':tool==='erase'?'지울 것을 누르거나 문지르세요':tool==='move'?'브레드보드를 끌어서 옮기세요':''}</p>`;}
   $('optTitle').textContent=t||toolName();o.innerHTML=h;$('optCard').hidden=tool==='select'||tool==='erase'||tool==='move';
+  o.querySelectorAll('button[data-ang]').forEach(b=>b.onclick=()=>setAng(b.dataset.ang));
   o.querySelectorAll('button[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;opt[k]=k==='ohms'||k==='hz'||k==='farad'?+b.dataset.v:b.dataset.v;store.set('opt',opt);renderOpts();});}
 function pinoutMini(d){const n=d.pins.length,h=n/2;let l='',r='';
   for(let i=0;i<h;i++){l+=`<div style="font-size:12px"><code>${i+1}</code> ${pinHTML(d.pins[i])}</div>`;r+=`<div style="font-size:12px;text-align:right">${pinHTML(d.pins[n-1-i])} <code>${n-i}</code></div>`;}
@@ -1600,7 +1601,7 @@ function pinoutMini(d){const n=d.pins.length,h=n/2;let l='',r='';
 function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선택</b> · 구멍에서 끌고 간 길대로 전선 · 부품을 끌어 옮기기 · 보드 가장자리를 끌면 보드 이동 · 보드 밖을 끌면 범위 선택 · 오른쪽 클릭 메뉴',
   move:'<b>보드 이동</b> · 브레드보드를 끌어서 옮기세요 (꽂힌 부품도 함께 가요) · 보드 밖을 끌면 화면 이동 · Esc: 선택 도구로',
   erase:'<b>지우개</b> · 지울 전선이나 부품을 누르거나, 누른 채 문질러서 지우세요 (Esc: 선택 도구로)',
-  wire:pending?'<b>전선</b> · 이어 줄 두 번째 구멍을 누르세요 · 구멍 사이 빈 곳을 누르면 거기서 꺾여요 (Esc 취소)':'<b>전선</b> · 구멍에서 끌고 간 길대로 전선이 놓여요 · 또는 구멍을 차례로 누르세요',
+  wire:pending?`<b>전선</b> · 이어 줄 두 번째 구멍을 누르세요 · 구멍 사이 빈 곳을 누르면 거기서 꺾여요 · 각도 ${ANGN[opt.ang]} (A로 바꾸기, Esc 취소)`:`<b>전선</b> · 구멍에서 끌고 간 길대로 전선이 놓여요 · 또는 구멍을 차례로 누르세요 · 각도 ${ANGN[opt.ang]} (A로 180°↔45°)`,
   res:pending?'<b>저항</b> · 다른 쪽 다리를 꽂을 구멍을 누르세요':'<b>저항</b> · 한쪽 다리를 꽂을 구멍을 누르세요',
   led:pending?'<b>LED</b> · 이제 <b>캐소드(−, 짧은 다리)</b> 구멍을 누르세요':'<b>LED</b> · 먼저 <b>애노드(+, 긴 다리)</b> 구멍을 누르세요',
   btn:pending?'<b>버튼</b> · 다른 쪽 다리 구멍을 누르세요':'<b>버튼</b> · 한쪽 다리 구멍을 누르세요',
@@ -1756,7 +1757,7 @@ function place(h,p){if(tool==='move')return;const o=occ();
     addComp({t:'gate',kind:tool.slice(5),pins:g.hs.map(h=>h.id)});sel={type:'comp',id:S.nextId-1};renderInfo();render();if(g.shift)toast('겹치지 않게 가장 가까운 빈자리에 놓았어요');return;}
   if(tool.startsWith('ic:')||tool==='seg7'){const g=ghostAt(p);if(!g)return;if(!g.ok){toast('겹치지 않게 놓을 빈자리가 없어요 · 부품을 정리하거나 브레드보드를 추가해 보세요');return;}
     addComp(tool==='seg7'?{t:'seg7',col:g.col,b:g.b,ca:opt.seg==='ca'}:{t:'ic',chip:tool.slice(3),col:g.col,b:g.b});sel={type:'comp',id:S.nextId-1};renderInfo();render();if(g.shift)toast('겹치지 않게 가장 가까운 빈자리에 놓았어요');return;}
-  if(!h){if(tool==='wire'&&pending&&p){pendPts.push({x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});renderOverlay();}return;}
+  if(!h){if(tool==='wire'&&pending&&p){const r={x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};pendPts.push(snapDir(pendPts.length?pendPts[pendPts.length-1]:HOLES.get(pending),r,opt.ang));renderOverlay();}return;}
   if(pending&&h.id===pending){pending=null;renderHint();renderOverlay();return;}
   // 누른 구멍이 차 있으면 같은 줄(전기적으로 같은 곳)의 빈 구멍에 대신 꽂는다
   {const t=landing(h,o,pending);if(!t){toast('구멍 '+holeName(h.id)+'와 이어진 줄에 빈 구멍이 없어요');return;}
@@ -1764,7 +1765,7 @@ function place(h,p){if(tool==='move')return;const o=occ();
   if(tool==='clk'){addComp({t:'clk',pins:[h.id],hz:opt.hz});return;}
   if(!pending){pending=h.id;pendPts=[];renderHint();renderOverlay();return;}
   const c={t:tool,pins:[pending,h.id]};
-  if(tool==='wire'){c.color=termColor(c.pins[0])||termColor(c.pins[1])||opt.wire;if(pendPts.length)c.pts=pendPts;pendPts=[];}if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led')c.color=opt.led;if(tool==='sw')c.on=false;
+  if(tool==='wire'){c.color=termColor(c.pins[0])||termColor(c.pins[1])||opt.wire;{const r=angRoute(HOLES.get(c.pins[0]),pendPts,h);if(r.length)c.pts=r;}pendPts=[];}if(tool==='res')c.ohms=opt.ohms;if(tool==='cap')c.farad=opt.farad;if(tool==='led')c.color=opt.led;if(tool==='sw')c.on=false;
   pending=null;
   addComp(c);renderHint();}
 /* 계측기 몸통을 놓을 자리: 누른 곳이 가운데가 되게 하되, 보드나 다른 계측기와 겹치면 가장 가까운 빈 곳으로 옮긴다 */
@@ -1928,6 +1929,33 @@ function rdp(P,eps){if(P.length<3)return P.slice();let mx=0,ix=0;const a=P[0],b=
 function offRow(y,x){const B=boardGrab({x,y});if(!B)return Math.round(y/5)*5;const rel=y-B.y;let best=null,bd=1e9;for(const r of ROWS){const d=Math.abs(ROWY[r]-rel);if(d<bd){bd=d;best=ROWY[r];}}
   return bd<7?B.y+best+(rel>=best?10:-10):Math.round(y/5)*5;}
 function offCol(x,y){const B=boardGrab({x,y});if(!B)return Math.round(x/5)*5;const rel=x-B.x-X0,k=Math.round(rel/P),d=rel-k*P;return Math.abs(d)<7?B.x+X0+k*P+(d>=0?10:-10):Math.round(x/5)*5;}
+/* 전선 각도 모드(opt.ang): '180' = 가로·세로로만 곧게(꺾이면 직각), '45' = 가로·세로에 45° 사선까지, 'free' = 아무 각도
+   snapDir: 앞 점 p에서 q로 갈 때 허용된 방향으로 맞춘 점 / elbow: 마지막 구멍 b까지 한 번 꺾어 닿게 하는 모서리 점 */
+const ANGN={'180':'180°','45':'45°',free:'자유'};
+function snapDir(p,q,m){const dx=q.x-p.x,dy=q.y-p.y;
+  if(m==='180')return Math.abs(dx)>=Math.abs(dy)?{x:q.x,y:p.y}:{x:p.x,y:q.y};
+  if(m==='45'){const k=Math.round(Math.atan2(dy,dx)/(Math.PI/4)),ux=Math.round(Math.cos(k*Math.PI/4)),uy=Math.round(Math.sin(k*Math.PI/4));
+    const t=ux&&uy?(dx*ux+dy*uy)/2:ux?dx*ux:dy*uy;return{x:Math.round(p.x+ux*t),y:Math.round(p.y+uy*t)};}
+  return{x:q.x,y:q.y};}
+function elbow(p,b,m){const dx=b.x-p.x,dy=b.y-p.y,ax=Math.abs(dx),ay=Math.abs(dy);if(ax<1||ay<1)return null;
+  if(m==='180')return ax>=ay?{x:b.x,y:p.y}:{x:p.x,y:b.y};
+  if(m==='45'){if(Math.abs(ax-ay)<1)return null;const d=Math.min(ax,ay);return{x:p.x+Math.sign(dx)*d,y:p.y+Math.sign(dy)*d};}
+  return null;}
+function angRoute(a,pts,b,m){m=m||opt.ang;if(m==='free')return pts||[];
+  const P=[{x:a.x,y:a.y}];for(const q of pts||[])P.push(snapDir(P[P.length-1],q,m));
+  const e=elbow(P[P.length-1],b,m);if(e)P.push(e);
+  const all=[...P,{x:b.x,y:b.y}],out=[];
+  for(let i=1;i<all.length-1;i++){const q=all[i],pv=out.length?out[out.length-1]:all[0],nx=all[i+1];
+    if(Math.hypot(q.x-pv.x,q.y-pv.y)<3)continue;if(segDist(q,pv,nx)<1)continue;out.push({x:q.x,y:q.y});}
+  return out;}
+/* 끌고 간 길로 전선 만들기: 180°·자유는 가로·세로 구간으로 정리(tracePts), 45°는 굵직한 꺾임만 남겨 45° 단위로 맞춘다 */
+function routeFromPath(path,a,b){if(opt.ang!=='45')return angRoute(a,tracePts(path,a,b),b);
+  if(!path||path.length<3)return angRoute(a,[],b);const P_=[{x:a.x,y:a.y},...path,{x:b.x,y:b.y}];
+  let dev=0;for(const q of P_)dev=Math.max(dev,segDist(q,a,b));if(dev<12)return angRoute(a,[],b);
+  return angRoute(a,rdp(P_,12).slice(1,-1).map(q=>({x:Math.round(q.x/5)*5,y:Math.round(q.y/5)*5})),b);}
+function setAng(m,quiet){opt.ang=m;store.set('opt',opt);renderOpts();renderHint();renderOverlay();
+  if(!quiet)toast(m==='180'?'전선 각도 180°: 가로·세로로만 곧게 놓여요. 꺾일 때는 직각으로 꺾여요 (A 키로 바꾸기)':m==='45'?'전선 각도 45°: 가로·세로에 45° 사선까지 써서 놓여요 (A 키로 바꾸기)':'전선 각도 자유: 두 구멍을 곧은 선으로 바로 이어요');}
+function toggleAng(){setAng(opt.ang==='180'?'45':'180');}
 function tracePts(path,a,b){if(!path||path.length<3)return[];const P_=[{x:a.x,y:a.y},...path,{x:b.x,y:b.y}];
   let dev=0;for(const q of P_)dev=Math.max(dev,segDist(q,a,b));if(dev<12)return[];
   const K=rdp(P_,9),runs=[];
@@ -1954,7 +1982,7 @@ function declash(pts){if(pts.length<2)return pts;const segs=[];
   return pts;}
 function finishWire(){const w=wireDrag;wireDrag=null;const h=hover;
   if(w.moved){if(h&&h.id!==w.from.id){const t=landing(h,occ(),w.from.id);if(!t){toast('구멍 '+holeName(h.id)+'와 이어진 줄에 빈 구멍이 없어요');renderOverlay();return;}
-      pending=null;const nw={t:'wire',pins:[w.from.id,t.id],color:termColor(w.from.id)||termColor(t.id)||opt.wire},tr=declash(tracePts(w.path,w.from,t));if(tr.length)nw.pts=tr;addComp(nw);renderHint();}else renderOverlay();return;}
+      pending=null;const nw={t:'wire',pins:[w.from.id,t.id],color:termColor(w.from.id)||termColor(t.id)||opt.wire},tr=declash(routeFromPath(w.path,w.from,t));if(tr.length)nw.pts=tr;addComp(nw);renderHint();}else renderOverlay();return;}
   if(tool==='select'){sel={type:'hole',id:w.from.id};render();renderInfo();}else place(w.from,lastPt);}
 function finishBox(){const b=boxSel;boxSel=null;
   if(!b.moved){if(!b.add)sel=b.h?{type:'hole',id:b.h.id}:null;render();renderInfo();return;}
@@ -2012,6 +2040,7 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textar
   if(AR&&SEL.size&&tool==='select'){e.preventDefault();nudge(AR[0],AR[1]);return;}
   if(e.key==='Escape'){if(!$('cmenu').hidden){closeMenu();return;}if(wireDrag||boxSel){wireDrag=null;boxSel=null;renderOverlay();return;}if(pending){pending=null;renderHint();renderOverlay();}else if(tool!=='select')setTool('select');else if(sel){sel=null;render();renderInfo();}else if(!$('dock').hidden)closeDock();return;}
   if((e.key==='Delete'||e.key==='Backspace')&&SEL.size){e.preventDefault();delSel();return;}
+  if(e.key.toLowerCase()==='a'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){toggleAng();return;}
   const m={p:'__pause',o:'__slow',v:'select',m:'move',w:'wire',r:'res',l:'led',b:'btn',s:'sw',c:'clk',k:'cap',e:'erase'}[e.key.toLowerCase()];if(m==='__pause'){togglePause();return;}if(m==='__slow'){toggleSlow();return;}if(m)setTool(m);});
 document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;svg.style.cursor='';}});
 function togglePause(){setPaused(!paused);toast(paused?'일시 정지했어요 · 시간이 멈춰 있어요. 스위치나 배선은 그대로 바꿀 수 있어요':'다시 실행해요');}
