@@ -1877,7 +1877,11 @@ svg.addEventListener('pointerdown',e=>{lastPtrType=e.pointerType||'mouse';
   if(bendEl){const [id,k]=bendEl.dataset.bend.split(':').map(Number);drag={kind:'bend',id,k,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
   const midEl=e.target.closest('[data-mid]');
   if(midEl){const [id,k]=midEl.dataset.mid.split(':').map(Number);drag={kind:'mid',id,k,p0:p,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
-  const endEl=e.target.closest('[data-end]');const g=e.target.closest('[data-id]');
+  const endEl=e.target.closest('[data-end]');let g=e.target.closest('[data-id]');
+  // 전선 밑에 빈 구멍이 있으면: 구멍 한가운데 가까이를 누른 것은 전선이 아니라 그 구멍을 누른 것으로 본다(그 구멍에 다른 전선을 이을 수 있게).
+  // 전선을 고르거나 옮기려면 구멍이 없는 틈 위의 전선을 누르면 된다
+  if(g&&h&&!h.term&&(tool==='select'||tool==='wire')){const c=compById(+g.dataset.id),touch=e.pointerType==='touch';
+    if(c&&c.t==='wire'&&!occ().has(h.id)&&Math.hypot(h.x-p.x,h.y-p.y)<(pending?(touch?11:9):(touch?8:6.5)))g=null;}
   if(endEl&&!bendEl){const [id,k]=endEl.dataset.end.split(':').map(Number);drag={kind:'end',id,k,moved:false,start:null};svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
   if(g){const c=compById(+g.dataset.id);
     if(tool==='select'&&e.shiftKey){const n=new Set(SEL);n.has(c.id)?n.delete(c.id):n.add(c.id);setSelIds([...n]);render();renderInfo();return;}
