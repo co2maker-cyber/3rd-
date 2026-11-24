@@ -9,6 +9,7 @@
 ✓ 보드 이동: 몸통(구멍 없는 곳) 끌기 `startBoardDrag`/`slideBoard`, [보드 이동] 도구 `move`(M)
 ✓ 겹치지 않게 자동 배치: `ghostAt`/`gateGhost`→`fitsHere`/`bodyRect`, 찬 구멍은 같은 줄 빈 구멍 `landing`
 ✓ 전선: 직선+둥근 꺾임 `wirePath`, 자동 차선 분리 `buildRoutes`→`ROUTES`(`routePts`/`ownPts`), 가운데 손잡이 `data-mid`, 그리면서 꺾기 `pendPts`, 끌고 간 길 따라 놓기 `wireDrag.path`→`tracePts`(`rdp`,`offRow`,`offCol`)→`declash`
+✓ 전선 길(180·45 모드, 손 꺾는 점 없을 때 `autoRoute`): 한 줄 위면 곧게(`pts` 없음). 위·아래 절반 건너면 `crossRoute`(가로 틈 yu→빈 세로 틈 xc(끝 구멍 열 포함)→yv, 부품 몸통·기존 전선 겹침 `legTest` 피함, 보드 돌기 금지 — 사용자 지시). 끝 줄에 부품 다리 있으면(`compAt`) 같은 쪽은 y축으로 보드 밖(`outY`)까지 빼서 연결, 바깥 차선 `freeLane`로 20씩 비킴. 그 외 a 옆 가로 틈(`gapYs`) 중 안 겹치는 것, 다 막히면 ㄱ자. 꺾는 점·손잡이 `gapSnap`(구멍 사이 20 격자), 두 꺾는 점 사이 구간 끌기 `drag.kind='seg'`. 계측기 단자는 `onBd` 거짓(b:0)
 ✓ 전선 각도 `opt.ang` '180'(기본)/'45'/'free'(`ANGN`, `setAng`/`toggleAng`, A 키, 전선 옵션 막대 `data-ang`): `snapDir`(꺾는 점을 앞 점 기준 허용 방향으로), `elbow`(끝 구멍까지 한 번 꺾기), `angRoute`(클릭 배치·미리보기), `routeFromPath`(끌기 배치: 180·자유=`tracePts`, 45=`rdp`→`angRoute`). 한 줄에 있으면 `pts` 없음→자동 차선 유지
 ✓ 계측기 `INST`(psu/bat/fg/osc): 몸통 `c.x,c.y` 먼저 배치(`instGhost`), 단자 구멍 `@k:i`(`syncTerms`,`termAt`,`isTerm`,`c.k`)에서 전선 연결. 예전 형식은 `migrateInst`가 변환
 ✓ 계측기 속성 전부 숫자 입력(`numIn`, `input[data-n]`, `instProps`): PSU 0~100V, 건전지 0.1~48V, FG 파형 4종·0.1~10Hz·Vpp·오프셋 `off`·듀티 `duty`, 스코프 `tdiv`/`vdiv`/`vdiv2`/`pos1`/`pos2`/`on1`/`on2`
@@ -16,7 +17,7 @@
 ✓ 일시 정지 `simNow()`/`setPaused`(버튼 `#pause`, P)
 ✓ 슬로우 모드 `SLOW{on,rate,ms,last}`/`setSlow`/`toggleSlow`(버튼 `#slow`, O, 배지 `#sbadge` ½·¼·⅒): `simNow`=simBase+경과×rate(`rebaseTime`). `settle`이 `SLOW.ms`마다 칩 계산 1회만(그 외 0회)→`SIM.pending`, 타이머가 계속 한 단계씩. 단계 간격=min(140ms/rate, 최고 클럭 실시간 반주기/3). `findFlows`가 전선별 레벨 `WLV` 비교→바뀐 줄을 구동점(칩 출력·레일·계측기·클럭, 없으면 저항)에서 BFS→`FLOWQ`, `render`가 `launchFlows`로 `#gF` 층에 흐르는 빛+출력 바뀐 칩 주황 테두리(`tickFlows` rAF)
 ✓ 화면: 페이지 스크롤 없음(100dvh), 리본 숨김(`.ribbon{display:none!important}` — DOM·`renderRibbon` 잔존), 부품은 `#partOpen`→`#partDlg`(`PCATS`,`renderParts`)만, 속성·점검·객체는 `#dock` 팝업(`openDock`/`closeDock`, 도구 막대 `[data-dock]`), 도구 옵션 `#optCard.optbar`
-✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작)·t27(슬로우)·t28(전선 각도) 추가
+✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작)·t27(슬로우)·t28(전선 각도)·t29(전선 길) 추가
 ✓ 저장·불러오기 `#saveDlg`(`savedList`,`saveLocal`,`saveToFile`; localStorage 키 `bblab.v1.saves`), Ctrl+S
 ✓ 7세그먼트 새 모양(기운 획·핀 번호·이름), 터치 핀치 `tpinch`(touch 이벤트 직접 처리), 좁은 화면 도구 막대 한 줄
 ✓ IC 검증 `breadboard/tests/verify74.js` 47/47 통과. 수정: RBO(`ls47`·74LS48), `UP192`/`DN192`, 프리셋·클리어 X 처리, 칩별 전원 범위 경고, NE555 문턱 VCC 추종
@@ -34,6 +35,7 @@
 - 리본 DOM은 숨기기만 — `renderRibbon` 의존 코드 많음
 
 ## 이슈/주의
+- 시험 중 Google Fonts 접속 실패(ERR_TUNNEL_CONNECTION_FAILED)가 errors에 찍힐 수 있음 — 네트워크 문제, 코드 오류 아님
 - 사용자: 한국어, 비전문가용 쉬운 말투(~해요), 요청 즉시 구현, 결과마다 아티팩트 링크
 - main 자동 반영(`CLAUDE.md` 규칙): 시험→커밋→`git push -u origin ccr-957126bc-kqjtgb`→`git push origin HEAD:main`. fast-forward 안 되면 덮어쓰지 말고 알림. PR은 요청 시만
 - 커밋 끝: `Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
@@ -53,6 +55,6 @@
 ## 참조
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `/home/user/3rd-/breadboard/README.md` 설명서 / `/home/user/3rd-/breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` 작업 규칙
 - 시험: `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` — t(예제) t5(74LS) t6(555) t7(sync10) t8(편집) t11(보드 여러 장) t13(파일 배치) t14(보드 이동·꺾기) t15(자동 배치) t16(전선 차선) t18(scope 예제) t19(일시 정지) t20(100V) t21(터치·계측기·길 따라 전선) t22(7세그·부품 창) t23(속성) t24(배치·클럭 레일) t25(저장)
-- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28; do node $t.js | tail -1; done`
+- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29; do node $t.js | tail -1; done`
 - 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제 바로 열기: 끝에 `#scope`, `#sync10` 등)
 - 브랜치: `ccr-957126bc-kqjtgb` (= main `76135b3`), 저장소 `co2maker-cyber/3rd-`

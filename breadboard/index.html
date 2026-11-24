@@ -1297,7 +1297,7 @@ function renderOverlay(){
         for(const id of g.pins){const h=HOLES.get(id);if(h)s+=`<circle cx="${h.x}" cy="${h.y}" r="3" fill="${o.has(id)?'#C2362F':'#18A06F'}"/>`;}}}
     if(pending){const a=HOLES.get(pending);s+=`<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#1F8FFF" stroke-width="2"/>`;
       let t=hover&&hover.id!==pending?landing(hover,o,pending)||hover:null;
-      if(tool==='wire'){if(!t&&lastPt&&!hover){const r={x:Math.round(lastPt.x/5)*5,y:Math.round(lastPt.y/5)*5},pv=pendPts.length?pendPts[pendPts.length-1]:a;t=Object.assign(snapDir(pv,r,opt.ang),{bend:true});}
+      if(tool==='wire'){if(!t&&lastPt&&!hover){const r=gapSnap(lastPt),pv=pendPts.length?pendPts[pendPts.length-1]:a;t=Object.assign(snapDir(pv,r,opt.ang),{bend:true});}
         for(const q of pendPts)s+=`<rect x="${q.x-4}" y="${q.y-4}" width="8" height="8" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.5"/>`;
         if(t&&t.bend)s+=`<rect x="${t.x-4}" y="${t.y-4}" width="8" height="8" rx="1.5" fill="#fff" fill-opacity=".6" stroke="#1F8FFF" stroke-width="1.5" stroke-dasharray="2.5 2"/>`;}
       if(t)s+=tool==='wire'?`<path d="${wirePath(a,t,t.bend?pendPts:angRoute(a,pendPts,t))}" fill="none" stroke="${opt.wire}" stroke-width="4" stroke-opacity=".6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>`
@@ -1757,7 +1757,7 @@ function place(h,p){if(tool==='move')return;const o=occ();
     addComp({t:'gate',kind:tool.slice(5),pins:g.hs.map(h=>h.id)});sel={type:'comp',id:S.nextId-1};renderInfo();render();if(g.shift)toast('겹치지 않게 가장 가까운 빈자리에 놓았어요');return;}
   if(tool.startsWith('ic:')||tool==='seg7'){const g=ghostAt(p);if(!g)return;if(!g.ok){toast('겹치지 않게 놓을 빈자리가 없어요 · 부품을 정리하거나 브레드보드를 추가해 보세요');return;}
     addComp(tool==='seg7'?{t:'seg7',col:g.col,b:g.b,ca:opt.seg==='ca'}:{t:'ic',chip:tool.slice(3),col:g.col,b:g.b});sel={type:'comp',id:S.nextId-1};renderInfo();render();if(g.shift)toast('겹치지 않게 가장 가까운 빈자리에 놓았어요');return;}
-  if(!h){if(tool==='wire'&&pending&&p){const r={x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};pendPts.push(snapDir(pendPts.length?pendPts[pendPts.length-1]:HOLES.get(pending),r,opt.ang));renderOverlay();}return;}
+  if(!h){if(tool==='wire'&&pending&&p){const r=gapSnap(p);pendPts.push(snapDir(pendPts.length?pendPts[pendPts.length-1]:HOLES.get(pending),r,opt.ang));renderOverlay();}return;}
   if(pending&&h.id===pending){pending=null;renderHint();renderOverlay();return;}
   // 누른 구멍이 차 있으면 같은 줄(전기적으로 같은 곳)의 빈 구멍에 대신 꽂는다
   {const t=landing(h,o,pending);if(!t){toast('구멍 '+holeName(h.id)+'와 이어진 줄에 빈 구멍이 없어요');return;}
@@ -1783,7 +1783,13 @@ function doDrag(p){
   const c=compById(drag.id);if(!c)return;
   if(drag.kind==='inst'){const nx=Math.round((drag.ox+p.x-drag.sx)/5)*5,ny=Math.round((drag.oy+p.y-drag.sy)/5)*5;if(nx===c.x&&ny===c.y)return;
     if(!drag.moved){if(Math.hypot(p.x-drag.sx,p.y-drag.sy)*view.s<4)return;pushHist();drag.moved=true;}c.x=nx;c.y=ny;render();return;}
-  if(drag.kind==='mid'){if(c.t!=='wire'||Math.hypot(p.x-drag.p0.x,p.y-drag.p0.y)*view.s<4)return;pushHist();ownPts(c).splice(drag.k,0,{x:p.x,y:p.y});drag.kind='bend';drag.moved=true;}
+  if(drag.kind==='mid'){if(c.t!=='wire'||Math.hypot(p.x-drag.p0.x,p.y-drag.p0.y)*view.s<4)return;pushHist();
+    // 두 꺾는 점 사이의 가로·세로 구간이면 구간째로 옆으로 옮긴다(구멍 사이 간격으로 한 칸씩). 아니면 그 자리에 꺾는 점을 새로 만든다
+    const L=wirePts(c),u=L[drag.k],v=L[drag.k+1],np=routePts(c).length,hz=Math.abs(u.y-v.y)<1,vt=Math.abs(u.x-v.x)<1;
+    if(opt.ang!=='free'&&drag.k>=1&&drag.k<=np-1&&(hz||vt)){ownPts(c);drag.kind='seg';drag.hz=hz;drag.moved=true;}
+    else{ownPts(c).splice(drag.k,0,{x:p.x,y:p.y});drag.kind='bend';drag.moved=true;}}
+  if(drag.kind==='seg'){const q=gapSnap(p),A=c.pts[drag.k-1],B_=c.pts[drag.k];if(!A||!B_)return;
+    if(drag.hz){if(A.y===q.y)return;A.y=B_.y=q.y;}else{if(A.x===q.x)return;A.x=B_.x=q.x;}render();return;}
   if(drag.kind==='bend'){if(c.t!=='wire')return;const q=bendSnap(c,drag.k,p);const o=routePts(c)[drag.k];if(!o||(o.x===q.x&&o.y===q.y))return;
     if(!drag.moved){pushHist();drag.moved=true;}ownPts(c)[drag.k]=q;render();return;}
   if(drag.kind==='end'){const h=nearHole(p);hover=h;if(!h||c.pins[drag.k]===h.id){renderOverlay();return;}
@@ -1793,8 +1799,9 @@ function doDrag(p){
   if(tryMove(drag.ids,drag.origs,dr,dc,()=>{if(!drag.moved){hist.push(JSON.stringify({comps:S.comps.map(x=>drag.origs.has(x.id)?drag.origs.get(x.id):x),power:S.power,nextId:S.nextId,boards:S.boards}));fut.length=0;syncHist();drag.moved=true;}},mp)){settle();render();}}
 /* 꺾는 점 위치: 5px 격자에 맞추고, 이웃 점과 가로·세로가 거의 같으면 딱 맞춰서 직각으로 꺾기 쉽게 한다 */
 function wirePts(c){return[HOLES.get(c.pins[0]),...routePts(c),HOLES.get(c.pins[1])];}
-function bendSnap(c,k,p){const q={x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5},L=wirePts(c);
-  for(const n of [L[k],L[k+2]]){if(!n)continue;if(Math.abs(p.x-n.x)<6)q.x=n.x;if(Math.abs(p.y-n.y)<6)q.y=n.y;}return q;}
+function bendSnap(c,k,p){const q=gapSnap(p),L=wirePts(c);
+  // 이웃 점(특히 전선 끝 구멍)과 거의 같은 줄이면 그 줄에 맞춰서 곧게 들어가게
+  for(const n of [L[k],L[k+2]]){if(!n)continue;if(Math.abs(p.x-n.x)<7)q.x=n.x;if(Math.abs(p.y-n.y)<7)q.y=n.y;}return q;}
 /* 부품 하나를 (행 dr, 열 dc)만큼 옮긴 결과. 옮길 수 없으면 null */
 function shiftComp(O,dr,dc,mp){const mb=b=>mp&&b===mp.from?mp.to:b;
   if(O.t==='ic'||O.t==='seg7'){const nb=mb(O.b||1),n=pinHoles(O).length/2,col=O.col+dc;if(col<1||col+n-1>BTYPES[boardById(nb).type].cols)return null;return{col,b:nb};}
@@ -1941,7 +1948,74 @@ function elbow(p,b,m){const dx=b.x-p.x,dy=b.y-p.y,ax=Math.abs(dx),ay=Math.abs(dy
   if(m==='180')return ax>=ay?{x:b.x,y:p.y}:{x:p.x,y:b.y};
   if(m==='45'){if(Math.abs(ax-ay)<1)return null;const d=Math.min(ax,ay);return{x:p.x+Math.sign(dx)*d,y:p.y+Math.sign(dy)*d};}
   return null;}
+/* ── 구멍 사이 간격(gap) 격자 ──
+   전선이 꺾이는 점은 구멍 한가운데가 아니라 구멍과 구멍 사이(가로·세로 모두 한 칸 20 간격, 구멍에서 반 칸 비켜난 자리)에 놓인다.
+   보드 밖에서도 같은 간격을 이어 쓴다 */
+function nearBoard(p){let best=null,bd=1e18;for(const B of S.boards){const b=boardBox(B),dx=Math.max(b.x0-p.x,0,p.x-b.x1),dy=Math.max(b.y0-p.y,0,p.y-b.y1),d=dx*dx+dy*dy;if(d<bd){bd=d;best=B;}}return best;}
+function gapYs(B){const t=BTYPES[B.type],b=boardBox(B),rs=ROWS.filter(r=>t.rails||!isRail(r)).map(r=>B.y+ROWY[r]),ys=[];
+  for(let i=0;i<rs.length-1;i++)ys.push((rs[i]+rs[i+1])/2);
+  for(let k=0;k<12;k++){ys.unshift(b.y0-10-k*P);ys.push(b.y1+10+k*P);}return ys;}
+function gapSnap(p){const B=nearBoard(p);if(!B)return{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};
+  const x=B.x+X0+(Math.round((p.x-B.x-X0-P/2)/P)+.5)*P;let y=null,bd=1e9;for(const g of gapYs(B)){const d=Math.abs(g-p.y);if(d<bd){bd=d;y=g;}}
+  if(bd>P)y=Math.round(p.y/10)*10;return{x,y};}
+/* ── 부품 곁에 바로 꽂는 전선: y축으로 보드 바깥까지 뺀 다음 돌아 들어온다 ──
+   전선 끝 구멍과 같은 줄(세로 5칸 묶음)에 IC·저항·LED 같은 부품 다리가 꽂혀 있으면, 그 부품 위를 가로지르지 않게
+   그 끝에서 보드 바깥쪽(위쪽 절반이면 위, 아래쪽 절반이면 아래)으로 곧게 뺀다. 자리는 나중에 가운데 손잡이로 고친다 */
+const onBd=h=>!!(h&&!h.term&&h.b&&boardById(h.b));
+function compAt(h){if(!onBd(h)||isRail(h.r))return false;const k=baseRep[h.i];
+  return S.comps.some(c=>c.t!=='wire'&&!INST.has(c.t)&&pinHoles(c).some(id=>{const q=HOLES.get(id);return q&&q.i<nBoardHoles&&baseRep[q.i]===k;}));}
+const sideOf=h=>{const B=boardById(h.b);return h.y<B.y+MID?-1:1;};
+function outY(h,sd){const b=boardBox(boardById(h.b));return sd<0?b.y0-10:b.y1+10;}
+/* 보드 바깥 길이 이미 다른 전선이 지나는 길과 겹치면 한 칸(20)씩 더 바깥으로 비켜 간다 */
+function wireSegs(){const out=[];for(const c of S.comps){if(c.t!=='wire')continue;const L=wirePts(c);if(L.some(q=>!q))continue;for(let i=0;i<L.length-1;i++)out.push([L[i],L[i+1]]);}return out;}
+function freeLane(v0,dir,lo,hi,horiz,segs){for(let k=0;k<12;k++){const v=v0+dir*k*P;
+    if(!segs.some(([u,w])=>horiz?(Math.abs(u.y-w.y)<1&&Math.abs(u.y-v)<3&&Math.min(u.x,w.x)<hi-2&&Math.max(u.x,w.x)>lo+2)
+      :(Math.abs(u.x-w.x)<1&&Math.abs(u.x-v)<3&&Math.min(u.y,w.y)<hi-2&&Math.max(u.y,w.y)>lo+2)))return v;}
+  return v0;}
+/* 보드 위쪽 절반과 아래쪽 절반을 이을 때: 보드를 빙 돌지 않고, 부품이 없는 구멍 사이 세로 틈(xc)으로 가운데 홈을 건너간다.
+   끝 구멍 → 바로 옆 가로 틈(yu) → 세로 틈 xc → 반대편 가로 틈(yv) → 끝 구멍. 부품 몸통과 겹치지 않는 길 중 가장 짧은 것 */
+/* 가로·세로 구간이 부품 몸통에 걸리거나, 이미 있는 전선과 같은 길 위에서 겹치는가 */
+function legTest(){const R=S.comps.filter(c=>c.t!=='wire'&&!INST.has(c.t)).map(bodyRect).filter(Boolean),SG=wireSegs();
+  return(x1,y1,x2,y2)=>{const xa=Math.min(x1,x2),xb=Math.max(x1,x2),ya=Math.min(y1,y2),yb=Math.max(y1,y2);if(xb-xa<.5&&yb-ya<.5)return false;
+    if(R.some(r=>xa<r.x1-.5&&xb>r.x0+.5&&ya<r.y1-.5&&yb>r.y0+.5))return true;
+    return SG.some(([p,q])=>yb-ya<.5?(Math.abs(p.y-q.y)<1&&Math.abs(p.y-ya)<3&&Math.min(p.x,q.x)<xb-4&&Math.max(p.x,q.x)>xa+4)
+      :xb-xa<.5?(Math.abs(p.x-q.x)<1&&Math.abs(p.x-xa)<3&&Math.min(p.y,q.y)<yb-4&&Math.max(p.y,q.y)>ya+4):false);};}
+function crossRoute(u,v){const B=boardById(u.b),bx=boardBox(B),t=BTYPES[B.type],hit=legTest();
+  const near=h=>gapYs(B).filter(y=>y>bx.y0&&y<bx.y1&&(sideOf(h)<0?y<=B.y+MID:y>=B.y+MID)).sort((p,q)=>Math.abs(p-h.y)-Math.abs(q-h.y)).slice(0,4);
+  const xs=[u.x,v.x];for(let k=-1;k<t.cols;k++)xs.push(B.x+X0+(k+.5)*P);
+  const c=[];for(const yu of near(u))for(const yv of near(v))for(const x of xs)
+    c.push({yu,yv,x,cost:Math.abs(u.y-yu)+Math.abs(u.x-x)+Math.abs(yu-yv)+Math.abs(x-v.x)+Math.abs(yv-v.y)});
+  c.sort((p,q)=>p.cost-q.cost);
+  for(const r of c){if(hit(u.x,u.y,u.x,r.yu)||hit(u.x,r.yu,r.x,r.yu)||hit(r.x,r.yu,r.x,r.yv)||hit(r.x,r.yv,v.x,r.yv)||hit(v.x,r.yv,v.x,v.y))continue;
+    return tidy(u,[{x:u.x,y:r.yu},{x:r.x,y:r.yu},{x:r.x,y:r.yv},{x:v.x,y:r.yv}],v);}
+  return null;}
+/* 겹친 점·일직선 위의 점을 뺀다 */
+function tidy(a,pts,b){const all=[a,...pts,b],out=[];for(let i=1;i<all.length-1;i++){const q=all[i],pv=out.length?out[out.length-1]:a;
+    if(Math.hypot(q.x-pv.x,q.y-pv.y)<1||segDist(q,pv,all[i+1])<1)continue;out.push({x:q.x,y:q.y});}return out;}
+function autoRoute(a,b,m){
+  if(Math.abs(a.x-b.x)<1||Math.abs(a.y-b.y)<1)return[];        // 한 줄 위: 곧게(자동 차선 유지)
+  if(onBd(a)&&a.b===b.b&&sideOf(a)!==sideOf(b)){const r=crossRoute(a,b);if(r)return r;}   // 건너편으로: 보드를 돌지 않고 가로질러
+  const ca=compAt(a),cb=compAt(b);
+  if(ca||cb){const [u,v,swap]=ca?[a,b,false]:[b,a,true],sd=sideOf(u),SG=wireSegs();let pts;
+    const laneY=(y,dir,x1,x2)=>freeLane(y,dir,Math.min(x1,x2),Math.max(x1,x2),true,SG);
+    const onB=onBd(v),vs=onB?sideOf(v):null;
+    const around=tx=>{const bs=[u,v].filter(h=>onBd(h)).map(h=>boardBox(boardById(h.b)));
+      const xl=Math.min(...bs.map(q=>q.x0))-10,xr=Math.max(...bs.map(q=>q.x1))+10,xs=Math.abs(u.x-xl)+Math.abs(tx-xl)<=Math.abs(u.x-xr)+Math.abs(tx-xr)?xl:xr;return xs;};
+    if(onB&&vs===sd){const y=laneY(sd<0?Math.min(outY(u,sd),outY(v,sd)):Math.max(outY(u,sd),outY(v,sd)),sd,u.x,v.x);pts=[{x:u.x,y},{x:v.x,y}];}
+    else if(onB){let xs=around(v.x);const y1=laneY(outY(u,sd),sd,u.x,xs),y2=laneY(outY(v,vs),vs,xs,v.x);
+      xs=freeLane(xs,xs<u.x?-1:1,Math.min(y1,y2),Math.max(y1,y2),false,SG);pts=[{x:u.x,y:y1},{x:xs,y:y1},{x:xs,y:y2},{x:v.x,y:y2}];}
+    else{let y1=outY(u,sd);if(sd<0?v.y<=y1:v.y>=y1){y1=laneY(y1,sd,u.x,v.x);pts=[{x:u.x,y:y1},{x:v.x,y:y1}];}
+      else{let xs=around(v.x);y1=laneY(y1,sd,u.x,xs);xs=freeLane(xs,xs<u.x?-1:1,Math.min(y1,v.y),Math.max(y1,v.y),false,SG);pts=[{x:u.x,y:y1},{x:xs,y:y1},{x:xs,y:v.y}];}}
+    return swap?pts.reverse():pts;}
+  if(m==='180'&&onBd(a)){   // 구멍 사이 가로 틈을 따라: a 바로 옆 틈부터, 부품·다른 전선과 겹치지 않는 틈을 고른다
+    const B=boardById(a.b),bx=boardBox(B),hit=legTest(),dir=Math.sign(b.y-a.y),ys=gapYs(B).filter(y=>y>bx.y0&&y<bx.y1)
+      .sort((p,q)=>(Math.abs(p-a.y)+Math.abs(p-b.y)+(Math.sign(p-a.y)===dir?0:5))-(Math.abs(q-a.y)+Math.abs(q-b.y)+(Math.sign(q-a.y)===dir?0:5)));
+    for(const yc of ys.slice(0,8)){if(hit(a.x,a.y,a.x,yc)||hit(a.x,yc,b.x,yc)||hit(b.x,yc,b.x,b.y))continue;return tidy(a,[{x:a.x,y:yc},{x:b.x,y:yc}],b);}
+    for(const e of [{x:b.x,y:a.y},{x:a.x,y:b.y}])if(!hit(a.x,a.y,e.x,e.y)&&!hit(e.x,e.y,b.x,b.y))return[e];   // 틈 길이 다 막히면 ㄱ자
+    const yc=a.y+dir*P/2;return[{x:a.x,y:yc},{x:b.x,y:yc}];}
+  const e=elbow(a,b,m);return e?[e]:[];}
 function angRoute(a,pts,b,m){m=m||opt.ang;if(m==='free')return pts||[];
+  if(!(pts&&pts.length))return autoRoute(a,b,m);
   const P=[{x:a.x,y:a.y}];for(const q of pts||[])P.push(snapDir(P[P.length-1],q,m));
   const e=elbow(P[P.length-1],b,m);if(e)P.push(e);
   const all=[...P,{x:b.x,y:b.y}],out=[];
@@ -2008,6 +2082,10 @@ function endDrag(){if(!drag)return;
   if(drag.kind==='mid'){drag=null;return;}
   // 꺾는 점을 다시 일직선 위에 놓으면 그 점은 없앤다
   if(c&&drag.kind==='bend'&&drag.moved&&c.pts){const L=wirePts(c),q=L[drag.k+1];if(q&&L[drag.k]&&L[drag.k+2]&&segDist(q,L[drag.k],L[drag.k+2])<3.5){c.pts.splice(drag.k,1);if(!c.pts.length)delete c.pts;}}
+  // 구간을 옮기다 이웃 구간과 일직선이 되거나 겹친 꺾는 점은 정리한다
+  if(c&&drag.kind==='seg'&&c.pts){const pv=[HOLES.get(c.pins[0]),...c.pts,HOLES.get(c.pins[1])],keep=[];
+    for(let i=1;i<pv.length-1;i++){const q=pv[i],a=keep.length?keep[keep.length-1]:pv[0];if(Math.hypot(q.x-a.x,q.y-a.y)<1||segDist(q,a,pv[i+1])<1)continue;keep.push(q);}
+    if(keep.length)c.pts=keep;else delete c.pts;}
   if(c&&drag.kind==='move'){if(c.t==='btn'){rt(c).pressed=false;}
     if(c.t==='sw'&&!drag.moved){c.on=!c.on;}}
   drag=null;commit(true);}
