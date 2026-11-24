@@ -2042,6 +2042,11 @@ function pasteClip(at){if(!clip){toast('먼저 Ctrl+C로 복사하세요');retur
   if(at){const a=HOLES.get(pinHoles(clip[0])[0]),g=gridAt(at);if(!a||a.term){pasteList(clip);return;}pasteList(clip,g.ri-a.ri,g.c-a.c,a.b!==g.b?{from:a.b,to:g.b}:null);}else pasteList(clip);}
 function dupSel(){const list=selComps();if(!list.length){toast('먼저 복제할 부품을 선택하세요');return;}pasteList(JSON.parse(JSON.stringify(list)));}
 function recolorSel(col){const ws=selComps().filter(c=>c.t==='wire');if(!ws.length)return;pushHist();ws.forEach(c=>c.color=col);opt.wire=col;store.set('opt',opt);commit(true);}
+/* 고른 전선의 길을 지금 보드 상태에 맞춰 다시 찾는다(자기 자신은 장애물에서 빼고) */
+function rerouteSel(){const ws=selComps().filter(c=>c.t==='wire');if(!ws.length)return;pushHist();let n=0;
+  for(const c of ws){const i=S.comps.indexOf(c);S.comps.splice(i,1);buildRoutes();const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);
+    const r=a&&b?angRoute(a,[],b):[];S.comps.splice(i,0,c);if(r.length)c.pts=r;else delete c.pts;n++;}
+  commit(true);toast(n>1?`전선 ${n}개의 길을 다시 찾았어요`:'전선 길을 다시 찾았어요 · 실행 취소로 되돌릴 수 있어요');}
 function straightenSel(){const ws=selComps().filter(c=>c.t==='wire'&&c.pts);if(!ws.length)return;pushHist();ws.forEach(c=>delete c.pts);commit(true);}
 /* 선택 막대 (선택한 부품 위에 뜸) */
 const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>';
@@ -2058,10 +2063,11 @@ function renderFbar(){const fb=$('fbar');
   if(key!==fbKey){fbKey=key;
     fb.innerHTML=`<b>${list.length>1?list.length+'개 선택':esc(LBL.get(list[0].id)+' '+compName(list[0]))}</b><button class="del" data-a="del" title="삭제 (Delete)">${TRASH}삭제</button><button data-a="dup" title="복제 (Ctrl+D)">복제</button><button data-a="props" title="속성 창 열기 (부품을 두 번 눌러도 돼요)">속성</button>`
       +(wires?`<span class="sep"></span>${WIRE_COLORS.map(col=>`<button class="swc" data-col="${col}" style="background:${col}" aria-pressed="${list.every(c=>c.color===col)}" aria-label="전선 색"></button>`).join('')}`:'')
+      +(wires&&opt.ang!=='free'?`<span class="sep"></span><button data-a="reroute" title="지금 보드 상태에 맞춰 짧은 길로 다시 놓아요 (구멍 사이 틈, 다른 전선 옆 차선)">길 다시 찾기</button>`:'')
       +(bent?`<span class="sep"></span><button data-a="straight" title="손으로 꺾은 점을 모두 지우고 자동 경로로 되돌려요">꺾은 점 지우기</button>`:'')
       +(wires&&list.length===1&&!bent?`<small>가운데 동그라미를 끌면 꺾여요</small>`:'');
     fb.querySelectorAll('button').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const a=b.dataset.a;
-      if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='props')openDock('info');else if(a==='straight')straightenSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
+      if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='props')openDock('info');else if(a==='straight')straightenSel();else if(a==='reroute')rerouteSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
   fb.hidden=false;}
 /* 마우스를 올린 핀 이름표 */
 function updTip(e){const tp=$('tip');if(!hover||e.pointerType==='touch'){tp.hidden=true;return;}
@@ -2147,8 +2153,8 @@ function legTest(){const R=S.comps.filter(c=>c.t!=='wire'&&!INST.has(c.t)).map(b
     return SG.some(([p,q])=>yb-ya<.5?(Math.abs(p.y-q.y)<1&&Math.abs(p.y-ya)<3&&Math.min(p.x,q.x)<xb-4&&Math.max(p.x,q.x)>xa+4)
       :xb-xa<.5?(Math.abs(p.x-q.x)<1&&Math.abs(p.x-xa)<3&&Math.min(p.y,q.y)<yb-4&&Math.max(p.y,q.y)>ya+4):false);};}
 function crossRoute(u,v){const B=boardById(u.b),bx=boardBox(B),t=BTYPES[B.type],hit=legTest();
-  const near=h=>gapYs(B).filter(y=>y>bx.y0&&y<bx.y1&&(sideOf(h)<0?y<=B.y+MID:y>=B.y+MID)).sort((p,q)=>Math.abs(p-h.y)-Math.abs(q-h.y)).slice(0,4);
-  const xs=[u.x,v.x];for(let k=-1;k<t.cols;k++)xs.push(B.x+X0+(k+.5)*P);
+  const near=h=>gapYs(B).filter(y=>y>bx.y0&&y<bx.y1&&(sideOf(h)<0?y<=B.y+MID:y>=B.y+MID)).sort((p,q)=>Math.abs(p-h.y)-Math.abs(q-h.y)).slice(0,4).flatMap(y=>[y,y-5,y+5]);
+  const xs=[u.x,v.x];for(let k=-1;k<t.cols;k++){const x=B.x+X0+(k+.5)*P;xs.push(x,x-5,x+5);}
   const c=[];for(const yu of near(u))for(const yv of near(v))for(const x of xs)
     c.push({yu,yv,x,cost:Math.abs(u.y-yu)+Math.abs(u.x-x)+Math.abs(yu-yv)+Math.abs(x-v.x)+Math.abs(yv-v.y)});
   c.sort((p,q)=>p.cost-q.cost);
@@ -2176,7 +2182,8 @@ function autoRoute(a,b,m){
   if(m==='180'&&onBd(a)){   // 구멍 사이 가로 틈을 따라: a 바로 옆 틈부터, 부품·다른 전선과 겹치지 않는 틈을 고른다
     const B=boardById(a.b),bx=boardBox(B),hit=legTest(),dir=Math.sign(b.y-a.y),ys=gapYs(B).filter(y=>y>bx.y0&&y<bx.y1)
       .sort((p,q)=>(Math.abs(p-a.y)+Math.abs(p-b.y)+(Math.sign(p-a.y)===dir?0:5))-(Math.abs(q-a.y)+Math.abs(q-b.y)+(Math.sign(q-a.y)===dir?0:5)));
-    for(const yc of ys.slice(0,8)){if(hit(a.x,a.y,a.x,yc)||hit(a.x,yc,b.x,yc)||hit(b.x,yc,b.x,b.y))continue;return tidy(a,[{x:a.x,y:yc},{x:b.x,y:yc}],b);}
+    // 한 틈(20) 안에 차선 셋: 가운데, 가운데±5. 이미 전선이 지나는 틈이면 옆 차선으로 나란히 간다(먼 틈으로 돌아가지 않게)
+    for(const g of ys.slice(0,8))for(const yc of [g,g-dir*5,g+dir*5]){if(hit(a.x,a.y,a.x,yc)||hit(a.x,yc,b.x,yc)||hit(b.x,yc,b.x,b.y))continue;return tidy(a,[{x:a.x,y:yc},{x:b.x,y:yc}],b);}
     for(const e of [{x:b.x,y:a.y},{x:a.x,y:b.y}])if(!hit(a.x,a.y,e.x,e.y)&&!hit(e.x,e.y,b.x,b.y))return[e];   // 틈 길이 다 막히면 ㄱ자
     const yc=a.y+dir*P/2;return[{x:a.x,y:yc},{x:b.x,y:yc}];}
   const e=elbow(a,b,m);return e?[e]:[];}
