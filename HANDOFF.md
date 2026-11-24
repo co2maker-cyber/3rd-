@@ -14,6 +14,7 @@
 ✓ PSU·건전지 있으면 레일 자동 5V 꺼짐(`resolve`의 `srcV`). + 레일에 클럭/FG 물리면 그 레일 자동 5V 해제(`clkNets`), 점검에 `info` 항목
 ✓ 일시 정지 `simNow()`/`setPaused`(버튼 `#pause`, P)
 ✓ 화면: 페이지 스크롤 없음(100dvh), 리본 숨김(`.ribbon{display:none!important}` — DOM·`renderRibbon` 잔존), 부품은 `#partOpen`→`#partDlg`(`PCATS`,`renderParts`)만, 속성·점검·객체는 `#dock` 팝업(`openDock`/`closeDock`, 도구 막대 `[data-dock]`), 도구 옵션 `#optCard.optbar`
+✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작) 추가
 ✓ 저장·불러오기 `#saveDlg`(`savedList`,`saveLocal`,`saveToFile`; localStorage 키 `bblab.v1.saves`), Ctrl+S
 ✓ 7세그먼트 새 모양(기운 획·핀 번호·이름), 터치 핀치 `tpinch`(touch 이벤트 직접 처리), 좁은 화면 도구 막대 한 줄
 ✓ IC 검증 `breadboard/tests/verify74.js` 47/47 통과. 수정: RBO(`ls47`·74LS48), `UP192`/`DN192`, 프리셋·클리어 X 처리, 칩별 전원 범위 경고, NE555 문턱 VCC 추종
@@ -50,6 +51,6 @@
 ## 참조
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `/home/user/3rd-/breadboard/README.md` 설명서 / `/home/user/3rd-/breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` 작업 규칙
 - 시험: `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` — t(예제) t5(74LS) t6(555) t7(sync10) t8(편집) t11(보드 여러 장) t13(파일 배치) t14(보드 이동·꺾기) t15(자동 배치) t16(전선 차선) t18(scope 예제) t19(일시 정지) t20(100V) t21(터치·계측기·길 따라 전선) t22(7세그·부품 창) t23(속성) t24(배치·클럭 레일) t25(저장)
-- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25; do node $t.js | tail -1; done`
+- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26; do node $t.js | tail -1; done`
 - 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제 바로 열기: 끝에 `#scope`, `#sync10` 등)
 - 브랜치: `ccr-957126bc-kqjtgb` (= main `76135b3`), 저장소 `co2maker-cyber/3rd-`
