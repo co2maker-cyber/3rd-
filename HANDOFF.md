@@ -17,9 +17,11 @@
 ✓ 일시 정지 `simNow()`/`setPaused`(버튼 `#pause`, P)
 ✓ 슬로우 모드 `SLOW{on,rate,ms,last}`/`setSlow`/`toggleSlow`(버튼 `#slow`, O, 배지 `#sbadge` ½·¼·⅒): `simNow`=simBase+경과×rate(`rebaseTime`). `settle`이 `SLOW.ms`마다 칩 계산 1회만(그 외 0회)→`SIM.pending`, 타이머가 계속 한 단계씩. 단계 간격=min(140ms/rate, 최고 클럭 실시간 반주기/3). `findFlows`가 전선별 레벨 `WLV` 비교→바뀐 줄을 구동점(칩 출력·레일·계측기·클럭, 없으면 저항)에서 BFS→`FLOWQ`, `render`가 `launchFlows`로 `#gF` 층에 흐르는 빛+출력 바뀐 칩 주황 테두리(`tickFlows` rAF)
 ✓ 화면: 페이지 스크롤 없음(100dvh), 리본 숨김(`.ribbon{display:none!important}` — DOM·`renderRibbon` 잔존), 부품은 `#partOpen`→`#partDlg`(`PCATS`,`renderParts`)만, 속성·점검·객체는 `#dock` 팝업(`openDock`/`closeDock`, 도구 막대 `[data-dock]`), 도구 옵션 `#optCard.optbar`
-✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작)·t27(슬로우)·t28(전선 각도)·t29(전선 길)·t30(부품 고르기)·t31(구멍 톡 전선)·t32(틈 안 차선)·t33(전선 밑 구멍)·t34~t37(회로도)·t38(손잡이 크기)·t39(튜토리얼) 추가
+✓ 시작 화면 = 빈 표준 보드 1장(칩·전선 없음). 직전 자동 저장 `circuit`은 시작 시 `last` 키로 옮겨 저장 창 맨 위 '지난번 하던 회로'로 제공, 시작 시 `curName` 비움. `#예제` 링크는 그대로 동작. t.js는 `#nand`로 열도록 수정, t26(빈 시작)·t27(슬로우)·t28(전선 각도)·t29(전선 길)·t30(부품 고르기)·t31(구멍 톡 전선)·t32(틈 안 차선)·t33(전선 밑 구멍)·t34~t37(회로도)·t38(손잡이 크기)·t39(튜토리얼)·t40(예제 90°)·t41(따라 그리기) 추가
 ✓ 저장·불러오기 `#saveDlg`(`savedList`,`saveLocal`,`saveToFile`; localStorage 키 `bblab.v1.saves`), Ctrl+S
 ✓ 7세그먼트 새 모양(기운 획·핀 번호·이름), 터치 핀치 `tpinch`(touch 이벤트 직접 처리), 좁은 화면 도구 막대 한 줄
+✓ 브레드보드→회로도 자동 따라 그리기: `SCH.link`/`SCH.sig`(=`boardSig()`), `setVM('sch')`에서 `schAutoSync`(link거나 빈 회로도이고 sig 다르면 `boardToSch(true)`). 기호에 `bid`(브레드보드 부품 id) — 같은 bid·종류면 자리·회전 유지. 회로도에서 추가·삭제·선·값 변경 시 `schUnlink`. [보드로 보내기]는 `autoLayout`의 `byRef`로 bid 연결 + link 유지
+✓ 예제·보드로 보내기 전선 90°: `orthoWires()`(꺾는 점 없는 전선 → `autoRoute(...,'180')`, 겹쳐서 자동 차선(ROUTES)이던 일직선 전선은 틈으로 비켜 감). `allBox`에 전선 꺾는 점 포함(맞춤 시 보드 밖 전선도 보임)
 ✓ 튜토리얼 `TUT`(9단계, `startTut`/`endTut`, `#tut` 겉막+`#tutSpot` 강조+`#tutCard`), 처음 접속(store 'tut' 없음) 시 자동 — 단 `navigator.webdriver`면 안 띄움(자동 시험 보호). 제목 줄 `#tutBtn`(?)로 다시 보기. 없는 요소 단계는 건너뜀
 ✓ 전선 손잡이 크기 `hScale()`=clamp(1.4/view.s,.3,1) 연속값, `applyView`에서 선택 중이면 값 바뀔 때 다시 그림. 꺾는 점 네모는 `cornerOnWire`(둥근 모서리 중간점)에 표시
 ✓ 회로도 화면(별도 `<script>` 블록, 시작 스크립트 바로 앞): 제목 줄 `.vmode`(`setVM('bb'|'sch')`, `.app.sch`로 `#schbar`·`#sw` 보임). 데이터 `SCH{parts,wires,nextId,power}` — 선은 핀↔핀 `{a:{p,k},b:{p,k},off}`, 모양은 매번 `wireRoute`(핀 바깥 10 → 가로·세로, 반대쪽 보면 위/아래로 돌아감). 기호 `symOf`(핀 k=원래 핀 번호, IC VCC/GND·NC 감춤, seg7 COM 7번 숨김·2번과 묶음). 계산 `schSettle`(`schNets` 유니온파인드, 저항 약한 전파, CHIPS/GATES eval 재사용, 555·커패시터 아날로그 없음). 편집 `schDown/Move/Up`(핀 근처 누르면 핀, 손가락 22px), 실행 취소 `shist`(브레드보드와 따로), 키는 capture 리스너. 보드로 보내기 `schToSpec`→`autoLayout`, 보드에서 가져오기 `boardToSch`(배선만으로 net, 스위치 무시). 저장: `circuitData().sch`, 저장 기록·지난번 하던 회로에 `sch`, `store 'sch'` 자동 저장, 시작은 빈 회로도. 부품 창은 `curTree()`(회로도면 `SCHTREE`: 계측기 대신 전원 기호)
@@ -63,6 +65,6 @@
 ## 참조
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `/home/user/3rd-/breadboard/README.md` 설명서 / `/home/user/3rd-/breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` 작업 규칙
 - 시험: `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` — t(예제) t5(74LS) t6(555) t7(sync10) t8(편집) t11(보드 여러 장) t13(파일 배치) t14(보드 이동·꺾기) t15(자동 배치) t16(전선 차선) t18(scope 예제) t19(일시 정지) t20(100V) t21(터치·계측기·길 따라 전선) t22(7세그·부품 창) t23(속성) t24(배치·클럭 레일) t25(저장)
-- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31 t32 t33 t34 t35 t36 t37 t38 t39; do node $t.js | tail -1; done`
+- 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31 t32 t33 t34 t35 t36 t37 t38 t39 t40 t41; do node $t.js | tail -1; done`
 - 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제 바로 열기: 끝에 `#scope`, `#sync10` 등)
 - 브랜치: `ccr-957126bc-kqjtgb` (= main `76135b3`), 저장소 `co2maker-cyber/3rd-`
