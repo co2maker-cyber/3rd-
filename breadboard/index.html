@@ -1308,8 +1308,15 @@ const EXAMPLES={
 'use strict';
 /* ───────── 시작 ───────── */
 (function start(){
+  // 링크 끝에 #예제이름 이 붙어 있으면 그 예제를 바로 연다 (예: …#sync10)
+  const hashEx=()=>{const k=(location.hash||'').slice(1);return Object.prototype.hasOwnProperty.call(EXAMPLES,k)?k:null;};
+  const openHash=(first)=>{const k=hashEx();if(!k)return false;S.power=true;loadComps(EXAMPLES[k](),first);
+    const o=[...$('ex').options].find(o=>o.value===k);toast((o?o.textContent:'예제')+' 회로를 열었어요');
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}return true;};
+  window.addEventListener('hashchange',()=>{if(openHash(false)){fitView();}});
   const saved=store.get('circuit',null);
-  if(saved&&Array.isArray(saved.comps)){S.power=saved.power!==false;loadComps(saved.comps,true);}
+  if(openHash(true)){}
+  else if(saved&&Array.isArray(saved.comps)){S.power=saved.power!==false;loadComps(saved.comps,true);}
   else loadComps(EXAMPLES.nand(),true);
   hist.length=0;fut.length=0;syncHist();
   fitView();requestAnimationFrame(fitView);setTool('select');syncPower();renderInfo();
