@@ -55,6 +55,15 @@ rect.ssel{stroke-width:2;stroke-opacity:.8;stroke-dasharray:5 3;fill:#1F8FFF;fil
 .sgd{fill:var(--grid2)}
 .sempty{fill:var(--muted);font-size:14px;text-anchor:middle}
 @media (max-width:560px){.titlebar h1{display:none}}
+/* 튜토리얼 */
+#tutBtn{font-weight:700;min-width:30px}
+.titlebar .btn,.titlebar a{white-space:nowrap;flex:none}@media (max-width:420px){.titlebar{gap:6px}.titlebar .btn{padding-left:7px;padding-right:7px}.vmode button{padding:4px 8px}}
+.tut{position:fixed;inset:0;z-index:60}
+.tutspot{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.6),0 0 0 3px #1F8FFF;transition:all .25s ease;pointer-events:none}
+.tutcard{position:fixed;width:min(340px,calc(100vw - 24px));background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:14px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:top .25s ease,left .25s ease}
+.tutcard b{display:block;font-size:15px;margin:2px 0 6px}.tutcard p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--fg)}
+.tutstep{font:600 11px var(--mono);color:var(--accent)}
+.tutbtns{display:flex;gap:6px;align-items:center}.tutbtns .sp{flex:1}
 #sfbar select{font-size:12px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--fg)}
 [hidden]{display:none!important}
 html,body{margin:0;height:100%}
@@ -358,6 +367,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     <div class="vmode" role="tablist" aria-label="화면 고르기"><button role="tab" data-vm="bb" aria-selected="true" title="브레드보드에 꽂아 시험해요">브레드보드</button><button role="tab" data-vm="sch" aria-selected="false" title="기호로 회로를 설계해요">회로도</button></div>
     <span class="doc" id="docName">— 회로 편집기 · 디지털 논리 시뮬레이션</span>
     <span class="sp"></span>
+    <button class="btn" id="tutBtn" title="사용법 둘러보기 (튜토리얼)" aria-label="튜토리얼">?</button>
     <button class="btn" id="theme" title="밝은 화면 / 어두운 화면">테마</button>
     <a href="../">처음 화면</a>
   </header>
@@ -495,6 +505,9 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   </footer>
 </div>
 <div class="toast" id="toast"></div>
+<div class="tut" id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tutT"><div class="tutspot" id="tutSpot"></div>
+  <div class="tutcard" id="tutCard"><div class="tutstep" id="tutN"></div><b id="tutT"></b><p id="tutD"></p>
+    <div class="tutbtns"><button class="btn" id="tutSkip">건너뛰기</button><span class="sp"></span><button class="btn" id="tutPrev">이전</button><button class="btn pri" id="tutNext">다음</button></div></div></div>
 <div class="cmenu" id="cmenu" role="menu" hidden></div>
 <div class="modal" id="saveDlg" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
   <div class="mbox" style="width:min(640px,100%)">
@@ -1375,18 +1388,19 @@ function compSVG(c,now){
   if(c.t==='wire'){const [a,b]=ph;let col=c.color;
     if(sigMode){const lv=levelOfHole(a.id).v;if(lv!==Z)col=LVCOL[lv];}   // 신호 보기: HIGH 빨강·LOW 파랑, 아직 아무것도 안 이어진 전선은 고른 색 그대로
     const R=routePts(c),d=wirePath(a,b,R);
-    if(isSel)s+=`<path d="${d}" fill="none" stroke="#1F8FFF" stroke-opacity=".45" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`;
+    const hk=hScale();
+    if(isSel)s+=`<path d="${d}" fill="none" stroke="#1F8FFF" stroke-opacity=".45" stroke-width="${4.5+6.5*hk}" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`;
     s+=`<g class="c" data-id="${id}"><path d="${d}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"${sigMode&&levelOfHole(a.id).v===SH?' class="blink"':''}/>
       <path d="${d}" fill="none" stroke="transparent" stroke-width="12"/>
       <circle cx="${a.x}" cy="${a.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/><circle cx="${b.x}" cy="${b.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/></g>`;
     if(one){const L=[a,...R,b];for(let k=0;k<L.length-1;k++){const u=L[k],v=L[k+1];if(Math.hypot(v.x-u.x,v.y-u.y)<30)continue;
-        s+=`<circle class="end" data-mid="${id}:${k}" cx="${(u.x+v.x)/2}" cy="${(u.y+v.y)/2}" r="4.6" fill="#fff" stroke="#1F8FFF" stroke-width="1.5" stroke-dasharray="2.6 2" style="cursor:crosshair"><title>끌면 여기서 전선이 꺾여요</title></circle>`;}
-      s+=endHandles(c,ph);R.forEach((q,k)=>s+=`<rect class="end" data-bend="${id}:${k}" x="${q.x-4.5}" y="${q.y-4.5}" width="9" height="9" rx="1.5" fill="#fff" stroke="#1F8FFF" stroke-width="1.6" style="cursor:move"><title>끌어서 옮기기 · 더블클릭하면 지워져요</title></rect>`);}
+        s+=`<circle class="end" data-mid="${id}:${k}" cx="${(u.x+v.x)/2}" cy="${(u.y+v.y)/2}" r="${4.6*hk}" fill="#fff" stroke="#1F8FFF" stroke-width="${1.5*hk}" stroke-dasharray="${2.6*hk} ${2*hk}" style="cursor:crosshair"><title>끌면 여기서 전선이 꺾여요</title></circle>`;}
+      s+=endHandles(c,ph);R.forEach((q0,k)=>{const q=cornerOnWire(L,k+1);s+=`<rect class="end" data-bend="${id}:${k}" x="${q.x-4.5*hk}" y="${q.y-4.5*hk}" width="${9*hk}" height="${9*hk}" rx="${1.5*hk}" fill="#fff" stroke="#1F8FFF" stroke-width="${1.6*hk}" style="cursor:move"><title>끌어서 옮기기 · 더블클릭하면 지워져요</title></rect>`;});}
     return s;}
   if(INST.has(c.t))return instSVG(c,ph,isSel,one);
   if(TWO.has(c.t)){const [a,b]=ph,{mx,my,len,ang}=twoTerm(a,b);
-    if(isSel)s+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1F8FFF" stroke-opacity=".35" stroke-width="20" stroke-linecap="round" pointer-events="none"/>`;
+    if(isSel)s+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1F8FFF" stroke-opacity=".35" stroke-width="${6+14*hScale()}" stroke-linecap="round" pointer-events="none"/>`;
     s+=`<g class="c${ia}" data-id="${id}"><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#9EA4AB" stroke-width="2"/>
       <circle cx="${a.x}" cy="${a.y}" r="2.6" fill="#B9BEC4"/><circle cx="${b.x}" cy="${b.y}" r="2.6" fill="#B9BEC4"/>
       <g transform="translate(${mx} ${my}) rotate(${ang})">`;
@@ -1467,7 +1481,12 @@ function gateSVG(kind,ph,id,out,ghost){
   if(bub)s+=`<circle cx="${xe+3}" cy="${cy}" r="3" fill="#fff" stroke="${st}" stroke-width="1.4"/>`;
   s+=`<text x="${a.x-3}" y="${cy-8}" font-size="7.5" font-weight="700" fill="#6B6455" font-family="var(--mono)">${kind}</text></g>`;
   return s;}
-function endHandles(c,ph){return ph.map((p,k)=>`<circle class="end" data-end="${c.id}:${k}" cx="${p.x}" cy="${p.y}" r="6" fill="#1F8FFF" fill-opacity=".25" stroke="#1F8FFF" stroke-width="1.5" style="cursor:move"/>`).join('');}
+/* 손잡이 크기: 많이 확대해도 화면에서 커지지 않게, 확대할수록 보드 단위로는 작게 그린다 */
+const hScale=()=>Math.max(.3,Math.min(1,1.4/view.s));let lastHK=0;   // 확대·축소에 따라 끊김 없이(그라데이션처럼) 바뀐다
+/* 둥글게 꺾인 모서리에서 전선이 실제로 지나가는 점(꺾는 점 손잡이를 전선 한가운데에 놓기 위해). wirePath와 같은 반지름 */
+function cornerOnWire(P,i){const p=P[i],q=P[i-1],n=P[i+1],l1=Math.hypot(p.x-q.x,p.y-q.y),l2=Math.hypot(n.x-p.x,n.y-p.y),r=Math.min(9,l1/2,l2/2);if(!l1||!l2)return p;
+  const s={x:p.x-(p.x-q.x)/l1*r,y:p.y-(p.y-q.y)/l1*r},e={x:p.x+(n.x-p.x)/l2*r,y:p.y+(n.y-p.y)/l2*r};return{x:.25*s.x+.5*p.x+.25*e.x,y:.25*s.y+.5*p.y+.25*e.y};}
+function endHandles(c,ph){const k_=hScale();return ph.map((p,k)=>`<circle class="end" data-end="${c.id}:${k}" cx="${p.x}" cy="${p.y}" r="${6*k_}" fill="#1F8FFF" fill-opacity=".25" stroke="#1F8FFF" stroke-width="${1.5*k_}" style="cursor:move"/>`).join('');}
 function syncSel(){
   if(sel&&sel.type==='comp'){if(!compById(sel.id)){sel=null;SEL.clear();}else{SEL.clear();SEL.add(sel.id);}}
   else if(sel&&sel.type==='multi'){for(const id of [...SEL])if(!compById(id))SEL.delete(id);if(SEL.size===1)sel={type:'comp',id:[...SEL][0]};else if(!SEL.size)sel=null;}
@@ -1852,6 +1871,7 @@ let toastT;function toast(t){const e=$('toast');e.textContent=t;e.classList.add(
 const view={x:0,y:0,s:1};let panState=null;const ptrs=new Map();
 const cw=()=>$('bw').clientWidth,ch=()=>$('bw').clientHeight;
 function applyView(){const w=Math.max(1,cw()),h=Math.max(1,ch());svg.setAttribute('viewBox',`${view.x} ${view.y} ${w/view.s} ${h/view.s}`);
+  if(SEL.size&&typeof render==='function'){const k=hScale();if(Math.abs(k-lastHK)>.004){lastHK=k;render();}}
   const z=Math.round(view.s*100)+'%';$('zv').textContent=z;$('sZoom').textContent=z;if(typeof renderFbar==='function'&&SEL.size)renderFbar();}
 function boardsBox(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const B of S.boards){const b=boardBox(B);x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0-30);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}return{x0,y0,x1,y1};}
 function fitView(){const w=cw(),h=ch();if(!w||!h)return;const b=allBox(),bw_=b.x1-b.x0+40,bh_=b.y1-b.y0+40;view.s=Math.max(.15,Math.min(3,Math.min(w/bw_,h/bh_)));
@@ -3098,6 +3118,41 @@ function boardToSch(){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(c.t)
 </script>
 <script>
 'use strict';
+/* ═════════ 튜토리얼: 처음 들어오면 화면 곳곳을 차례로 짚어 준다. [건너뛰기]로 끝, 제목 줄 [?]로 다시 보기 ═════════ */
+const TUT=[
+  {t:'브레드보드 CAD에 오신 걸 환영해요',d:'브레드보드에 IC·저항·LED·스위치를 꽂고 전선으로 이어서, 회로가 실제로 어떻게 움직이는지 바로 볼 수 있어요. 처음 쓰는 법을 1분 안에 짚어 드릴게요.'},
+  {el:'#partOpen',t:'1. 부품 고르기',d:'여기를 누르면 부품 창이 떠요. 기본 부품 → IC → IC 종류 → 칩 순서로 들어가서 고르고, 보드에서 놓을 자리를 누르면 꽂혀요.'},
+  {el:'#bw',t:'2. 구멍을 눌러 전선 잇기',d:'보드의 구멍을 한 번 누르면 전선이 시작되고, 이을 구멍을 누르면 전선이 놓여요. 세로 5칸 묶음과 위·아래 레일(+ −)은 안에서 이미 이어져 있어요.',pad:-40},
+  {el:'#pwr',t:'3. 전원',d:'전원을 켜면 레일에 5V와 GND가 들어가고 회로가 움직이기 시작해요. LED가 켜지는지 바로 확인해 보세요.'},
+  {el:'#ex',t:'4. 예제로 시작하기',d:'처음이라면 예제 회로를 불러와 보세요. NAND 게이트, 가산기, 카운터처럼 완성된 회로가 보드에 꽂혀요.'},
+  {el:'[data-dock="warn"]',t:'5. 점검',d:'전원이 안 들어간 IC, 저항 없이 꽂은 LED, 단락 같은 문제를 찾아 쉬운 말로 알려 줘요. 숫자가 뜨면 눌러 보세요.'},
+  {el:'.vmode',t:'6. 회로도',d:'회로도로 바꾸면 기호를 놓고 선으로 이어 회로를 설계할 수 있어요. [보드로 보내기]를 누르면 브레드보드에 자동으로 꽂혀요.'},
+  {el:'#exp',t:'7. 저장',d:'만든 회로는 이 기기에 이름을 붙여 저장하거나 파일로 내려받을 수 있어요. 다음에 [열기]로 이어서 하세요.'},
+  {el:'#tutBtn',t:'다 됐어요!',d:'이 사용법은 언제든 제목 줄의 [?] 버튼으로 다시 볼 수 있어요. 즐겁게 실험해 보세요.'}];
+let tutI=0;
+function tutShow(){const st=TUT[tutI];if(!st){endTut();return;}
+  let el=st.el?document.querySelector(st.el):null;if(el&&(!el.offsetParent&&getComputedStyle(el).position!=='fixed'))el=null;
+  if(st.el&&!el){tutI++;tutShow();return;}                      // 지금 화면에 없는 곳은 건너뛴다
+  if(el&&el.scrollIntoView)try{el.scrollIntoView({block:'nearest',inline:'center'});}catch(_){}
+  $('tutN').textContent=`${tutI+1} / ${TUT.length}`;$('tutT').textContent=st.t;$('tutD').textContent=st.d;
+  $('tutPrev').hidden=tutI===0;$('tutNext').textContent=tutI===TUT.length-1?'시작하기':'다음';
+  const sp=$('tutSpot'),cd=$('tutCard'),W=innerWidth,H=innerHeight;
+  requestAnimationFrame(()=>{const ch=cd.offsetHeight,cw=cd.offsetWidth;
+    if(!el){sp.style.cssText=`left:${W/2}px;top:${H/2}px;width:0;height:0`;cd.style.left=(W-cw)/2+'px';cd.style.top=Math.max(12,(H-ch)/2)+'px';return;}
+    const r=el.getBoundingClientRect(),pd=st.pad||4,x=Math.max(4,r.left-pd),y=Math.max(4,r.top-pd),w=Math.min(W-8,r.width+2*pd),h=Math.min(H-8,r.height+2*pd);
+    sp.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+    let top=y+h+10;if(top+ch>H-8)top=y-ch-10;if(top<8)top=Math.max(8,(H-ch)/2);
+    cd.style.left=Math.max(12,Math.min(W-cw-12,x+w/2-cw/2))+'px';cd.style.top=top+'px';});}
+function startTut(){if(typeof setVM==='function'&&VM!=='bb')setVM('bb');tutI=0;$('tut').hidden=false;tutShow();}
+function endTut(skipped){$('tut').hidden=true;store.set('tut',true);if(skipped)toast('튜토리얼을 건너뛰었어요 · 제목 줄의 [?]로 언제든 다시 볼 수 있어요');}
+$('tutNext').onclick=()=>{tutI++;if(tutI>=TUT.length){endTut();return;}tutShow();};
+$('tutPrev').onclick=()=>{let i=tutI-1;while(i>0&&TUT[i].el&&!document.querySelector(TUT[i].el)?.offsetParent)i--;tutI=Math.max(0,i);tutShow();};
+$('tutSkip').onclick=()=>endTut(true);$('tutBtn').onclick=startTut;
+document.addEventListener('keydown',e=>{if($('tut').hidden)return;e.stopImmediatePropagation();if(e.key==='Escape')endTut(true);else if(e.key==='ArrowRight'||e.key==='Enter')$('tutNext').click();else if(e.key==='ArrowLeft')$('tutPrev').click();},true);
+window.addEventListener('resize',()=>{if(!$('tut').hidden)tutShow();});
+</script>
+<script>
+'use strict';
 /* ───────── 시작 ───────── */
 (function start(){
   // 링크 끝에 #예제이름 이 붙어 있으면 그 예제를 바로 연다 (예: …#sync10)
@@ -3115,6 +3170,7 @@ function boardToSch(){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(c.t)
   if(openHash(true)){}
   else loadComps([],true);
   hist.length=0;fut.length=0;syncHist();
+  if(!store.get('tut',false)&&!navigator.webdriver)setTimeout(startTut,400);
   renderRibbon();fitView();requestAnimationFrame(fitView);setTool('select');syncPower();renderInfo();
   let lastSig='';
   setInterval(()=>{if(!S.power||drag||paused)return;const now=simNow();
