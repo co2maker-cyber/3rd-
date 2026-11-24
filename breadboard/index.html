@@ -190,6 +190,7 @@ html,body{touch-action:manipulation;overscroll-behavior:none}
 .navhud button{width:30px;height:30px;border-radius:5px;border:1px solid var(--line);background:var(--panel);font-size:15px;line-height:1;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .navhud button:hover{border-color:var(--accent)}
 .pbadge{position:absolute;right:12px;top:10px;z-index:4;font-size:12px;font-weight:700;color:#fff;background:#C2410C;border-radius:6px;padding:4px 10px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.numin{display:inline-flex;align-items:center;gap:5px;margin:0 8px 6px 0}.numin input{width:86px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--fg);font:600 13px var(--mono)}
 .legal{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line2);margin-top:12px;padding-top:10px;line-height:1.55}
 .vlabel{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none;background:color-mix(in srgb,var(--bg) 70%,transparent);padding:1px 6px;border-radius:3px}
 /* 오른쪽 탭 */
@@ -753,16 +754,18 @@ const INST=new Set(['psu','bat','fg','osc']);
 const ISZ={psu:[170,92],bat:[130,74],fg:[180,92],osc:[250,200]};
 const IJACK={psu:[[20,16,'#E5484D','+'],[150,16,'#59606B','−',1]],bat:[[18,16,'#E5484D','+'],[112,16,'#59606B','−',1]],fg:[[20,16,'#F08C00','OUT'],[160,16,'#59606B','GND',1]],osc:[[28,16,'#F2C230','CH1'],[78,16,'#35B6E8','CH2']]};
 const JWIRE={psu:['#D93A3A','#24282D'],bat:['#D93A3A','#24282D'],fg:['#E57A1F','#24282D'],osc:['#E8B820','#2F6FDB']}; // 단자에서 뽑는 전선의 기본 색
-const IDEF={psu:()=>({v:5,on:true}),bat:()=>({v:9}),fg:()=>({wave:'sq',hz:1,vpp:5}),osc:()=>({tdiv:.5,vdiv:2,run:true})};
+const IDEF={psu:()=>({v:5,on:true}),bat:()=>({v:9}),fg:()=>({wave:'sq',hz:1,vpp:5,off:0,duty:50}),osc:()=>({tdiv:.5,vdiv:2,vdiv2:2,pos1:3.25,pos2:6.75,on1:true,on2:true,run:true})};
 const PSU_V=[3.3,5,9,12,24,48,100],PSU_MAX=100,BAT_V=[1.5,3,4.5,6,9],FG_HZ=[0.5,1,2,5,10],FG_VPP=[1,3.3,5],OSC_T=[.05,.1,.2,.5,1],OSC_V=[1,2,5,10,20,50];
 const batName=v=>v===9?'9V 사각 건전지':'AA 건전지 '+Math.round(v/1.5)+'개';
 const isTerm=id=>typeof id==='string'&&id[0]==='@';
 const termIds=c=>IJACK[c.t].map((_,i)=>'@'+c.k+':'+i);
 const newKey=()=>Math.max(0,...S.comps.filter(c=>INST.has(c.t)).map(c=>+c.k||0))+1;
-const WAVES={sq:'구형파',sin:'사인파',tri:'삼각파'};
+const WAVES={sq:'구형파',sin:'사인파',tri:'삼각파',saw:'톱니파'};
+const num=(v,d)=>Number.isFinite(+v)&&v!==null&&v!==''?+v:d; // 값이 없으면 기본값
 const instRect=c=>({x0:c.x,y0:c.y,x1:c.x+ISZ[c.t][0],y1:c.y+ISZ[c.t][1]});
 /* 함수 발생기의 지금 출력 전압(0 ~ Vpp) */
-function fgVolt(c,now){const ph=(now*c.hz)%1,A=+c.vpp||5;return c.wave==='sin'?A/2*(1+Math.sin(2*Math.PI*ph)):c.wave==='tri'?A*(ph<.5?ph*2:2-ph*2):ph<.5?A:0;}
+function fgVolt(c,now){const ph=(now*num(c.hz,1))%1,A=num(c.vpp,5),lo=num(c.off,0),du=Math.min(.95,Math.max(.05,num(c.duty,50)/100));
+  return lo+(c.wave==='sin'?A/2*(1+Math.sin(2*Math.PI*ph)):c.wave==='tri'?A*(ph<.5?ph*2:2-ph*2):c.wave==='saw'?A*ph:ph<du?A:0);}
 
 /* ───────── 상태 ───────── */
 const KEY='bblab.v1';
@@ -1004,9 +1007,9 @@ function ownPts(c){if(!(c.pts&&c.pts.length))c.pts=(ROUTES.get(c.id)||[]).map(q=
 function leadPath(j,h){const sg=h.y<j.y?-1:1,k=Math.min(90,Math.max(24,Math.hypot(h.x-j.x,h.y-j.y)*.35));return`M${j.x} ${j.y}C${j.x} ${j.y+sg*k} ${h.x} ${h.y-sg*k} ${h.x} ${h.y}`;}
 const fmtHz=f=>f>=10?f.toFixed(0)+'Hz':f>=1?f.toFixed(1)+'Hz':f.toFixed(2)+'Hz';
 /* 오실로스코프 화면에 그릴 두 채널의 선과 측정값 */
-function oscTrace(c){const r=rt(c),buf=r.buf||[],W=200,win=10*(c.tdiv||.5),tE=buf.length?buf[buf.length-1].t:0,ppv=20/(c.vdiv||2),x0=c.x+12,base=[c.y+99,c.y+169];
+function oscTrace(c){const r=rt(c),buf=r.buf||[],W=200,win=10*(c.tdiv||.5),tE=buf.length?buf[buf.length-1].t:0,pp=[20/(c.vdiv||2),20/(c.vdiv2||c.vdiv||2)],x0=c.x+12,base=[c.y+34+num(c.pos1,3.25)*20,c.y+34+num(c.pos2,6.75)*20],shown=[c.on1!==false,c.on2!==false];
   const d=['',''],meas=['',''];
-  for(let ch=0;ch<2;ch++){let pen=false,mn=1e9,mx=-1e9;const vals=[];let pv=null;
+  for(let ch=0;ch<2;ch++){if(!shown[ch]){meas[ch]='꺼짐';continue;}const ppv=pp[ch];let pen=false,mn=1e9,mx=-1e9;const vals=[];let pv=null;
     for(const sm of buf){const dt=tE-sm.t;if(dt>win)continue;const v=ch?sm.b:sm.a;if(v==null){pen=false;pv=null;continue;}
       const x=(x0+W*(1-dt/win)).toFixed(1),y=(base[ch]-v*ppv).toFixed(1);
       // 디지털 신호처럼 값이 한 번에 크게 바뀌면 계단 모양으로 그린다
@@ -1026,18 +1029,18 @@ function instSVG(c,ph,isSel,one){const id=c.id,[w,h]=ISZ[c.t],x=c.x,y=c.y,J=IJAC
   if(c.t==='psu'){const live=on&&c.on!==false;
     s+=`<rect x="${x+12}" y="${y+34}" width="${w-24}" height="34" rx="4" fill="#07140D" stroke="#000"/>`+T(w/2,59,live?(+c.v).toFixed(1)+' V':'OFF',22,live?'#4BE38A':'#2F5B40')
       +T(w/2,83,live?'출력 켜짐':'출력 꺼짐',9,live?'#9FE8BD':'#8A9099','middle','var(--sans)');}
-  if(c.t==='fg'){const wv=c.wave==='sin'?'M0 8Q6 -6 12 8T24 8T36 8':c.wave==='tri'?'M0 14L6 2L12 14L18 2L24 14L30 2L36 14':'M0 14V2H9V14H18V2H27V14H36V2';
+  if(c.t==='fg'){const du=Math.min(.95,Math.max(.05,num(c.duty,50)/100)),lo=num(c.off,0),wv=c.wave==='sin'?'M0 8Q6 -6 12 8T24 8T36 8':c.wave==='tri'?'M0 14L6 2L12 14L18 2L24 14L30 2L36 14':c.wave==='saw'?'M0 14L12 2V14L24 2V14L36 2':`M0 14V2H${(18*du).toFixed(1)}V14H18V2H${(18+18*du).toFixed(1)}V14H36`;
     s+=`<rect x="${x+12}" y="${y+34}" width="${w-24}" height="34" rx="4" fill="#0B1322" stroke="#000"/><path d="${wv}" transform="translate(${x+20} ${y+43})" fill="none" stroke="${on?'#FFB648':'#5C4A2A'}" stroke-width="1.8" stroke-linejoin="round"/>`
-      +T(w-18,49,c.hz+' Hz',12,on?'#FFD08A':'#6B5A3C','end')+T(w-18,62,c.vpp+' Vpp',9,on?'#C9A56A':'#5C4A2A','end')+T(w/2,83,WAVES[c.wave]+' · 0 ~ '+c.vpp+'V',9,'#AEB4BD','middle','var(--sans)');}
+      +T(w-18,49,c.hz+' Hz',12,on?'#FFD08A':'#6B5A3C','end')+T(w-18,62,c.vpp+' Vpp',9,on?'#C9A56A':'#5C4A2A','end')+T(w/2,83,WAVES[c.wave]+' · '+lo+' ~ '+Math.round((lo+num(c.vpp,5))*10)/10+'V'+(c.wave==='sq'&&num(c.duty,50)!==50?' · 듀티 '+num(c.duty,50)+'%':''),9,'#AEB4BD','middle','var(--sans)');}
   if(c.t==='osc'){const sx=x+12,sy=y+34,o=oscTrace(c);let g='';
     for(let i=1;i<10;i++)g+=`M${sx+i*20} ${sy}V${sy+140}`;for(let i=1;i<7;i++)g+=`M${sx} ${sy+i*20}H${sx+200}`;
     s+=`<clipPath id="oc${id}"><rect x="${sx}" y="${sy}" width="200" height="140"/></clipPath><rect x="${sx}" y="${sy}" width="200" height="140" rx="3" fill="#06110C" stroke="#000"/><path d="${g}" stroke="#1E3A2C" stroke-width=".8" fill="none"/>
       <path d="M${sx+100} ${sy}V${sy+140}" stroke="#2C5440" stroke-width="1" fill="none"/>
-      <path d="M${sx} ${y+99}h6M${sx} ${y+169}h6" stroke="#8A9099" stroke-width="1.5"/>
+      <path d="M${sx} ${sy+num(c.pos1,3.25)*20}h7" stroke="#F2C230" stroke-width="1.6"/><path d="M${sx} ${sy+num(c.pos2,6.75)*20}h7" stroke="#35B6E8" stroke-width="1.6"/>
       <g clip-path="url(#oc${id})" fill="none" stroke-width="1.6" stroke-linejoin="round"><path class="tr1" d="${o.d[0]}" stroke="#F2C230"/><path class="tr2" d="${o.d[1]}" stroke="#35B6E8"/></g>`
       +T(218,48,(c.tdiv<1?c.tdiv*1000+'ms':c.tdiv+'s'),9.5,'#DDE1E7','start')+T(218,59,'/칸',8,'#8A9099','start','var(--sans)')
-      +T(218,80,c.vdiv+'V',9.5,'#DDE1E7','start')+T(218,91,'/칸',8,'#8A9099','start','var(--sans)')
-      +T(218,118,c.run===false?'정지':'실행',9.5,c.run===false?'#E5484D':'#4BE38A','start','var(--sans)')
+      +T(218,78,c.vdiv+'V',9.5,c.on1===false?'#5D6068':'#F2C230','start')+T(218,96,(c.vdiv2||c.vdiv)+'V',9.5,c.on2===false?'#5D6068':'#35B6E8','start')+T(218,107,'/칸',8,'#8A9099','start','var(--sans)')
+      +T(218,128,c.run===false?'정지':'실행',9.5,c.run===false?'#E5484D':'#4BE38A','start','var(--sans)')
       +`<text class="om1" x="${x+12}" y="${y+190}" font-size="9.5" font-weight="700" fill="#F2C230" font-family="var(--mono)">CH1 ${o.meas[0]}</text><text class="om2" x="${x+128}" y="${y+190}" font-size="9.5" font-weight="700" fill="#35B6E8" font-family="var(--mono)">CH2 ${o.meas[1]}</text>`;}
   if(c.t==='bat'){const nine=+c.v===9,n=Math.round(c.v/1.5);
     s+=`<rect x="${x+12}" y="${y+32}" width="${w-24}" height="32" rx="${nine?4:8}" fill="${nine?'#1F2937':'#B45309'}" stroke="#000"/><rect x="${x+12}" y="${y+32}" width="${nine?26:18}" height="32" rx="${nine?4:8}" fill="${nine?'#C2410C':'#1F2937'}"/>`
@@ -1270,15 +1273,28 @@ function partDesc(c){return{
   clk:'정해진 속도로 HIGH와 LOW를 번갈아 내보내요. 카운터나 플립플롭의 CLK 입력에 연결하세요.',
   psu:'실험실의 직류 전원 장치예요. 전압은 0V부터 100V까지 맞출 수 있어요(3V 이상이면 디지털 회로는 HIGH로 읽어요). + 단자와 − 단자에서 각각 전선을 끌어 + 레일, − 레일에 이으면 그 줄에 전원이 들어가요. 서플라이나 건전지를 하나라도 놓으면 보드의 자동 5V 전원은 꺼지니, 위·아래 레일을 모두 쓰려면 레일끼리 전선으로 이어 주세요. 74 계열 칩은 5V에 맞추세요.',
   bat:'건전지예요. + 단자와 − 단자에서 전선을 끌어 회로에 이으면 전원이 돼요. 1.5V 하나로는 LED도 켜지지 않고(3V부터 켜져요), 74 계열 칩은 4.5~5V가 필요해서 AA 3개(4.5V)가 가장 가까워요. 9V는 칩에 바로 걸면 망가져요. 건전지를 놓으면 보드의 자동 5V 전원은 꺼져요.',
-  fg:'구형파·사인파·삼각파를 0V에서 정한 전압(Vpp)까지 내보내요. OUT 단자에서 신호를 넣을 구멍까지, GND 단자에서 − 레일까지 전선을 끌어 이으세요. 2.5V를 넘으면 디지털 회로는 HIGH로 읽어요.',
-  osc:'두 곳의 전압이 시간에 따라 어떻게 바뀌는지 그려 줘요. CH1·CH2 단자에서 보고 싶은 구멍까지 전선을 끌어 이으세요. 전압은 회로의 GND(−)를 기준으로 재요. 화면 왼쪽의 짧은 눈금이 각 채널의 0V 자리예요.',
+  fg:'구형파·사인파·삼각파·톱니파를 내보내요. 주파수, 크기(Vpp), 가장 낮은 전압(오프셋), 구형파의 듀티비를 [속성]에서 숫자로 바꿀 수 있어요. OUT 단자에서 신호를 넣을 구멍까지, GND 단자에서 − 레일까지 전선을 끌어 이으세요. 2.5V를 넘으면 디지털 회로는 HIGH로 읽어요.',
+  osc:'두 곳의 전압이 시간에 따라 어떻게 바뀌는지 그려 줘요. 시간/칸, 채널별 전압/칸과 0V 자리, 채널 표시 여부를 [속성]에서 바꿀 수 있어요. CH1·CH2 단자에서 보고 싶은 구멍까지 전선을 끌어 이으세요. 전압은 회로의 GND(−)를 기준으로 재요. 화면 왼쪽의 짧은 눈금이 각 채널의 0V 자리예요.',
   seg7:c.ca?'공통 애노드 7세그먼트예요. COM(3·8번 핀)을 + 에 연결하고, a~g 핀이 LOW면 해당 획이 켜져요. 74LS47·46 과 짝이에요.':'공통 캐소드 7세그먼트예요. COM(3·8번 핀)을 − 에 연결하고, a~g 핀이 HIGH면 해당 획이 켜져요. CD4511 과 짝이에요.'}[c.t];}
 const segBtns=(f,list,cur,tx)=>`<div class="seg" data-f="${f}">${list.map(v=>`<button data-v="${v}" aria-pressed="${cur===v}">${tx(v)}</button>`).join('')}</div>`;
-function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`;
-  if(c.t==='psu')return P('전압 (0 ~ '+PSU_MAX+'V)',`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><input type="number" id="psuV" min="0" max="${PSU_MAX}" step="0.1" value="${+c.v}" aria-label="전압" style="width:86px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--fg);font:600 13px var(--mono)"><b>V</b><input type="range" id="psuR" min="0" max="${PSU_MAX}" step="0.5" value="${+c.v}" aria-label="전압 조절" style="flex:1;min-width:60px"></div>`+segBtns('v',PSU_V,+c.v,v=>v+'V'))+P('출력',segBtns('on',[1,0],c.on===false?0:1,v=>v?'켜짐':'꺼짐'));
-  if(c.t==='bat')return P('건전지 종류',segBtns('v',BAT_V,+c.v,v=>v+'V')+`<p class="desc" style="margin:6px 0 0">${batName(+c.v)}</p>`);
-  if(c.t==='fg')return P('파형',segBtns('wave',Object.keys(WAVES),c.wave,v=>WAVES[v]))+P('주파수',segBtns('hz',FG_HZ,+c.hz,v=>v+'Hz'))+P('크기 (0V ~ )',segBtns('vpp',FG_VPP,+c.vpp,v=>v+'V'));
-  return P('시간 / 칸',segBtns('tdiv',OSC_T,+c.tdiv,v=>v<1?v*1000+'ms':v+'s'))+P('전압 / 칸',segBtns('vdiv',OSC_V,+c.vdiv,v=>v+'V'))+P('화면',segBtns('run',[1,0],c.run===false?0:1,v=>v?'실행':'정지')+' <button class="btn" id="oscClr" style="margin-top:6px">화면 지우기</button>');}
+/* 숫자를 직접 적는 칸. 값은 min~max로 맞춰진다 */
+const numIn=(f,val,min,max,step,unit)=>`<span class="numin"><input type="number" data-n="${f}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${f}"><b>${unit}</b></span>`;
+function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`,on=v=>v?'켜짐':'꺼짐';
+  if(c.t==='psu')return P('전압 (0 ~ '+PSU_MAX+'V)',`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">${numIn('v',+c.v,0,PSU_MAX,0.1,'V')}<input type="range" id="psuR" min="0" max="${PSU_MAX}" step="0.5" value="${+c.v}" aria-label="전압 조절" style="flex:1;min-width:60px"></div>`+segBtns('v',PSU_V,+c.v,v=>v+'V'))
+    +P('출력',segBtns('on',[1,0],c.on===false?0:1,on));
+  if(c.t==='bat')return P('전압 (0.1 ~ 48V)',numIn('v',+c.v,0.1,48,0.1,'V')+segBtns('v',BAT_V,+c.v,v=>v+'V')+`<p class="desc" style="margin:6px 0 0">${BAT_V.includes(+c.v)?batName(+c.v):'직접 정한 전압의 건전지 묶음'}</p>`);
+  if(c.t==='fg')return P('파형',segBtns('wave',Object.keys(WAVES),c.wave,v=>WAVES[v]))
+    +P('주파수 (0.1 ~ 10Hz)',numIn('hz',num(c.hz,1),0.1,10,0.1,'Hz')+segBtns('hz',FG_HZ,+c.hz,v=>v+'Hz'))
+    +P('크기 Vpp (0 ~ 20V)',numIn('vpp',num(c.vpp,5),0,20,0.1,'V')+segBtns('vpp',FG_VPP,+c.vpp,v=>v+'V'))
+    +P('가장 낮은 전압 · 오프셋 (−10 ~ 10V)',numIn('off',num(c.off,0),-10,10,0.1,'V')+segBtns('off',[0,-2.5,-5],num(c.off,0),v=>v+'V'))
+    +P('듀티비 · 구형파에서 높은 구간의 비율 (5 ~ 95%)',numIn('duty',num(c.duty,50),5,95,1,'%')+segBtns('duty',[25,50,75],num(c.duty,50),v=>v+'%'));
+  return P('시간 / 칸 (0.01 ~ 5초)',numIn('tdiv',+c.tdiv,0.01,5,0.01,'초')+segBtns('tdiv',OSC_T,+c.tdiv,v=>v<1?v*1000+'ms':v+'s'))
+    +P('CH1 전압 / 칸 (0.1 ~ 100V)',numIn('vdiv',+c.vdiv,0.1,100,0.1,'V')+segBtns('vdiv',OSC_V,+c.vdiv,v=>v+'V'))
+    +P('CH2 전압 / 칸 (0.1 ~ 100V)',numIn('vdiv2',+(c.vdiv2||c.vdiv),0.1,100,0.1,'V')+segBtns('vdiv2',OSC_V,+(c.vdiv2||c.vdiv),v=>v+'V'))
+    +P('CH1 0V 자리 (위에서 0 ~ 7칸)',numIn('pos1',num(c.pos1,3.25),0,7,0.25,'칸')+segBtns('pos1',[1.75,3.25,3.5,6.75],num(c.pos1,3.25),v=>v))
+    +P('CH2 0V 자리 (위에서 0 ~ 7칸)',numIn('pos2',num(c.pos2,6.75),0,7,0.25,'칸')+segBtns('pos2',[3.25,3.5,5.25,6.75],num(c.pos2,6.75),v=>v))
+    +P('CH1 표시',segBtns('on1',[1,0],c.on1===false?0:1,on))+P('CH2 표시',segBtns('on2',[1,0],c.on2===false?0:1,on))
+    +P('화면',segBtns('run',[1,0],c.run===false?0:1,v=>v?'실행':'정지')+' <button class="btn" id="oscClr" style="margin-top:6px">화면 지우기</button>');}
 function propEditor(c){
   if(INST.has(c.t))return instProps(c);
   if(c.t==='wire')return`<div class="prop"><label>전선 색</label><div class="sw" id="pc">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-v="${col}" aria-pressed="${c.color===col}" aria-label="색"></button>`).join('')}</div></div>`;
@@ -1292,10 +1308,13 @@ function propEditor(c){
   return'';}
 function bindProps(c){
   if(INST.has(c.t)){$('info').querySelectorAll('[data-f] button').forEach(b=>b.onclick=()=>{pushHist();const f=b.closest('[data-f]').dataset.f,v=b.dataset.v;
-      if(f==='wave')c.wave=v;else if(f==='on'||f==='run')c[f]=v==='1';else c[f]=+v;commit(true);});
+      if(f==='wave')c.wave=v;else if(['on','run','on1','on2'].includes(f))c[f]=v==='1';else c[f]=+v;commit(true);});
     const cl=$('oscClr');if(cl)cl.onclick=()=>{rt(c).buf=[];render();};
-    const setV=x=>{const v=Math.max(0,Math.min(PSU_MAX,Math.round((+x||0)*10)/10));if(v===+c.v)return;pushHist();c.v=v;commit(true);};
-    const pv=$('psuV'),pr=$('psuR');if(pv)pv.onchange=()=>setV(pv.value);if(pr){pr.oninput=()=>{if(pv)pv.value=pr.value;};pr.onchange=()=>setV(pr.value);}return;}
+    // 숫자 칸: 범위 안으로 맞춘 뒤 적용
+    $('info').querySelectorAll('input[data-n]').forEach(inp=>inp.onchange=()=>{const f=inp.dataset.n,st=+inp.step||0.1,dec=(String(inp.step).split('.')[1]||'').length;
+      let v=+inp.value;if(!Number.isFinite(v)||inp.value===''){inp.value=c[f];return;}v=Math.max(+inp.min,Math.min(+inp.max,+(Math.round(v/st)*st).toFixed(dec)));
+      if(v===+c[f]){inp.value=v;return;}pushHist();c[f]=v;commit(true);});
+    const pr=$('psuR'),pv=$('info').querySelector('input[data-n="v"]');if(pr){pr.oninput=()=>{if(pv)pv.value=pr.value;};pr.onchange=()=>{const v=+pr.value;if(v!==+c.v){pushHist();c.v=v;commit(true);}};}return;}
   const pc=$('pc');if(!pc)return;
   if(c.t==='ic'){pc.onchange=()=>{pushHist();c.chip=pc.value;RT.delete(c.id);commit(true);};return;}
   pc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;
