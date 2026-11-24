@@ -42,7 +42,11 @@
 .sp{font:600 9.5px var(--mono)}.sp.l{text-anchor:start}.sp.r{text-anchor:end}
 .sn{font:500 8px var(--mono);text-anchor:middle;opacity:.55}
 .spart text.sref{font:700 10px var(--mono);fill:var(--accent);text-anchor:middle}
-.swr{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.swr{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.swr.todo{stroke-dasharray:6 5;opacity:.7}.swhalo{fill:none;stroke:#C9CED6;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+#sLeg{position:absolute;left:10px;top:8px;display:flex;flex-wrap:wrap;gap:4px 10px;max-width:calc(100% - 70px);font-size:11px;color:var(--muted);pointer-events:none;background:color-mix(in srgb,var(--bg) 75%,transparent);padding:3px 8px;border-radius:5px}#sLeg i{display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:middle;margin-right:4px;box-shadow:0 0 0 1px #C9CED680}
+.sdone circle{fill:#2DA44E;stroke:var(--bg,#1b1e23);stroke-width:1.5}.sdone path{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#sfbar .swc2{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);padding:0;cursor:pointer;flex:none}#sfbar .swc2[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}#sfbar .swc2.sig{background:conic-gradient(var(--hi) 0 50%,var(--lo) 0 100%)}
+#sfbar .done[aria-pressed="true"]{background:#2DA44E;color:#fff;border-color:#2DA44E}
 .swhit{fill:none;stroke:transparent;stroke-width:12;cursor:pointer}
 .ssel{fill:none;stroke:#1F8FFF;stroke-width:6;stroke-opacity:.3}
 rect.ssel{stroke-width:2;stroke-opacity:.8;stroke-dasharray:5 3;fill:#1F8FFF;fill-opacity:.06}
@@ -443,6 +447,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     </div>
     <div class="grp">
       <button class="tbtn pwr" id="sPwr" aria-pressed="true" title="회로도 전원 켜기/끄기"><span class="led"></span><span id="sPwrTx">전원 ON</span></button>
+      <button class="tbtn" id="sChk" aria-pressed="false" title="실제로 만들 때: 이은 선을 누르면 ✓ 표시가 붙어요(다시 누르면 지워져요)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 12l3.5 3.5L17 9"/></svg><span id="sChkTx">연결 체크</span></button>
+      <button class="tbtn" id="sColM" title="선 색 보기 바꾸기: 기능별(전원·접지·클럭·입력·출력·신호) ↔ 신호(HIGH 빨강·LOW 파랑)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16" stroke="#D93A3A"/><path d="M4 12h16" stroke="#2E9E5B"/><path d="M4 17h16" stroke="#2F6FDB"/></svg><span id="sColMTx">선 색: 기능별</span></button>
       <button class="tbtn" id="sFit" title="화면에 맞춤 (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8" y="8" width="8" height="8"/></svg>맞춤</button>
     </div>
     <div class="grp">
@@ -479,6 +485,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     <svg id="sch" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="fbar" id="sfbar" hidden></div>
     <div class="vlabel">회로도 · 기호</div>
+    <div id="sLeg" hidden></div>
     <div class="navhud"><button id="szi" title="확대" aria-label="확대">+</button><button id="szo" title="축소" aria-label="축소">−</button><button id="sfit2" title="화면에 맞춤" aria-label="화면에 맞춤">⤢</button></div>
   </main>
 
@@ -3070,9 +3077,15 @@ const sLvlOfPin=(id,k)=>{if(!SIM_S.net)return Z;const v=SIM_S.lvl.get(SIM_S.net.
 
 /* ── 그리기 ── */
 function renderSch(){const g=schSvg();if(!g||VM!=='sch')return;schSettle();const LB=schLabels();
+  const FN=scolMode==='fn'?schFnNets(schNets(false)):null,NF=FN&&schNets(false),used=new Set();
   const wires=SCH.wires.map(w=>{const r=wireRoute(w);if(!r)return'';const lv=SCH.power?sLvlOfPin(w.a.p,w.a.k):Z,sel=ssel&&ssel.type==='wire'&&ssel.id===w.id;
-    const col=lv===Hh?'var(--hi)':lv===L?'var(--lo)':lv===SH?'var(--sh)':'var(--sink)',d=wirePath(r.A,r.B,r.pts);
-    return`${sel?`<path d="${d}" class="ssel"/>`:''}<path d="${d}" class="swr" style="stroke:${col}"/><path d="${d}" class="swhit" data-sw="${w.id}"/>`;}).join('');
+    const fk=FN?FN.get(NF.net(w.a.p,w.a.k))||'sig':null;if(fk&&!w.col)used.add(fk);
+    const col=w.col||(fk?FNC[fk][0]:lv===Hh?'var(--hi)':lv===L?'var(--lo)':lv===SH?'var(--sh)':'var(--sink)'),d=wirePath(r.A,r.B,r.pts);
+    return`${sel?`<path d="${d}" class="ssel"/>`:''}${(c=>{const m=/^#([0-9a-f]{6})$/i.exec(c);if(!m)return false;const v=parseInt(m[1],16);return((v>>16)*299+((v>>8)&255)*587+(v&255)*114)/1000<70;})(col)?`<path d="${d}" class="swhalo"/>`:''}<path d="${d}" class="swr${schk&&!w.done?' todo':''}" style="stroke:${col}"/><path d="${d}" class="swhit" data-sw="${w.id}"/>`;}).join('');
+  // 실제로 이은 선(✓): 가장 긴 구간 가운데에 표시
+  const dones=SCH.wires.filter(w=>w.done).map(w=>{const r=wireRoute(w);if(!r)return'';const L_=[r.A,...r.pts,r.B];let m=null,best=-1;
+    for(let i=0;i<L_.length-1;i++){const d=Math.abs(L_[i].x-L_[i+1].x)+Math.abs(L_[i].y-L_[i+1].y);if(d>best){best=d;m={x:(L_[i].x+L_[i+1].x)/2,y:(L_[i].y+L_[i+1].y)/2};}}
+    return`<g class="sdone" transform="translate(${m.x} ${m.y})" data-sw="${w.id}"><circle r="6.5"/><path d="M-3 0l2 2.2L3.2-2.4"/></g>`;}).join('');
   // 핀마다 이어진 선 수: 3개 이상 모이면 점
   const cnt=new Map();SCH.wires.forEach(w=>[w.a,w.b].forEach(e=>{const k=e.p+':'+e.k;cnt.set(k,(cnt.get(k)||0)+1);}));
   const parts=SCH.parts.map(p=>{const s=symOf(p),sel=ssel&&ssel.type==='part'&&ssel.id===p.id,bx=partBox(p);
@@ -3088,9 +3101,10 @@ function renderSch(){const g=schSvg();if(!g||VM!=='sch')return;schSettle();const
   const {w,h}=schSize();
   g.setAttribute('viewBox',`${sv.x} ${sv.y} ${w/sv.s} ${h/sv.s}`);
   g.innerHTML=`<defs><pattern id="sgrid" width="${SG*2}" height="${SG*2}" patternUnits="userSpaceOnUse"><circle cx="0" cy="0" r=".9" class="sgd"/></pattern></defs><rect x="${sv.x-2000}" y="${sv.y-2000}" width="${w/sv.s+4000}" height="${h/sv.s+4000}" fill="url(#sgrid)"/>`
-    +`<g>${wires}</g><g>${parts}</g><g pointer-events="none">${ov}</g>`;
+    +`<g>${wires}</g><g>${parts}</g><g>${dones}</g><g pointer-events="none">${ov}</g>`;
   if(!SCH.parts.length)g.innerHTML+=`<text x="${sv.x+w/sv.s/2}" y="${sv.y+h/sv.s/2}" class="sempty">[부품]을 눌러 기호를 놓고, 핀을 차례로 눌러 선으로 이으세요</text>`;
-  renderSfbar();$('sSim').textContent=!SCH.power?'● 전원 꺼짐':SIM_S.unstable?'● 발진 중':'● 회로도 계산 중';$('sCount').textContent='부품 '+SCH.parts.length;$('sZoom').textContent=Math.round(sv.s*100)+'%';}
+  renderSfbar();schChkLabel();$('sColMTx').textContent=scolMode==='fn'?'선 색: 기능별':'선 색: 신호';
+  const lg=$('sLeg');lg.hidden=!(FN&&used.size);if(FN)lg.innerHTML=FNO.filter(k=>used.has(k)).map(k=>`<span><i style="background:${FNC[k][0]}"></i>${FNC[k][1]}</span>`).join('');$('sSim').textContent=!SCH.power?'● 전원 꺼짐':SIM_S.unstable?'● 발진 중':'● 회로도 계산 중';$('sCount').textContent='부품 '+SCH.parts.length;$('sZoom').textContent=Math.round(sv.s*100)+'%';}
 function schSize(){const r=document.getElementById('sw').getBoundingClientRect();return{w:Math.max(50,r.width),h:Math.max(50,r.height)};}
 function schPt(e){const r=schSvg().getBoundingClientRect();return{x:sv.x+(e.clientX-r.left)/sv.s,y:sv.y+(e.clientY-r.top)/sv.s};}
 function schFit(){const {w,h}=schSize();if(!SCH.parts.length){sv.s=1;sv.x=-w/2;sv.y=-h/2;renderSch();return;}
@@ -3142,6 +3156,22 @@ let schFitted=false;
 function schHint(){$('hint').innerHTML='<b>회로도</b> · [부품]으로 기호 놓기 · 핀을 누르고 다른 핀을 누르면 선 · 기호를 끌어 옮기기 · 스위치는 누르면 켜고 꺼요 · 빈 곳을 끌면 화면 이동';}
 
 /* ── 고른 것의 작은 막대 ── */
+/* 기능별 선 색: 선이 이어진 줄(net)에 무엇이 달려 있는지로 정한다. 앞쪽이 우선
+   전원(VCC) 빨강 · 접지(GND) 검정 · 클럭 노랑 · 입력(스위치·버튼) 초록 · 출력 표시(LED·7세그먼트) 주황 · 그 밖 신호 파랑.
+   브레드보드로 보낼 때 새로 꽂는 전선도 같은 색을 쓴다 */
+const FNC={pwr:['#D93A3A','전원'],gnd:['#24282D','접지'],clk:['#E8B820','클럭'],in:['#2E9E5B','입력'],out:['#E57A1F','출력 표시'],sig:['#2F6FDB','신호']},FNO=['pwr','gnd','clk','in','out','sig'];
+function schFnNets(N){const m=new Map(),put=(n,f)=>{const o=m.get(n);if(!o||FNO.indexOf(f)<FNO.indexOf(o))m.set(n,f);};
+  for(const p of SCH.parts){const f=p.t==='vcc'?'pwr':p.t==='gnd'?'gnd':p.t==='clk'?'clk':p.t==='sw'||p.t==='btn'?'in':p.t==='led'||p.t==='seg7'?'out':null;if(!f)continue;
+    for(const q of symOf(p).pins){const n=N.net(p.id,q.k);if(p.t==='led'&&q.k===1)continue;put(n,f);}}   // LED 캐소드 쪽은 보통 접지라 빼고 본다
+  return m;}
+let scolMode=store.get('schCol','fn');   // 'fn' 기능별 | 'sig' 신호
+/* 선 색: 고른 색은 늘 그 색으로, 고르지 않으면(자동) 기능별 색 또는 신호 색(HIGH 빨강·LOW 파랑) */
+const SWCOL=[[null,'자동: 기능별 색(도구 막대에서 신호 색 보기로 바꿀 수 있어요)'],['#E5484D','빨강'],['#F08C2E','주황'],['#E8B931','노랑'],['#3DAA5C','초록'],['#3B82F6','파랑'],['#9B5DE5','보라'],['#A0703C','갈색'],['#F2F2F2','흰색'],['#8A929C','회색']];
+/* 실제로 만들 때 이은 선 표시(✓). [연결 체크]를 켜면 선을 누를 때마다 표시가 바뀌고, 아직 안 이은 선은 점선 */
+let schk=false;
+function schToggleDone(id){const w=SCH.wires.find(x=>x.id===id);if(!w)return;sPush();if(w.done)delete w.done;else w.done=true;sCommit();
+  const n=SCH.wires.filter(x=>x.done).length;if(w.done&&n===SCH.wires.length)toast('모든 선을 이었어요 ✓ ('+n+'개)');}
+function schChkLabel(){const n=SCH.wires.filter(x=>x.done).length,t=SCH.wires.length;$('sChkTx').textContent=schk||n?`연결 체크 ${n}/${t}`:'연결 체크';$('sChk').setAttribute('aria-pressed',schk);}
 function renderSfbar(){const fb=$('sfbar');if(!ssel||sdrag){fb.hidden=true;return;}
   let h='';if(ssel.type==='part'){const p=spart(ssel.id);if(!p){fb.hidden=true;return;}
     h=`<b>${p.t==='vcc'||p.t==='gnd'?(p.t==='vcc'?'VCC 전원':'GND 접지'):esc(schLabels().get(p.id))+' '+esc(p.t==='ic'?p.chip:p.t==='gate'?p.kind+' 게이트':TNAME[p.t]||p.t)}</b><button data-sa="rot" title="90° 돌리기 (R)">회전</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button>`;
@@ -3150,9 +3180,12 @@ function renderSfbar(){const fb=$('sfbar');if(!ssel||sdrag){fb.hidden=true;retur
     if(p.t==='clk')h+=`<select data-sv="hz">${HZ.map(v=>`<option value="${v}"${v===p.hz?' selected':''}>${v}Hz</option>`).join('')}</select>`;
     if(p.t==='cap')h+=`<select data-sv="farad">${FARADS.map(v=>`<option value="${v}"${v===p.farad?' selected':''}>${capTx(v)}</option>`).join('')}</select>`;
     if(p.t==='seg7')h+=`<select data-sv="ca"><option value="0"${!p.ca?' selected':''}>공통 캐소드</option><option value="1"${p.ca?' selected':''}>공통 애노드</option></select>`;}
-  else h=`<b>선</b><button data-sa="straight" title="가운데 구간을 원래 자리로">곧게</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button><small>선을 끌면 가운데 구간이 옮겨져요</small>`;
+  else{const w=SCH.wires.find(x=>x.id===ssel.id);if(!w){fb.hidden=true;return;}
+    h=`<b>선</b>${SWCOL.map(([c,n])=>`<button class="swc2${c?'':' sig'}" data-scol="${c||''}" aria-pressed="${(w.col||'')===(c||'')}" title="${n}"${c?` style="background:${c}"`:''}></button>`).join('')}`
+     +`<button class="done" data-sa="done" aria-pressed="${!!w.done}" title="실제로 이었으면 ✓ 표시">${w.done?'✓ 연결함':'연결함 표시'}</button><button data-sa="straight" title="가운데 구간을 원래 자리로">곧게</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button>`;}
   fb.innerHTML=h;fb.hidden=false;
-  fb.querySelectorAll('[data-sa]').forEach(b=>b.onclick=()=>{const a=b.dataset.sa;if(a==='del')schDelSel();else if(a==='rot')schRotSel();else if(a==='straight'){const w=SCH.wires.find(x=>x.id===ssel.id);if(w){sPush();delete w.off;sCommit();}}});
+  fb.querySelectorAll('[data-sa]').forEach(b=>b.onclick=()=>{const a=b.dataset.sa;if(a==='del')schDelSel();else if(a==='rot')schRotSel();else if(a==='straight'){const w=SCH.wires.find(x=>x.id===ssel.id);if(w){sPush();delete w.off;sCommit();}}else if(a==='done')schToggleDone(ssel.id);});
+  fb.querySelectorAll('[data-scol]').forEach(b=>b.onclick=()=>{const w=SCH.wires.find(x=>x.id===ssel.id);if(!w)return;sPush();if(b.dataset.scol)w.col=b.dataset.scol;else delete w.col;sCommit();});
   fb.querySelectorAll('[data-sv]').forEach(s=>s.onchange=()=>{const p=spart(ssel.id);if(!p)return;sPush();const k=s.dataset.sv;p[k]=k==='color'?s.value:k==='ca'?s.value==='1':+s.value;sCommit();});}
 
 /* ── 누르기·끌기 ── */
@@ -3175,7 +3208,7 @@ function schMove(e){const pt=schPt(e);slast=pt;if(sptrs.has(e.pointerId))sptrs.s
   const D=sdrag;if(!D.moved&&Math.hypot(e.clientX-D.sx,e.clientY-D.sy)<5)return;
   if(!D.moved){D.moved=true;if(D.tg.type==='part'||D.tg.type==='wire')sPush();}
   if(D.tg.type==='part'&&!stool){const p=spart(D.tg.id);if(!p)return;const nx=snapG(D.ox+pt.x-D.pt.x),ny=snapG(D.oy+pt.y-D.pt.y);if(nx!==p.x||ny!==p.y){p.x=nx;p.y=ny;ssel={type:'part',id:p.id};renderSch();}return;}
-  if(D.tg.type==='wire'&&!stool){const w=SCH.wires.find(x=>x.id===D.tg.id),r=w&&wireRoute(w);if(!r)return;const dv=r.hz?pt.x-D.pt.x:pt.y-D.pt.y,no=snapG(D.off+dv);if(no!==(w.off||0)){w.off=no;ssel={type:'wire',id:w.id};renderSch();}return;}
+  if(D.tg.type==='wire'&&!stool&&!schk){const w=SCH.wires.find(x=>x.id===D.tg.id),r=w&&wireRoute(w);if(!r)return;const dv=r.hz?pt.x-D.pt.x:pt.y-D.pt.y,no=snapG(D.off+dv);if(no!==(w.off||0)){w.off=no;ssel={type:'wire',id:w.id};renderSch();}return;}
   if(D.tg.type==='pin'){renderSch();return;}
   sv.x=D.vx-(e.clientX-D.sx)/sv.s;sv.y=D.vy-(e.clientY-D.sy)/sv.s;renderSch();}
 function schUp(e){sptrs.delete(e.pointerId);if(span&&span.pinch){if(sptrs.size<2)span=null;sdrag=null;return;}
@@ -3193,7 +3226,7 @@ function schUp(e){sptrs.delete(e.pointerId);if(span&&span.pinch){if(sptrs.size<2
   if(spend){const n=pinNear(pt,16);if(n&&!(n.p===spend.p&&n.k===spend.k)){schAddWire(spend,n);spend=null;renderSch();return;}spend=null;renderSch();if(D.tg.type==='none')return;}
   if(D.tg.type==='part'){const p=spart(D.tg.id);const was=ssel&&ssel.type==='part'&&ssel.id===p.id;ssel={type:'part',id:p.id};
     if(p.t==='sw'){sPush();p.on=!p.on;sCommit();return;}renderSch();return;}
-  if(D.tg.type==='wire'){ssel={type:'wire',id:D.tg.id};renderSch();return;}
+  if(D.tg.type==='wire'){if(schk){ssel=null;schToggleDone(D.tg.id);return;}ssel={type:'wire',id:D.tg.id};renderSch();return;}
   ssel=null;renderSch();}
 
 /* ── 회로도 → 브레드보드 바로 반영 ──
@@ -3216,7 +3249,7 @@ function _schApply(){syncTerms();const notes=[],real=SCH.parts.filter(p=>p.t!=='
   for(const p of real){if(p.bid)continue;const c=schPlaceOnBoard(p);if(!c){notes.push(`${schLabels().get(p.id)}: 브레드보드에 빈자리가 없어 꽂지 못했어요`);continue;}
     touch();c.id=S.nextId++;S.comps.push(c);p.bid=c.id;added.push(c);}
   // 구멍 → 회로도 연결 이름(전원은 VCC/GND)
-  const N=schNets(false),pw=new Map();for(const p of SCH.parts)if(p.t==='vcc'||p.t==='gnd')pw.set(N.net(p.id,0),p.t==='vcc'?'VCC':'GND');
+  const N=schNets(false),pw=new Map(),FNB=schFnNets(N);for(const p of SCH.parts)if(p.t==='vcc'||p.t==='gnd')pw.set(N.net(p.id,0),p.t==='vcc'?'VCC':'GND');
   const lab=new Map(),pinsOfNet=new Map();
   for(const p of real){const c=compById(p.bid);if(!c)continue;const hs=pinHoles(c),d=c.t==='ic'?CHIPS[c.chip]:null;
     if(d){const hv=HOLES.get(hs[d.idx[d.vcc]]),hg=HOLES.get(hs[d.idx[d.gnd]]);if(hv)lab.set(hv.i,'VCC');if(hg)lab.set(hg.i,'GND');}
@@ -3243,7 +3276,7 @@ function _schApply(){syncTerms();const notes=[],real=SCH.parts.filter(p=>p.t!=='
     if(h&&rh&&uf().f(h.i)!==uf().f(rh.i))addW(h,rh,L_==='VCC'?'#D93A3A':'#24282D');}}
   for(const [L_,hs] of pinsOfNet){
     if(L_==='VCC'||L_==='GND'){for(const h of hs){const rh=railFor(h,L_);if(!rh){notes.push(`${holeName(h.id)}: 이 보드에는 전원 레일이 없어요`);continue;}const u=uf();if(u.f(h.i)!==u.f(rh.i))addW(h,rh,L_==='VCC'?'#D93A3A':'#24282D');}continue;}
-    if(hs.length<2)continue;const color=SIGC[ci++%SIGC.length];const sorted=[...hs].sort((x,y)=>x.b-y.b||x.c-y.c||x.ri-y.ri);
+    if(hs.length<2)continue;const fk=L_[0]==='n'&&FNB.get(L_.slice(1)),color=fk?FNC[fk][0]:SIGC[ci++%SIGC.length];const sorted=[...hs].sort((x,y)=>x.b-y.b||x.c-y.c||x.ri-y.ri);
     for(let i=1;i<sorted.length;i++){const u=uf();if(u.f(sorted[i].i)===u.f(sorted[0].i))continue;
       // 이미 이어진 무리 중 가장 가까운 것과 잇는다
       let best=null,bd=1e9;for(let j=0;j<i;j++){const d=Math.abs(sorted[j].x-sorted[i].x)+Math.abs(sorted[j].y-sorted[i].y);if(d<bd){bd=d;best=sorted[j];}}
@@ -3302,6 +3335,9 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   const plus=new Set(),minus=new Set(),psus=S.comps.filter(c=>(c.t==='psu'||c.t==='bat')&&c.on!==false);
   if(!psus.length)for(const R_ of RAILS)(R_.lv?plus:minus).add(netOf[R_.i]);
   for(const c of psus){const hs=pinHoles(c);plus.add(netOf[hix(hs[0])]);minus.add(netOf[hix(hs[1])]);}
+  // 선마다 고른 색·✓ 표시·옮긴 자리를 양 끝(브레드보드 부품+핀, 전원 기호는 종류)으로 기억했다가 다시 붙인다
+  const wkey=(w,P)=>{const e=x=>{const p=P.find(q=>q.id===x.p);return p?(p.bid?'b'+p.bid:p.t)+':'+x.k:'?';};return[e(w.a),e(w.b)].sort().join('|');},oldW=new Map();
+  for(const w of SCH.wires)if(w.col||w.done||w.off)oldW.set(wkey(w,SCH.parts),w);
   sPush();SCH.parts=[];SCH.wires=[];SRT.clear();let nid=1;const map=new Map();
   const col=c=>c.t==='sw'||c.t==='btn'||c.t==='clk'?0:c.t==='gate'||c.t==='ic'?1:c.t==='res'||c.t==='cap'?2:3;
   const X_=[0,340,680,920],yc=[0,0,0,0];   // 세로줄 사이를 넉넉히: 전원 기호와 선이 지나갈 자리
@@ -3322,6 +3358,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
         placePw(s,P,pw);SCH.parts.push(s);SCH.wires.push({id:nid++,a:{p:it.p.id,k:it.k},b:{p:s.id,k:0}});nw++;}continue;}
     if(list.length<2)continue;const L_=list.map(it=>({...it,P:pinPos(it.p,it.k)})).sort((a,b)=>a.P.x-b.P.x||a.P.y-b.P.y);
     for(let i=0;i<L_.length-1;i++){SCH.wires.push({id:nid++,a:{p:L_[i].p.id,k:L_[i].k},b:{p:L_[i+1].p.id,k:L_[i+1].k}});nw++;}}
+  if(oldW.size)for(const w of SCH.wires){const o=oldW.get(wkey(w,SCH.parts));if(o)for(const k of ['col','done','off'])if(o[k])w[k]=o[k];}
   SCH.nextId=nid;SCH.link=true;SCH.sig=boardSig();ssel=null;spend=null;sCommit();schLinkLabel();
   if(auto){if(first)requestAnimationFrame(schFit);toast(first?`브레드보드 회로를 회로도로 그렸어요 (부품 ${comps.length}개) · 기호를 끌어 보기 좋게 옮기면 그 자리가 기억돼요`:'브레드보드에서 바뀐 것을 회로도에 반영했어요');return;}
   setVM('sch');schFit();
@@ -3334,7 +3371,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   document.querySelectorAll('.vmode [data-vm]').forEach(b=>b.onclick=()=>setVM(b.dataset.vm));
   $('sParts').onclick=openParts;$('sRot').onclick=schRotSel;$('sDel').onclick=schDelSel;$('sUndo').onclick=sUndo;$('sRedo').onclick=sRedo;
   $('sPwr').onclick=()=>{SCH.power=!SCH.power;$('sPwr').setAttribute('aria-pressed',SCH.power);$('sPwrTx').textContent=SCH.power?'전원 ON':'전원 OFF';if(!SCH.power)SRT.clear();renderSch();};
-  $('sFit').onclick=schFit;$('szi').onclick=()=>schZoom(1.25);$('szo').onclick=()=>schZoom(1/1.25);$('sfit2').onclick=schFit;
+  $('sColM').onclick=()=>{scolMode=scolMode==='fn'?'sig':'fn';store.set('schCol',scolMode);renderSch();toast(scolMode==='fn'?'선 색: 기능별 — 전원 빨강 · 접지 검정 · 클럭 노랑 · 입력 초록 · 출력 표시 주황 · 신호 파랑':'선 색: 신호 — HIGH 빨강 · LOW 파랑 (직접 고른 색은 그대로)');};$('sChk').onclick=()=>{schk=!schk;ssel=null;renderSch();toast(schk?'연결 체크: 브레드보드에 실제로 이은 선을 누르면 ✓ 표시가 붙어요 · 아직 안 이은 선은 점선이에요':'연결 체크를 껐어요 · ✓ 표시는 그대로 남아요');};$('sFit').onclick=schFit;$('szi').onclick=()=>schZoom(1.25);$('szo').onclick=()=>schZoom(1/1.25);$('sfit2').onclick=schFit;
   $('sToBB').onclick=schToBoard;$('sFromBB').onclick=boardToSch;
   $('sClr').onclick=()=>{if(!SCH.parts.length)return;const b=$('sClr');if(!b.dataset.sure){b.dataset.sure='1';b.querySelector('span').textContent='정말?';setTimeout(()=>{delete b.dataset.sure;b.querySelector('span').textContent='새로';},3000);return;}
     delete b.dataset.sure;b.querySelector('span').textContent='새로';sPush();SCH.parts=[];SCH.wires=[];SRT.clear();ssel=null;spend=null;sCommit();toast('회로도를 비웠어요 · 실행 취소로 되돌릴 수 있어요');};
