@@ -2274,8 +2274,76 @@ function autoRoute(a,b,m){
     const yc=a.y+dir*P/2;return[{x:a.x,y:yc},{x:b.x,y:yc}];}
   const e=elbow(a,b,m);return e?[e]:[];}
 /* 예제처럼 꺾는 점 없이 들어온 전선을 가로·세로(90°)로 놓는다. 이미 같은 줄 위에 있는 전선은 그대로 */
-function orthoWires(){buildRoutes();const lane=new Set(ROUTES.keys());
-  for(const c of S.comps){if(c.t!=='wire'||(c.pts&&c.pts.length))continue;const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);if(!a||!b)continue;
+/* ── 예제·보드로 보내기용 전선 길 찾기: 전선끼리 한 길 위에 겹치지 않게 ──
+   5 간격 격자 위에서 가장 싼 길(꺾을 때마다·다른 전선을 가로지를 때마다 비용)을 찾는다.
+   · 이미 놓인 전선이 지나는 길은 함께 쓰지 않는다(가로지르는 것만 허용, 남의 꺾는 점·끝점은 지나지 않음)
+   · 부품 몸통 위로는 가지 않는다
+   · 구멍 한가운데는 비어 있고 자기 줄(같은 5칸 묶음)일 때만 지나고, 구멍에 바짝 붙어 스치지도 않는다
+   길을 못 찾은 전선은 예전 방식(orthoWires 아래쪽)으로 놓는다 */
+function gridWires(){const done=new Set(),W=S.comps.filter(c=>c.t==='wire'&&!(c.pts&&c.pts.length)&&HOLES.get(c.pins[0])&&HOLES.get(c.pins[1]));if(!W.length)return done;
+  const R=S.comps.map(bodyRect).filter(Boolean),IR=S.comps.filter(c=>INST.has(c.t)&&ISZ[c.t]).map(c=>({x0:c.x,y0:c.y,x1:c.x+ISZ[c.t][0],y1:c.y+ISZ[c.t][1]}));
+  const ends=W.flatMap(c=>c.pins.map(id=>HOLES.get(id)));
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const grow=(a,b,c,d)=>{x0=Math.min(x0,a);y0=Math.min(y0,b);x1=Math.max(x1,c);y1=Math.max(y1,d);};
+  for(const B of S.boards){const b=boardBox(B);grow(b.x0,b.y0,b.x1,b.y1);}for(const h of ends)grow(h.x,h.y,h.x,h.y);
+  x0-=130;y0-=130;x1+=130;y1+=130;
+  const ox=HL.length?HL[0].x:0,uniq=v=>{v.sort((p,q)=>p-q);const o=[];for(const t of v)if(!o.length||t-o[o.length-1]>.6)o.push(t);return o;};
+  // 차선 간격 10(전선 굵기보다 넓게): 가로로는 구멍 세로줄과 그 사이 틈, 세로로는 보드 안이면 구멍 가로줄과 그 사이 틈 한가운데(넓은 틈은 ±10 더), 보드 밖은 10 간격
+  const xs=[],ys=[],BB=S.boards.map(boardBox),inB=y=>BB.some(b=>y>b.y0-1&&y<b.y1+1);for(let x=ox+Math.ceil((x0-ox)/10)*10;x<=x1;x+=10)xs.push(x);
+  const oy=BB.length?BB[0].y0-10:0;for(let y=oy+Math.ceil((y0-oy)/10)*10;y<=y1;y+=10)if(!inB(y))ys.push(y);
+  for(const h of HL.slice(0,nBoardHoles))ys.push(h.y);
+  for(const B of S.boards){const b=boardBox(B),rs=[...new Set(HL.slice(0,nBoardHoles).filter(h=>h.b===B.id).map(h=>h.y))].sort((p,q)=>p-q);
+    for(let k=0;k<rs.length-1;k++){const m=(rs[k]+rs[k+1])/2;ys.push(m);if(rs[k+1]-rs[k]>=40)ys.push(m-10,m+10);}
+    if(rs.length){for(let y=rs[0]-20;y>b.y0;y-=10)ys.push(y);for(let y=rs[rs.length-1]+20;y<b.y1;y+=10)ys.push(y);}}
+  for(const h of ends){xs.push(h.x);ys.push(h.y);}
+  const X=uniq(xs.filter(x=>x>=x0-1&&x<=x1+1)),Y=uniq(ys.filter(y=>y>=y0-1&&y<=y1+1)),NX=X.length,NY=Y.length,N=NX*NY;
+  const xi=v=>{let lo=0,hi=NX-1;while(lo<hi){const m=(lo+hi)>>1;if(X[m]<v-.5)lo=m+1;else hi=m;}return Math.abs(X[lo]-v)<.6?lo:-1;},
+        yi=v=>{let lo=0,hi=NY-1;while(lo<hi){const m=(lo+hi)>>1;if(Y[m]<v-.5)lo=m+1;else hi=m;}return Math.abs(Y[lo]-v)<.6?lo:-1;};
+  // 칸마다: 0 지나가도 됨, 1 막힘, 2 구멍 한가운데(누구 줄인지 따로 본다). holeAt = 그 구멍
+  const kind=new Uint8Array(N),holeAt=new Map(),slow=new Uint8Array(N),used=new Set();
+  for(const c of S.comps)for(const id of pinHoles(c))used.add(id);
+  const near=new Map();for(const h of HL.slice(0,nBoardHoles)){const k=Math.round(h.x/20)+','+Math.round(h.y/20);if(!near.has(k))near.set(k,[]);near.get(k).push(h);}
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const x=X[i],y=Y[j],n=j*NX+i;
+    for(const r of R)if(x>r.x0-2&&x<r.x1+2&&y>r.y0-2&&y<r.y1+2){kind[n]=1;break;}
+    for(const r of IR)if(x>r.x0&&x<r.x1&&y>r.y0&&y<r.y1)slow[n]=1;
+    const gx=Math.round(x/20),gy=Math.round(y/20);
+    for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(const h of near.get((gx+a)+','+(gy+b))||[]){const d=Math.hypot(h.x-x,h.y-y);
+      if(d<.6){if(kind[n]!==1)kind[n]=2;holeAt.set(n,h);}else if(d<8)kind[n]=1;}}
+  for(const h of ends){const i=xi(h.x),j=yi(h.y);if(i>=0&&j>=0){const n=j*NX+i;kind[n]=2;holeAt.set(n,h);}}
+  // 전선이 차지한 길: 가로 칸 이음(eh)·세로 칸 이음(ev)·지나는 점(nh 가로, nv 세로)·꺾는 점과 끝점(stop)
+  const eh=new Uint8Array(N),ev=new Uint8Array(N),nh=new Uint8Array(N),nv=new Uint8Array(N),stop=new Uint8Array(N);
+  const mark=L=>{for(let k=0;k<L.length;k++){const i=xi(L[k].x),j=yi(L[k].y);if(i>=0&&j>=0)stop[j*NX+i]=1;}
+    for(let k=0;k<L.length-1;k++){const p=L[k],q=L[k+1];
+      if(Math.abs(p.y-q.y)<1){const j=yi(p.y);if(j<0)continue;const a=Math.min(p.x,q.x),b=Math.max(p.x,q.x);for(let i=0;i<NX;i++){if(X[i]<a-.5||X[i]>b+.5)continue;nh[j*NX+i]=1;if(i+1<NX&&X[i+1]<=b+.5)eh[j*NX+i]=1;}}
+      else if(Math.abs(p.x-q.x)<1){const i=xi(p.x);if(i<0)continue;const a=Math.min(p.y,q.y),b=Math.max(p.y,q.y);for(let j=0;j<NY;j++){if(Y[j]<a-.5||Y[j]>b+.5)continue;nv[j*NX+i]=1;if(j+1<NY&&Y[j+1]<=b+.5)ev[j*NX+i]=1;}}}};
+  for(const c of S.comps)if(c.t==='wire'&&!W.includes(c)){const L=wirePts(c);if(!L.some(q=>!q))mark(L);}
+  for(const h of ends){const i=xi(h.x),j=yi(h.y);if(i>=0&&j>=0)stop[j*NX+i]=1;}
+  const grp=h=>h.term?'t'+h.id:h.i<nBoardHoles?'g'+baseRep[h.i]:'h'+h.i;
+  const route=(a,b)=>{const sa=yi(a.y)*NX+xi(a.x),sb=yi(b.y)*NX+xi(b.x),ga=grp(a),gb=grp(b);
+    const ok=n=>{if(n===sa||n===sb)return true;if(kind[n]===1||stop[n])return false;if(kind[n]===2){const h=holeAt.get(n);if(used.has(h.id))return false;const g=grp(h);return g===ga||g===gb;}return true;};
+    // 상태 = 칸*2 + 방향(0 가로, 1 세로). 이진 힙
+    const D=new Float64Array(N*2).fill(Infinity),pr=new Int32Array(N*2).fill(-1),H=[],push=(d,s)=>{H.push([d,s]);let k=H.length-1;while(k){const p=(k-1)>>1;if(H[p][0]<=H[k][0])break;[H[p],H[k]]=[H[k],H[p]];k=p;}},
+      pop=()=>{const t=H[0],l=H.pop();if(H.length){H[0]=l;let k=0;for(;;){const a=2*k+1,b=a+1;let m=k;if(a<H.length&&H[a][0]<H[m][0])m=a;if(b<H.length&&H[b][0]<H[m][0])m=b;if(m===k)break;[H[m],H[k]]=[H[k],H[m]];k=m;}}return t;};
+    const hx=n=>Math.abs(X[n%NX]-b.x)+Math.abs(Y[(n/NX)|0]-b.y);
+    for(const dd of [0,1]){D[sa*2+dd]=0;push(hx(sa),sa*2+dd);}
+    let end=-1,guard=0;
+    while(H.length&&guard++<400000){const [f,st]=pop(),n=st>>1,dir=st&1,d=D[st];if(f-hx(n)>d+1e-6)continue;if(n===sb){end=st;break;}
+      const i=n%NX,j=(n/NX)|0;
+      for(const [m,nd,e,len] of [[i>0?n-1:-1,0,i>0?eh[n-1]:1,i>0?X[i]-X[i-1]:0],[i<NX-1?n+1:-1,0,eh[n],i<NX-1?X[i+1]-X[i]:0],[j>0?n-NX:-1,1,j>0?ev[n-NX]:1,j>0?Y[j]-Y[j-1]:0],[j<NY-1?n+NX:-1,1,ev[n],j<NY-1?Y[j+1]-Y[j]:0]]){
+        if(m<0||e||!ok(m))continue;
+        if(nd!==dir&&n!==sa&&(kind[n]===2||nh[n]||nv[n]))continue;            // 구멍 위나 남의 전선 위에서는 꺾지 않는다
+        let c=len+(nd!==dir&&n!==sa?24:0)+(slow[m]?len*3:0)+(kind[m]===2&&m!==sb?15:0);   // 구멍 위로 지나가기는 되도록 피한다
+        if(nd===0?nv[m]:nh[m])c+=10;                                            // 남의 전선을 가로지른다
+        const ns=m*2+nd;if(d+c<D[ns]-1e-6){D[ns]=d+c;pr[ns]=st;push(d+c+hx(m),ns);}}}
+    if(end<0)return null;
+    const path=[];for(let st=end;st>=0;st=pr[st]){path.push(st>>1);if(st>>1===sa&&pr[st]<0)break;}path.reverse();
+    const P=path.map(n=>({x:X[n%NX],y:Y[(n/NX)|0]}));return tidy(a,P.slice(1,-1),b);};
+  // 짧은 전선부터, 가로·세로 한 줄이면 곧게 갈 수 있는지 먼저 본다(길 찾기가 곧은 길을 주면 그대로)
+  const order=W.map(c=>{const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);return{c,a,b,d:Math.abs(a.x-b.x)+Math.abs(a.y-b.y)+(Math.abs(a.x-b.x)<1||Math.abs(a.y-b.y)<1?0:1000)};}).sort((p,q)=>p.d-q.d||p.c.id-q.c.id);
+  for(const o of order){if(xi(o.a.x)<0||yi(o.a.y)<0||xi(o.b.x)<0||yi(o.b.y)<0)continue;const r=route(o.a,o.b);if(!r)continue;
+    o.c.pts=r.length?r:undefined;if(!r.length)delete o.c.pts;done.add(o.c.id);mark([o.a,...r,o.b]);}
+  return done;}
+function orthoWires(){const done=gridWires();buildRoutes();const lane=new Set(ROUTES.keys());
+  for(const c of S.comps){if(c.t!=='wire'||(c.pts&&c.pts.length)||done.has(c.id))continue;const a=HOLES.get(c.pins[0]),b=HOLES.get(c.pins[1]);if(!a||!b)continue;
     let r=[];
     if(lane.has(c.id)){   // 같은 줄 위에 다른 전선과 겹쳐서 비스듬히 비켜 가던 전선: 구멍 사이 틈으로 90°로 비켜 간다
       const hit=legTest();
