@@ -910,6 +910,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 {"t": "px", "kind": "pot16", "pins": ["c20", "c21", "c22"], "ohms": 10000, "taper": "B", "pos": 0.5}
 ```
 - `kind`와 핀 자리는 아래 표대로 써요.
+  - 핀 순서는 `pins`에 적는 순서(아래 줄 왼→오, 위 줄 오→왼)예요. DIP 스위치는 표준 번호라 1번 맞은편이 8번(8극은 16번), DPDT는 1-2-3 / 4-5-6이 같은 방향이라 4번이 1번 맞은편이에요.
   - **row** 형: 한 줄(보통 `c`)에서 `열 + 오프셋` 자리에 핀 순서대로
   - **dip** 형: IC처럼 홈을 걸쳐요. 앞쪽 절반 핀은 `f{열+오프셋}`(왼→오), 뒤쪽 절반은 `e` 줄을 오른→왼
 - 추가 칸: 가변저항 `ohms`·`taper`(`A` 오디오 / `B` 선형 / `C` 역대수)·`pos`(0~1, 와이퍼 위치), 저항 어레이 `ohms`, 스위치 `s`(위치 번호), DIP 스위치 `bits`(`[0,1,…]`)
@@ -927,18 +928,18 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `tact12` | 택트 12×12 (4핀) | dip | 0,3 | 1 2 3 4 | |
 | `tactra` | 택트 직각형 (2핀) | row | 0,2 | 1 2 | |
 | `slide1` | 슬라이드 SPDT | row | 0,1,2 | 1 / 2(공통) / 3 | `s:0` |
-| `slide2` | 슬라이드 DPDT | dip | 0,1,2 | 1 2(공통) 3 4 5(공통) 6 | `s:0` |
+| `slide2` | 슬라이드 DPDT | dip | 0,1,2 | 1 2(공통) 3 6 5(공통) 4 | `s:0` |
 | `tog1` | 토글 SPST | row | 0,2 | 1 2 | `s:0` |
 | `tog2` | 토글 SPDT | row | 0,1,2 | 1 / 2(공통) / 3 | `s:0` |
 | `tog3` | 토글 ON-OFF-ON | row | 0,1,2 | 1 / 2(공통) / 3 | `s:1` |
 | `togm` | 토글 순간형 | row | 0,1,2 | 1 / 2(공통) / 3 | |
-| `tog4` | 토글 DPDT | dip | 0,1,2 | 1 2(공통) 3 4 5(공통) 6 | `s:0` |
+| `tog4` | 토글 DPDT | dip | 0,1,2 | 1 2(공통) 3 6 5(공통) 4 | `s:0` |
 | `rock1` | 로커 SPST | row | 0,3 | 1 2 | `s:0` |
 | `rock2` | 로커 램프 내장 | row | 0,2,4 | 1(입력) 2(출력) N(램프) | `s:0` |
-| `push2` | 푸시 자기유지 DPDT | dip | 0,1,2 | 1 2(공통) 3 4 5(공통) 6 | `s:0` |
-| `pushm` | 푸시 순간형 DPDT | dip | 0,1,2 | 1 2(공통) 3 4 5(공통) 6 | |
-| `dip4` | DIP 스위치 4극 | dip | 0~3 | 1 2 3 4 8 7 6 5 | `bits:[0,0,0,0]` |
-| `dip8` | DIP 스위치 8극 | dip | 0~7 | 1…8 16…9 | `bits:[0×8]` |
+| `push2` | 푸시 자기유지 DPDT | dip | 0,1,2 | 1 2(공통) 3 6 5(공통) 4 | `s:0` |
+| `pushm` | 푸시 순간형 DPDT | dip | 0,1,2 | 1 2(공통) 3 6 5(공통) 4 | |
+| `dip4` | DIP 스위치 4극 | dip | 0~3 | 1 2 3 4 5 6 7 8 | `bits:[0,0,0,0]` |
+| `dip8` | DIP 스위치 8극 | dip | 0~7 | 1…16 | `bits:[0×8]` |
 | `rbcd` | 로터리 DIP (0~9) | dip | 0,1,2 | 1 C 4 8 C2 2 | `s:0` |
 | `rhex` | 로터리 DIP (0~15) | dip | 0,1,2 | 1 C 4 8 C2 2 | `s:0` |
 | `enc` | 로터리 인코더 | dip | 0,1,2 | A C B S2 NC S1 | `s:0` |
@@ -2027,7 +2028,7 @@ const SLIDE1=(c)=>c.s?[[1,2]]:[[1,0]];
 pxDef({k:'slide1',sub:'sw',title:'슬라이드 스위치 SPDT (3핀)',lay:'row',dc:[0,1,2],pins:['1','2 (공통)','3'],init:()=>({s:0}),contacts:SLIDE1,tap:sTap(2),
   draw:(c,ph)=>{const B=bodyAbove(ph,6,12,'#3A3F47');return B.s+`<rect x="${B.x-12}" y="${B.y-3}" width="24" height="6" fill="#111"/><rect x="${B.x+(c.s?2:-11)}" y="${B.y-5}" width="9" height="10" rx="1" fill="#E9ECEF"/>`;},
   desc:'손잡이를 밀어 가운데 핀(공통)을 왼쪽(1번) 또는 오른쪽(3번)에 잇는 스위치예요(1극 2투). 전원·모드 전환에 써요. 누를 때마다 반대쪽으로.'});
-pxDef({k:'slide2',sub:'sw',title:'슬라이드 스위치 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','4','5 (공통)','6'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
+pxDef({k:'slide2',sub:'sw',title:'슬라이드 스위치 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
   draw:(c,ph)=>{const B=dipBody(ph,'#3A3F47');return B.s+`<rect x="${B.x-14}" y="${B.y-3}" width="28" height="6" fill="#111"/><rect x="${B.x+(c.s?3:-13)}" y="${B.y-6}" width="10" height="12" rx="1" fill="#E9ECEF"/>`;},
   desc:'스위치 두 개(2극)가 함께 움직이는 슬라이드 스위치예요. 아래 줄 가운데(2번)와 위 줄 가운데(5번)가 공통이고, 손잡이가 왼쪽이면 1·6번, 오른쪽이면 3·4번에 이어져요.'});
 pxDef({k:'tog1',sub:'sw',title:'토글 스위치 SPST (ON-OFF)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({s:0}),contacts:c=>c.s?[[0,1]]:[],tap:sTap(2),
@@ -2043,7 +2044,7 @@ pxDef({k:'tog3',sub:'sw',title:'토글 스위치 ON-OFF-ON (가운데 꺼짐)',l
 pxDef({k:'togm',sub:'sw',title:'토글 스위치 (ON)-OFF-(ON) (순간형)',lay:'row',dc:[0,1,2],pins:['1','2 (공통)','3'],mom:1,init:()=>({}),contacts:(c,r)=>r&&r.pr?[[1,r.pr<0?0:2]]:[],
   draw:(c,ph,r)=>{const B=bodyAbove(ph,5,10,'#8A9098');return B.s+lever(B.x,B.y-4,r&&r.pr?(r.pr<0?0:2):1,3)+`<circle cx="${B.x}" cy="${B.y}" r="5" fill="#C9CED6" stroke="#666"/>`;},
   desc:'괄호 (ON)은 "손을 떼면 돌아온다"는 뜻이에요. 레버를 한쪽으로 누르는 동안만 그쪽이 이어지고, 놓으면 가운데(끊김)로 돌아와요. 몸통 왼쪽·오른쪽을 누르고 있으면 돼요.'});
-pxDef({k:'tog4',sub:'sw',title:'토글 스위치 DPDT (ON-ON)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','4','5 (공통)','6'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
+pxDef({k:'tog4',sub:'sw',title:'토글 스위치 DPDT (ON-ON)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
   draw:(c,ph)=>{const B=dipBody(ph,'#8A9098');return B.s+lever(B.x,B.y-2,c.s,2)+`<circle cx="${B.x}" cy="${B.y+2}" r="6" fill="#C9CED6" stroke="#666"/>`;},
   desc:'스위치 두 개(2극)가 레버 하나로 함께 바뀌어요. 아래 줄 2번·위 줄 5번이 공통이고, 레버에 따라 1·6번 또는 3·4번에 이어져요.'});
 pxDef({k:'rock1',sub:'sw',title:'로커 스위치 SPST',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({s:0}),contacts:c=>c.s?[[0,1]]:[],tap:sTap(2),
@@ -2052,13 +2053,13 @@ pxDef({k:'rock1',sub:'sw',title:'로커 스위치 SPST',lay:'row',dc:[0,3],pins:
 pxDef({k:'rock2',sub:'sw',title:'로커 스위치 SPST (네온 램프 내장, 3핀)',lay:'row',dc:[0,2,4],pins:['1 (입력)','2 (출력)','N (램프)'],init:()=>({s:0}),contacts:c=>c.s?[[0,1]]:[],tap:sTap(2),lamp:1,
   draw:(c,ph,r,lit)=>{const B=bodyAbove(ph,8,16,'#1E2124');return B.s+`<rect x="${B.x-16}" y="${B.y-6}" width="32" height="12" rx="2" fill="${lit?'#FF5A36':'#5A2A20'}"${lit?' filter="url(#glow)"':''}/><text x="${B.x}" y="${B.y+2.5}" font-size="6" font-weight="700" fill="#fff" text-anchor="middle">${c.s?'I':'O'}</text>`;},
   desc:'켜면 안의 램프에 불이 들어오는 로커 스위치예요. 1번이 전원 입력, 2번이 출력, N번이 램프의 다른 쪽(보통 GND/중성선)이에요. 켜져 있고 2번과 N번 사이에 전압이 걸리면 빨갛게 빛나요.'});
-pxDef({k:'push2',sub:'sw',title:'푸시 스위치 자기유지형 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','4','5 (공통)','6'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
+pxDef({k:'push2',sub:'sw',title:'푸시 스위치 자기유지형 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
   draw:(c,ph)=>{const B=dipBody(ph,'#3A3F47');return B.s+`<rect x="${B.x-9}" y="${B.y-9}" width="18" height="18" rx="2" fill="${c.s?'#7A8088':'#D9DEE4'}" stroke="#111"/>${c.s?`<rect x="${B.x-5}" y="${B.y-5}" width="10" height="10" fill="#555"/>`:''}`;},
   desc:'한 번 누르면 들어간 채로 남고(켜짐), 다시 누르면 튀어나오는(꺼짐) 스위치예요. 2극이라 두 회로를 함께 바꿔요(공통 2·5번 → 꺼짐 1·6번, 켜짐 3·4번).'});
-pxDef({k:'pushm',sub:'sw',title:'푸시 스위치 순간형 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','4','5 (공통)','6'],mom:1,init:()=>({}),contacts:(c,r)=>r&&r.pr?[[1,2],[4,3]]:[[1,0],[4,5]],
+pxDef({k:'pushm',sub:'sw',title:'푸시 스위치 순간형 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],mom:1,init:()=>({}),contacts:(c,r)=>r&&r.pr?[[1,2],[4,3]]:[[1,0],[4,5]],
   draw:(c,ph,r)=>{const B=dipBody(ph,'#3A3F47');return B.s+`<rect x="${B.x-9}" y="${B.y-9}" width="18" height="18" rx="2" fill="${r&&r.pr?'#7A8088':'#E8B820'}" stroke="#111"/>`;},
   desc:'누르는 동안만 바뀌는 2극 푸시 스위치예요(놓으면 돌아옴). 공통 2·5번이 평소엔 1·6번, 누르는 동안 3·4번에 이어져요.'});
-for(const n of [4,8])pxDef({k:'dip'+n,sub:'sw',title:`DIP 스위치 ${n}극`,lay:'dip',cols:rng(n,i=>i),pins:[...rng(n,i=>String(i+1)),...rng(n,i=>String(2*n-i))],init:()=>({bits:rng(n,()=>0)}),
+for(const n of [4,8])pxDef({k:'dip'+n,sub:'sw',title:`DIP 스위치 ${n}극`,lay:'dip',cols:rng(n,i=>i),pins:rng(2*n,i=>String(i+1)),init:()=>({bits:rng(n,()=>0)}),
   contacts:c=>rng(n,i=>i).filter(i=>(c.bits||[])[i]).map(i=>[i,2*n-1-i]),
   tap:(c,side)=>{const i=Math.max(0,Math.min(n-1,Math.round((side+1)/2*(n-1))));c.bits=(c.bits||rng(n,()=>0)).slice();c.bits[i]=c.bits[i]?0:1;return true;},
   draw:(c,ph)=>{const B=dipBody(ph,'#C23B3B',8);let s=B.s;for(let i=0;i<n;i++){const x=ph[i].x,on=(c.bits||[])[i];s+=`<rect x="${x-4}" y="${B.y-10}" width="8" height="20" fill="#F2F2F2"/><rect x="${x-3.5}" y="${on?B.y-9.5:B.y+.5}" width="7" height="9" fill="#2B2F35"/>`;}
@@ -4242,7 +4243,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-25 · 점검 v3';
+const APP_VER='2026-11-25 · 부품 v4';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
