@@ -1273,6 +1273,7 @@ const XOR=(a,b)=>a===X||b===X?X:a^b;
 const anyX=a=>a.some(v=>v===X);
 const toNum=a=>a.reduce((s,v,i)=>s|(v<<i),0);
 const LVK=['L','H','X','Z','S'];
+const GLOW_SHORT=.15;   // 이보다 짧게 켜졌던 칸만 꺼진 뒤 잔상(멀티플렉싱 표시용)
 
 /* ───────── IC 정의 ───────── */
 const CHIPS={};
@@ -1644,6 +1645,7 @@ def({name:'HEX-DISP',title:'16진 표시기 (논리 내장)',disp:'hex',bodyH:36
 /* ═════ LED 표시 소자 확장: 공통 표시 엔진(disp:'gen') ═════
    부품마다 핀 이름과 '켜지는 칸'(애노드 핀 a, 캐소드 핀 k, 모양 s, 색 c)만 적으면, 칸마다 a가 HIGH이고 k가 LOW일 때 켜진다.
    논리 회로가 들어 있는 표시기는 look(상태)로 켜질 칸을 정한다. 빠르게 번갈아 켜는(멀티플렉싱) 회로도 보이도록 꺼진 뒤 0.15초 동안 잔상이 남는다.
+   잔상은 잠깐(GLOW_SHORT 안) 켜졌다 꺼진 칸에만 남긴다. 오래 켜져 있던 칸까지 남기면 숫자가 바뀌는 순간 두 숫자가 겹쳐 보인다(7→6이 잠깐 8로).
    핀 배치·부품 이름은 이 시뮬레이터에서 쓰기 쉽게 정한 것이에요(실제 제품은 제품마다 달라요) */
 const LSUB=[['pk','낱개 LED · 모양 · 렌즈'],['fn','다색 · 기능 내장 · 스마트 LED'],['cbi','기판 표시등(CBI) · 패널'],['seg','세그먼트 표시기'],['mat','도트 매트릭스'],['bar','막대 그래프 · 라이트 바 · LED 링'],['smart','지능형 표시기 (논리 내장)'],['drv','표시 소자 드라이버 IC']];
 const LCO={R:'#FF3B30',G:'#34C759',Y:'#FFCC00',B:'#3B82F6',O:'#FF9500',W:'#F2F2F7'};
@@ -2385,7 +2387,7 @@ function settle(){
       else lit=d.els.map(e=>{const pa=A(e.a).find(p=>v(p)===Hh),pk=A(e.k).find(p=>v(p)===L);let on=!!(pa&&pk);
         if(on&&e.minV){const va=vOf(nt(pa)),vk=vOf(nt(pk));if(va!=null&&vk!=null&&va-vk<e.minV){on=false;lowV=Math.max(lowV,e.minV);}}
         if(on&&!weak.has(nt(pa))&&!weak.has(nt(pk)))noR=true;return on;});
-      const now=simNow();r.off=r.off||[];(r.lit0||[]).forEach((x,i)=>{if(x&&!lit[i])r.off[i]=now;});r.lit0=lit;SIM.disp.set(c.id,{lit,txt,br});
+      const now=simNow();r.off=r.off||[];r.onT=r.onT||[];const l0=r.lit0||[];lit.forEach((x,i)=>{if(x&&!l0[i])r.onT[i]=now;});l0.forEach((x,i)=>{if(x&&!lit[i])r.off[i]=now-(r.onT[i]??-9)<GLOW_SHORT?now:-9;});r.lit0=lit;SIM.disp.set(c.id,{lit,txt,br});
       if(noR&&!d.look)W_.push(['warn',`${LBL.get(c.id)} ${d.title}에 저항 없이 전압이 바로 걸린 칸이 있어요. 실제로는 그 LED가 탈 수 있으니 칸(획)마다 저항을 직렬로 넣으세요.`]);
       if(lowV)W_.push(['warn',`${LBL.get(c.id)} ${d.title}: 켜는 데 약 ${lowV}V 이상이 필요한데 전압이 모자라 안 켜져요. 공통 애노드를 9~12V 전원에 잇고, 획은 고전압 드라이버로 LOW로 내리세요.`]);}
     else if(c.t==='ic'&&CHIPS[c.chip].disp){const d=CHIPS[c.chip],v=nm=>lvAt(hs[d.idx[nm]]),strongPair=(a,k)=>!weak.has(netOf[hs[d.idx[a]]])&&!weak.has(netOf[hs[d.idx[k]]]);let noR=false;
@@ -4831,7 +4833,7 @@ function schSettle(){const N=schNets(true),now=simNow(),ics=SCH.parts.filter(p=>
   for(const p of SCH.parts){const d=p.t==='ic'&&CHIPS[p.chip];if(!d||d.disp!=='gen')continue;const r=srt(p),v=nm=>lvAt(p.id,d.idx[nm]);let lit,txt;
     if(d.look){const o=d.look(SCH.power&&r.st?r.st:null,p,v,SCH.power)||{};lit=o.lit||d.els.map(()=>false);txt=o.txt;}
     else lit=d.els.map(e=>[].concat(e.a).some(x=>v(x)===Hh)&&[].concat(e.k).some(x=>v(x)===L));
-    const now=simNow();r.off=r.off||[];(r.lit0||[]).forEach((x,i)=>{if(x&&!lit[i])r.off[i]=now;});r.lit0=lit;SIM_S.disp.set(p.id,{lit,txt});}
+    const now=simNow();r.off=r.off||[];r.onT=r.onT||[];const l0=r.lit0||[];lit.forEach((x,i)=>{if(x&&!l0[i])r.onT[i]=now;});l0.forEach((x,i)=>{if(x&&!lit[i])r.off[i]=now-(r.onT[i]??-9)<GLOW_SHORT?now:-9;});r.lit0=lit;SIM_S.disp.set(p.id,{lit,txt});}
   for(const p of SCH.parts){if(p.t==='led')SIM_S.led.set(p.id,{lit:lvAt(p.id,0)===Hh&&lvAt(p.id,1)===L||(p.lk==='bip'&&lvAt(p.id,0)===L&&lvAt(p.id,1)===Hh)});
     if(p.t==='seg7'){const v=[0,1,2,3,4,5,6,7,8,9].map(k=>lvAt(p.id,k)),act=p.ca?L:Hh,cv=p.ca?Hh:L,com=v[2]===cv,on={};SEG7PINS.forEach((s,i)=>{if(s!=='COM')on[s]=com&&v[i]===act;});SIM_S.seg.set(p.id,on);}}}
 const sLvlOfPin=(id,k)=>{if(!SIM_S.net)return Z;const v=SIM_S.lvl.get(SIM_S.net.net(id,k));return v===undefined?Z:v;};
