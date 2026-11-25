@@ -582,7 +582,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 </div>
 <div class="modal" id="impDlg" hidden role="dialog" aria-modal="true" aria-labelledby="impTitle">
   <div class="mbox">
-    <div class="mhead"><b id="impTitle">AI 회로 · 파일로 부품 배치</b><button class="btn" id="impX">닫기</button></div>
+    <div class="mhead"><b id="impTitle">AI 회로 · 파일로 부품 배치 <span id="appVer" style="font-size:11px;font-weight:400;color:var(--muted)"></span></b><button class="btn" id="impX">닫기</button></div>
     <div class="mbody">
       <div class="aibox">
         <label for="aiAsk"><b>AI에게 회로 부탁하기</b> · 만들고 싶은 회로를 말로 쓰세요</label>
@@ -4193,7 +4193,9 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   fitView();const got=S.comps.filter(c=>c.t!=='wire').length;
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
-function openImport(file){$('impDlg').hidden=false;closeMenu();
+/* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
+const APP_VER='2026-11-25 · 배치 v2';
+function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
 async function handleImportFile(f){
@@ -4220,7 +4222,7 @@ function runImport(){let txt=$('impText').value;if(!txt.trim()){impMsg('먼저 �
   applyWireRules(S.comps.filter(c=>c.t==='wire'),'all');   // 전선 정리 규칙: 가로·세로, 겹치지 않게, 기능별 색
   commit(true);fitView();setTool('select');
   const rep=out.report,probs=[...r.errors,...rep.fail];closeImport();
-  $('info').innerHTML=`<div class="ttl"><b>자동 배치 결과</b></div><p class="desc">부품 ${rep.placed}개와 전선 ${rep.wires}개를 브레드보드 ${rep.boards}장에 배치했어요. 이전 회로는 Ctrl+Z로 되돌릴 수 있어요.</p>`
+  $('info').innerHTML=`<div class="ttl"><b>자동 배치 결과</b><span class="desc" style="margin:0 0 0 8px">${APP_VER}</span></div><p class="desc">부품 ${rep.placed}개와 전선 ${rep.wires}개를 브레드보드 ${rep.boards}장에 배치했어요. 이전 회로는 Ctrl+Z로 되돌릴 수 있어요.</p>`
     +(rep.auto.length?`<p class="desc">전원 핀을 자동으로 레일에 이은 IC: ${esc(rep.auto.join(', '))}</p>`:'')
     +(probs.length?`<h3>확인이 필요한 부분 ${probs.length}개</h3><ul class="ires">${probs.slice(0,30).map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:'<p class="desc">모든 연결을 이었어요.</p>')
     +`<p class="desc">작은 부품은 이어질 핀 옆에 붙여 꽂고, 전선은 [전선 정리] 규칙(가로·세로, 겹치지 않게, 기능별 색)으로 놓았어요. 부품을 옮긴 뒤에는 [전선 정리]를 다시 눌러 보세요.</p>`;openDock('info');
