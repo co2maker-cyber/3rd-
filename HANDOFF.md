@@ -3,7 +3,7 @@
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 5300줄): 브레드보드+회로도 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정
 
-## 현황 (모두 main 반영 = `0de6032`, 아티팩트 v47, 화면 버전표시 `APP_VER='2026-11-25 · PCB 설계'`)
+## 현황 (모두 main 반영, 아티팩트 v49, 화면 버전표시 `APP_VER='2026-11-25 · PCB 설계'`)
 ✓ 안내서 `breadboard/FILE-FORMAT.md`(A 부품·연결 목록 / B 저장 .json / IC 핀 표) + index.html 안 사본 `<script id="guideMd">` — 고치면 `node breadboard/tests/guide-sync.js --fix`
 ✓ [AI 회로] 버튼: CAD는 AI 직접 호출 안 함(사용자 지시). 부탁 문장+안내서 복사·안내서 보기/내려받기, AI 답 붙여넣기/파일(.md/.txt/.json, 코드블록 섞여도 `pickPayload`) → [보드에 배치하기]. 사진·설명글은 `guideAskFor`로 부탁 칸에 옮겨 안내. 아티팩트 capability = downloads만(sample 제거)
 ✓ [전선 정리] `tidyWires`/`applyWireRules`: gridWires 길 + 기능별 색(`wireFnOf`, FNC). 목록 배치·회로도→보드 후 자동 적용
