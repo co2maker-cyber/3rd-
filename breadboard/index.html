@@ -351,6 +351,23 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .statusbar .lv{border:1px solid rgba(255,255,255,.5)}
 .toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:var(--fg);color:var(--chrome);padding:7px 14px;border-radius:6px;font-size:12.5px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px);z-index:9}
 .toast.on{opacity:.95}
+/* 오류 알림: 새 문제가 생기면 보드 위쪽에 카드로 뜬다 */
+.alerts{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;gap:6px;width:min(440px,calc(100% - 24px));pointer-events:none}
+.alert{pointer-events:auto;display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:8px;padding:8px 8px 8px 10px;font-size:12.5px;line-height:1.45;box-shadow:0 4px 16px rgba(0,0,0,.22);animation:alIn .2s ease-out}
+.alert.bad{border-left-color:var(--bad)}
+.alert .ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px;background:var(--warn);color:#fff}
+.alert.bad .ic{background:var(--bad)}
+.alert .bt{display:flex;gap:4px;align-items:center}
+.alert button{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:5px;padding:3px 8px;cursor:pointer;min-height:28px}
+.alert button.x{border:0;font-size:15px;padding:2px 6px}
+.alert .more{grid-column:2/4;font-size:11.5px;opacity:.75}
+@keyframes alIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.wring{fill:none;stroke:var(--warn);stroke-width:2.2;stroke-dasharray:5 3;pointer-events:none;animation:wrB 1s ease-in-out infinite}
+.wring.bad{stroke:var(--bad)}
+.wmark circle{fill:var(--warn)}.wmark.bad circle{fill:var(--bad)}.wmark text{fill:#fff;font-size:10px;font-weight:700;text-anchor:middle}.wmark{pointer-events:none}
+@keyframes wrB{50%{stroke-opacity:.25}}
+@media (prefers-reduced-motion:reduce){.wring,.alert{animation:none}}
+.warns li[data-wid]{cursor:pointer}.warns li[data-wid]:hover{text-decoration:underline}
 /* 좁은 화면: 위아래로 쌓고 페이지 스크롤 */
 @media (max-width:900px){
   .tbtn{min-width:38px;font-size:10.5px}.grp{padding:0 4px}select.ex{max-width:calc(50vw - 40px);min-width:0}
@@ -525,6 +542,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
   </section>
 
   <main class="canvas" id="bw">
+    <div class="alerts" id="alerts" aria-live="polite"></div>
     <div class="pbadge" id="pbadge" hidden>⏸ 일시 정지 중</div>
     <div class="sbadge" id="sbadge" hidden><b>슬로우</b><button data-rate="0.5" title="2배 느리게">½</button><button data-rate="0.25" class="on" title="4배 느리게">¼</button><button data-rate="0.1" title="10배 느리게">⅒</button><button data-x title="슬로우 끄기">✕</button></div>
 <svg id="bb" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -2353,7 +2371,7 @@ function settle(){
   const shortNets=new Set();for(const [net,v] of lvl)if(v===SH&&!weak.has(net))shortNets.add(net);
   if(S.power){
     const psShort=psus.some(c=>c.on!==false&&shortNets.has(netOf[ph.get(c.id)[0]]));
-    if(psShort)W_.push(['bad','전원 단락! 파워 서플라이나 건전지의 + 단자가 −(GND)나 다른 출력과 바로 이어져 있어요. 실제라면 전원이 꺼지거나 건전지·부품이 뜨거워져 탈 수 있어요.']);
+    if(psShort)W_.push(['bad','전원 단락! 파워 서플라이나 건전지의 + 단자가 −(GND)나 다른 출력과 바로 이어져 있어요. 실제라면 전원이 꺼지거나 건전지·부품이 뜨거워져 탈 수 있어요.',(psus.find(c=>c.on!==false&&shortNets.has(netOf[ph.get(c.id)[0]]))||{}).id]);
     if(psus.length&&!psus.some(c=>c.on!==false))W_.push(['warn','파워 서플라이의 출력이 꺼져 있어요. 서플라이를 누르고 [속성]에서 출력을 켜세요.']);
     const hv=psus.filter(c=>c.on!==false&&+c.v>=50);
     if(hv.length)W_.push(['warn',`파워 서플라이가 ${Math.max(...hv.map(c=>+c.v))}V예요. 50V가 넘는 직류는 실제로는 만지면 감전될 수 있어요. 브레드보드와 점퍼선도 이런 전압용이 아니에요.`]);
@@ -2363,7 +2381,7 @@ function settle(){
     if(psShort){}else if(railShort)W_.push(['bad','전원 단락! + 레일과 − 레일이 전선이나 스위치로 바로 이어져 있어요. 실제 회로라면 전원 장치가 꺼지거나 부품이 탈 수 있어요.']);
     else if(shortNets.size)W_.push(['bad','출력 충돌! 한 줄에 HIGH와 LOW가 동시에 들어오고 있어요(출력끼리 또는 출력과 전원이 바로 연결됨). 해당 전선은 자주색으로 깜박여요.']);
   }
-  for(const c of S.comps){const hs=ph.get(c.id);
+  for(const c of S.comps){const hs=ph.get(c.id),w0=W_.length;
     if(c.t==='ic'&&S.power&&/^74LS4[678]$/.test(c.chip)&&shortNets.has(netOf[hs[CHIPS[c.chip].idx['~BI']]]))W_.push(['warn',`${LBL.get(c.id)} ${c.chip}의 4번 핀(BI/RBO)이 + 에 바로 묶여 있는데, 0을 지우는 중이라(RBI̅가 LOW, 입력 0) 이 핀이 LOW를 내보내면서 충돌해요. 4번 핀은 비워 두거나, RBI̅(5번)를 + 에 연결하세요.`]);
     if(c.t==='ic'&&S.power&&!rt(c).pw){const d=CHIPS[c.chip];
       W_.push(['warn',`${LBL.get(c.id)} ${c.chip}에 전원이 안 들어가요. ${d.idx[d.vcc]+1}번 핀(${d.vcc})을 + 에, ${d.idx[d.gnd]+1}번 핀(${d.gnd})을 − 에 연결하세요.${psus.length?' (파워 서플라이나 건전지를 쓰는 중이라 레일에 자동 전원이 없어요. 전원의 +, −가 이 칩의 레일까지 전선으로 이어져 있는지 보세요.)':''}`]);}
@@ -2413,6 +2431,7 @@ function settle(){
       if(noR)W_.push(['warn',`${LBL.get(c.id)} ${d.title}에 저항 없이 전압이 바로 걸린 칸이 있어요. 실제로는 그 LED가 탈 수 있으니 칸(색)마다 220Ω~1kΩ 저항을 직렬로 넣으세요.`]);}
     if(c.t==='seg7'){const v=hs.map(lvAt),on={},act=c.ca?L:Hh,cv=c.ca?Hh:L;const com=v[2]===cv||v[7]===cv;
       SEG7PINS.forEach((s,i)=>{if(s!=='COM')on[s]=com&&v[i]===act;});SIM.seg.set(c.id,on);}
+    for(let i=w0;i<W_.length;i++)W_[i][2]=c.id;   // 이 부품에서 난 문제: 알림·테두리·[보기]에 쓴다
   }
   if(SIM.unstable)W_.push(['warn','회로가 한 상태로 멈추지 않고 계속 바뀌고 있어요(발진). 출력이 자기 입력으로 되돌아가는 연결이 있는지 확인하세요.']);
   if(!S.power)W_.unshift(['warn','전원이 꺼져 있어요. 위쪽 [전원] 버튼을 눌러 켜세요.']);
@@ -2715,7 +2734,7 @@ function render(){
   syncTerms();syncSel();LBL=labels();buildRoutes();const now=simNow();
   // 와이어를 가장 위에 그림
   const order=[...S.comps].sort((a,b)=>(a.t==='wire')-(b.t==='wire'));
-  gC.innerHTML=order.map(c=>compSVG(c,now)).join('')+doneBadges();
+  gC.innerHTML=order.map(c=>compSVG(c,now)).join('')+doneBadges()+warnRings();
   svg.classList.toggle('bchk',bchk);if(bchk)gC.querySelectorAll('.c[data-id]').forEach(g=>{const c=compById(+g.dataset.id);g.classList.toggle('undone',!!c&&!c.done);});
   bchkLabel();
   if(FLOWQ)launchFlows();
@@ -2878,10 +2897,41 @@ const $=id=>document.getElementById(id);
 const lvBadge=(v,w)=>`<span class="lv ${LVK[v]}${w?' w':''}" title="${lvText(v,w)}">${['0','1','?','—','!'][v]}</span>`;
 const lvText=(v,w,a)=>a!=null?(['LOW','HIGH'][v]||'')+' · 아날로그 '+fmtV(a):(['LOW (0V, 0)','HIGH (5V, 1)','알 수 없음 (X)','연결 안 됨 (떠 있음)','단락 / 충돌!'][v])+(w&&v<2?' · 저항을 거쳐서':'');
 const pinHTML=nm=>nm[0]==='~'?`<span class="ov">${esc(nm.slice(1))}</span>`:esc(nm);
+/* ── 오류 알림 ──
+   점검에서 새 문제(경고·단락)가 생기면 보드 위쪽에 카드로 띄우고, 그 부품에 깜박이는 테두리를 그린다.
+   같은 문제는 사라졌다가 3초 넘게 지나 다시 생길 때만 또 알린다(클럭 회로에서 깜박이는 경고가 계속 뜨지 않게).
+   전원 꺼짐·안내(info)는 알리지 않는다 */
+const WSEEN=new Map();let alertT=null;
+const wKey=w=>w[0]+'|'+(w[2]??'')+'|'+w[1].replace(/[\d.]+/g,'#');
+const wIsAlert=w=>(w[0]==='bad'||w[0]==='warn')&&!/^전원이 꺼져 있어요/.test(w[1]);
+function compBox(c){return INST.has(c.t)?instRect(c):bodyRect(c);}
+function warnRings(){if(!SIM.warns)return'';const best=new Map();
+  for(const w of SIM.warns){if(w[2]==null||!wIsAlert(w))continue;if(best.get(w[2])!=='bad')best.set(w[2],w[0]);}
+  let s='';for(const [id,k] of best){const c=compById(id),b=c&&compBox(c);if(!b)continue;
+    s+=`<rect class="wring ${k}" x="${b.x0-5}" y="${b.y0-5}" width="${b.x1-b.x0+10}" height="${b.y1-b.y0+10}" rx="6"/><g class="wmark ${k}" transform="translate(${b.x0-5} ${b.y0-5})"><circle r="7"/><text y="3.5">!</text></g>`;}
+  return s;}
+function focusComp(id){const c=compById(id);if(!c)return;if(VM==='sch'){setVM('bb');requestAnimationFrame(()=>requestAnimationFrame(()=>focusComp(id)));return;}
+  setSelIds([id]);const b=compBox(c);
+  if(b){const vw=cw()/view.s,vh=ch()/view.s;if(b.x0<view.x||b.y0<view.y||b.x1>view.x+vw||b.y1>view.y+vh){view.x=(b.x0+b.x1)/2-vw/2;view.y=(b.y0+b.y1)/2-vh/2;applyView();}}
+  render();renderInfo();}
+function closeAlerts(){$('alerts').innerHTML='';clearTimeout(alertT);}
+function notifyWarns(){const now=Date.now(),fresh=[];
+  for(const w of SIM.warns){if(!wIsAlert(w))continue;const k=wKey(w),t=WSEEN.get(k);if(t==null||now-t>3000)fresh.push(w);WSEEN.set(k,now);}
+  for(const [k,t] of WSEEN)if(now-t>60000)WSEEN.delete(k);
+  if(!fresh.length||(typeof VM!=='undefined'&&VM==='sch'))return;
+  fresh.sort((a,b)=>(b[0]==='bad')-(a[0]==='bad'));
+  const box=$('alerts'),shown=fresh.slice(0,2),rest=fresh.length-shown.length;
+  box.innerHTML=shown.map((w,i)=>`<div class="alert ${w[0]}" role="alert"><span class="ic">!</span><div>${esc(w[1])}</div><div class="bt">${w[2]!=null&&compById(w[2])?`<button data-go="${w[2]}">보기</button>`:''}<button class="x" data-x title="알림 닫기" aria-label="알림 닫기">✕</button></div>${i===shown.length-1&&rest>0?`<div class="more">문제가 ${rest}개 더 있어요 · <button data-all>점검 창 열기</button></div>`:''}</div>`).join('');
+  box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{focusComp(+b.dataset.go);closeAlerts();});
+  box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>b.closest('.alert').remove());
+  box.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>{openDock('warn');closeAlerts();});
+  clearTimeout(alertT);alertT=setTimeout(closeAlerts,fresh.some(w=>w[0]==='bad')?12000:8000);}
 function renderWarns(){const all=SIM.warns,w=all.filter(x=>x[0]!=='info');const bad=w.some(x=>x[0]==='bad');const wc=$('wcount');wc.textContent=w.length;wc.className='cnt'+(w.length?(bad?' b':' w'):'');
   {const bd=$('wbadge');bd.hidden=!w.length;bd.textContent=w.length;bd.className='bdg'+(bad?' b':'');}
   $('sSim').textContent=!S.power?'● 전원 꺼짐':paused?'⏸ 일시 정지':SLOW.on?`● 슬로우 ×${({0.5:'½',0.25:'¼',0.1:'⅒'})[SLOW.rate]}`:SIM.unstable?'● 발진 중':bad?'● 단락/충돌':w.length?`● 경고 ${w.length}건`:'● 시뮬레이션 정상';
-  $('warns').innerHTML=all.length?all.map(([k,t])=>`<li class="${k}">${esc(t)}</li>`).join(''):`<li class="ok">${S.comps.length?'문제가 보이지 않아요. 회로가 정상적으로 동작 중이에요.':'보드가 비어 있어요. [부품 고르기]에서 부품을 골라 꽂아 보세요.'}</li>`;}
+  $('warns').innerHTML=all.length?all.map(([k,t,id])=>`<li class="${k}"${id!=null&&compById(id)?` data-wid="${id}" title="눌러서 이 부품 보기"`:''}>${esc(t)}</li>`).join(''):`<li class="ok">${S.comps.length?'문제가 보이지 않아요. 회로가 정상적으로 동작 중이에요.':'보드가 비어 있어요. [부품 고르기]에서 부품을 골라 꽂아 보세요.'}</li>`;
+  $('warns').querySelectorAll('[data-wid]').forEach(li=>li.onclick=()=>focusComp(+li.dataset.wid));
+  notifyWarns();}
 function renderInfo(){const box=$('info');
   syncSel();
   if(sel&&sel.type==='multi'){const ids=[...SEL];
@@ -4260,7 +4310,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-25 · 예제 v5';
+const APP_VER='2026-11-25 · 오류 알림';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
