@@ -474,6 +474,20 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
         <option value="pascap">Ⓟ3 커패시터: 바이패스·늦게 켜기·슈퍼커패시터 백업</option>
         <option value="passw">Ⓟ4 스위치·인코더: 택트·토글·DIP·로터리·셀렉터</option>
         </optgroup>
+        <optgroup label="논리 IC 모음 (74LS·74HC 비교)">
+        <option value="lg2">ⓘ1 2입력 게이트 9종 + 단독 NAND·NOR·XNOR (스위치 A·B)</option>
+        <option value="lg3">ⓘ2 3·4·8입력 게이트 12종 (스위치 A·B·C)</option>
+        <option value="lbuf">ⓘ3 인버터·버퍼: 슈미트·오픈 컬렉터·3상태 (A·EN)</option>
+        <option value="lff">ⓘ4 플립플롭·래치: D형·JK형 10종 (1Hz 클럭)</option>
+        <option value="lcnt">ⓘ5 카운터: 동기식 161·163, 리플 93·393 (2Hz)</option>
+        <option value="lud">ⓘ6 업/다운 카운터 192·193 (올려 세기·내려 세기)</option>
+        <option value="lshift">ⓘ7 시프트 레지스터: 595·164·194·165</option>
+        <option value="lmux">ⓘ8 데이터 선택기: 151·153·157·158 (S0~S2)</option>
+        <option value="ldec">ⓘ9 디코더·인코더: 138·139·42·148 (A0~A2)</option>
+        <option value="larith">ⓘ10 덧셈기·비교기: 83·283·85·688 (A + 2, A와 2 비교)</option>
+        <option value="lbus">ⓘ11 8비트 래치·레지스터: 273·373·374</option>
+        <option value="lbcd">ⓘ12 BCD→7세그 74LS46(애노드)·74LS48(캐소드) + 건전지 표시등</option>
+        </optgroup>
       </select>
     </div>
   </nav>
@@ -4179,9 +4193,12 @@ function autoLayout(spec){const report={placed:0,wires:0,fail:[],auto:[],boards:
         addWire(hole_,rh,sign==='+'?'#D93A3A':'#24282D');}continue;}
     if(nodes.length<2)continue;const color=SIGC[ci++%SIGC.length];
     nodes.sort((x,y)=>x.b-y.b||x.c-y.c||(x.top?0:1)-(y.top?0:1));
-    for(let i=0;i<nodes.length-1;i++){const A=nodes[i],B=nodes[i+1];
-      const ha=freeIn(A,A.top?['b','c','d','a']:['i','h','g','j']),hb=freeIn(B,B.top?['b','c','d','a']:['i','h','g','j']);
-      if(!ha||!hb){report.fail.push(`${n.name||'연결'}: 빈 구멍이 모자라 일부 전선을 잇지 못했어요`);continue;}addWire(ha,hb,color);}}
+    // 나무 모양으로 잇기: 다음 줄을, 이미 이어진 줄 가운데 빈 구멍이 남은 가장 가까운 줄에 잇는다(한 줄로 늘어 잇다가 붐비는 줄에서 구멍이 모자라지 않게)
+    const RW=t=>t?['b','c','d','a']:['i','h','g','j'],dist=(x,y)=>(x.b!==y.b?1000:0)+Math.abs(x.c-y.c)+(x.top!==y.top?3:0),done=[nodes[0]];let lost=false;
+    for(const B of nodes.slice(1)){const hb=freeIn(B,RW(B.top));if(!hb){lost=true;continue;}
+      const A=done.filter(x=>freeIn(x,RW(x.top))).sort((x,y)=>dist(x,B)-dist(y,B))[0];if(!A){lost=true;continue;}
+      const ha=freeIn(A,RW(A.top));addWire(ha,hb,color);done.push(B);}
+    if(lost)report.fail.push(`${n.name||'연결'}: 빈 구멍이 모자라 일부 전선을 잇지 못했어요`);}
   report.boards=boards.length;return{comps,boards,report,byRef};}
 /* ───────── AI 회로 · 파일 만들기 안내서 ───────── */
 const GUIDE_MD=()=>$('guideMd').textContent.replace(/^\n/,'');
@@ -4243,7 +4260,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-25 · 부품 v4';
+const APP_VER='2026-11-25 · 예제 v5';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -4510,8 +4527,11 @@ function ledKit(nb){const Lst=[],used=new Set(),boards=rng(nb,i=>({id:i+1,type:'
   const btnLo=p=>{add({t:'btn',pins:[rail(p.b,p.top?'tn':'bn',p.col),hole(p)]});Q.push(()=>doRail(p,10000,true,true));return p;};   // 누르면 LOW(평소엔 풀업으로 HIGH)
   const clk=(p,hz)=>{add({t:'clk',pins:[hole(p)],hz});return p;};
   const pwr=(P,d)=>{vcc(P(d.vcc));gnd(P(d.gnd));};
+  // 1자리 7세그먼트(10핀): 가운데 홈을 걸쳐 col~col+4. 핀 이름 e d COM c dp b a COM f g
+  const seg7=(b,col,ca)=>{add({t:'seg7',col,b,ca:!!ca});for(let i=0;i<5;i++){used.add(H(b,'f',col+i));used.add(H(b,'e',col+i));}
+    const N=['e','d','COM','c','dp','b','a','COM','f','g'];return nm=>{const i=N.indexOf(nm);if(i<0)throw new Error('seg7 '+nm);return i<5?at(b,false,col+i):at(b,true,col+(9-i));};};
   const fin=()=>{for(const f of Q)f();return{comps:Lst,boards};};
-  return{add,chip,px,vcc,gnd,link,at,led,led3,sw,btn,btnLo,clk,rail,hole,pwr,fin};}
+  return{add,chip,px,vcc,gnd,link,at,led,led3,sw,btn,btnLo,clk,rail,hole,pwr,seg7,fin};}
 // 4비트 카운터(161) 한 벌: 클럭을 받아 QA~QD를 내보낸다
 function kitCounter(K,b,col,hz,clkCol){const P=K.chip('74HC161',col,b),d=CHIPS['74HC161'];K.pwr(P,d);for(const n of ['~CLR','ENP','ENT','~LOAD'])K.vcc(P(n));
   const c=K.clk(K.at(b,false,clkCol),hz);K.link(c,P('CLK'),0,YEL);return P;}
@@ -5271,6 +5291,116 @@ window.addEventListener('resize',()=>{if(!$('tut').hidden)tutShow();});
 </script>
 <script>
 'use strict';
+/* ── 논리 IC 모음 예제: 74LS·74HC 칩을 기능별로 나란히 꽂아 같은 입력에 어떻게 답하는지 비교 ──
+   icDemo(보드 수, 신호, 칩 목록)
+   · 신호: [이름, 'sw'|'clk', 처음 값/주파수] — 보드 1 왼쪽에 놓고, 같은 신호를 쓰는 핀끼리 차례로 전선으로 잇는다
+   · 칩: {chip, ins:{핀:신호}, hi:[핀](VCC), lo:[핀](GND), leds:[[핀, 색, LOW일 때 켜짐?]], pull:[핀](오픈 컬렉터 출력 풀업 1kΩ), jump:[[핀,핀]](칩 안 연결), gate:종류(단독 게이트)}
+   · 칩마다 오른쪽 빈 열에 출력 LED(330Ω). LOW일 때 켜지는 출력은 LED를 VCC 쪽에서 받는다(실제 배선과 같게) */
+function icDemo(nb,sigs,specs,after){const width=s=>(s.gate?5:CHIPS[s.chip].pins.length/2)+1+(s.leds||[]).length*2+1;
+  {let c=2+sigs.reduce((t,[,k])=>t+(k==='clk'?2:3),0)+2,bb=1;for(const s of specs){if(c+width(s)>49){bb++;c=4;}c+=width(s);}nb=Math.max(nb||1,bb);}   // 필요한 보드 수
+  const K=ledKit(nb),last={};let col=2;
+  for(const [name,kind,arg] of sigs){if(kind==='clk')last[name]=K.clk(K.at(1,false,col),arg);else last[name]=K.sw(K.at(1,true,col),arg);col+=kind==='clk'?2:3;}
+  let b=1;col+=2;
+  const chain=(sig,p)=>{K.link(last[sig],p,0,sig==='CLK'?YEL:sig==='EN'||sig==='LD'?PUR:GRN);last[sig]=p;};
+  for(const s of specs){const n=s.gate?5:CHIPS[s.chip].pins.length/2,wd=width(s);
+    if(col+wd>49){b++;col=4;}   // 새 보드는 4열부터(왼쪽에 저항이 쓸 빈 줄)
+    let P;
+    if(s.gate){const pc=gatePinCols(s.gate),pins=pc.map(k=>pref(b)+'c'+(col+k));K.add({t:'gate',kind:s.gate,pins});
+      const names=GATES[s.gate].pins;P=nm=>K.at(b,true,col+pc[names.indexOf(nm)]);}
+    else{P=K.chip(s.chip,col,b);K.pwr(P,CHIPS[s.chip]);}
+    for(const [pin,sig] of Object.entries(s.ins||{}))chain(sig,P(pin));
+    for(const pin of s.hi||[])K.vcc(P(pin));for(const pin of s.lo||[])K.gnd(P(pin));
+    for(const [a,c] of s.jump||[])K.link(P(a),P(c),0,ORG);
+    for(const pin of s.pull||[])K.vcc(P(pin),1000);
+    let lc=col+n+1;for(const [pin,color,low] of s.leds||[]){const x=K.led(b,lc,{color:color||'red'});if(low){K.vcc(x.a,330);K.link(x.k,P(pin),0,BLU);}else{K.link(P(pin),x.a,330);K.gnd(x.k);}lc+=2;}
+    col+=wd;}
+  if(after)after(K,b);
+  return K.fin();}
+const ICEX={
+  // ⓘ1 2입력 게이트 9종 + 단독 게이트 3종: 스위치 A·B 하나로 모두 비교
+  lg2:()=>icDemo(3,[['A','sw',false],['B','sw',false]],[
+    {chip:'74LS00',ins:{'1A':'A','1B':'B'},leds:[['1Y','red']]},{chip:'74LS02',ins:{'1A':'A','1B':'B'},leds:[['1Y','green']]},{chip:'74HC02',ins:{'1A':'A','1B':'B'},leds:[['1Y','green']]},
+    {chip:'74LS32',ins:{'1A':'A','1B':'B'},leds:[['1Y','yellow']]},{chip:'74LS86',ins:{'1A':'A','1B':'B'},leds:[['1Y','blue']]},
+    {chip:'74LS132',ins:{'1A':'A','1B':'B'},leds:[['1Y','red']]},{chip:'74HC132',ins:{'1A':'A','1B':'B'},leds:[['1Y','red']]},
+    {chip:'74LS03',ins:{'1A':'A','1B':'B'},pull:['1Y'],leds:[['1Y','orange']]},{chip:'74LS09',ins:{'1A':'A','1B':'B'},pull:['1Y'],leds:[['1Y','orange']]},
+    {gate:'NAND',ins:{A:'A',B:'B'},leds:[['Y','red']]},{gate:'NOR',ins:{A:'A',B:'B'},leds:[['Y','green']]},{gate:'XNOR',ins:{A:'A',B:'B'},leds:[['Y','blue']]}]),
+  // ⓘ2 3·4·8입력 게이트 12종: 스위치 A·B·C (4·8입력의 남는 입력은 VCC)
+  lg3:()=>icDemo(4,[['A','sw',true],['B','sw',true],['C','sw',false]],[
+    ...['74LS','74HC'].flatMap(f=>[{chip:f+'10',ins:{'1A':'A','1B':'B','1C':'C'},leds:[['1Y','red']]},{chip:f+'11',ins:{'1A':'A','1B':'B','1C':'C'},leds:[['1Y','green']]},
+      {chip:f+'27',ins:{'1A':'A','1B':'B','1C':'C'},leds:[['1Y','yellow']]},{chip:f+'20',ins:{'1A':'A','1B':'B','1C':'C'},hi:['1D'],leds:[['1Y','red']]},
+      {chip:f+'21',ins:{'1A':'A','1B':'B','1C':'C'},hi:['1D'],leds:[['1Y','green']]},{chip:f+'30',ins:{A:'A',B:'B',C:'C'},hi:['D','E','F','G','H'],leds:[['Y','blue']]}])]),
+  // ⓘ3 인버터·버퍼: 슈미트·오픈 컬렉터·3상태(EN: 126은 HIGH일 때, 125·244·240은 LOW일 때 출력)
+  lbuf:()=>icDemo(4,[['A','sw',true],['EN','sw',false]],[
+    {chip:'74LS04',ins:{'1A':'A'},leds:[['1Y','red']]},{chip:'74LS14',ins:{'1A':'A'},leds:[['1Y','red']]},
+    {chip:'74LS05',ins:{'1A':'A'},pull:['1Y'],leds:[['1Y','orange']]},{chip:'74LS07',ins:{'1A':'A'},pull:['1Y'],leds:[['1Y','orange']]},
+    {chip:'74LS125',ins:{'1A':'A','~1C':'EN'},leds:[['1Y','green']]},{chip:'74HC125',ins:{'1A':'A','~1C':'EN'},leds:[['1Y','green']]},
+    {chip:'74LS126',ins:{'1A':'A','1C':'EN'},leds:[['1Y','yellow']]},{chip:'74HC126',ins:{'1A':'A','1C':'EN'},leds:[['1Y','yellow']]},
+    {chip:'74LS244',ins:{'1A1':'A','~1G':'EN'},hi:['~2G'],leds:[['1Y1','blue']]},{chip:'74HC244',ins:{'1A1':'A','~1G':'EN'},hi:['~2G'],leds:[['1Y1','blue']]},
+    {chip:'74LS240',ins:{'1A1':'A','~1G':'EN'},hi:['~2G'],leds:[['1Y1','red']]},{chip:'74HC240',ins:{'1A1':'A','~1G':'EN'},hi:['~2G'],leds:[['1Y1','red']]}]),
+  // ⓘ4 플립플롭·래치: 1Hz 클럭 하나. D형은 스위치 D를 받아 두고, JK형은 J=K=1로 클럭마다 뒤집힘
+  lff:()=>icDemo(4,[['CLK','clk',1],['D','sw',true]],[
+    {chip:'74LS74',ins:{'1D':'D','1CLK':'CLK'},hi:['~1CLR','~1PRE'],leds:[['1Q','red']]},{chip:'74LS75',ins:{'1D':'D','C12':'CLK'},leds:[['1Q','red']]},
+    {chip:'74LS175',ins:{'1D':'D','CLK':'CLK'},hi:['~CLR'],leds:[['1Q','red']]},{chip:'74HC175',ins:{'1D':'D','CLK':'CLK'},hi:['~CLR'],leds:[['1Q','red']]},
+    {chip:'74LS112',ins:{'1CLK':'CLK'},hi:['1J','1K','~1PRE','~1CLR'],leds:[['1Q','green']]},{chip:'74HC112',ins:{'1CLK':'CLK'},hi:['1J','1K','~1PRE','~1CLR'],leds:[['1Q','green']]},
+    {chip:'74LS73',ins:{'1CLK':'CLK'},hi:['1J','1K','~1CLR'],leds:[['1Q','yellow']]},{chip:'74HC73',ins:{'1CLK':'CLK'},hi:['1J','1K','~1CLR'],leds:[['1Q','yellow']]},
+    {chip:'74LS109',ins:{'1CLK':'CLK'},hi:['1J','~1PRE','~1CLR'],lo:['~1K'],leds:[['1Q','blue']]},{chip:'74HC109',ins:{'1CLK':'CLK'},hi:['1J','~1PRE','~1CLR'],lo:['~1K'],leds:[['1Q','blue']]}]),
+  // ⓘ5 카운터: 같은 2Hz 클럭으로 동기식(161·163)과 리플(93·393)이 0~15를 세는 모습(QA~QD)
+  lcnt:()=>{const Q=['QA','QB','QC','QD'].map((q,i)=>[q,['red','yellow','green','blue'][i]]);return icDemo(4,[['CLK','clk',2]],[
+    {chip:'74LS161',ins:{CLK:'CLK'},hi:['~CLR','ENP','ENT','~LOAD'],lo:['A','B','C','D'],leds:Q},{chip:'74LS163',ins:{CLK:'CLK'},hi:['~CLR','ENP','ENT','~LOAD'],lo:['A','B','C','D'],leds:Q},
+    {chip:'74HC163',ins:{CLK:'CLK'},hi:['~CLR','ENP','ENT','~LOAD'],lo:['A','B','C','D'],leds:Q},{chip:'74LS93',ins:{CKA:'CLK'},jump:[['QA','CKB']],lo:['R01','R02'],leds:Q},
+    {chip:'74LS393',ins:{'1A':'CLK'},lo:['1CLR'],leds:Q.map(([q,c])=>['1'+q,c])},{chip:'74HC393',ins:{'1A':'CLK'},lo:['1CLR'],leds:Q.map(([q,c])=>['1'+q,c])}]);},
+  // ⓘ6 업/다운 카운터: 74LS192·193은 UP에 클럭(올려 세기), 74HC192·193은 DOWN에 클럭(내려 세기)
+  lud:()=>{const Q=['QA','QB','QC','QD'].map((q,i)=>[q,['red','yellow','green','blue'][i]]);return icDemo(3,[['CLK','clk',1]],[
+    ...['74LS192','74LS193'].map(c=>({chip:c,ins:{UP:'CLK'},hi:['DOWN','~LOAD'],lo:['CLR','A','B','C','D'],leds:Q})),
+    ...['74HC192','74HC193'].map(c=>({chip:c,ins:{DOWN:'CLK'},hi:['UP','~LOAD'],lo:['CLR','A','B','C','D'],leds:Q}))]);},
+  // ⓘ7 시프트 레지스터: 스위치 D의 값이 1Hz 클럭마다 QA→QD로 밀려 감. 165는 LD를 끄면 병렬 값(10110010)을 받고, 켜면 QH로 하나씩 내보냄
+  lshift:()=>{const Q=['QA','QB','QC','QD'].map((q,i)=>[q,['red','yellow','green','blue'][i]]);return icDemo(4,[['CLK','clk',1],['D','sw',true],['LD','sw',true]],[
+    ...['74HC595','74LS595'].map(c=>({chip:c,ins:{SER:'D',SRCLK:'CLK',RCLK:'CLK'},hi:['~SRCLR'],lo:['~OE'],leds:Q})),
+    {chip:'74LS164',ins:{A:'D',CLK:'CLK'},hi:['B','~CLR'],leds:Q},
+    ...['74LS194','74HC194'].map(c=>({chip:c,ins:{SR:'D',CLK:'CLK'},hi:['~CLR','S0'],lo:['S1','SL','A','B','C','D'],leds:Q})),
+    ...['74LS165','74HC165'].map(c=>({chip:c,ins:{'SH/~LD':'LD',CLK:'CLK'},hi:['A','C','D','G'],lo:['B','E','F','H','SER','INH'],leds:[['QH','red']]}))]);},
+  // ⓘ8 데이터 선택기: 스위치 S0·S1·S2로 고정 입력 10110010 중 하나를 고름(158은 뒤집어서)
+  lmux:()=>{const pat=[1,0,1,1,0,0,1,0];return icDemo(4,[['S0','sw',false],['S1','sw',false],['S2','sw',false]],[
+    ...['74LS151','74HC151'].map(c=>({chip:c,ins:{A:'S0',B:'S1',C:'S2'},lo:['~G',...pat.map((v,i)=>v?null:'D'+i).filter(Boolean)],hi:pat.map((v,i)=>v?'D'+i:null).filter(Boolean),leds:[['Y','green']]})),
+    ...['74LS153','74HC153'].map(c=>({chip:c,ins:{A:'S0',B:'S1'},lo:['~1G','1C1'],hi:['1C0','1C2','1C3','~2G'],leds:[['1Y','yellow']]})),
+    ...['74LS157','74HC157','74LS158','74HC158'].map(c=>({chip:c,ins:{S:'S0'},lo:['~G','1A'],hi:['1B'],leds:[['1Y',/158/.test(c)?'red':'blue']]}))]);},
+  // ⓘ9 디코더·인코더: 스위치 A0~A2(2진수). 디코더는 고른 번호의 출력만 LOW(LED 켜짐), 148은 켜진(LOW) 입력 중 가장 높은 번호를 2진수로
+  ldec:()=>{const Y4=(pre,c)=>[0,1,2,3].map(i=>[pre+i,c,true]);return icDemo(4,[['A0','sw',true],['A1','sw',false],['A2','sw',false]],[
+    {chip:'74LS138',ins:{A:'A0',B:'A1',C:'A2'},hi:['G1'],lo:['~G2A','~G2B'],leds:Y4('~Y','red')},
+    ...['74LS139','74HC139'].map(c=>({chip:c,ins:{'1A':'A0','1B':'A1'},lo:['~1G'],hi:['~2G'],leds:Y4('~1Y','yellow')})),
+    ...['74LS42','74HC42'].map(c=>({chip:c,ins:{A:'A0',B:'A1',C:'A2'},lo:['D'],leds:Y4('~','green')})),
+    ...['74LS148','74HC148'].map(c=>({chip:c,ins:{'~5':'A0','~6':'A1','~7':'A2'},hi:['~0','~1','~2','~3','~4'],lo:['~EI'],leds:[['~A0','blue',true],['~A1','blue',true],['~A2','blue',true]]}))]);},
+  // ⓘ10 덧셈기·비교기: A = 스위치 A1·A0(0~3), B = 2(0010)로 고정. 합 S1~S3, 크기 비교 A>B·A=B·A<B, 688은 같을 때 LOW
+  larith:()=>icDemo(4,[['A0','sw',true],['A1','sw',true]],[
+    {chip:'74LS83',ins:{A1:'A0',A2:'A1'},lo:['A3','A4','B1','B3','B4','C0'],hi:['B2'],leds:[['S1','red'],['S2','yellow'],['S3','green']]},
+    ...['74LS283','74HC283'].map(c=>({chip:c,ins:{A1:'A0',A2:'A1'},lo:['A3','A4','B1','B3','B4','C0'],hi:['B2'],leds:[['S1','red'],['S2','yellow'],['S3','green']]})),
+    ...['74LS85','74HC85'].map(c=>({chip:c,ins:{A0:'A0',A1:'A1'},lo:['A2','A3','B0','B2','B3','A<Bi','A>Bi'],hi:['B1','A=Bi'],leds:[['A>B','red'],['A=B','green'],['A<B','blue']]})),
+    ...['74LS688','74HC688'].map(c=>({chip:c,ins:{P0:'A0',P1:'A1'},lo:['~G','P2','P3','P4','P5','P6','P7','Q0','Q2','Q3','Q4','Q5','Q6','Q7'],hi:['Q1'],leds:[['~P=Q','green',true]]}))]),
+  // ⓘ11 8비트 래치·레지스터: 스위치 D를 1Hz 클럭에 맞춰 받아 둠. 273·374는 클럭이 올라갈 때, 373은 LE가 HIGH인 동안 그대로
+  lbus:()=>icDemo(3,[['CLK','clk',1],['D','sw',true]],[
+    ...['74LS273','74HC273'].map(c=>({chip:c,ins:{'1D':'D',CLK:'CLK'},hi:['~CLR'],leds:[['1Q','red']]})),
+    ...['74LS373','74HC373'].map(c=>({chip:c,ins:{'1D':'D',LE:'CLK'},lo:['~OE'],leds:[['1Q','green']]})),
+    ...['74LS374','74HC374'].map(c=>({chip:c,ins:{'1D':'D',CLK:'CLK'},lo:['~OE'],leds:[['1Q','blue']]}))]),
+  // ⓘ12 BCD → 7세그먼트 두 가지: 74LS90(0~9)이 74LS46(공통 애노드, LOW로 켬)과 74LS48(공통 캐소드, HIGH로 켬)을 함께 구동 + 건전지 표시등
+  lbcd:()=>{const K=ledKit(2),SEG='abcdefg'.split('');
+    const C=K.chip('74LS90',3,1);K.pwr(C,CHIPS['74LS90']);for(const n of ['R01','R02','R91','R92'])K.gnd(C(n));K.link(C('QA'),C('CKB'),0,ORG);
+    const ck=K.clk(K.at(1,false,12),1);K.link(ck,C('CKA'),0,YEL);
+    const D46=K.chip('74LS46',16,1),D48=K.chip('74LS48',32,1);
+    for(const [D,nm] of [[D46,'74LS46'],[D48,'74LS48']]){K.pwr(D,CHIPS[nm]);for(const n of ['~LT','~BI','~RBI'])K.vcc(D(n));}
+    for(const [q,i] of [['QA','A'],['QB','B'],['QC','C'],['QD','D']]){K.link(C(q),D46(i),0,GRN);K.link(D46(i),D48(i),0,GRN);}
+    const S1=K.seg7(2,10,true),S2=K.seg7(2,34,false);K.vcc(S1('COM'));K.gnd(S2('COM'));
+    for(const s of SEG){K.link(D46('~'+s),S1(s),330,BLU);K.link(D48(s),S2(s),330,BLU);}
+    // 건전지(4.5V) 표시등: 레일과 따로 떨어진 회로
+    const x=K.led(2,47,{color:'green'}),bp=K.at(2,true,44);K.add({t:'bat',k:1,x:700,y:880,v:4.5});
+    K.add(w('@1:0',K.hole(bp),RED));K.add(R(K.hole(bp),K.hole(x.a),330));K.add(w(K.hole(x.k),'@1:1',BLK));
+    // 건전지가 있으면 레일에 자동 전원이 없다(실제처럼): 5V 파워 서플라이를 놓고 + / − 를 네 레일 모두에 전선으로
+    K.add({t:'psu',k:2,x:20,y:880,v:5,on:true});
+    K.add(w('@2:0',K.rail(1,'tp',1),RED));K.add(w(K.rail(1,'tp',50),K.rail(1,'bp',50),RED));K.add(w(K.rail(1,'bp',49),K.rail(2,'tp',49),RED));K.add(w(K.rail(2,'tp',50),K.rail(2,'bp',50),RED));
+    K.add(w('@2:1',K.rail(1,'tn',2),BLK));K.add(w(K.rail(1,'tn',47),K.rail(1,'bn',47),BLK));K.add(w(K.rail(1,'bn',46),K.rail(2,'tn',46),BLK));K.add(w(K.rail(2,'tn',47),K.rail(2,'bn',47),BLK));
+    return K.fin();},
+};
+Object.assign(EXAMPLES,ICEX);
+
 /* ───────── 시작 ───────── */
 (function start(){
   // 링크 끝에 #예제이름 이 붙어 있으면 그 예제를 바로 연다 (예: …#sync10)
