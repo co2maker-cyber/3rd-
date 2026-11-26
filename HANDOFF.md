@@ -19,7 +19,7 @@
 ## 사용자 지시 기록 (사람의 창작 기여 — COPYRIGHT.md 10절, 계속 덧붙일 것)
 - ~11-24: 브레드보드+회로도 시뮬레이터 기능 방향, CAD 안 AI 직접 호출 금지(안내만), 부품 220종 모두 예제에 쓰기, 자동 main 반영
 - 11-25: 오류 난 부품 알림, PCB 설계 기능, 업데이트마다 접속 링크, 깃허브 페이지로 바로 열기
-- 11-26: 브레드보드 연결 체크 + 초기화 버튼, 핀에서 이어지는 전선을 카드로 순서대로, 안내 md 내려받기 고침(윈도우 저장 창 스크린샷), 전보체 진행 메모, 「저작권법 준수 가이드」(8항목) 적용 → 재검토 지시 → 라우터 부팅 문구 일반화 지시 → 코드에 저작권 서명 추가 지시
+- 11-26: 브레드보드 연결 체크 + 초기화 버튼, 핀에서 이어지는 전선을 카드로 순서대로, 안내 md 내려받기 고침(윈도우 저장 창 스크린샷), 전보체 진행 메모, 「저작권법 준수 가이드」(8항목) 적용 → 재검토 지시 → 라우터 부팅 문구 일반화 지시 → 코드에 저작권 서명 추가 지시 → 복사 막는 라이선스 키 발급 지시
 
 ## 결정사항
 - CAD 안 AI 호출 금지 — 사용자 지시
@@ -47,6 +47,7 @@
 4. 변경마다: 회귀+verify74+verify-parts+guide-sync+tests/ui 전체 → 커밋 → 두 브랜치 push → 아티팩트 재게시 → 링크 2개 안내
 
 ## 참조
+- 라이선스 키: 공식 주소(github.io·Claude 미리보기)는 통과, 그 밖(file://·다른 사이트)은 `#licGate`. ECDSA P-256, `LIC_PUB`(kid BBCAD-K1)·`LIC_OFFICIAL`·`LIC_REVOKED`, `licVerify`/`licCheck`. 발급 `breadboard/license-admin.html`·`breadboard/tools/issue-license.js`. **비밀 열쇠는 저장소에 없음 — 사용자에게 파일로 전달함**(.gitignore *PRIVATE*.jwk.json). 시험 `tests/ui/license.js`(시험용 열쇠). 자동 시험(webdriver)은 키 창 건너뜀
 - 서명: ID `C2M-2026-BC51AA6C-{BBCAD|HOME|LINUX|ROUTER|WINSRV}`, `AUTHOR_SIG` 상수·메타·맨 위 주석·출력물(json generator, 거버 G04, 드릴 ;, README, SVG). 검사 `node breadboard/tests/sig-check.js`. COPYRIGHT.md 12절(SHA-256 기록)
 - 저작권: `breadboard/COPYRIGHT.md` 0절 고지·3절 자체 구현 표·11절 체크리스트. 외부 글꼴·라이브러리 없음 유지. 부품·문구·에셋 추가 땐 5절 점검
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `breadboard/FILE-FORMAT.md` / `breadboard/README.md` / `breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` / `/home/user/3rd-/HANDOFF.md`

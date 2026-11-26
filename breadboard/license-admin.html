@@ -1,0 +1,63 @@
+<!doctype html>
+<!--
+  브레드보드 CAD 라이선스 키 발급 (저작자 전용) — breadboard/license-admin.html
+  Copyright (c) 2026 co2maker-cyber. All rights reserved.
+  저작자 서명 ID: C2M-2026-BC51AA6C-BBCAD
+  이 페이지에는 비밀이 없어요. 비밀 열쇠 파일은 브라우저 안에서만 읽고 어디에도 보내지 않아요.
+-->
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="co2maker-cyber"><meta name="robots" content="noindex">
+<title>라이선스 키 발급</title>
+<style>
+:root{--bg:#F4F5F7;--panel:#fff;--fg:#1B1F24;--muted:#5D6672;--line:#C9CED6;--accent:#1C6FD1;--bad:#C2362F;--ok:#1D8F53;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#12151A;--panel:#1C2128;--fg:#E8ECF1;--muted:#8A94A3;--line:#2E3540;--accent:#5FA2F0;--bad:#EE6A61;--ok:#3CC97E}}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.6 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:10px 0}
+label{display:block;margin:8px 0 4px;color:var(--muted);font-size:12.5px}input,textarea{width:100%;box-sizing:border-box;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--fg)}
+textarea{font:12px/1.45 ui-monospace,Consolas,monospace;height:96px}button{font:inherit;padding:8px 14px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;margin:8px 6px 0 0}
+button.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}.muted{color:var(--muted);font-size:12.5px}.err{color:var(--bad);font-weight:700}.ok{color:var(--ok);font-weight:700}
+.chk{display:flex;gap:14px;flex-wrap:wrap}.chk label{display:flex;gap:6px;align-items:center;color:var(--fg);margin:4px 0}.chk input{width:auto}
+</style></head><body><main>
+<h1>브레드보드 CAD 라이선스 키 발급</h1>
+<p class="muted">저작자 전용 도구예요. 공식 주소가 아닌 곳(복사한 파일, 다른 사이트)에서 프로그램을 쓰게 할 사람에게 키를 만들어 줘요. 비밀 열쇠 파일은 이 브라우저 안에서만 읽어요.</p>
+
+<div class="card"><h2 style="margin-top:0">1. 비밀 열쇠 파일 열기</h2>
+<input type="file" id="kf" accept=".json,application/json"><p id="kst" class="muted">아직 열지 않았어요.</p></div>
+
+<div class="card"><h2 style="margin-top:0">2. 키 내용</h2>
+<label for="to">받는 사람(이름·학교·회사)</label><input id="to" placeholder="예: 홍길동 / ○○고 전자과">
+<label>쓸 수 있는 곳</label><div class="chk"><label><input type="checkbox" id="dfile" checked> 내 컴퓨터에서 연 파일</label><label><input type="checkbox" id="dall"> 어디서나(*)</label></div>
+<label for="dom">웹사이트 주소(쉼표로 여러 개, 앞에 점(.)을 붙이면 하위 도메인까지)</label><input id="dom" placeholder="예: school.example.com, .example.org">
+<label for="exp">만료일(비우면 기한 없음)</label><input id="exp" type="date">
+<button class="pri" id="go">키 만들기</button><p id="gst"></p>
+<label for="out">발급한 키</label><textarea id="out" readonly></textarea><button id="cp">키 복사</button>
+<p class="muted">키를 취소하려면 키 번호(L-…)를 알려 주세요. 프로그램의 취소 목록(LIC_REVOKED)에 넣어요.</p></div>
+
+<div class="card"><h2 style="margin-top:0">새 열쇠 만들기(열쇠를 잃어버렸거나 바꾸고 싶을 때)</h2>
+<p class="muted">새 비밀 열쇠 파일을 내려받고, 프로그램에 넣을 공개 열쇠를 보여 줘요. 공개 열쇠를 바꾸면 예전에 발급한 키는 모두 못 써요.</p>
+<button id="nk">새 열쇠 쌍 만들기</button><textarea id="pubOut" readonly placeholder="새 공개 열쇠(index.html의 LIC_PUB에 넣어요)"></textarea></div>
+<p class="muted">© 2026 co2maker-cyber. All rights reserved.</p>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);let PRIV=null;
+const b64u=b=>{let s='';const a=new Uint8Array(b);for(const x of a)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+const enc=s=>new TextEncoder().encode(s);
+$('kf').onchange=async()=>{const f=$('kf').files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!j.d)throw new Error('비밀 열쇠(d)가 없어요');
+  PRIV=await crypto.subtle.importKey('jwk',{kty:j.kty,crv:j.crv,x:j.x,y:j.y,d:j.d,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
+  $('kst').className='ok';$('kst').textContent=`열었어요 (${j.kid||'열쇠'}). 파일 내용은 어디에도 보내지 않아요.`;}catch(e){PRIV=null;$('kst').className='err';$('kst').textContent='열 수 없어요: '+e.message;}};
+$('go').onclick=async()=>{if(!PRIV){$('gst').className='err';$('gst').textContent='먼저 비밀 열쇠 파일을 여세요.';return;}
+  const dom=[];if($('dall').checked)dom.push('*');if($('dfile').checked)dom.push('file');for(const d of $('dom').value.split(','))if(d.trim())dom.push(d.trim().toLowerCase());
+  if(!dom.length){$('gst').className='err';$('gst').textContent='쓸 수 있는 곳을 하나 이상 골라 주세요.';return;}
+  const id='L-'+Array.from(crypto.getRandomValues(new Uint8Array(4)),x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+  const info={v:1,id,to:$('to').value.trim(),dom,exp:$('exp').value||null,ed:'BBCAD',iat:new Date().toISOString().slice(0,10)};
+  const body=b64u(enc(JSON.stringify(info)));const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},PRIV,enc(body));
+  $('out').value='BBCAD1.'+body+'.'+b64u(sig);$('gst').className='ok';$('gst').textContent=`발급했어요: ${id} · ${info.to||'(이름 없음)'} · ${dom.join(', ')} · ${info.exp||'기한 없음'}`;};
+$('cp').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);$('gst').textContent='복사했어요';}catch(_){$('out').select();document.execCommand('copy');}};
+$('nk').onclick=async()=>{const kp=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const kid='BBCAD-K'+Date.now().toString(36).toUpperCase(),priv=await crypto.subtle.exportKey('jwk',kp.privateKey),pub=await crypto.subtle.exportKey('jwk',kp.publicKey);
+  const data=JSON.stringify({kid,kty:priv.kty,crv:priv.crv,x:priv.x,y:priv.y,d:priv.d,note:'브레드보드 CAD 라이선스 발급용 비밀 열쇠. 절대 공유·업로드 금지'},null,1);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=kid+'-PRIVATE.jwk.json';a.click();
+  $('pubOut').value=JSON.stringify({kid,kty:pub.kty,crv:pub.crv,x:pub.x,y:pub.y});};
+</script></body></html>
