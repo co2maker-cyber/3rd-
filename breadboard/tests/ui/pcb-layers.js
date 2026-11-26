@@ -77,5 +77,14 @@ r=await p.evaluate(()=>({nl:PCB.nl,sig:pSig(),np:pcalc().pads.filter(q=>q.np).le
 // 이상한 값 막기
 r=await p.evaluate(()=>{pcbLoad({w:30,h:30,nl:3,inner:[{t:'x'}],xp:[{key:'bad',kind:'mh3'},{key:'m1',kind:'zz'}],tr:[{l:'In3',w:.4,a:{x:1,y:1},b:{x:2,y:2}}]});return{nl:PCB.nl,xp:PCB.xp.length,l:PCB.tr[0].l,inner:PCB.inner.length};});
 chk('잘못된 층 값 정리',r.nl===2&&r.xp===0&&r.l==='B'&&r.inner===0,JSON.stringify(r));
+// ⑤ 층별로 보기: 막대에서 층을 고르면 그 층만, 키 0 = 모든 층
+await p.evaluate(d=>{loadComps(d.comps,false,d.boards);schLoadIf(d.sch,d.comps);pcbLoadIf(d.pcb);pcbAutoRoute();},sv);await p.waitForTimeout(200);
+r=await p.evaluate(()=>[...document.querySelectorAll('#pLbar [data-pv]')].map(b=>b.dataset.pv).join());chk('층 보기 막대: 모든 층·층마다·실크·구멍',r==='all,F,In1,In2,B,silk,drill',r);
+const cnt=()=>p.evaluate(()=>({pv:pview,pl:player,tr:[...document.querySelectorAll('#pcb .ptr')].map(e=>PCB.tr.find(t=>t.id===+e.dataset.seg).l).filter((v,i,a)=>a.indexOf(v)===i).join(),silk:document.querySelectorAll('#pcb .psilk').length,plane:[...document.querySelectorAll('#pcb .pplane')].map(e=>e.getAttribute('fill-opacity')).join()}));
+await p.click('#pLbar [data-pv="B"]');r=await cnt();chk('뒷면만: 뒷면 선만·실크 없음·그 층에 그리기',r.pv==='B'&&r.pl==='B'&&(!r.tr||r.tr==='B')&&!r.silk,JSON.stringify(r));
+await p.click('#pLbar [data-pv="In1"]');r=await cnt();chk('In1 GND 판만: 판 진하게·선 없음',r.pv==='In1'&&!r.tr&&r.plane==='0.85',JSON.stringify(r));
+await p.click('#pLbar [data-pv="silk"]');r=await cnt();chk('실크만',!r.tr&&r.silk===1,JSON.stringify(r));
+await p.click('#pLbar [data-pv="drill"]');r=await p.evaluate(()=>({h:document.querySelectorAll('#pcb .pdh').length,n:pcalc().pads.length+PCB.vias.length}));chk('구멍만: 구멍마다 표시',r.h===r.n,JSON.stringify(r));
+await p.keyboard.press('0');r=await cnt();chk('키 0 → 모든 층',r.pv==='all'&&r.silk===1,JSON.stringify(r));
 chk('페이지 오류 없음 '+errs.join('|'),!errs.length);
 console.log(ok.every(Boolean)?'pcb-layers PASS':'pcb-layers FAIL');await b.close();})();
