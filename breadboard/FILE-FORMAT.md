@@ -337,6 +337,10 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `dz51` | 1N4733A 제너 5.1V | row | 0,4 | A K | |
 | `dge` | 1N34A 게르마늄 다이오드 | row | 0,3 | A K | |
 | `brdg` | 브리지 정류기 4핀 | dip | 0,2 | +(출력) ~(교류1) −(출력) ~(교류2) | |
+| `d914` | 고속 신호 다이오드 80V | row | 0,3 | A K | |
+| `d5711` | 소신호 쇼트키 70V | row | 0,3 | A K | |
+| `d4004` | 1N4004 정류 다이오드 400V | row | 0,4 | A K | |
+| `br600` | 브리지 정류기 한 줄 4핀 600V | row | 0,2,4,6 | +(출력) ~ ~ −(출력) | |
 | `rlyc` | 파워 릴레이 SPDT (큐브형) | row | 0,2,4,6,8 | A1 A2(코일) COM NC NO | `cv:5` (5·12·24) |
 | `rlyd` | 신호 릴레이 DPDT (DIP 8핀) | dip | 0~3 | A1(코일) COM1 NC1 NO1 NO2 NC2 COM2 A2(코일) | `cv:5` (5·12) |
 | `reed` | 리드 릴레이 SPST-NO | row | 0,1,2,3 | A1(코일) COM NO A2(코일) | `cv:5` (5·12) |
@@ -357,6 +361,23 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `m7000` | 2N7000 N채널 MOSFET (TO-92) | row | 0,1,2 | S G D | |
 | `mnpow` | 로직 레벨 N채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
 | `mppow` | 로직 레벨 P채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
+| `q3055` | 2N3055급 NPN 파워 (TO-3) | row | 0,1,2 | B E C(케이스) | |
+| `q2955` | PNP 파워 (TO-3) | row | 0,1,2 | B E C(케이스) | |
+| `q2222m` | 2N2222A NPN (금속 캔 TO-18) | row | 0,1,2 | E B C | |
+| `q2907m` | 2N2907A PNP (금속 캔 TO-18) | row | 0,1,2 | E B C | |
+| `q2219` | 2N2219A NPN (금속 캔 TO-39) | row | 0,1,2 | E B C | |
+| `jfn` | N채널 JFET 공핍형 (TO-92) | row | 0,1,2 | D S G | |
+| `oa2j` | 듀얼 JFET 입력 연산 증폭기 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
+| `oa2b` | 듀얼 단전원 연산 증폭기 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
+| `oa4` | 쿼드 단전원 연산 증폭기 (DIP-14) | dip | 0~6 | OUT1 IN1− IN1+ VCC IN2+ IN2− OUT2 OUT3 IN3− IN3+ VEE IN4+ IN4− OUT4 | |
+| `oa1p` | 정밀 연산 증폭기 (TO-99, DIP-8 자리) | dip | 0~3 | BAL IN− IN+ V− BAL OUT V+ COMP | |
+| `cmp2` | 듀얼 비교기 오픈 컬렉터 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ GND IN2+ IN2− OUT2 VCC | |
+| `reg317` | 가변 양전압 레귤레이터 (TO-220) | row | 0,1,2 | ADJ VOUT VIN | |
+| `dac8` | 8비트 곱셈형 DAC (DIP-16) | dip | 0~7 | OUT1 OUT2 GND DB7…DB0 ~CS ~WR VDD VREF RFB | |
+| `bmix` `bvco` `bifa` `blog` `batt` `bdefl` `bhv` | 모듈 블록(RF 믹서·VCO·IF 증폭기·로그 검파기·스텝 감쇠기·CRT 편향 증폭기·CRT 고전압 전원) — 시뮬레이션 없음 | row | 0~(핀 수−1) | 부품 정보 창의 핀 이름 | |
+| `cpu64` | 16/32비트 마이크로프로세서 (DIP-64, 900mil) — 시뮬레이션 없음 | dip | 0~31 | D4 D3 D2 D1 D0 ~AS … (부품 정보 창) | |
+
+부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_GP_SS`, `COMPARATOR_DUAL_OC`, `REG_ADJ_POS_TO220`, `DAC_8BIT_MULT_R2R`, `BJT_NPN_PWR_TO3`, `CPU_16_32_DIP64`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
 

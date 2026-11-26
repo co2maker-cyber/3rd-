@@ -420,6 +420,16 @@ function inPage() {
       }));
     }
   });
+  add(['74LS174'], {
+    pins: '~CLR|~MR 1Q 1D 2D 2Q 3D 3Q GND CLK|CK|CP 4Q 4D 5Q 5D 6D 6Q VCC', vcc: 16, gnd: 8, outs: [2, 5, 7, 10, 12, 15],
+    test(T) {
+      const D = [3, 4, 6, 11, 13, 14], Q = [2, 5, 7, 10, 12, 15];
+      T.sub('hex rising-edge D FF with common clock and async CLR̅ (no Q̅)', 'core', fail => seq(T, fail, {
+        seed: 174, inputs: { 1: [1, .9], 9: [5, 'T'], 3: [2, .5], 4: [2, .5], 6: [2, .5], 11: [2, .5], 13: [2, .5], 14: [2, .5] },
+        ref() { let q = Array(6).fill(null), pc = null; return inp => { const rise = pc === 0 && inp[9] === 1; pc = inp[9]; if (!inp[1]) q = Array(6).fill(0); else if (rise) q = D.map(p => inp[p]); const e = {}; q.forEach((v, i) => { e[Q[i]] = v === null ? ANY : v; }); return e; }; }
+      }));
+    }
+  });
   add(both('164'), {
     pins: 'A|DSA B|DSB QA|Q0 QB|Q1 QC|Q2 QD|Q3 GND CLK|CK|CP ~CLR|~MR QE|Q4 QF|Q5 QG|Q6 QH|Q7 VCC', vcc: 14, gnd: 7, outs: [3, 4, 5, 6, 10, 11, 12, 13],
     test(T) {

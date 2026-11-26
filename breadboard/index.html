@@ -585,6 +585,7 @@ body.planon .cbar{display:none}
         <option value="pasrly">Ⓟ5 릴레이·솔레노이드·코일: 드라이버로 켜기·자기유지·SSR</option>
         <option value="pasdio">Ⓟ6 다이오드: 한 방향·OR 묶기·제너 5.1V·브리지·역전압 다이오드</option>
         <option value="pastr">Ⓟ7 트랜지스터·MOSFET: NPN·PNP 스위치·MOSFET·달링턴·릴레이 구동</option>
+        <option value="paana">Ⓟ8 연산 증폭기·비교기: 가변저항 전압을 2배로 키우기 · 2.5V 넘으면 LED 켜기</option>
         </optgroup>
         <optgroup label="논리 IC 모음 (74LS·74HC 비교)">
         <option value="lg2">ⓘ1 2입력 게이트 9종 + 단독 NAND·NOR·XNOR (스위치 A·B)</option>
@@ -1170,6 +1171,10 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `dz51` | 1N4733A 제너 5.1V | row | 0,4 | A K | |
 | `dge` | 1N34A 게르마늄 다이오드 | row | 0,3 | A K | |
 | `brdg` | 브리지 정류기 4핀 | dip | 0,2 | +(출력) ~(교류1) −(출력) ~(교류2) | |
+| `d914` | 고속 신호 다이오드 80V | row | 0,3 | A K | |
+| `d5711` | 소신호 쇼트키 70V | row | 0,3 | A K | |
+| `d4004` | 1N4004 정류 다이오드 400V | row | 0,4 | A K | |
+| `br600` | 브리지 정류기 한 줄 4핀 600V | row | 0,2,4,6 | +(출력) ~ ~ −(출력) | |
 | `rlyc` | 파워 릴레이 SPDT (큐브형) | row | 0,2,4,6,8 | A1 A2(코일) COM NC NO | `cv:5` (5·12·24) |
 | `rlyd` | 신호 릴레이 DPDT (DIP 8핀) | dip | 0~3 | A1(코일) COM1 NC1 NO1 NO2 NC2 COM2 A2(코일) | `cv:5` (5·12) |
 | `reed` | 리드 릴레이 SPST-NO | row | 0,1,2,3 | A1(코일) COM NO A2(코일) | `cv:5` (5·12) |
@@ -1190,6 +1195,23 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `m7000` | 2N7000 N채널 MOSFET (TO-92) | row | 0,1,2 | S G D | |
 | `mnpow` | 로직 레벨 N채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
 | `mppow` | 로직 레벨 P채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
+| `q3055` | 2N3055급 NPN 파워 (TO-3) | row | 0,1,2 | B E C(케이스) | |
+| `q2955` | PNP 파워 (TO-3) | row | 0,1,2 | B E C(케이스) | |
+| `q2222m` | 2N2222A NPN (금속 캔 TO-18) | row | 0,1,2 | E B C | |
+| `q2907m` | 2N2907A PNP (금속 캔 TO-18) | row | 0,1,2 | E B C | |
+| `q2219` | 2N2219A NPN (금속 캔 TO-39) | row | 0,1,2 | E B C | |
+| `jfn` | N채널 JFET 공핍형 (TO-92) | row | 0,1,2 | D S G | |
+| `oa2j` | 듀얼 JFET 입력 연산 증폭기 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
+| `oa2b` | 듀얼 단전원 연산 증폭기 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
+| `oa4` | 쿼드 단전원 연산 증폭기 (DIP-14) | dip | 0~6 | OUT1 IN1− IN1+ VCC IN2+ IN2− OUT2 OUT3 IN3− IN3+ VEE IN4+ IN4− OUT4 | |
+| `oa1p` | 정밀 연산 증폭기 (TO-99, DIP-8 자리) | dip | 0~3 | BAL IN− IN+ V− BAL OUT V+ COMP | |
+| `cmp2` | 듀얼 비교기 오픈 컬렉터 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ GND IN2+ IN2− OUT2 VCC | |
+| `reg317` | 가변 양전압 레귤레이터 (TO-220) | row | 0,1,2 | ADJ VOUT VIN | |
+| `dac8` | 8비트 곱셈형 DAC (DIP-16) | dip | 0~7 | OUT1 OUT2 GND DB7…DB0 ~CS ~WR VDD VREF RFB | |
+| `bmix` `bvco` `bifa` `blog` `batt` `bdefl` `bhv` | 모듈 블록(RF 믹서·VCO·IF 증폭기·로그 검파기·스텝 감쇠기·CRT 편향 증폭기·CRT 고전압 전원) — 시뮬레이션 없음 | row | 0~(핀 수−1) | 부품 정보 창의 핀 이름 | |
+| `cpu64` | 16/32비트 마이크로프로세서 (DIP-64, 900mil) — 시뮬레이션 없음 | dip | 0~31 | D4 D3 D2 D1 D0 ~AS … (부품 정보 창) | |
+
+부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_GP_SS`, `COMPARATOR_DUAL_OC`, `REG_ADJ_POS_TO220`, `DAC_8BIT_MULT_R2R`, `BJT_NPN_PWR_TO3`, `CPU_16_32_DIP64`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
 
@@ -1515,6 +1537,10 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 | `dz51` | 1N4733A | DO-41 | 제너 5.1V, 1W | 간단한 정전압, 입력 전압 제한 | `BB_D_ZEN51` |
 | `dge` | 1N34A | 유리관 | 75V, 수십 mA, 0.2~0.3V | 광석 라디오 검파, 오디오 클리핑 실험 | `BB_D_GE` |
 | `brdg` | 1A 브리지 정류기 | 4핀 DIP(줄 간격 7.62mm) | 600~1000V, 1A, 두 다이오드분 약 1.4~2V | 교류 → 직류(전파 정류), 극성 상관없는 입력 | `BB_BRIDGE_1A` |
+| `d914` | 고속 신호용 | DO-35 유리관 | 80V, 약 0.2A, 수 ns | 1N4148 자리(논리 OR·클램프·피크 검출) | `BB_D_SIG` |
+| `d5711` | 소신호 쇼트키(고주파) | DO-35 유리관 | 70V, 15mA, 1mA에서 약 0.4V | 고주파 검파·믹서·샘플링(큰 전류 금지) | — |
+| `d4004` | 1N4004 | DO-41 | 400V, 1A | 220V 정류(최고 약 311V)에 쓰는 가장 작은 등급 | `BB_D_RECT` |
+| `br600` | 2A 한 줄 브리지 | 한 줄 4핀(+ ~ ~ −, 5.08mm) | 600V, 2A | 작은 220V 전원부(1A 넘으면 방열판) | — |
 
 **꽂지 마세요**: 3A급 정류 다이오드·쇼트키(1N5408, 1N5822 등)는 대개 DO-201AD 패키지라 다리가 너무 굵어요. 큰 전류가 필요하면 브레드보드 밖에서 납땜하세요(어차피 브레드보드는 1A 안쪽).
 
@@ -1582,12 +1608,42 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 | `m7000` | 2N7000 | TO-92 · S G D | N채널 MOSFET, 200mA, 60V | 5V 논리로 작은 부하, 레벨 바꾸기 |
 | `mnpow` | 로직 레벨 N채널 | TO-220 · G D S | 수십 A급, 켜졌을 때 수십 mΩ | LED 줄·모터를 낮은 쪽에서 |
 | `mppow` | 로직 레벨 P채널 | TO-220 · G D S | 10A급 | 부하의 + 쪽(높은 쪽) 켜기 |
+| `q3055` | 2N3055급 | TO-3 · B E (몸통 = C) | NPN, 15A, 60V, hFE 20~70 | 옛 오디오 출력단, 직렬 레귤레이터(방열판·절연판) |
+| `q2955` | TO-3 PNP 파워 | TO-3 · B E (몸통 = C) | PNP, 15A, 60V | 위 NPN과 짝(푸시풀) |
+| `q2222m` | 2N2222A | 금속 캔 TO-18 · E B C | NPN, 800mA, 40V | 열·습기에 강한 범용 스위치 |
+| `q2907m` | 2N2907A | 금속 캔 TO-18 · E B C | PNP, 600mA, 60V | 위 NPN과 짝 |
+| `q2219` | 2N2219A | 금속 캔 TO-39 · E B C | NPN, 800mA, 40V, 약 1W(방열판) | 릴레이·램프 구동, 고주파 증폭 |
+| `jfn` | N채널 JFET | TO-92 · D S G | 공핍형, 게이트 −2.5V 아래에서 꺼짐 | 높은 입력 저항 증폭단, 아날로그 스위치, 정전류원 |
+
+**금속 캔·TO-3**: 금속 캔(TO-18·TO-39)은 바닥의 작은 돌기(탭) 옆 다리부터 E·B·C예요. TO-3은 다리가 B·E 둘뿐이고 쇠 몸통이 C라, 브레드보드에는 꽂지 못하고 굵은 전선으로 이어요.
 
 **고르는 요령**
 - 부하 전류가 100mA 안쪽 → 2N3904·BC547이나 2N7000. 100~500mA → 2N2222A급. 그보다 크면 → 달링턴이나 파워 MOSFET.
 - 베이스 저항: (논리 전압 − 0.7V) ÷ (부하 전류 ÷ 10) 쯤으로 정하면 확실히 켜져요(5V, 부하 50mA → 약 860Ω → 1kΩ). MOSFET 게이트는 저항 없이 이어도 되지만 10kΩ 풀다운은 꼭 달아요.
 - 3.3V 논리로 켤 때는 2N7000이 덜 켜질 수 있어요. 바이폴라 트랜지스터나 '로직 레벨' 표시가 있는 MOSFET을 고르세요.
 - 같은 모양(TO-92)이라도 번호마다 다리 순서가 달라요. 꽂기 전에 평평한 면을 보고 E·B·C 순서를 꼭 확인하세요.
+
+---
+
+## 4-3. 아날로그 IC 고르기 (연산 증폭기·비교기·레귤레이터·DAC)
+
+| 프로그램 부품 | 종류 | 패키지·전원 핀 | 정격(대표) | 이럴 때 써요 |
+|---|---|---|---|---|
+| `oa2j` | 듀얼 JFET 입력 연산 증폭기 | DIP-8 · VEE 4, VCC 8 | 전원 7V 이상, 약 25V/µs, 출력은 전원 끝 1.5V 안쪽 | 오디오·능동 필터, 큰 저항 센서 |
+| `oa2b` | 듀얼 단전원 연산 증폭기 | DIP-8 · VEE(GND) 4, VCC 8 | 3~30V, 출력이 GND 근처까지 | 5V 하나로 센서 증폭·전류 감지 |
+| `oa4` | 쿼드 단전원 연산 증폭기 | DIP-14 · **VCC 4, VEE 11** | 3~30V | 여러 단 필터, 창 비교기 |
+| `oa1p` | 정밀 연산 증폭기 | TO-99 금속 캔(DIP-8 자리) · V− 4, V+ 7 | 오프셋 아주 작음, BAL(1·5)로 0 맞춤 | 저울·온도계 같은 작은 직류 신호 |
+| `cmp2` | 듀얼 비교기(오픈 컬렉터) | DIP-8 · GND 4, VCC 8 | 2~36V, **출력에 풀업 저항 필요** | 문턱 감지, 다른 전압 논리로 넘기기 |
+| `reg317` | 가변 양전압 레귤레이터 | TO-220 · ADJ VOUT VIN | 1.25~37V, 1.5A, 입력은 출력 + 2V 이상 | 출력 = 1.25V × (1 + R2 ÷ R1), R1 = 240Ω |
+| `dac8` | 8비트 곱셈형 DAC | DIP-16 · GND 3, VDD 14 | R-2R 약 11kΩ, ~CS·~WR LOW일 때 숫자를 받음 | 출력 = −VREF × 숫자 ÷ 256 (연산 증폭기와 함께) |
+
+**고르는 요령**
+- 이 프로그램의 전원은 0V 이상만 있어서, 연산 증폭기는 VEE를 GND에 이은 **단전원**으로 써요. 반전 증폭기는 + 입력을 전원 절반(저항 두 개로 나눈 전압)에 두면 돼요(예제 Ⓟ8, 안내서 시험 회로 참고).
+- 5V 하나로 쓸 때는 단전원용(`oa2b`·`oa4`)을 골라요. JFET 입력(`oa2j`)은 7V 이상에서 동작하고 출력이 GND까지 내려가지 않아요.
+- 비교기 출력은 스스로 HIGH를 내지 못해요. 출력 → (1k~10kΩ) → 논리 전원을 꼭 달아요.
+- 시뮬레이터는 이상적인 증폭기(이득 10만 배)에 출력 한계만 넣은 어림 계산이에요. 속도·오프셋·입력 전류는 SPICE로 확인하세요.
+
+**모듈 블록**(`bmix`·`bvco`·`bifa`·`blog`·`batt`·`bdefl`·`bhv`)과 **16/32비트 마이크로프로세서**(`cpu64`, DIP-64 900mil)는 핀만 있는 블록이에요. 시뮬레이션은 하지 않고 회로도·PCB에서 연결과 자리를 잡는 데 써요.
 
 ---
 
@@ -1824,6 +1880,13 @@ def({name:'74LS175',title:'D 플립플롭 ×4 (공통 클럭)',ttl:true,pins:['~
   eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const clr=g('~CLR');
     if(clr===L)st.q.fill(L);else if(clr===X)st.q.fill(X);else if(rise)st.q=[1,2,3,4].map(n=>g(n+'D'));
     const o={};st.q.forEach((v,k)=>{o[(k+1)+'Q']=v;o['~'+(k+1)+'Q']=NOT(v);});return o;}});
+def({name:'74LS174',title:'D 플립플롭 ×6 (공통 클럭·클리어)',ttl:true,pins:['~CLR','1Q','1D','2D','2Q','3D','3Q','GND','CLK','4Q','4D','5Q','5D','6D','6Q','VCC'],
+  outs:['1Q','2Q','3Q','4Q','5Q','6Q'],
+  desc:'클럭이 올라가는 순간 6개의 D 값을 한꺼번에 Q에 저장해요(6비트 레지스터). 74LS175와 달리 반전 출력(Q̅)이 없는 대신 6칸이에요. CLR̅가 LOW면 모두 0.'+TTLN,
+  roles:{CLK:'클럭 (상승 에지)','~CLR':'초기화 (LOW면 0)'},init:()=>({q:[L,L,L,L,L,L],p:X}),
+  eval(g,st){const clk=g('CLK'),rise=st.p===L&&clk===Hh;st.p=clk;const clr=g('~CLR');
+    if(clr===L)st.q.fill(L);else if(clr===X)st.q.fill(X);else if(rise)st.q=[1,2,3,4,5,6].map(n=>g(n+'D'));
+    const o={};st.q.forEach((v,k)=>{o[(k+1)+'Q']=v;});return o;}});
 function ripple(name,title,mod,pins,desc){def({name,title,ttl:true,pins,outs:['QA','QB','QC','QD'],desc:desc+TTLN,
   roles:Object.assign({CKA:'클럭 A (하강 에지) → QA',CKB:'클럭 B (하강 에지) → QB·QC·QD',R01:'0으로 리셋 (R01·R02 둘 다 HIGH)',R02:'0으로 리셋 (R01·R02 둘 다 HIGH)',R91:'9로 설정 (R91·R92 둘 다 HIGH)',R92:'9로 설정 (R91·R92 둘 다 HIGH)'},NCR),
   init:()=>({a:0,b:0,pa:X,pb:X,x:false}),
@@ -2351,7 +2414,7 @@ segDrv('DRV-14SEG',false);segDrv('DRV-16SEG',true);
    종류마다: 핀 이름(pins), 꽂는 모양(lay: 'row' 누른 줄에서 오른쪽으로 dc 칸들 | 'dip' 가운데 홈을 걸쳐 cols 칸들, 번호는 IC처럼),
    지금 닫힌 접점(contacts → [[i,j]]), 안의 저항(res → [[i,j,옴]]), 누르기(tap: 좌우 위치 side −1~1), 그리기(draw).
    가변저항 분압은 아날로그 계산(커패시터와 같은 방식)으로 풀어 와이퍼 전압을 정한다 */
-const PXSUB=[['res','고정 저항 · 저항 어레이'],['pot','가변 저항 · 트리머'],['cap','커패시터'],['sw','스위치 · 인코더'],['dio','다이오드 · 브리지 정류기'],['rly','릴레이 · 솔레노이드'],['ind','코일 · 인덕터'],['tr','트랜지스터 · MOSFET']];
+const PXSUB=[['res','고정 저항 · 저항 어레이'],['pot','가변 저항 · 트리머'],['cap','커패시터'],['sw','스위치 · 인코더'],['dio','다이오드 · 브리지 정류기'],['rly','릴레이 · 솔레노이드'],['ind','코일 · 인덕터'],['tr','트랜지스터 · MOSFET · JFET'],['ana','연산 증폭기 · 비교기 · 레귤레이터 · DAC'],['blk','모듈 블록(시뮬레이션 없음)']];
 const PX={};
 function pxDef(o){o.pre=o.pre||'SW';PX[o.k]=o;}
 const POTV=[1000,2000,5000,10000,20000,50000,100000,250000,500000,1000000];
@@ -2488,7 +2551,8 @@ for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'COM'+(i+1)),...rng(P*T,i=
 //    순방향 전압 vf를 넘으면 (V − vf) ÷ rs만큼 흐르고, 제너는 거꾸로 vz를 넘으면 (V − vz) ÷ rz만큼 흐른다. vr 역전압 한계, imax 순방향 전류 한계(평균)
 const DIOM={sig:{vf:.6,rs:3.5,vr:100,imax:.2,nm:'신호용'},rect:{vf:.68,rs:.25,vr:1000,imax:1,nm:'정류용'},sch:{vf:.27,rs:.18,vr:40,imax:1,nm:'쇼트키'},
   zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},uf:{vf:.72,rs:.5,vr:1000,imax:1,nm:'초고속 정류용'},ssch:{vf:.28,rs:5,vr:30,imax:.2,nm:'소신호 쇼트키'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'},
-  be:{vf:.65,rs:25,vr:6,imax:.05,nm:'베이스-이미터'},be2:{vf:1.3,rs:40,vr:5,imax:.12,nm:'베이스-이미터 (달링턴)'}};
+  be:{vf:.65,rs:25,vr:6,imax:.05,nm:'베이스-이미터'},be2:{vf:1.3,rs:40,vr:5,imax:.12,nm:'베이스-이미터 (달링턴)'},bep:{vf:.7,rs:2,vr:7,imax:7,nm:'베이스-이미터 (파워)'},
+  sig80:{vf:.6,rs:4,vr:80,imax:.2,nm:'신호용'},ss70:{vf:.37,rs:42,vr:70,imax:.015,nm:'소신호 쇼트키'},rect400:{vf:.68,rs:.25,vr:400,imax:1,nm:'정류용'},br6:{vf:.7,rs:.2,vr:600,imax:2,nm:'브리지'}};
 const DIOD=' 다이오드는 애노드(A)에서 캐소드(K, 띠가 있는 쪽)로만 전류를 흘려요. 시뮬레이터는 순방향 전압을 넘으면 켜지는 꺾은선 모델로 계산해요(실제 곡선의 어림).';
 const dioAx=(body,band,len)=>(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-9,x=(a.x+b.x)/2,w=len||22;let s='';for(const p of ph)s+=leg(p,p.x,y);
   return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-w/2}" y="${y-4.5}" width="${w}" height="9" rx="2.5" fill="${body}"/><rect x="${x+w/2-6}" y="${y-4.5}" width="3.2" height="9" fill="${band}"/>`;};
@@ -2552,6 +2616,108 @@ pxDef({k:'mnpow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 N채널 파�
 pxDef({k:'mppow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 P채널 파워 MOSFET (TO-220, 10A급)',lay:'row',dc:[0,1,2],pins:['G (게이트)','D (드레인)','S (소스)'],init:()=>({}),
   sl:'P-FET',tr:{t:'pmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:10,vds:30,ron:.1,gm:5},contacts:(c,r)=>r&&r.on&&!r.an?[[1,2]]:[],draw:to220('P-FET'),
   desc:'부하의 + 쪽(높은 쪽)을 켜고 끄는 P채널 MOSFET이에요. 소스(S)를 + 에, 부하를 드레인(D)과 GND 사이에 달고, 게이트(G)를 소스보다 낮게(LOW로) 당기면 켜져요. 게이트가 소스와 같은 전압이면 꺼지니 게이트와 소스 사이에 10kΩ 풀업 저항을 달아 평소에 꺼 두세요. 앞에서 보아 왼쪽부터 G·D·S예요.'+TRN});
+// ── 20차 부품 ── 금속 캔·파워 트랜지스터, JFET, 다이오드 3종·한 줄 브리지, 아날로그 IC(연산 증폭기·비교기·레귤레이터·DAC), 모듈 블록
+//    nid = 부품을 가리키는 중립 이름(회사·제품 번호 대신 기능으로 지은 이름). 목록 불러오기에서 이 이름도 알아들어요
+// 금속 캔(TO-18·TO-39): 위에서 본 동그란 깡통, 이미터 쪽에 작은 돌기(탭)
+const toCan=(lab,R)=>(c,ph,r)=>{const xs=ph.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),cx=(x0+x1)/2,cy=ph[0].y-8-R;let s='';for(const p of ph)s+=leg(p,p.x,cy+R*.6);
+  return s+`<circle cx="${cx}" cy="${cy}" r="${R}" fill="#C9CED6" stroke="#7A8088"/><circle cx="${cx}" cy="${cy}" r="${R-2.5}" fill="#DCE0E5"/><rect x="${cx-R-3}" y="${cy+R*.35}" width="4" height="3" fill="#C9CED6" stroke="#7A8088" stroke-width=".6"/><text x="${cx}" y="${cy+2.2}" font-size="${R>9?6:5}" font-weight="700" fill="#30343A" text-anchor="middle" font-family="var(--mono)">${lab}</text>`+trDot(cx+R-3,cy-R+3,!!(r&&r.on));};
+// TO-3: 다이아몬드 모양 쇠 몸통(몸통 = 컬렉터), 두 장착 구멍
+const to3=lab=>(c,ph,r)=>{const xs=ph.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),cx=(x0+x1)/2,cy=ph[0].y-26;let s='';for(const p of ph)s+=leg(p,p.x,cy+12);
+  return s+`<path d="M${cx-30} ${cy}Q${cx-30} ${cy-11} ${cx-14} ${cy-13}L${cx+14} ${cy-13}Q${cx+30} ${cy-11} ${cx+30} ${cy}Q${cx+30} ${cy+11} ${cx+14} ${cy+13}L${cx-14} ${cy+13}Q${cx-30} ${cy+11} ${cx-30} ${cy}Z" fill="#B8BDC4" stroke="#6A7078"/><circle cx="${cx-23}" cy="${cy}" r="3" fill="#5A6068"/><circle cx="${cx+23}" cy="${cy}" r="3" fill="#5A6068"/><circle cx="${cx}" cy="${cy}" r="10" fill="#CDD2D8" stroke="#8A9098"/><text x="${cx}" y="${cy+2.5}" font-size="6.5" font-weight="700" fill="#30343A" text-anchor="middle" font-family="var(--mono)">${lab}</text>`+trDot(cx+16,cy-6,!!(r&&r.on));};
+const TO3N=' TO-3은 쇠 몸통 자체가 컬렉터라 방열판에 달 때 운모·실리콘 절연판을 끼워요. 브레드보드에는 바로 꽂을 수 없어서 실제로는 전선(굵은 선)으로 이어요. 여기서는 B·E 다리와 몸통(C)을 세 칸에 이은 것으로 그려요.';
+pxDef({k:'q3055',sub:'tr',pre:'Q',pkg:'TO-3',nid:'BJT_NPN_PWR_TO3',title:'2N3055급 NPN 파워 트랜지스터 (TO-3, 15A, 60V)',lay:'row',dc:[0,1,2],pins:['B (베이스)','E (이미터)','C (케이스)'],init:()=>({}),fp:'to3',
+  sl:'NPN TO-3',tr:{t:'npn',b:0,e:1,c:2,ic:15,vce:60,hfe:'20~70',beta:40},dio:[[0,1,'bep']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,1]]:[],draw:to3('NPN'),
+  desc:'쇠 깡통(TO-3)에 든 큰 NPN 파워 트랜지스터예요(15A, 60V, 115W급 — 방열판에 달았을 때). 옛 오디오 앰프의 출력단, 직렬 레귤레이터의 전류 통로, 큰 모터 구동에 써요. hFE가 20~70으로 작아서 큰 전류를 흘리려면 베이스 전류도 커야 해요(4A에 약 0.1A) — 보통 앞에 작은 트랜지스터를 달아 달링턴처럼 써요.'+TO3N+BJTN+TRN});
+pxDef({k:'q2955',sub:'tr',pre:'Q',pkg:'TO-3',nid:'BJT_PNP_PWR_TO3',title:'TO-3 PNP 파워 트랜지스터 (15A, 60V)',lay:'row',dc:[0,1,2],pins:['B (베이스)','E (이미터)','C (케이스)'],init:()=>({}),fp:'to3',
+  sl:'PNP TO-3',tr:{t:'pnp',b:0,e:1,c:2,ic:15,vce:60,hfe:'20~70',beta:40},dio:[[1,0,'bep']],contacts:(c,r)=>r&&r.on&&!r.an?[[1,2]]:[],draw:to3('PNP'),
+  desc:'위 NPN 파워 트랜지스터와 짝을 이루는 PNP예요(15A, 60V). 둘을 위아래로 묶어 푸시풀 출력단(위는 NPN, 아래는 PNP)을 만들거나, 부하의 + 쪽을 큰 전류로 켤 때 써요.'+TO3N+BJTP+TRN});
+pxDef({k:'q2222m',sub:'tr',pre:'Q',pkg:'TO-18',nid:'BJT_NPN_GP_TO18',title:'2N2222A NPN 트랜지스터 (금속 캔 TO-18, 800mA, 40V)',lay:'row',dc:[0,1,2],pins:['E (이미터)','B (베이스)','C (컬렉터)'],init:()=>({}),fp:'to18',
+  sl:'2222A',tr:{t:'npn',e:0,b:1,c:2,ic:.8,vce:40,hfe:'100~300',beta:150},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[],draw:toCan('2222',8),
+  desc:'작은 금속 깡통(TO-18)에 든 범용 NPN 트랜지스터예요(800mA, 40V). 플라스틱 몸통보다 열과 습기에 강해서 계측기·군용 장비에 많이 썼어요. 바닥을 보면 다리 셋이 둥글게 늘어서 있고, 깡통 옆 작은 돌기(탭) 바로 옆 다리가 E, 그다음 B, C예요(금속 캔은 C가 깡통과 이어진 것이 많아요).'+BJTN+BJTR+TRN});
+pxDef({k:'q2907m',sub:'tr',pre:'Q',pkg:'TO-18',nid:'BJT_PNP_GP_TO18',title:'2N2907A PNP 트랜지스터 (금속 캔 TO-18, 600mA, 60V)',lay:'row',dc:[0,1,2],pins:['E (이미터)','B (베이스)','C (컬렉터)'],init:()=>({}),fp:'to18',
+  sl:'2907A',tr:{t:'pnp',e:0,b:1,c:2,ic:.6,vce:60,hfe:'100~300',beta:150},dio:[[0,1,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[0,2]]:[],draw:toCan('2907',8),
+  desc:'2N2222A와 짝을 이루는 금속 캔 PNP 트랜지스터예요(600mA, 60V). 탭 옆부터 E·B·C예요.'+BJTP+BJTR+TRN});
+pxDef({k:'q2219',sub:'tr',pre:'Q',pkg:'TO-39',nid:'BJT_NPN_MED_TO39',title:'2N2219A NPN 트랜지스터 (금속 캔 TO-39, 800mA, 40V)',lay:'row',dc:[0,1,2],pins:['E (이미터)','B (베이스)','C (컬렉터)'],init:()=>({}),fp:'to39',
+  sl:'2219A',tr:{t:'npn',e:0,b:1,c:2,ic:.8,vce:40,hfe:'100~300',beta:150},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[],draw:toCan('2219',11),
+  desc:'TO-18보다 큰 금속 깡통(TO-39)에 든 NPN 트랜지스터예요(800mA, 40V). 전기적 특성은 2N2222A와 같지만 깡통이 커서 열을 더 잘 내보내요(작은 별 모양 방열판을 끼워 1W 안팎). 릴레이·램프 구동, 고주파 증폭에 써요. 탭 옆부터 E·B·C이고 깡통이 C와 이어져 있어요.'+BJTN+BJTR+TRN});
+pxDef({k:'jfn',sub:'tr',pre:'Q',pkg:'TO-92',nid:'JFET_N_DEPL_TO92',title:'N채널 JFET (공핍형, TO-92, 25V)',lay:'row',dc:[0,1,2],pins:['D (드레인)','S (소스)','G (게이트)'],init:()=>({}),
+  sl:'N-JFET',tr:{t:'nmos',jf:1,d:0,s:1,g:2,vth:-2.5,full:0,id:.01,vds:25,ron:300,gm:.004},contacts:(c,r)=>r&&r.on&&!r.an?[[0,1]]:[],draw:to92('JFET'),
+  desc:'MOSFET과 반대로 게이트(G)를 소스와 같은 전압(0V)에 두면 이미 켜져 있고, 게이트를 소스보다 낮게(약 −2.5V 아래로) 당기면 꺼지는 트랜지스터예요(공핍형). 게이트로 전류가 거의 안 흘러 입력 저항이 아주 커서, 계측기·마이크의 첫 증폭단, 아날로그 스위치, 정전류원(게이트-소스를 이어 두면 수 mA로 일정)에 써요. 평평한 면을 보고 왼쪽부터 D·S·G예요(드레인과 소스는 거의 바꿔 써도 돼요). 게이트를 소스보다 0.6V 넘게 높이면 게이트-채널 다이오드로 전류가 흘러요 — 그 쪽으로는 쓰지 않아요. 시뮬레이터는 게이트-소스 전압이 −2.5V보다 높으면 켜짐으로 계산해요(켜졌을 때 약 300Ω).'});
+pxDef({k:'d914',pp:7.62,sub:'dio',pre:'D',nid:'DIODE_SIG_80V',title:'고속 신호 다이오드 (유리관, 80V)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'sig80']],draw:dioAx('#E3853A','#1A1A1A',18),
+  desc:'1N4148과 같은 쓰임새의 작은 유리관 신호 다이오드예요(역전압 80V, 약 0.2A, 끊어지는 시간 수 ns). 논리 신호 OR 묶기, 클램프, 작은 코일의 역전압 막기, 피크 검출에 써요. 검은 띠가 캐소드 쪽이에요.'+DIOD});
+pxDef({k:'d5711',pp:7.62,sub:'dio',pre:'D',nid:'DIODE_SCHOTTKY_70V',title:'소신호 쇼트키 다이오드 (유리관, 70V, 15mA)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'ss70']],draw:dioAx('#C9D3DC','#1A1A1A',16),
+  desc:'금속-반도체 접합으로 만든 아주 빠른 소신호 쇼트키 다이오드예요(70V, 15mA 안쪽). 작은 전류(1mA)에서 약 0.4V로 켜지고, 전하가 쌓이지 않아 수 GHz 고주파 검파·믹서·샘플링 회로에 써요. 전류를 조금만 올려도 전압이 빨리 커져요(15mA에서 약 1V). 큰 전류용이 아니니 직렬 저항을 꼭 넣어요.'+DIOD});
+pxDef({k:'d4004',pp:10.16,sub:'dio',pre:'D',nid:'DIODE_RECT_400V',title:'1N4004 정류 다이오드 (1A, 400V)',lay:'row',dc:[0,4],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'rect400']],draw:dioAx('#202326','#C9CED6',22),
+  desc:'1N4007과 모양·전류(1A)는 같고 견디는 역전압이 400V인 정류 다이오드예요. 220V 교류를 정류할 때(최고 약 311V)도 쓸 수 있는 가장 작은 등급이에요. 회색 띠가 캐소드 쪽이에요.'+DIOD});
+pxDef({k:'br600',sub:'dio',pre:'BR',pp:5.08,nid:'BRIDGE_600V',title:'브리지 정류기 (한 줄 4핀, 2A, 600V)',lay:'row',dc:[0,2,4,6],pins:['+ (출력)','~ (교류 1)','~ (교류 2)','− (출력)'],init:()=>({}),dio:[[1,0,'br6'],[2,0,'br6'],[3,1,'br6'],[3,2,'br6']],
+  draw:(c,ph)=>{const B=bodyAbove(ph,5,14,'#24282D');return B.s+`<text x="${B.x}" y="${B.y+3}" font-size="7.5" font-weight="700" fill="#E9ECEF" text-anchor="middle">+ ~ ~ −</text>`;},
+  desc:'다이오드 4개를 묶은 납작한 한 줄짜리 브리지 정류기예요(2A, 600V). 다리 순서는 + · ~ · ~ · − 이고, 몸통에 찍힌 기호로 확인해요. 220V 전원을 정류하는 작은 전원부에 써요. 두 ~ 단자에 교류를 넣으면 +에 늘 +, −에 늘 −가 나와요(두 다이오드만큼 약 1.4V를 잃어요). 1A가 넘으면 몸통 구멍에 나사로 방열판을 달아요.'+DIOD});
+// ── 아날로그 IC: ana = {oa:[{o,p,n}] 연산 증폭기, cmp:[{o,p,n}] 오픈 컬렉터 비교기, reg 가변 레귤레이터, dac 곱셈형 DAC, vcc·vee·gnd 전원 핀}
+//    연산 증폭기: 출력 = A×(V+ − V−)를 출력 저항 ro로 내보내되 VCC−hd ~ VEE+hdl 안으로 묶음. 전원 차 vmin V 아래면 꺼짐
+//    비교기: V+ < V− 이면 출력이 ron Ω으로 GND에 붙음(아니면 끊김 → 풀업 저항 필요)
+//    레귤레이터: VOUT = V(ADJ) + vref (입력이 VOUT + drop 보다 낮으면 VIN − drop)
+//    DAC: VREF → OUT1 사이 코드/2^n ÷ R, VREF → OUT2 사이 나머지, RFB ↔ OUT1 사이 R. ~CS·~WR 둘 다 LOW일 때 코드를 받아 둠
+const ANAN=' 시뮬레이터는 이상적인 증폭기(이득 10만 배, 출력 저항 50Ω)에 출력이 전원 가까이에서 멈추는 한계를 넣어 어림 계산해요 — 주파수 특성(속도)·입력 전류·오프셋은 계산하지 않아요.';
+const OAS=' 전원은 +V(VCC)와 −V(VEE) 두 핀이에요. 이 프로그램의 전원은 0V 이상만 있으니 VEE를 GND에 이어 단전원으로 쓰고, 신호의 기준점(가상 접지)을 전원의 절반 근처(저항 두 개로 나눈 전압)에 두면 반전 증폭기도 만들 수 있어요.';
+const dipChip=(lab,fill)=>(c,ph,r)=>{const B=dipBody(ph,fill||'#1E2125');const st=(r&&r.ast||[]).map(a=>a.st==='off'?'·':a.st==='hi'?'▲':a.st==='lo'?'▼':a.st===1?'L':a.st===0?'Z':'').join('');
+  return B.s+`<circle cx="${B.x0-2}" cy="${B.y}" r="2.4" fill="#3A3F47"/><text x="${B.x}" y="${B.y+2.5}" font-size="7" font-weight="700" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${lab}</text>${st?`<text x="${B.x}" y="${B.y+10}" font-size="6" fill="#9AA0A8" text-anchor="middle" font-family="var(--mono)">${st}</text>`:''}`;};
+const oaDef=(k,nid,title,pins,ana,lab,desc,o)=>pxDef(Object.assign({k,sub:'ana',pre:'U',nid,title,lay:'dip',cols:rng(pins.length/2,i=>i),pins,init:()=>({}),ana:Object.assign({A:1e5,ro:50,hd:1.5,vmin:5},ana),draw:dipChip(lab),desc},o||{}));
+const P8OA=['OUT1 (출력 1)','IN1− (반전 입력 1)','IN1+ (비반전 입력 1)','VEE (−전원)','IN2+ (비반전 입력 2)','IN2− (반전 입력 2)','OUT2 (출력 2)','VCC (+전원)'];
+oaDef('oa2j','OPAMP_DUAL_JFET_25VUS','듀얼 JFET 입력 연산 증폭기 (DIP-8, 빠름)',P8OA,{oa:[{o:0,n:1,p:2},{o:6,n:5,p:4}],vcc:7,vee:3,vmin:7},'OPA×2',
+  '연산 증폭기 두 개가 든 칩이에요. 입력단이 JFET라 입력으로 전류가 거의 안 흘러(피코암페어) 큰 저항·센서·적분기와 잘 맞고, 출력이 빨리 변해요(약 25V/µs). 오디오·계측 필터, 능동 필터, 버퍼에 써요. 출력은 전원 양 끝에서 약 1.5V 안쪽까지만 나와요. 전원은 보통 ±5~±18V(전체 7V 이상)이에요.'+OAS+ANAN);
+oaDef('oa2b','OPAMP_DUAL_GP_SS','듀얼 단전원 연산 증폭기 (DIP-8)',P8OA,{oa:[{o:0,n:1,p:2},{o:6,n:5,p:4}],vcc:7,vee:3,vmin:3,hdl:.05},'OPA×2',
+  '단전원(예: 5V 하나)으로 쓰도록 만든 범용 연산 증폭기 두 개예요. 입력과 출력이 GND(VEE) 바로 근처까지 내려가서 VEE를 GND에 이어 그대로 쓸 수 있어요(위쪽은 VCC보다 약 1.5V 아래까지). 센서 증폭, 전압 비교, 전류 감지 같은 느린 신호에 알맞아요. 전원 3~30V.'+ANAN);
+oaDef('oa4','OPAMP_QUAD_GP_SS','쿼드 단전원 연산 증폭기 (DIP-14)',['OUT1 (출력 1)','IN1− (반전 입력 1)','IN1+ (비반전 입력 1)','VCC (+전원)','IN2+ (비반전 입력 2)','IN2− (반전 입력 2)','OUT2 (출력 2)','OUT3 (출력 3)','IN3− (반전 입력 3)','IN3+ (비반전 입력 3)','VEE (−전원·GND)','IN4+ (비반전 입력 4)','IN4− (반전 입력 4)','OUT4 (출력 4)'],
+  {oa:[{o:0,n:1,p:2},{o:6,n:5,p:4},{o:7,n:8,p:9},{o:13,n:12,p:11}],vcc:3,vee:10,vmin:3,hdl:.05},'OPA×4',
+  '단전원 범용 연산 증폭기 네 개가 든 칩이에요. VCC가 4번, VEE(GND)가 11번 핀으로 가운데에 있어요(8핀 칩과 위치가 달라요). 출력이 GND 근처까지 내려가 5V 하나로 쓰기 좋아요. 필터 여러 단, 창 비교기, 다채널 센서 증폭에 써요. 전원 3~30V.'+ANAN);
+oaDef('oa1p','OPAMP_SINGLE_PREC_TO99','정밀 연산 증폭기 (금속 캔 TO-99, 8핀)',['BAL (오프셋 조정)','IN− (반전 입력)','IN+ (비반전 입력)','V− (−전원)','BAL (오프셋 조정)','OUT (출력)','V+ (+전원)','COMP (위상 보상)'],
+  {oa:[{o:5,n:1,p:2}],vcc:6,vee:3,vmin:6},'PREC',
+  '오프셋(입력 0V일 때 생기는 어긋남)이 아주 작은 정밀 연산 증폭기 하나가 둥근 금속 캔(TO-99)에 들어 있어요. 1·5번 BAL 사이에 가변 저항을 달아 남은 오프셋을 0으로 맞추고, 8번 COMP에는 데이터시트가 정한 작은 커패시터를 달아 발진을 막아요(이득이 큰 회로면 비워 둬도 돼요). 바닥에서 보아 탭 옆이 8번이고 시계 반대 방향으로 1→8번이에요. 다리를 둥글게 벌리면 DIP-8 자리에 꽂을 수 있어요(핀 번호 순서가 같음). 저울·온도계 같은 작은 직류 신호 증폭에 써요.'+OAS+ANAN,
+  {fp:'to99',draw:(c,ph,r)=>{const B=dipBody(ph,'#00000000',2);const st=(r&&r.ast||[])[0];return B.s+`<circle cx="${B.x}" cy="${B.y}" r="15" fill="#C9CED6" stroke="#7A8088"/><circle cx="${B.x}" cy="${B.y}" r="11.5" fill="#DCE0E5"/><rect x="${B.x+12}" y="${B.y-13}" width="4" height="4" transform="rotate(45 ${B.x+14} ${B.y-11})" fill="#C9CED6" stroke="#7A8088" stroke-width=".6"/><text x="${B.x}" y="${B.y+2.5}" font-size="6.5" font-weight="700" fill="#30343A" text-anchor="middle" font-family="var(--mono)">${st&&st.st!=='off'?(st.st==='hi'?'▲':st.st==='lo'?'▼':'PREC'):'PREC'}</text>`;}});
+pxDef({k:'cmp2',sub:'ana',pre:'U',nid:'COMPARATOR_DUAL_OC',title:'듀얼 전압 비교기 (오픈 컬렉터, DIP-8)',lay:'dip',cols:[0,1,2,3],
+  pins:['OUT1 (출력 1)','IN1− (반전 입력 1)','IN1+ (비반전 입력 1)','GND','IN2+ (비반전 입력 2)','IN2− (반전 입력 2)','OUT2 (출력 2)','VCC (+전원)'],init:()=>({}),
+  ana:{cmp:[{o:0,n:1,p:2},{o:6,n:5,p:4}],vcc:7,gnd:3,ron:40},draw:dipChip('CMP×2'),
+  desc:'두 입력 전압을 비교해서 + 입력이 − 입력보다 낮으면 출력을 GND로 끌어내리고(LOW), 높으면 출력을 놓아요(끊김). 출력이 오픈 컬렉터라 출력과 VCC(또는 다른 논리 전원) 사이에 풀업 저항(보통 1k~10kΩ)을 꼭 달아야 HIGH가 나와요. 그래서 12V 회로의 비교 결과를 5V 논리로 바로 넘길 수 있어요. 온도·빛 감지 스위치, 전압 감시, 창 비교기에 써요. 전원 2~36V, 입력은 GND 근처부터 받을 수 있어요. 출력이 뚝뚝 바뀌게 하려면 출력에서 + 입력으로 큰 저항을 달아(히스테리시스) 떨림을 막아요. 시뮬레이터는 출력이 켜지면 약 40Ω으로 GND에 붙는 것으로 계산해요.'});
+pxDef({k:'reg317',sub:'ana',pre:'U',pkg:'TO-220',nid:'REG_ADJ_POS_TO220',title:'가변 양전압 레귤레이터 (TO-220, 1.5A, 1.25~37V)',lay:'row',dc:[0,1,2],pins:['ADJ (조정)','VOUT (출력)','VIN (입력)'],init:()=>({}),
+  sl:'ADJ REG',ana:{reg:{adj:0,out:1,in:2,vref:1.25,drop:2,ro:.05}},
+  draw:(c,ph,r)=>{const st=(r&&r.ast||[])[0];return to220('REG')(c,ph,{on:st&&st.st==='reg'});},
+  desc:'출력(VOUT)을 조정 핀(ADJ)보다 늘 1.25V 높게 붙잡는 레귤레이터예요. VOUT→ADJ에 240Ω(R1), ADJ→GND에 R2를 달면 출력 = 1.25V × (1 + R2 ÷ R1)이 돼요(예: R2 720Ω → 5V, 2.2kΩ → 약 12.7V). 입력은 출력보다 약 2V 이상 높아야 하고(아니면 출력이 따라 내려가요), 입력·출력에 0.1µF·1µF 커패시터를 달아요. 1.5A까지 흘리지만 (입력−출력)×전류만큼 열이 나니 방열판을 달아요. 앞에서 보아 왼쪽부터 ADJ·VOUT·VIN이고 방열판은 VOUT과 이어져 있어요. 시뮬레이터는 ADJ 핀으로 흐르는 작은 전류(약 50µA)는 빼고 계산해요.'});
+pxDef({k:'dac8',sub:'ana',pre:'U',nid:'DAC_8BIT_MULT_R2R',title:'8비트 곱셈형 D/A 변환기 (R-2R, DIP-16)',lay:'dip',cols:rng(8,i=>i),
+  pins:['OUT1 (전류 출력 1)','OUT2 (전류 출력 2)','GND','DB7 (최상위 비트)','DB6','DB5','DB4','DB3','DB2','DB1','DB0 (최하위 비트)','~CS (칩 선택, LOW)','~WR (쓰기, LOW)','VDD (+전원)','VREF (기준 전압)','RFB (되먹임 저항)'],init:()=>({}),
+  ana:{dac:{io1:0,io2:1,gnd:2,bits:[3,4,5,6,7,8,9,10],cs:11,wr:12,vdd:13,vref:14,rfb:15,R:11000}},draw:dipChip('DAC 8'),
+  desc:'8비트 숫자(DB7~DB0, 0~255)를 아날로그 값으로 바꾸는 칩이에요. 안에 R-2R 사다리 저항(약 11kΩ)과 스위치가 있어서, VREF에서 들어온 전류를 비트마다 OUT1(1인 비트) 또는 OUT2(0인 비트)로 나눠 보내요. OUT1을 연산 증폭기의 − 입력에, RFB를 그 증폭기의 출력에, OUT2를 증폭기 + 입력과 같은 기준점(보통 GND)에 이으면 출력 = −VREF × 숫자 ÷ 256 이 돼요(곱셈형: VREF를 바꾸면 출력 크기도 비례해서 바뀜). ~CS와 ~WR이 둘 다 LOW인 동안 숫자를 받아들이고, 하나라도 HIGH가 되면 마지막 숫자를 붙잡아 둬요(마이크로프로세서 버스에 바로 연결). CMOS 칩이라 쓰지 않는 입력도 꼭 GND나 VDD에 이어요. 전원 5~15V.'});
+// ── 모듈 블록(시뮬레이션 없음): 핀 배치와 연결만 그리는 블랙박스. 회로도·PCB 설계에 자리만 잡아요
+const BLKN=' 이 부품은 핀만 있는 블록이라 시뮬레이터가 계산하지 않아요(이어도 아무 일도 일어나지 않아요). 회로도·PCB에서 연결과 자리를 잡는 데 써요.';
+const blkDraw=(lab,fill)=>(c,ph)=>{const B=bodyAbove(ph,6,22,fill||'#5C6670');return B.s+`<rect x="${B.x-14}" y="${B.y-8}" width="28" height="3" fill="#8A9098"/><text x="${B.x}" y="${B.y+5}" font-size="6.5" font-weight="700" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${lab}</text>`;};
+const blkDef=(k,nid,title,pins,lab,desc,o)=>pxDef(Object.assign({k,sub:'blk',pre:'A',nid,title,lay:'row',dc:rng(pins.length,i=>i),pins,init:()=>({}),blk:1,draw:blkDraw(lab),desc:desc+BLKN},o||{}));
+blkDef('bmix','RF_MIXER_DBL_BAL','RF 믹서 (이중 평형, 모듈)',['RF (고주파 입력)','LO (국부 발진 입력)','IF (중간 주파수 출력)','GND'],'MIX',
+  '두 고주파 신호를 곱해서 두 주파수의 합과 차를 만드는 부품이에요. 받은 신호(RF)에 국부 발진기 신호(LO)를 섞으면, 차 주파수(IF)로 옮겨져서 뒤에서 일정한 주파수로 걸러 증폭하기 쉬워져요(헤테로다인 수신기·스펙트럼 분석기의 첫 단). 이중 평형형은 출력에 LO·RF가 덜 새어 나와요.');
+blkDef('bvco','RF_VCO_TUNED','전압 제어 발진기 (VCO, 모듈)',['VCC','TUNE (주파수 조정 전압)','OUT (고주파 출력)','GND'],'VCO',
+  'TUNE 핀의 전압에 따라 주파수가 바뀌는 고주파 발진기예요. 톱니파 전압을 넣으면 주파수가 한쪽 끝에서 다른 끝으로 쓸려 지나가서(스윕), 믹서와 함께 넓은 주파수 범위를 차례로 훑어볼 수 있어요. 주파수를 정확히 붙잡을 때는 PLL(위상 고정 루프)로 TUNE 전압을 조정해요.');
+blkDef('bifa','IF_AMP_BPF','IF 증폭기 · 대역 필터 (모듈)',['VCC','IN (IF 입력)','OUT (IF 출력)','GAIN (이득 조정 전압)','GND'],'IF AMP',
+  '믹서가 만든 중간 주파수(IF) 신호 중 정해진 폭만 통과시키고(대역 필터), 크게 키우는(증폭) 블록이에요. 통과 폭이 좁을수록 가까이 붙은 두 신호를 나눠 볼 수 있어요(분해능). GAIN 핀 전압으로 증폭 정도를 바꿔요.');
+blkDef('blog','IF_LOG_DET','로그 증폭기 · 검파기 (모듈)',['VCC','IN (IF 입력)','VIDEO (검파 출력)','GND'],'LOG',
+  '입력 신호 세기의 로그(dB)에 비례하는 직류 전압을 내놓는 블록이에요. 아주 작은 신호부터 큰 신호까지(수십 dB 폭) 한 화면에 함께 보여 줄 수 있어 스펙트럼 분석기·수신 세기 표시에 써요. 출력(VIDEO)을 화면의 세로 위치로 써요.');
+blkDef('batt','RF_STEP_ATTEN','RF 스텝 감쇠기 (3비트, 모듈)',['IN (고주파 입력)','OUT (고주파 출력)','B0 (10dB)','B1 (20dB)','B2 (40dB)','VCC','GND'],'ATT',
+  '고주파 신호를 정해진 단계만큼 줄이는 블록이에요. 논리 입력 B0·B1·B2를 HIGH로 하면 각각 10·20·40dB씩 더 줄여서 0~70dB를 10dB 단위로 골라요. 큰 신호가 믹서를 포화시키지 않게 입력 쪽에 둬요.');
+blkDef('bdefl','CRT_DEFL_AMP','CRT 편향 증폭기 (X·Y, 모듈)',['VCC (+전원)','VEE (−전원)','X IN (가로 입력)','Y IN (세로 입력)','X+ (가로 판 +)','X− (가로 판 −)','Y+ (세로 판 +)','Y− (세로 판 −)','GND'],'DEFL',
+  '작은 X·Y 신호 전압을 키워서 브라운관(CRT)의 편향판 두 쌍에 수십~수백 V로 반대 방향(차동)으로 걸어 주는 블록이에요. 전자빔이 X 전압만큼 옆으로, Y 전압만큼 위아래로 휘어서 화면에 점을 찍어요(오실로스코프·옛 분석기 화면).');
+blkDef('bhv','CRT_HV_SUPPLY','CRT 고전압 전원 (모듈)',['VIN (전원 입력)','EN (켜기, HIGH)','HV (캐소드 고전압, −수 kV)','G1 (밝기 그리드)','FOCUS (초점)','GND'],'HV',
+  '브라운관에 필요한 수 kV의 고전압과 밝기(G1)·초점(FOCUS) 전압을 만드는 블록이에요. 실제 장치는 전원을 끈 뒤에도 커패시터에 고전압이 남아 아주 위험하니 손대기 전에 꼭 방전시켜요.');
+// 16/32비트 마이크로프로세서(DIP-64, 900mil): 핀 배치만 — 1~5 D4~D0, 6 ~AS … 29~48 A1~A20, 50~52 A21~A23, 54~64 D15~D5
+pxDef({k:'cpu64',sub:'blk',pre:'U',nid:'CPU_16_32_DIP64',title:'16/32비트 마이크로프로세서 (DIP-64, 시뮬레이션 없음)',lay:'dip',cols:rng(32,i=>i),rw:22.86,blk:1,init:()=>({}),
+  pins:['D4','D3','D2','D1','D0','~AS (주소 유효)','~UDS (위 바이트)','~LDS (아래 바이트)','R/~W (읽기/쓰기)','~DTACK (데이터 응답)','~BG (버스 허가)','~BGACK (버스 허가 응답)','~BR (버스 요청)','VCC','CLK (클럭)','GND','~HALT (멈춤)','~RESET (리셋)','~VMA (주변 주소 유효)','E (주변 클럭)','~VPA (주변 주소)','~BERR (버스 오류)','~IPL2 (인터럽트 2)','~IPL1 (인터럽트 1)','~IPL0 (인터럽트 0)','FC2 (기능 코드 2)','FC1 (기능 코드 1)','FC0 (기능 코드 0)',
+    ...rng(20,i=>'A'+(i+1)),'VCC','A21','A22','A23','GND','D15','D14','D13','D12','D11','D10','D9','D8','D7','D6','D5'],
+  draw:(c,ph)=>{const B=dipBody(ph,'#3A2F28',6);return B.s+`<circle cx="${B.x0-1}" cy="${B.y}" r="2.6" fill="#1E1A17"/><text x="${B.x}" y="${B.y+3}" font-size="9" font-weight="700" fill="#E9D8B8" text-anchor="middle" font-family="var(--mono)">CPU 16/32 · DIP-64</text>`;},
+  desc:'안은 32비트 레지스터, 밖으로는 16비트 데이터 버스(D0~D15)와 24비트 주소 버스(A1~A23, 바이트 선택은 ~UDS·~LDS)를 가진 마이크로프로세서예요. ~AS로 주소가 유효함을 알리고, 메모리·주변 장치가 ~DTACK을 LOW로 돌려줄 때까지 기다리는 비동기 버스예요. ~IPL2~0으로 7단계 인터럽트, FC2~0으로 사용자/관리자 상태를 알려요. VCC(14·49번)와 GND(16·53번)가 두 쌍이라 모두 이어야 해요. 폭이 900mil(22.86mm)이라 브레드보드에는 가운데 홈을 걸쳐 꽂을 수 없고, PCB 발자국은 줄 간격 22.86mm로 그려요.'+BLKN});
+// 아날로그 IC 상태 글: r.ast = [{k, st, code}]
+function anaTx(c,r){const A_=(r&&r.ast)||[];if(!S.power)return '전원 꺼짐';if(!A_.length)return '계산 전';
+  return A_.map((a,i)=>{const n=A_.filter(x=>x.k===a.k).length>1?(A_.slice(0,i).filter(x=>x.k===a.k).length+1)+' ':'';
+    if(a.st==='off')return `<b>${n}전원 부족(꺼짐)</b>`;
+    if(a.k==='oa')return `증폭기 ${n}<b>${a.st==='hi'?'출력이 위 끝에 붙음(포화)':a.st==='lo'?'출력이 아래 끝에 붙음(포화)':'정상 증폭'}</b>`;
+    if(a.k==='cmp')return `비교기 ${n}<b>${a.st===1?'+ < − → 출력 LOW':'+ > − → 출력 끊김(풀업이 HIGH로)'}</b>`;
+    if(a.k==='reg')return `<b>${a.st==='drop'?'입력 전압이 모자라 출력이 따라 내려감':'정전압 동작 (VOUT = ADJ + 1.25V)'}</b>`;
+    return `코드 <b>${a.code??0}</b> / 256 (2진 ${(a.code??0).toString(2).padStart(8,'0')})`;}).join(' · ');}
 /* 켜짐·꺼짐 갱신(브레드보드, 스위치 모드만): 바뀌면 true. t = settle의 트랜지스터 묶음(b 베이스·게이트 줄, e 이미터·소스 줄)
    스스로 이어 붙여 베이스(게이트)와 이미터(소스)가 같은 줄이 된 경우(다이오드처럼 묶은 회로)는 켜짐을 유지한다 */
 function trUpd(t,v,apply,uf2){const {T,r}=t;let on=false;const selfJ=()=>!!r.on&&t.b===t.e&&!(uf2&&uf2().f(t.hb)===uf2().f(t.he));
@@ -2837,7 +3003,7 @@ function settle(){
     for(const u of A_.oa||[])anaL.push({c,r,k:'oa',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),vee:n(A_.vee),M:A_,st:'lin'});
     for(const u of A_.cmp||[])anaL.push({c,r,k:'cmp',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),g:n(A_.gnd),M:A_,st:0});
     if(A_.reg)anaL.push({c,r,k:'reg',o:n(A_.reg.out),adj:n(A_.reg.adj),vin:n(A_.reg.in),M:A_,st:'reg'});
-    if(A_.dac){const D_=A_.dac;anaL.push({c,r,k:'dac',io1:n(D_.io1),io2:n(D_.io2),vref:n(D_.vref),rfb:n(D_.rfb),vdd:n(D_.vdd),g:n(D_.gnd),bits:D_.bits.map(n),M:A_});}}
+    if(A_.dac){const D_=A_.dac;anaL.push({c,r,k:'dac',io1:n(D_.io1),io2:n(D_.io2),vref:n(D_.vref),rfb:n(D_.rfb),vdd:n(D_.vdd),g:n(D_.gnd),bits:D_.bits.map(n),cs:D_.cs!=null?n(D_.cs):null,wr:D_.wr!=null?n(D_.wr):null,M:A_});}}
   const dioL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].dio){const hs=ph.get(c.id),r=rt(c);r.di=[];PX[c.kind].dio.forEach(([i,j,m],q)=>{const d={c,a:netOf[hs[i]],k:netOf[hs[j]],m:DIOM[m],st:0,i:0};r.di[q]=d;dioL.push(d);});}
   // 트랜지스터: {r, T, bj, pol(+1 NPN·N, −1 PNP·P), b 베이스·게이트 줄, cN 컬렉터·드레인 줄, e 이미터·소스 줄, d 베이스-이미터 다이오드, st 아날로그 상태}
   const trL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].tr){const T=PX[c.kind].tr,hs=ph.get(c.id),r=rt(c),bj=T.b!=null,n=k=>netOf[hs[k]];
@@ -2925,11 +3091,11 @@ function settle(){
       const vK=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):null;
       for(const a of anaL){const M=a.M;
         if(a.k==='oa'){const vc=vK(a.vcc),ve=vK(a.vee);a.on=vc!=null&&ve!=null&&vc-ve>=(M.vmin||5);if(!a.on||!ix.has(a.o))continue;const G=1/M.ro;
-          if(a.st==='hi')stamp(a.o,-1,G,G*(vc-M.hd));else if(a.st==='lo')stamp(a.o,-1,G,G*(ve+M.hd));else{stamp(a.o,-1,G,0);vccs(null,a.o,a.p,a.m,G*M.A,0);}}
+          if(a.st==='hi')stamp(a.o,-1,G,G*(vc-M.hd));else if(a.st==='lo')stamp(a.o,-1,G,G*(ve+(M.hdl??M.hd)));else{stamp(a.o,-1,G,0);vccs(null,a.o,a.p,a.m,G*M.A,0);}}
         else if(a.k==='cmp'){const vc=vK(a.vcc),vg=vK(a.g);a.on=vc!=null&&vg!=null&&vc-vg>=2;if(a.on&&a.st===1)stamp(a.o,a.g,1/M.ron,0);}
         else if(a.k==='reg'){const vi=vK(a.vin);a.on=vi!=null&&vi>=3;if(!a.on||!ix.has(a.o))continue;const G=1/M.reg.ro;stamp(a.o,-1,G,0);
           if(a.st==='drop')vccs(null,a.o,a.vin,-1,G,G*M.reg.drop);else vccs(null,a.o,a.adj,-1,G,-G*M.reg.vref);}
-        else{const vd=vK(a.vdd),vg=vK(a.g);a.on=vd!=null&&vg!=null&&vd-vg>=4.5;if(!a.on)continue;const R=M.dac.R;let D_=0;a.bits.forEach((n,i)=>{const v=lvl.get(n);if(v===Hh)D_|=1<<(a.bits.length-1-i);});a.code=D_;const full=1<<a.bits.length;
+        else{const vd=vK(a.vdd),vg=vK(a.g);a.on=vd!=null&&vg!=null&&vd-vg>=4.5;if(!a.on)continue;const R=M.dac.R;let D_=0;a.bits.forEach((n,i)=>{const v=lvl.get(n);if(v===Hh)D_|=1<<(a.bits.length-1-i);});if(a.cs!=null&&!(lvl.get(a.cs)===L&&lvl.get(a.wr)===L))D_=a.r.dcode||0;else a.r.dcode=D_;a.code=D_;const full=1<<a.bits.length;
           stamp(a.vref,a.io1,Math.max(1e-12,D_/full/R),0);stamp(a.vref,a.io2,Math.max(1e-12,(full-D_)/full/R),0);stamp(a.rfb,a.io1,1/R,0);}}
       for(const t of trA){const {T}=t,[hi,lo]=t.pol>0?[t.cN,t.e]:[t.e,t.cN];if(t.cN===t.e)continue;
         if(t.bj){const m=t.d&&t.d.m;if(t.st==='sat')stamp(hi,lo,1,.2);else if(t.d&&t.d.st===1){const gm=T.beta/m.rs;if(t.pol>0)vccs(t.cN,t.e,t.b,t.e,gm,gm*m.vf);else vccs(t.e,t.cN,t.e,t.b,gm,gm*m.vf);}}
@@ -2942,7 +3108,7 @@ function settle(){
         d.i=st===1?(v-m.vf)/m.rs:st===-1?(v+m.vz)/m.rz:0;}
       for(const a of anaL){if(!a.on)continue;const M=a.M,vv2=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):0;let st=a.st;
         if(a.k==='oa'){const vc=vv2(a.vcc),ve=vv2(a.vee),tgt=M.A*(vv2(a.p)-vv2(a.m)),vo=vv2(a.o);
-          if(st==='lin')st=vo>vc-M.hd+1e-6?'hi':vo<ve+M.hd-1e-6?'lo':'lin';else if(st==='hi'){if(tgt<vc-M.hd-1e-6)st='lin';}else if(tgt>ve+M.hd+1e-6)st='lin';}
+          if(st==='lin')st=vo>vc-M.hd+1e-6?'hi':vo<ve+(M.hdl??M.hd)-1e-6?'lo':'lin';else if(st==='hi'){if(tgt<vc-M.hd-1e-6)st='lin';}else if(tgt>ve+(M.hdl??M.hd)+1e-6)st='lin';}
         else if(a.k==='cmp')st=vv2(a.p)<vv2(a.m)?1:0;
         else if(a.k==='reg'){const tgt=vv2(a.adj)+M.reg.vref,vi=vv2(a.vin);st=vi-tgt<M.reg.drop?'drop':'reg';}
         if(st!==a.st){a.st=st;dCh=true;}}
@@ -3041,10 +3207,13 @@ function settle(){
       if(rv)W_.push(['bad',`${nm}에 거꾸로 ${rv.toFixed(0)}V가 걸려요. 역전압 한계 ${m.vr}V를 넘어서 실제로는 망가져요.`]);
       if(zp>m.pmax)W_.push(['bad',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격 ${m.pmax}W를 넘어서 타요. 직렬 저항을 더 크게 하세요.`]);
       else if(zp>.6*(m.pmax||1))W_.push(['warn',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격의 60%를 넘으면 뜨거워져요.`]);}}
+    if(c.t==='px'&&PX[c.kind].ana&&S.power){const A_=rt(c).ast||[],nm=`${LBL.get(c.id)} ${PX[c.kind].title.replace(/ \(.*$/,'')}`,M=PX[c.kind].ana,pn=i=>`${i+1}번(${PX[c.kind].pins[i].split(' ')[0]})`;
+      if(A_.length&&A_.every(a=>a.st==='off'))W_.push(['warn',M.reg?`${nm}의 입력(VIN)에 전압이 없거나 3V보다 낮아서 출력이 안 나와요. VIN을 전원에 이으세요.`:`${nm}에 전원이 안 들어와요. ${pn(M.dac?M.dac.vdd:M.vcc)} 핀을 + 에, ${pn(M.dac?M.dac.gnd:M.vee!=null?M.vee:M.gnd)} 핀을 ${M.vee!=null?'GND(또는 −전원)':'GND'}에 이으세요${M.oa?` (두 전원 차가 ${M.vmin||5}V 이상이어야 동작)`:''}.`]);}
     if(c.t==='px'&&PX[c.kind].tr&&PX[c.kind].tr.g!=null&&S.power){const T=PX[c.kind].tr,nm=`${LBL.get(c.id)} ${PX[c.kind].title.replace(/ \(.*$/,'')}`,vg=vOf(netOf[hs[T.g]]),vs=vOf(netOf[hs[T.s]]),x=vg!=null&&vs!=null?(T.t==='nmos'?vg-vs:vs-vg):null;
       // 게이트가 떠 있음: 그 줄에 전원·출력도, 저항도, 다른 부품 다리도 없다
       const ng=netOf[hs[T.g]],flo=!strong.has(ng)&&vg==null;
-      if(flo)W_.push(['warn',`${nm}의 게이트(G)가 아무 데도 안 이어져 있어요(떠 있음). 실제 MOSFET은 게이트에 남은 전하나 정전기로 제멋대로 켜지거나 반쯤 켜져 뜨거워져요. 게이트와 소스 사이에 10kΩ 저항을 달아 주세요.`]);
+      if(flo&&T.jf)W_.push(['warn',`${nm}의 게이트(G)가 아무 데도 안 이어져 있어요(떠 있음). JFET는 게이트 전압으로 켜고 끄니, 떠 있으면 잡음에 따라 제멋대로 바뀌어요. 게이트를 소스(켜 둘 때)나 그보다 낮은 전압(끌 때)에 이어 주세요 — 보통 게이트와 GND 사이에 1MΩ을 달아요.`]);
+      else if(flo)W_.push(['warn',`${nm}의 게이트(G)가 아무 데도 안 이어져 있어요(떠 있음). 실제 MOSFET은 게이트에 남은 전하나 정전기로 제멋대로 켜지거나 반쯤 켜져 뜨거워져요. 게이트와 소스 사이에 10kΩ 저항을 달아 주세요.`]);
       else if(vg==null){}
       else if(x!=null&&Math.abs(x)>20)W_.push(['bad',`${nm}의 게이트-소스에 ${Math.abs(x).toFixed(0)}V가 걸려요. 보통 ±20V가 한계라 게이트가 망가져요.`]);
       else if(rt(c).on&&!rt(c).an&&x!=null&&x<T.full)W_.push(['info',`${nm}: 게이트-소스 ${x.toFixed(1)}V로는 덜 켜져요(${T.full}V 이상에서 다 켜짐). 큰 전류를 흘리면 뜨거워질 수 있어요.`]);}
@@ -3779,7 +3948,9 @@ function propEditor(c){
       if(!d.pol)h+=`<div class="prop"><label>코일 정격 전압</label><div class="seg" id="pxC">${d.cvs.map(v=>`<button data-v="${v}" aria-pressed="${coilV(c)===v}">${v}V</button>`).join('')}</div></div>`;
       h+=`<p class="desc">${d.pol?'입력 저항':'코일 저항'} 약 ${ohmTx(R_)}${d.pol?' (3V 이상에서 켜짐)':` · 정격에서 ${(coilV(c)/R_*1000).toFixed(0)}mA · 붙는 전압 ${(coilV(c)*.75).toFixed(2)}V 이상`}<br>지금 ${d.pol?'입력':'코일'}에 걸린 전압: <b>${fmtV(dv)}</b> → <b>${d.latch?(on?'SET (COM→NO)':'RESET (COM→NC)'):on?(d.contacts?'붙음':'당김'):(d.contacts?'떨어짐':'놓음')}</b></p>`;}
     else if(d.tr){const T=d.tr,r=rt(c),bj=T.b!=null,di=(r.di||[])[0],fA=x=>Math.abs(x)>=1?+Math.abs(x).toPrecision(3)+'A':+(Math.abs(x)*1000).toPrecision(3)+'mA';
-      h+=`<p class="desc">${TRD[T.t]} · ${d.pkg} · ${bj?`hFE ${T.hfe} · 컬렉터 최대 ${fA(T.ic)} · ${T.vce}V · 켜지는 베이스 전압 약 ${DIOM[d.dio[0][2]].vf}V`:`문턱 전압 약 ${T.vth}V(다 켜짐 ${T.full}V) · 드레인 최대 ${fA(T.id)} · ${T.vds}V · 켜졌을 때 저항 약 ${ohmTx(T.ron)}`}<br>다리: ${d.pins.map(p=>esc(p)).join(' · ')}<br>지금: <b>${r.on?(bj?'켜짐 (C-E 이어짐)':'켜짐 (D-S 이어짐)'):'꺼짐'}</b>${bj&&di&&di.st===1?` · 베이스 전류 ${fA(di.i)}`:''}${!bj&&r.vgs!=null?` · 게이트-소스 ${r.vgs.toFixed(2)}V`:''}</p>`;}
+      h+=`<p class="desc">${T.jf?'N채널 JFET (공핍형)':TRD[T.t]} · ${d.pkg} · ${bj?`hFE ${T.hfe} · 컬렉터 최대 ${fA(T.ic)} · ${T.vce}V · 켜지는 베이스 전압 약 ${DIOM[d.dio[0][2]].vf}V`:`문턱 전압 약 ${T.vth}V(다 켜짐 ${T.full}V) · 드레인 최대 ${fA(T.id)} · ${T.vds}V · 켜졌을 때 저항 약 ${ohmTx(T.ron)}`}<br>다리: ${d.pins.map(p=>esc(p)).join(' · ')}<br>지금: <b>${r.on?(bj?'켜짐 (C-E 이어짐)':'켜짐 (D-S 이어짐)'):'꺼짐'}</b>${bj&&di&&di.st===1?` · 베이스 전류 ${fA(di.i)}`:''}${!bj&&r.vgs!=null?` · 게이트-소스 ${r.vgs.toFixed(2)}V`:''}</p>`;}
+    else if(d.ana)h+=`<p class="desc">${d.nid?`부품 이름(중립): <code>${esc(d.nid)}</code><br>`:''}지금: ${anaTx(c,rt(c))}</p>`;
+    else if(d.blk)h+=`<p class="desc">${d.nid?`부품 이름(중립): <code>${esc(d.nid)}</code><br>`:''}핀 ${d.pins.length}개 · 시뮬레이션 없음(블록)</p>`;
     else if(d.dio){const di=rt(c).di||[],m=DIOM[d.dio[0][2]],fA=x=>Math.abs(x)>=1?Math.abs(x).toFixed(2)+' A':(Math.abs(x)*1000).toFixed(1)+' mA';
       h+=`<p class="desc">${m.nm} · 켜지는 전압 약 ${m.vf}V${m.vz?` · 제너 전압 ${m.vz}V (정격 ${m.pmax}W)`:` · 역전압 한계 ${m.vr}V`} · 전류 한계 ${m.imax>=1?m.imax+'A':m.imax*1000+'mA'}<br>지금: ${di.length?di.map((x,q)=>(di.length>1?`D${q+1} `:'')+(x.st===1?'정방향 '+fA(x.i):x.st===-1?'제너 동작 '+fA(x.i):'끊김')).join(' · '):'끊김'}</p>`;}
     else if(d.air){const L_=airL(c),X=f=>ohmTx(Math.max(.01,+(2*Math.PI*f*L_).toPrecision(3)));
@@ -4910,6 +5081,7 @@ const DIONUM=[[/^1N(914|4148|4448)/,'d4148'],[/^1N400[1-7]/,'d4007'],[/^UF400[1-
 function parseHenry(v){const m=String(v||'').replace(/\s/g,'').match(/^([\d.]+)([nuµm]?)H?$/i);if(!m)return null;const n=parseFloat(m[1])*({n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[(m[2]||'').toLowerCase()]??1e-6);return near(INDV,n);}
 function pxPart(ty,T,v){const V=v.toUpperCase().replace(/[\s_-]/g,'');
   if(PX[ty])return{t:'px',kind:ty};const kl=Object.keys(PX).find(k=>k.toUpperCase()===T);if(kl)return{t:'px',kind:kl};
+  {const nz=x=>x.toUpperCase().replace(/[\s_-]/g,''),kn=Object.keys(PX).find(k=>PX[k].nid&&(nz(PX[k].nid)===nz(T)||nz(PX[k].nid)===V));if(kn)return{t:'px',kind:kn};}
   for(const [re,k] of DIONUM)if(re.test(T)||((!T||/^(D|BR|ZD)$|DIODE|다이오드|RECT|정류|ZENER|제너|SCHOTTKY|쇼트키|BRIDGE|브리지|SIGNAL|신호|^PART$|부품/.test(T))&&re.test(V)))return{t:'px',kind:k};
   for(const [re,k] of TRNUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
   if(/^TIP12[567]/.test(T)||/^TIP12[567]/.test(V))return null;   // PNP 달링턴은 아직 없음 → 모르는 부품으로 알린다
@@ -5162,7 +5334,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · PCB 층별 보기';
+const APP_VER='2026-11-26 · 아날로그 IC·금속 캔 부품';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -5660,6 +5832,14 @@ Object.assign(EXAMPLES,{
     s=K.sw(K.at(2,true,32),true);Q=K.px('mnpow',2,'c',34);K.link(s,Q(0));K.gnd(Q(2));sink(Q(1),2,38,'white');
     s=K.sw(K.at(2,true,41),true);Q=K.px('mppow',2,'c',43);K.link(s,Q(0));K.vcc(Q(2));out(Q(1),2,48,'blue');
     return K.fin();},
+  // Ⓟ8 아날로그 IC: 트리머 와이퍼 전압 → ① 비교기(2.5V 기준, 넘으면 LED) ② 단전원 연산 증폭기 비반전 2배(출력에 LED)
+  paana:()=>{const K=ledKit(1);
+    const W=K.px('trim6',1,'c',2,{pos:.7});K.gnd(W(0));K.vcc(W(2));
+    const C=K.px('cmp2',1,null,9);K.vcc(C(7));K.gnd(C(3));K.vcc(C(2),10000);K.gnd(C(2),10000);K.link(W(1),C(1));K.gnd(C(4));K.gnd(C(5));
+    let x=K.led(1,15,{color:'red'});K.vcc(x.a,330);K.link(x.k,C(0));
+    const A=K.px('oa2b',1,null,20);K.vcc(A(7));K.gnd(A(3));K.link(W(1),A(2));K.link(A(0),A(1),10000);K.gnd(A(1),10000);K.gnd(A(4));K.link(A(6),A(5));
+    x=K.led(1,27,{color:'green'});K.link(A(0),x.a,330);K.gnd(x.k);
+    return K.fin();},
 });
 
 </script>
@@ -5716,7 +5896,7 @@ function symOf(p){const pins=[];let w=40,h=20,body='';const lit=SIM_S.led.get(p.
     else if(d.pot&&d.pins.length===3){pin(0,-40,0,-1,0,'1');pin(2,40,0,1,0,'3');pin(1,0,30,0,1,'2');w=40;h=30;
       body=`<path d="M-40 0H-24l4-8 8 16 8-16 8 16 8-16 8 16 4-8H40"/><path d="M0 30V12"/><path d="M-5 17L0 10L5 17" style="fill:var(--sink)"/><text x="0" y="-14" class="sv">${ohmTx(p.ohms||10000)} ${p.taper||'B'} · ${Math.round((p.pos??.5)*100)}%</text>`;}
     else{const n=d.pins.length,half=Math.ceil(n/2),Lp=d.pins.map((nm,i)=>({nm,i})).slice(0,half),Rp=d.pins.map((nm,i)=>({nm,i})).slice(half).reverse(),rows=Math.max(Lp.length,Rp.length,2);h=rows*10+10;w=70;
-      const cs=d.contacts?d.contacts(p,srt(p)):[];let st=d.pot?`${ohmTx(p.ohms||10000)} ${Math.round((p.pos??.5)*100)}%`:d.coil&&!d.contacts?(srt(p).on?'당김':'놓음'):cs.length?cs.map(([i,j])=>d.pins[i].split(' ')[0]+'-'+d.pins[j].split(' ')[0]).join(' '):'열림';
+      const cs=d.contacts?d.contacts(p,srt(p)):[];let st=d.ana?(srt(p).ast||[]).map(a=>a.st==='off'?'꺼짐':a.k==='oa'?(a.st==='lin'?'증폭':a.st==='hi'?'포화▲':'포화▼'):a.k==='cmp'?(a.st===1?'LOW':'끊김'):a.k==='reg'?(a.st==='reg'?'정전압':'전압 부족'):'코드 '+(a.code??0)).join(' ')||'—':d.blk?'블록':d.pot?`${ohmTx(p.ohms||10000)} ${Math.round((p.pos??.5)*100)}%`:d.coil&&!d.contacts?(srt(p).on?'당김':'놓음'):cs.length?cs.map(([i,j])=>d.pins[i].split(' ')[0]+'-'+d.pins[j].split(' ')[0]).join(' '):'열림';
       let s=`<rect x="-50" y="${-h}" width="100" height="${2*h}" rx="3" style="fill:var(--surface)"/><text x="0" y="${-h-6}" class="sv b">${esc(d.title.replace(/ \(.*$/,''))}</text><text x="0" y="4" class="sv">${esc(st.length>22?st.slice(0,22)+'…':st)}</text>`;
       const side=(list,sx)=>list.forEach((o,j)=>{const y=-h+20+j*20,x=sx*70;pin(o.i,x,y,sx,0,o.nm);s+=`<path d="M${sx*50} ${y}H${x}"/><text x="${sx*44}" y="${y+4}" class="sp ${sx<0?'l':'r'}">${esc(o.nm.split(' ')[0])}</text>`;});
       side(Lp,-1);side(Rp,1);body=s;}}
@@ -6493,10 +6673,15 @@ function fpDef(p){const pads=[],silk=[];let val='',pkg='';
   else if(p.t==='led3'){pad(0,0,0,{sq:true});pad(1,2.54,0);pad(2,5.08,0);silk.push({t:'c',x:2.54,y:0,r:3.2});val=p.ca?'2색 LED (공통 A)':'2색 LED (공통 K)';pkg='LED 5mm 3핀';}
   else if(p.t==='px'){const d=PX[p.kind],n=d.pins.length;val=d.title||p.kind;
     // 택트: 몸통을 가로지르는 두 다리(1-4, 2-3)가 안에서 늘 이어져 있다 → 그 쌍을 긴 간격(6.5mm·12.5mm)에, 누르면 이어지는 1-2는 짧은 간격(4.5mm·5mm)에
-    if(d.lay==='dip'){if(p.kind==='tact6'||p.kind==='tact12'){const W=p.kind==='tact6'?4.5:5,H=p.kind==='tact6'?6.5:12.5;pad(0,0,H,{sq:true});pad(1,W,H);pad(2,W,0);pad(3,0,0);box(-.5,-1,W+.5,H+1);silk.push({t:'c',x:W/2,y:H/2,r:Math.min(W,H)/2-.4});pkg=p.kind==='tact6'?'택트 6×6mm':'택트 12×12mm';}
+    // 금속 캔·TO-3·TO-99: 원형·다이아몬드 발자국
+    if(d.fp==='to18'||d.fp==='to39'){const R=d.fp==='to18'?1.27:2.54;pad(0,-R,0,{sq:true});pad(1,0,-R);pad(2,R,0);silk.push({t:'c',x:0,y:0,r:d.fp==='to18'?2.9:4.6},{t:'l',x1:-R-1.2,y1:R*.9+.6,x2:-R-.3,y2:R*.9+1.5});pkg=`${d.pkg} (${d.pins.map(x=>x[0]).join('')}, 원형 지름 ${2*R}mm)`;}
+    else if(d.fp==='to3'){pad(0,-5.46,0,{sq:true,d:2.4,dr:1.3});pad(1,5.46,0,{d:2.4,dr:1.3});pad(2,-15.09,0,{d:6.5,dr:4.1});pad(2,15.09,0,{d:6.5,dr:4.1});
+      silk.push({t:'c',x:0,y:0,r:11},{t:'l',x1:-11,y1:-6,x2:-19.5,y2:-3},{t:'l',x1:-11,y1:6,x2:-19.5,y2:3},{t:'l',x1:11,y1:-6,x2:19.5,y2:-3},{t:'l',x1:11,y1:6,x2:19.5,y2:3});pkg='TO-3 (B·E 다리 10.92mm, 장착 구멍 = C 30.18mm, 어림 치수)';}
+    else if(d.fp==='to99'){const R=2.54;for(let i=0;i<8;i++){const a=Math.PI*(1.25+i*.25);pad(i,r3(R*Math.cos(a)),r3(-R*Math.sin(a)),{sq:i===0,d:1.4,dr:.8});}silk.push({t:'c',x:0,y:0,r:4.7},{t:'l',x1:-3.6,y1:-3.6,x2:-4.6,y2:-4.6});pkg='TO-99 (8핀 원형 지름 5.08mm, 탭 옆 8번)';}
+    else if(d.lay==='dip'){if(p.kind==='tact6'||p.kind==='tact12'){const W=p.kind==='tact6'?4.5:5,H=p.kind==='tact6'?6.5:12.5;pad(0,0,H,{sq:true});pad(1,W,H);pad(2,W,0);pad(3,0,0);box(-.5,-1,W+.5,H+1);silk.push({t:'c',x:W/2,y:H/2,r:Math.min(W,H)/2-.4});pkg=p.kind==='tact6'?'택트 6×6mm':'택트 12×12mm';}
       // 가운데 홈을 걸치는 부품: 핀 간격은 브레드보드에서 꽂는 칸(cols)대로, 줄 간격 7.62mm
-      else{const cs=d.cols,h=cs.length,pt=d.dpp||2.54;for(let i=0;i<n;i++){const bot=i<h,x=(bot?cs[i]:cs[n-1-i])*pt;pad(i,x,bot?7.62:0,{sq:i===0});}
-        const x1=cs[h-1]*pt;box(-1.3,1.2,x1+1.3,7.62-1.2);silk.push({t:'a',x:-1.3,y:3.81,r:.8});pkg=`DIP-${n}`+(cs.some((c,i)=>i&&c-cs[i-1]!==1)?` (${cs.map(c=>c*pt).join('·')}mm)`:'');}}
+      else{const cs=d.cols,h=cs.length,pt=d.dpp||2.54,RW=d.rw||7.62;for(let i=0;i<n;i++){const bot=i<h,x=(bot?cs[i]:cs[n-1-i])*pt;pad(i,x,bot?RW:0,{sq:i===0});}
+        const x1=cs[h-1]*pt;box(-1.3,1.2,x1+1.3,RW-1.2);silk.push({t:'a',x:-1.3,y:RW/2,r:.8});pkg=`DIP-${n}`+(d.rw?` (${Math.round(d.rw/.0254)}mil)`:'')+(cs.some((c,i)=>i&&c-cs[i-1]!==1)?` (${cs.map(c=>c*pt).join('·')}mm)`:'');}}
     // 한 줄 부품: pp가 있으면 그 간격으로 고르게, 없으면 브레드보드에서 꽂는 칸(dc)대로
     else{const xs=d.pp?d.pins.map((_,i)=>i*d.pp):d.dc.map(k=>k*2.54);xs.forEach((x,i)=>pad(i,x,0,{sq:i===0}));box(-1.5,-1.5,xs[xs.length-1]+1.5,1.5);
       const gap=d.pp?d.pp+'mm':xs.every((x,i)=>!i||Math.abs(x-xs[i-1]-2.54)<1e-6)?'2.54mm':xs.map(x=>+x.toFixed(2)).join('·')+'mm';
