@@ -1,0 +1,19 @@
+* tb-bridge — 9Vrms 60Hz → 브리지 → 470µF → 330Ω → 5.1V 제너, 1kΩ 부하 (자체 작성)
+.include bbcad-parts.lib
+V_AC a1 a2 SIN(0 12.73 60)
+R_G a2 0 1Meg
+X_BR a1 a2 raw 0 BB_BRIDGE_1A
+C1 raw 0 470u
+X_RAIL raw rail BB_RAIL INCH=2.75 RC=0.05
+R1 rail out 330
+D_Z 0 out BB_D_ZEN51
+R_L out 0 1k
+.tran 50u 200m 100m
+.control
+run
+meas tran vraw_max MAX v(raw)
+meas tran vout_avg AVG v(out)
+meas tran vout_pp PP v(out)
+print vraw_max vout_avg vout_pp > tb-bridge.out
+.endc
+.end

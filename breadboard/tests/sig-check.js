@@ -16,4 +16,6 @@ chk('드릴 주석 서명',b.includes("; Generator: (c) 2026 co2maker-cyber, sig
 chk('PCB README 서명',b.includes('서명 ${AUTHOR_SIG.id}\\n`;'));
 chk('SVG 그림 서명',b.includes('(c) 2026 co2maker-cyber · 서명 ${AUTHOR_SIG.id} -->'));
 chk('화면 [속성] © 줄',b.includes('© 2026 co2maker-cyber. All rights reserved.'));
+const lib=fs.readFileSync(path.join(root,'breadboard/spice/bbcad-parts.lib'),'utf8');
+chk('SPICE 라이브러리 저작권·서명',lib.includes('Copyright (c) 2026 co2maker-cyber. All rights reserved.')&&lib.includes(`저작자 서명 ID: ${ID}-BBCAD`));
 console.log(bad?`sig-check FAIL (${bad})`:'sig-check PASS');process.exitCode=bad?1:0;

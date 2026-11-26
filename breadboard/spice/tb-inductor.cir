@@ -1,0 +1,16 @@
+* tb-inductor — 100µH 축형·레이디얼 등가회로의 임피던스와 자기 공진(SRF) 확인 (자체 작성)
+.include bbcad-parts.lib
+I1 0 na AC 1
+X1 na 0 BB_IND_AXIAL_100U
+I2 0 nr AC 1
+X2 nr 0 BB_IND_RADIAL_100U
+.ac dec 200 1k 50Meg
+.control
+run
+meas ac f_axial  WHEN vp(na)=0 FALL=1
+meas ac f_radial WHEN vp(nr)=0 FALL=1
+meas ac z1k_axial FIND vm(na) AT=1k
+meas ac z100k_radial FIND vm(nr) AT=100k
+print f_axial f_radial z1k_axial z100k_radial > tb-inductor.out
+.endc
+.end

@@ -1,0 +1,33 @@
+* tb-relay — 5V DIP 릴레이를 켰다 끄고, 코일 양 끝 역전압 다이오드가 있을 때와 없을 때 비교
+* (브레드보드 CAD 자체 작성 시험 회로) 실행: ngspice -b tb-relay.cir
+.include bbcad-parts.lib
+* 5ms~25ms 동안 코일 구동 스위치를 켬(트랜지스터 대신 전압 제어 스위치)
+V_DD vdd 0 5
+V_G g 0 PULSE(0 5 5m 10u 10u 20m 50m)
+S_DRV c1n 0 g 0 SW_DRV
+S_DRV2 c2n 0 g 0 SW_DRV
+.model SW_DRV SW(Ron=1 Roff=10Meg Vt=2.5 Vh=0.1)
+* 릴레이 1: 다이오드 있음
+X1 vdd c1n vload1 no1 nc1 BB_RLY_SPDT_DIP
+D_FLY c1n vdd BB_D_SIG
+* 릴레이 2: 다이오드 없음(코일 양 끝 1MΩ만)
+X2 vdd c2n vload2 no2 nc2 BB_RLY_SPDT_DIP
+R_LEAK c2n vdd 1Meg
+V_L1 vload1 0 12
+V_L2 vload2 0 12
+R_NO1 no1 0 120
+R_NC1 nc1 0 120
+R_NO2 no2 0 120
+R_NC2 nc2 0 120
+.tran 10u 40m
+.control
+run
+meas tran t_on  WHEN v(no1)=6 RISE=1
+meas tran t_off WHEN v(no1)=6 FALL=1
+meas tran vmax_diode MAX v(c1n)
+meas tran vmax_none  MAX v(c2n)
+let both = v(no1)*v(nc1)
+meas tran overlap MAX both
+print t_on t_off vmax_diode vmax_none overlap > tb-relay.out
+.endc
+.end

@@ -1,3 +1,6 @@
 # 라이선스 비밀 열쇠는 절대 커밋하지 않는다
 *PRIVATE*.jwk.json
 *-private.json
+
+# SPICE 시험 결과(실행할 때마다 새로 생김)
+breadboard/spice/*.out

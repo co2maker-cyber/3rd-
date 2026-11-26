@@ -1,11 +1,11 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 10차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 11차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 6200줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정. 같은 저장소에 `linux/`·`router/`·`windows/` 실습장, 루트 `index.html`(처음 화면)
 
 ## 현황
 - 작업 브랜치 `ccr-957126bc-kqjtgb` = main (릴레이·코일 커밋까지 반영)
-- 아티팩트 v59 게시 완료, `APP_VER='2026-11-26 · 릴레이·코일'`
+- 아티팩트 v60 게시, `APP_VER='2026-11-26 · 다이오드·SPICE'`
 ✓ 기존(8차까지): 오류 알림, PCB 탭(자동 배선·DRC·거버 zip), 연결 체크 막대·초기화, 순서 카드, 내려받기 `saveAny`(저장 창 안 씀), 깃허브 페이지 배포
 ✓ 저작권 가이드 적용: 외부 웹폰트 제거(5개 페이지 모두 시스템 글꼴, 외부 요청 0), `index.html` 맨 위 고지 주석, 화면 [속성] © 줄, `FILE-FORMAT.md` 끝 고지, "데이터시트 기준" 표기 전부 "표준 핀 번호", PCB 점검 창·zip README 거버 교차 확인 면책, `COPYRIGHT.md` 0·3(자체 구현 표)·9(배포)·10(AI 협업)·11(체크리스트)절
 ✓ 라우터 일반화: 시스코 부팅 문구·형번(ISR4331 등)·이미지 파일·일련번호·MAC(OUI)·연습 비번(`cisco`→`class`, `Cisco123`→`Admin123`) → 가상 장비 PR-4000·PR-3000·PS-2400·SER-2P, `pr4000-practice-1.0.bin`, MAC `0200.00a1.0a0x`(EUI 상수 같이 변경). `rommon`·`cdp` 명령 이름 유지
@@ -13,7 +13,8 @@
 ✓ 라이선스 키: 공식 주소(`co2maker-cyber.github.io`, claude.ai·claudeusercontent·틀 바깥 주소·`window.claude`)는 통과, 그 밖(file://·다른 사이트)은 `#licGate`. ECDSA P-256, `LIC_PUB`(kid `BBCAD-K1`)·`LIC_OFFICIAL`·`LIC_REVOKED`·`licVerify`/`licCheck`. 키 = `BBCAD1.`+base64url(내용 {v,id,to,dom,exp,ed,iat})+서명. 발급 `breadboard/license-admin.html`·`node breadboard/tools/issue-license.js --key … --to … --dom file --exp …`
 ✓ 로컬 버전: `const LIC_EMBED=null;` 줄에 키 넣은 파일 → 더블클릭으로 키 창 없이 오프라인 실행, 이름·키 번호 표시. 발급 페이지 [로컬 버전 파일 만들기]→[⬇ 내려받기] 링크, CLI `--build 파일.html`. 파일 이름 `breadboard-CAD-local-L-….html`(영문)
 ✓ 릴레이·코일(10차): PX 분류 `rly`·`ind` 추가. 릴레이 `rlyc`(큐브 SPDT)·`rlyd`(DIP DPDT)·`reed`·`rlyl`(래칭, 상태 c.s)·`ssr`(극성, 3V)·`sol`(솔레노이드). 코일 = `coil:[i,j]`+`res`(코일 저항 cv²/cw), settle 끝 `coilUpd`(75% 붙음/10% 떨어짐) → 바뀌면 settle 재귀(깊이 4, 넘으면 `SIM.buzz` 버저 알림·20ms 루프 계속). 회로도는 논리 값(H/L 반대면 정격)으로 같은 처리. 경고: 과전압·전압 부족·IC 출력 직접 구동(>25mA)·DRV-SINK8 COM 미연결. 인덕터 `inda`(색띠 µH)·`indr`·`indt`·`bead` = `thru`(직류 단락, settle·schNets union), [속성] DCR·허용 전류 어림·리액턴스. PCB `pp` 간격. 예제 Ⓟ5 `pasrly`. 시험 `tests/ui/relay.js`
-✓ 시험: verify74 106/106, verify-parts 123/123, guide-sync, sig-check, `tests/ui/license.js` 20항목 PASS(시험용 열쇠 쌍)
+✓ 다이오드·SPICE(11차, 사용자가 붙여 넣은 부품 조사 문서를 저작권 안전하게 반영): PX 분류 `dio` — `d4148`·`d4007`·`d5819`·`dz51`(제너 5.1V)·`dge`·`brdg`(4핀 DIP). `dio:[[A,K,특성]]`, `DIOM` 꺾은선(vf·rs, 제너 vz·rz). settle: resolve에서 한 방향 레벨 전파(A의 H→K, K의 L→A), analogStep에서 상태 가정→풀기→고치기(최대 12번), IC 바뀌면 analog 한 번 더. 경고: 저항 없이 정방향 단락·전류 초과·역전압·제너 전력. 릴레이 COM 알림은 코일 양 끝 역방향 다이오드 있으면 생략. 회로도 기호·레벨 전파. 예제 Ⓟ6 `pasdio`(보드 3장). `spice/bbcad-parts.lib`(BB_ 일반 이름, 값 직접 산출)·`spice/README.md`·`tb-*.cir` 3개, `tools/fit-diode.py`, 시험 `tests/spice-check.js`(ngspice: apt-get install ngspice)·`tests/ui/diode.js`. COPYRIGHT 14절(사실만, 남의 모델·문장·회사 형번 없음)
+✓ 시험: verify74 106/106, verify-parts 130/130, guide-sync, sig-check, `tests/ui/license.js` 20항목 PASS(시험용 열쇠 쌍)
 ✓ 전체 시험: 라이선스·로컬 버전까지 회귀+tests/ui 19종 PASS → main 반영(`088216e`). 릴레이·코일 후 tests/ui 20종 재실행
 ✗ 미검증: Claude 미리보기에서 키 창 안 뜨는지(주소 미확인), 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(gerbonara 설치 권한 거부)
 
@@ -26,7 +27,7 @@
 
 ## 사용자 지시 기록 (COPYRIGHT.md 10절 — 계속 덧붙일 것)
 - ~11-25: 시뮬레이터 방향, AI 호출 금지, 부품 220종 예제, 자동 main, 오류 알림, PCB, 업데이트마다 링크, 깃허브 페이지
-- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기 고침, 전보체 메모, 저작권 가이드 적용·재검토, 라우터 부팅 문구 일반화, 코드 저작권 서명, 복사 막는 라이선스 키, 로컬 버전, 진행 메모(9차), 릴레이·코일 부품 추가
+- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기 고침, 전보체 메모, 저작권 가이드 적용·재검토, 라우터 부팅 문구 일반화, 코드 저작권 서명, 복사 막는 라이선스 키, 로컬 버전, 진행 메모(9차), 릴레이·코일 부품 추가, 다이오드·릴레이·코일 조사 문서 반영 + 저작권 문제 없게
 
 ## 이슈/주의
 - 라이선스는 기술적 보호조치일 뿐 — 공개 소스라 수정 우회는 못 막음(저작권법 제104조의2로 보호). 더 강하게 = 저장소 비공개(Pages 유료)
@@ -38,14 +39,14 @@
 - 서명·저작자 이름 바꿀 땐 주석·메타·`AUTHOR_SIG`·출력물·`sig-check.js` OWNER 함께. 서명 ID는 바꾸지 않음
 
 ## 다음 할 일
-1. 릴레이 후보: 다이오드·트랜지스터 부품(지금은 역전압 다이오드 없음 → DRV-SINK8 COM으로 대신), 인덕터 교류(LC) 동작은 직류 단락으로만 계산
+1. 후보: 트랜지스터 부품, 회로 → SPICE 넷리스트 내보내기(지금은 라이브러리만), 인덕터 교류(LC) 동작은 직류 단락으로만 계산
 2. 사용자에게 Claude 미리보기에서 키 창 뜨는지 확인 요청(뜨면 `licOfficial` 주소 추가)
 3. 사용자 결정 대기: 저작자 실명/상호, 오픈소스 여부, 저장소 비공개 전환, ASC4-16 자리 순서
 4. PCB 개선 후보: 자동 배선 성공률, GND 구리 채우기, 뒷면 부품
 
 ## 참조
 - 파일: `/home/user/3rd-/breadboard/index.html` · `license-admin.html` · `tools/issue-license.js` · `COPYRIGHT.md` · `FILE-FORMAT.md` · `README.md` / `/home/user/3rd-/router/index.html` · `CLAUDE.md` · `HANDOFF.md` · `.gitignore`
-- 시험: `node breadboard/tests/verify74.js`, `verify-parts.js`, `guide-sync.js`(`--fix`), `sig-check.js`, `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(20종, 약 15분)
+- 시험: `node breadboard/tests/verify74.js`, `verify-parts.js`, `guide-sync.js`(`--fix`), `sig-check.js`, `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(21종, 약 16분), `spice-check.js`
 - 회귀(스크래치패드, 소실 가능): `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` t*.js (75개)
 - 아티팩트 다시 올릴 때: 새 대화면 publish 한 번 거절(현재판 diff 받음 = 열람 처리) → 같은 파일 두 번 더 publish
 - 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ

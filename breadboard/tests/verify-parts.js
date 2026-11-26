@@ -180,6 +180,21 @@ function inPage() {
       rec('수동 소자', `${k} · ${d.title}`, ok, ok ? '직류에서 1-2 이어짐' + (k !== 'bead' ? ` · 기본 ${henTx(d.init().henry)}` : '') : '정의 확인'); }
     { const t = [[1e-4, [1, 0, 1]], [4.7e-5, [4, 7, 0]], [1e-6, [1, 0, -1]], [2.2e-3, [2, 2, 2]]], bad = t.filter(([L_, e]) => indBands(L_).join() !== [BANDC[e[0]], BANDC[e[1]], e[2] < 0 ? '#C9A227' : BANDC[e[2]]].join());
       rec('수동 소자', '인덕터 색띠 (µH)', !bad.length, bad.length ? bad.map(x => henTx(x[0])).join(' ') : '100µH 갈검갈 · 47µH 노보검 · 1µH 갈검금 · 2.2mH 빨빨빨'); }
+    // 다이오드: 5V → 다이오드 → 1kΩ → GND 에서 캐소드 전압(= 5 − 순방향 전압), 거꾸로 꽂으면 전류 없음(캐소드 쪽이 5V 그대로)
+    for (const [k, lo, hi] of [['d4148', .55, .75], ['d4007', .55, .78], ['d5819', .15, .38], ['dge', .12, .45], ['dz51', .55, .78]]) {
+      const e = 3 + PX[k].dc[1];
+      build([{ t: 'wire', pins: ['a3', 'tp3'] }, { t: 'px', kind: k, pins: ['c3', 'c' + e] }, { t: 'res', pins: ['d' + e, 'd' + (e + 4)], ohms: 1000 }, { t: 'wire', pins: ['a' + (e + 4), 'tn' + (e + 4)] }]);
+      const vf = 5 - vH('e' + e);
+      build([{ t: 'wire', pins: ['a3', 'tn3'] }, { t: 'px', kind: k, pins: ['c3', 'c' + e] }, { t: 'res', pins: ['d' + e, 'd' + (e + 4)], ohms: 1000 }, { t: 'wire', pins: ['a' + (e + 4), 'tp' + (e + 4)] }]);
+      const vr = vH('e' + e);
+      rec('수동 소자', `${k} · ${PX[k].title}`, vf >= lo && vf <= hi && near(vr, 5, .01), `약 ${(4.3).toFixed(1)}mA에서 순방향 ${vf.toFixed(2)}V (대표 범위 ${lo}~${hi}V) · 거꾸로 꽂으면 캐소드 ${vr.toFixed(2)}V(전류 없음)`); }
+    // 제너: 12V → 330Ω → 캐소드, 애노드 GND, 1kΩ 부하 → 5.1V 근처로 붙잡음
+    { build([{ t: 'psu', k: 1, x: 20, y: 440, v: 12 }, { t: 'wire', pins: ['@1:0', 'a3'] }, { t: 'wire', pins: ['@1:1', 'a20'] }, { t: 'res', pins: ['b3', 'b9'], ohms: 330 }, { t: 'px', kind: 'dz51', pins: ['c20', 'c9'] }, { t: 'res', pins: ['d9', 'd20'], ohms: 1000 }]);
+      const v = vH('e9'); rec('수동 소자', '제너 정전압 (12V → 330Ω → 5.1V)', v > 5.0 && v < 5.35, `출력 ${v.toFixed(2)}V`); }
+    // 브리지: 입력 방향을 바꿔도 + 단자가 + (두 다이오드만큼 낮음)
+    { const out = []; for (const flip of [false, true]) { build([{ t: 'px', kind: 'brdg', pins: ['f10', 'f12', 'e12', 'e10'] }, { t: 'wire', pins: ['j12', flip ? 'bp13' : 'bn13'] }, { t: 'wire', pins: ['a10', flip ? 'tn10' : 'tp10'] }, { t: 'res', pins: ['i10', 'i16'], ohms: 1000 }, { t: 'wire', pins: ['a12', 'a16'] }]);
+        out.push(vH('j10') - vH('e12')); }
+      rec('수동 소자', `brdg · ${PX.brdg.title}`, out.every(x => x > 3.3 && x < 4), `입력 정방향 +−사이 ${out[0].toFixed(2)}V · 뒤집어도 ${out[1].toFixed(2)}V`); }
     // 다 확인했는지
     const done = new Set(R.filter(r => r.grp === '수동 소자').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }
