@@ -1,58 +1,50 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 8차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 9차)
 
 ## 목표
-- `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 6100줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정
+- `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 6200줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정. 같은 저장소에 `linux/`·`router/`·`windows/` 실습장, 루트 `index.html`(처음 화면)
 
-## 현황 (모두 main 반영 = `dc92878`, 아티팩트 v53, `APP_VER='2026-11-26 · md 내려받기'`)
-✓ 기존: 안내서 `breadboard/FILE-FORMAT.md`(+index.html 사본 `<script id="guideMd">`), [AI 회로](AI 호출 없이 안내·붙여넣기), [전선 정리], `autoLayout`, 표시기 잔상, 불러오기 버그 수정, 예제 36개(부품 220가지 모두 사용)
-✓ 오류 알림: 경고에 부품 id(`W_[i][2]`) → 알림 카드 `notifyWarns`(3초 안 반복 X, 전원 꺼짐 제외)·깜박 테두리 `warnRings`·[보기]/점검 목록 클릭 `focusComp`
-✓ PCB 탭(VM='pcb'): `#pcbbar`·`#pw`·`#pside`. SCH+`schNets`로 넷, IC VCC/GND 강제 전원망, J1 전원 헤더 자동, clk→헤더(OUT,GND). `fpDef`(mm), `PCB={w,h,fps[{key,x,y,rot}],tr[{l,w,a,b}],vias,clr,tw}` 저장 키 'pcb'·파일 `pcb`. `pcalc`/`pcbDRC`(캐시), `pcbAutoRoute`/`routeOnce`(1.27mm A*, 비아, 4회 재시도, 8초 제한), 손 배선 `routeClick`(V=비아), `pcbGerbers`+`makeZip`(거버6+드릴+BOM+pos+README), SVG. loadComps 때 PCB 비움
-✓ 연결 체크 막대: `#bcbar`/`#scbar`(진행·[초기화] 두 번·[끝내기]), 확대 버튼 위 ✓ `#hchk`/`#schk2`(휴대폰에서 도구 막대 끝 버튼 안 보이던 문제). `chkBar`·`chkReset`
-✓ 순서 카드: 체크 막대 [순서 카드] → `#plan`. `planSteps` = 부품 카드(INST→IC→표시기→나머지) + 연결 카드(핀의 줄 `stripOf`=baseRep에서 나가는 전선을 이어서 따라감, 전선 1회씩). `planOverlay`·`planShow`(카드 위 화면에 맞춰 확대), [다 했어요]=c.done. body.planon이면 막대 숨김·토스트 위로
-✓ 내려받기: `saveAny` = downloads 기능 → 휴대폰 공유 창(navigator.share) → 틀 안이면 `showFallback`(#fbDlg [전체 복사]) → a[download](터치는 octet-stream). `saveBinFile`도 saveAny
-✓ 깃허브 페이지 켜져 있음(공개 저장소, main push 1분 뒤 자동 배포): https://co2maker-cyber.github.io/3rd-/breadboard/ — README 맨 위·CLAUDE.md에 기재
-✓ 시험 전부 통과: 회귀 45 + verify74 106/106 + verify-parts 111/111 + guide-sync + tests/ui 18종(alerts, check-reset, plan-cards, save-file, pcb-edit, pcb-examples, sweep-* 등)
-✗ 실기기 미검증: 아이폰 핀치·공유 창 저장, 윈도우 크롬 실제 .md 저장
-✗ 거버 외부 뷰어 검증 못 함 — `pip install gerbonara` 권한 거부, 자체 구조 검사만
-△ PCB 자동 배선: 36예제 DRC 오류 0, 못 이음 199/2878(큰 LED·스위치 모음). 0.635mm 격자 시도 → 대각선 간격 0.05mm 위반·50초 → 되돌림
-
-## 사용자 지시 기록 (사람의 창작 기여 — COPYRIGHT.md 10절, 계속 덧붙일 것)
-- ~11-24: 브레드보드+회로도 시뮬레이터 기능 방향, CAD 안 AI 직접 호출 금지(안내만), 부품 220종 모두 예제에 쓰기, 자동 main 반영
-- 11-25: 오류 난 부품 알림, PCB 설계 기능, 업데이트마다 접속 링크, 깃허브 페이지로 바로 열기
-- 11-26: 브레드보드 연결 체크 + 초기화 버튼, 핀에서 이어지는 전선을 카드로 순서대로, 안내 md 내려받기 고침(윈도우 저장 창 스크린샷), 전보체 진행 메모, 「저작권법 준수 가이드」(8항목) 적용 → 재검토 지시 → 라우터 부팅 문구 일반화 지시 → 코드에 저작권 서명 추가 지시 → 복사 막는 라이선스 키 발급 지시 → 로컬에서 돌아가는 버전 지시
+## 현황
+- 작업 브랜치 `ccr-957126bc-kqjtgb` = `a6de2e5`(push 완료) / **main = `604c7ab`** — `369f53c` 서명·`dbc0a1a` 라이선스·`a6de2e5` 로컬 버전 3개 커밋 main 미반영
+- 아티팩트 v58 게시 완료, `APP_VER='2026-11-26 · 로컬 버전'`
+✓ 기존(8차까지): 오류 알림, PCB 탭(자동 배선·DRC·거버 zip), 연결 체크 막대·초기화, 순서 카드, 내려받기 `saveAny`(저장 창 안 씀), 깃허브 페이지 배포
+✓ 저작권 가이드 적용: 외부 웹폰트 제거(5개 페이지 모두 시스템 글꼴, 외부 요청 0), `index.html` 맨 위 고지 주석, 화면 [속성] © 줄, `FILE-FORMAT.md` 끝 고지, "데이터시트 기준" 표기 전부 "표준 핀 번호", PCB 점검 창·zip README 거버 교차 확인 면책, `COPYRIGHT.md` 0·3(자체 구현 표)·9(배포)·10(AI 협업)·11(체크리스트)절
+✓ 라우터 일반화: 시스코 부팅 문구·형번(ISR4331 등)·이미지 파일·일련번호·MAC(OUI)·연습 비번(`cisco`→`class`, `Cisco123`→`Admin123`) → 가상 장비 PR-4000·PR-3000·PS-2400·SER-2P, `pr4000-practice-1.0.bin`, MAC `0200.00a1.0a0x`(EUI 상수 같이 변경). `rommon`·`cdp` 명령 이름 유지
+✓ 저작자 서명: ID `C2M-2026-BC51AA6C-{BBCAD|HOME|LINUX|ROUTER|WINSRV}` — 맨 위 주석, `<meta author/copyright/generator>`, 상수 `AUTHOR_SIG`(콘솔 고지), 출력물(json `generator`, 거버 `G04 Generator:`, 드릴 `; Generator:`, PCB README, SVG 주석). 검사 `node breadboard/tests/sig-check.js`. `COPYRIGHT.md` 12절 SHA-256 기록
+✓ 라이선스 키: 공식 주소(`co2maker-cyber.github.io`, claude.ai·claudeusercontent·틀 바깥 주소·`window.claude`)는 통과, 그 밖(file://·다른 사이트)은 `#licGate`. ECDSA P-256, `LIC_PUB`(kid `BBCAD-K1`)·`LIC_OFFICIAL`·`LIC_REVOKED`·`licVerify`/`licCheck`. 키 = `BBCAD1.`+base64url(내용 {v,id,to,dom,exp,ed,iat})+서명. 발급 `breadboard/license-admin.html`·`node breadboard/tools/issue-license.js --key … --to … --dom file --exp …`
+✓ 로컬 버전: `const LIC_EMBED=null;` 줄에 키 넣은 파일 → 더블클릭으로 키 창 없이 오프라인 실행, 이름·키 번호 표시. 발급 페이지 [로컬 버전 파일 만들기]→[⬇ 내려받기] 링크, CLI `--build 파일.html`. 파일 이름 `breadboard-CAD-local-L-….html`(영문)
+✓ 시험: verify74 106/106, verify-parts 111/111, guide-sync, sig-check, `tests/ui/license.js` 20항목 PASS(시험용 열쇠 쌍)
+△ 전체 시험: `369f53c`까지 tests/ui 18종 PASS. 라이선스·로컬 버전 이후 회귀+tests/ui 전체 재실행 중이었음(백그라운드 b6pl3ksk5, 회귀 34/45에서 결과 미확인)
+✗ 미검증: Claude 미리보기에서 키 창 안 뜨는지(주소 미확인), 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(gerbonara 설치 권한 거부)
 
 ## 결정사항
-- CAD 안 AI 호출 금지 — 사용자 지시
-- `showSaveFilePicker` 안 씀 — 윈도우에서 .md 확장자 빠짐(사용자 스크린샷)
-- PCB 격자 1.27mm 유지 — 0.635mm는 DRC 위반·느림
-- ASC4-16 자리 0=왼쪽 유지 — 사용자에게 물었으나 답 없음(?)
-- 건전지·PSU 있으면 레일 자동 5V 없음, 미사용 게이트 입력 비움 — 실제와 같게
+- 비밀 열쇠(`bbcad-license-PRIVATE.jwk.json`) 사용자에게 파일 전달 후 컨테이너 사본 삭제, 저장소엔 공개 열쇠만 — 위조 방지. `.gitignore`에 `*PRIVATE*.jwk.json`
+- 자동 시험(navigator.webdriver)은 키 창 건너뜀, 키 창 시험만 `__licForceGate`·`__licTestPub` — 시험이 진짜 비밀 열쇠 없이 돌게
+- 로컬 버전 파일 이름 영문 — 헤드리스 크로미움이 한글 파일 이름을 `download`로 바꿈
+- 외부 글꼴 제거(OFL이었지만 가장 안전한 쪽), 저작자 표기 `co2maker-cyber`(실명 미정), 라이선스 "All rights reserved"(LICENSE 파일 없음)
+- CAD 안 AI 호출 금지, `showSaveFilePicker` 안 씀(윈도우 .md 확장자 빠짐), PCB 격자 1.27mm
+
+## 사용자 지시 기록 (COPYRIGHT.md 10절 — 계속 덧붙일 것)
+- ~11-25: 시뮬레이터 방향, AI 호출 금지, 부품 220종 예제, 자동 main, 오류 알림, PCB, 업데이트마다 링크, 깃허브 페이지
+- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기 고침, 전보체 메모, 저작권 가이드 적용·재검토, 라우터 부팅 문구 일반화, 코드 저작권 서명, 복사 막는 라이선스 키, 로컬 버전, 진행 메모(9차)
 
 ## 이슈/주의
-- `router/`: 실제 회사·제품 이름 제거 완료(가상 장비 PR-4000 등, MAC 0200.00a1.0a0x, 연습 비번 class/Admin123). ROMMON·cdp 같은 명령 이름은 기능어라 유지
-- `tests/ui/ic-examples.js`는 다른 시험과 동시에 돌리면 가끔 FAIL(시간 의존) — 단독 재실행하면 PASS
-- 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **업데이트마다 아티팩트 링크 무조건**, main 반영 시 깃허브 페이지 주소도, 휴대폰·PC 스크린샷 피드백
-- CLAUDE.md: 시험→커밋→`git push -u origin ccr-957126bc-kqjtgb`→`git push origin HEAD:main`(ff 아니면 알림), PR은 요청 시만. 커밋 끝 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
-- 코드 수정 = Python 문자열 치환(개수 assert). 긴 줄은 `cut -c`
-- 레일은 6의 배수 열 구멍 없음 — 시험 우회 열도 피할 것
-- 회귀: 각 스크립트 끝 줄이 `errors []`면 정상(폰트 접속 되면 나옴). t20은 시간 의존
-- iframe 시험은 setContent 말고 임시 wrapper .html 파일로(about:blank는 file:// 못 띄움)
-- 아티팩트 재게시: 같은 file_path, 새 대화 첫 게시는 거절 후 재시도. 바꾸면 `APP_VER` 올리기
-- "안 바뀜" → 새로고침·[AI 회로] 창 버전표시 확인 안내
+- 라이선스는 기술적 보호조치일 뿐 — 공개 소스라 수정 우회는 못 막음(저작권법 제104조의2로 보호). 더 강하게 = 저장소 비공개(Pages 유료)
+- 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **업데이트마다 아티팩트 링크 무조건**, main 반영 시 깃허브 페이지 주소, 스크린샷 피드백
+- CLAUDE.md: 시험→커밋→`git push -u origin ccr-957126bc-kqjtgb`→`git push origin HEAD:main`(ff 아니면 알림). 커밋 끝 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
+- 코드 수정 = Python 문자열 치환(개수 assert). 여러 파일 일괄 치환 중 실패하면 앞 파일만 바뀐 채 남음 → `git checkout --` 후 재실행
+- `tests/ui/ic-examples.js` 다른 시험과 동시 실행 시 가끔 FAIL(시간 의존) — 단독 재실행 PASS
+- 회귀 끝 줄 `errors []`면 정상. 시험 스크립트는 실행 폴더 주의(`path.resolve('index.html')`)
+- 서명·저작자 이름 바꿀 땐 주석·메타·`AUTHOR_SIG`·출력물·`sig-check.js` OWNER 함께. 서명 ID는 바꾸지 않음
 
 ## 다음 할 일
-1. 사용자 피드백 대기(직전: 안내서 .md 컴퓨터 내려받기 고침 → main·게시 완료)
-2. PCB 개선 후보: 자동 배선 성공률, GND 구리 채우기, 뒷면 부품, 3D 미리보기
-3. 미답: ASC4-16 자리 0=오른쪽으로 바꿀지(바꾸면 예제 ledasc 수정)
-4. 변경마다: 회귀+verify74+verify-parts+guide-sync+tests/ui 전체 → 커밋 → 두 브랜치 push → 아티팩트 재게시 → 링크 2개 안내
+1. 백그라운드 시험 결과 확인(없으면 회귀+tests/ui 전체 재실행) → 통과면 `git push origin HEAD:main` → 브레드보드·발급 페이지(https://co2maker-cyber.github.io/3rd-/breadboard/license-admin.html) 주소 안내
+2. 사용자에게 Claude 미리보기에서 키 창 뜨는지 확인 요청(뜨면 `licOfficial` 주소 추가)
+3. 사용자 결정 대기: 저작자 실명/상호, 오픈소스 여부, 저장소 비공개 전환, ASC4-16 자리 순서
+4. PCB 개선 후보: 자동 배선 성공률, GND 구리 채우기, 뒷면 부품
 
 ## 참조
-- 라이선스 키: 공식 주소(github.io·Claude 미리보기)는 통과, 그 밖(file://·다른 사이트)은 `#licGate`. ECDSA P-256, `LIC_PUB`(kid BBCAD-K1)·`LIC_OFFICIAL`·`LIC_REVOKED`, `licVerify`/`licCheck`. 발급 `breadboard/license-admin.html`·`breadboard/tools/issue-license.js`. 로컬 버전 = `LIC_EMBED` 줄에 키를 넣은 파일(발급 페이지 [로컬 버전 파일 만들기]·`--build`), 파일 이름은 영문(헤드리스 크로미움이 한글 이름 지움). **비밀 열쇠는 저장소에 없음 — 사용자에게 파일로 전달함**(.gitignore *PRIVATE*.jwk.json). 시험 `tests/ui/license.js`(시험용 열쇠). 자동 시험(webdriver)은 키 창 건너뜀
-- 서명: ID `C2M-2026-BC51AA6C-{BBCAD|HOME|LINUX|ROUTER|WINSRV}`, `AUTHOR_SIG` 상수·메타·맨 위 주석·출력물(json generator, 거버 G04, 드릴 ;, README, SVG). 검사 `node breadboard/tests/sig-check.js`. COPYRIGHT.md 12절(SHA-256 기록)
-- 저작권: `breadboard/COPYRIGHT.md` 0절 고지·3절 자체 구현 표·11절 체크리스트. 외부 글꼴·라이브러리 없음 유지. 부품·문구·에셋 추가 땐 5절 점검
-- 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `breadboard/FILE-FORMAT.md` / `breadboard/README.md` / `breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` / `/home/user/3rd-/HANDOFF.md`
-- 시험: `node breadboard/tests/verify74.js`, `node breadboard/tests/verify-parts.js`, `node breadboard/tests/guide-sync.js`(고치면 `--fix`), `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(전체 약 15분, 백그라운드)
-- 회귀(스크래치패드, 소실 가능): `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` t*.js, 기준 `reg8.txt` — `for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31 t32 t33 t34 t35 t36 t37 t38 t39 t40 t41 t42 t43 t44 t45 t46 t47 t48 t49 t50 t53 t54; do node $t.js 2>&1 | grep -v TUNNEL | tail -1; done`
-- 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제는 끝에 `#lg2` 등)
-- 깃허브 페이지: https://co2maker-cyber.github.io/3rd-/breadboard/
-- 브랜치: `ccr-957126bc-kqjtgb` = main `dc92878`
+- 파일: `/home/user/3rd-/breadboard/index.html` · `license-admin.html` · `tools/issue-license.js` · `COPYRIGHT.md` · `FILE-FORMAT.md` · `README.md` / `/home/user/3rd-/router/index.html` · `CLAUDE.md` · `HANDOFF.md` · `.gitignore`
+- 시험: `node breadboard/tests/verify74.js`, `verify-parts.js`, `guide-sync.js`(`--fix`), `sig-check.js`, `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(19종, 약 15분)
+- 회귀(스크래치패드, 소실 가능): `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` t*.js
+- 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ
+- 깃허브 페이지: https://co2maker-cyber.github.io/3rd-/breadboard/ · `/router/` · `/breadboard/license-admin.html`
