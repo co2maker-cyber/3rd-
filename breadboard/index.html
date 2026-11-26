@@ -377,6 +377,13 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .statusbar .lv{border:1px solid rgba(255,255,255,.5)}
 .toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:var(--fg);color:var(--chrome);padding:7px 14px;border-radius:6px;font-size:12.5px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px);z-index:9}
 .toast.on{opacity:.95}
+/* 연결 체크 막대: 체크 중에 보드 위 왼쪽 위에 진행(✓ 개수)·초기화·끝내기 */
+.cbar{position:absolute;left:10px;top:10px;z-index:5;display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:calc(100% - 20px);padding:5px 6px 5px 10px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.2);font-size:12.5px}
+.cbar b{font-family:var(--mono);white-space:nowrap}
+.cbar .cbprog{width:70px;height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}.cbar .cbprog i{display:block;height:100%;background:var(--ok);width:0}
+.cbar button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:5px;padding:3px 9px;min-height:30px;cursor:pointer}
+.cbar button.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.navhud button.chk[aria-pressed="true"]{background:var(--ok);color:#fff;border-color:var(--ok)}
 /* 오류 알림: 새 문제가 생기면 보드 위쪽에 카드로 뜬다 */
 .alerts{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;gap:6px;width:min(440px,calc(100% - 24px));pointer-events:none}
 .alert{pointer-events:auto;display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:8px;padding:8px 8px 8px 10px;font-size:12.5px;line-height:1.45;box-shadow:0 4px 16px rgba(0,0,0,.22);animation:alIn .2s ease-out}
@@ -601,7 +608,9 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     <div class="tip" id="tip" hidden></div>
     <div class="fbar" id="fbar" hidden></div>
     <div class="optbar" id="optCard" hidden><span class="olab" id="optTitle"></span><div class="opts" id="opts"></div></div>
+    <div class="cbar" id="bcbar" hidden role="status"><span>✓ 연결 체크</span><b id="bcbTx">0/0</b><span class="cbprog"><i id="bcbFill"></i></span><button class="bad" id="bcbReset" title="✓ 표시를 모두 지워요(두 번 눌러요, 실행 취소 가능)">초기화</button><button id="bcbEnd" title="연결 체크 끝내기(✓ 표시는 남아요)">끝내기</button></div>
     <div class="navhud">
+      <button id="hchk" class="chk" aria-pressed="false" title="연결 체크: 실제로 꽂은 부품·이은 전선에 ✓ 표시" aria-label="연결 체크">✓</button>
       <button id="hzi" title="확대" aria-label="확대">+</button>
       <button id="hzo" title="축소" aria-label="축소">−</button>
       <button id="hfit" title="화면에 맞춤" aria-label="화면에 맞춤">⤢</button>
@@ -612,7 +621,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
     <div class="fbar" id="sfbar" hidden></div>
     <div class="vlabel">회로도 · 기호</div>
     <div id="sLeg" hidden></div>
-    <div class="navhud"><button id="szi" title="확대" aria-label="확대">+</button><button id="szo" title="축소" aria-label="축소">−</button><button id="sfit2" title="화면에 맞춤" aria-label="화면에 맞춤">⤢</button></div>
+    <div class="cbar" id="scbar" hidden role="status"><span>✓ 연결 체크</span><b id="scbTx">0/0</b><span class="cbprog"><i id="scbFill"></i></span><button class="bad" id="scbReset" title="✓ 표시를 모두 지워요(두 번 눌러요, 실행 취소 가능)">초기화</button><button id="scbEnd" title="연결 체크 끝내기(✓ 표시는 남아요)">끝내기</button></div>
+    <div class="navhud"><button id="schk2" class="chk" aria-pressed="false" title="연결 체크: 실제로 이은 선에 ✓ 표시" aria-label="연결 체크">✓</button><button id="szi" title="확대" aria-label="확대">+</button><button id="szo" title="축소" aria-label="축소">−</button><button id="sfit2" title="화면에 맞춤" aria-label="화면에 맞춤">⤢</button></div>
   </main>
 
   <main class="canvas" id="pw">
@@ -2808,7 +2818,17 @@ function doneMark(c){if(c.t==='wire'){const L_=wirePts(c);if(L_.some(q=>!q))retu
   return{x:Math.max(...hs.map(h=>h.x))+6,y:Math.min(...hs.map(h=>h.y))-8};}
 function doneBadges(){let s='';for(const c of chkable()){if(!c.done)continue;const m=doneMark(c);if(!m)continue;
     s+=`<g class="bdone" data-id="${c.id}" transform="translate(${m.x} ${m.y})"><circle r="7"/><path d="M-3.4 0l2.3 2.5L3.6-2.8"/></g>`;}return s;}
-function bchkLabel(){const L_=chkable(),n=L_.filter(c=>c.done).length;$('bChkTx').textContent=bchk||n?`연결 체크 ${n}/${L_.length}`:'연결 체크';$('bChk').setAttribute('aria-pressed',bchk);$('bChk').classList.toggle('pri',bchk);}
+/* 연결 체크 막대(b: 브레드보드, s: 회로도) */
+function chkBar(k,on,n,t){const bar=$(k+'cbar');if(!bar)return;bar.hidden=!on;$(k+'cbTx').textContent=`${n}/${t}`;$(k+'cbFill').style.width=(t?100*n/t:0)+'%';
+  const hb=$(k==='b'?'hchk':'schk2');if(hb)hb.setAttribute('aria-pressed',on);}
+function chkReset(k){const b=$(k+'cbReset');const n=k==='b'?chkable().filter(c=>c.done).length:SCH.wires.filter(x=>x.done).length;
+  if(!n){toast('지울 ✓ 표시가 없어요');return;}
+  if(!b.dataset.sure){b.dataset.sure='1';b.textContent='정말 지울까요?';setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent='초기화';}},3000);return;}
+  delete b.dataset.sure;b.textContent='초기화';
+  if(k==='b'){pushHist();for(const c of S.comps)delete c.done;save();render();}
+  else{sPush();for(const w of SCH.wires)delete w.done;sCommit();}
+  toast(`연결 체크를 처음부터 다시 해요: ✓ 표시 ${n}개를 지웠어요 · 되돌리려면 Ctrl+Z`);}
+function bchkLabel(){const L_=chkable(),n=L_.filter(c=>c.done).length;$('bChkTx').textContent=bchk||n?`연결 체크 ${n}/${L_.length}`:'연결 체크';$('bChk').setAttribute('aria-pressed',bchk);$('bChk').classList.toggle('pri',bchk);chkBar('b',bchk,n,L_.length);}
 function toggleBDone(c){if(INST.has(c.t))return;pushHist();if(c.done)delete c.done;else c.done=true;save();render();
   const L_=chkable();if(c.done&&L_.every(x=>x.done))toast(`모든 부품과 전선을 꽂았어요 ✓ (${L_.length}개)`);}
 /* 공통 표시 엔진 그리기: 몸통 → 꾸밈 → 칸(켜짐은 빛 번짐, 같은 자리의 여러 색은 화면 섞기) → 글자 표시기는 글자 → 핀 번호 */
@@ -4000,6 +4020,7 @@ $('pwr').onclick=()=>{S.power=!S.power;if(!S.power)for(const r of RT.values()){r
 $('undo').onclick=undo;
 $('clr').onclick=()=>{if(!S.comps.length&&S.boards.length===1)return;pushHist();S.comps=[];RT.clear();sel=null;setBoards(null);commit(true);fitView();toast('모두 지웠어요 · 실행 취소로 되돌릴 수 있어요');};
 $('sig').setAttribute('aria-pressed',sigMode);
+$('hchk').onclick=()=>$('bChk').click();$('bcbEnd').onclick=()=>$('bChk').click();$('bcbReset').onclick=()=>chkReset('b');
 $('bChk').onclick=()=>{bchk=!bchk;if(bchk){setTool('select');pending=null;}render();toast(bchk?'연결 체크: 실제 브레드보드에 꽂은 부품·이은 전선을 누르면 ✓ 표시가 붙어요 · 아직 안 한 것은 흐리게 보여요':'연결 체크를 껐어요 · ✓ 표시는 그대로 남아요');};$('sig').onclick=()=>{sigMode=!sigMode;store.set('sig',sigMode);$('sig').setAttribute('aria-pressed',sigMode);$('sig').classList.toggle('pri',sigMode);render();};
 $('sig').classList.toggle('pri',sigMode);
 /* ── 저장 · 불러오기 ──
@@ -4369,7 +4390,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-25 · PCB 설계';
+const APP_VER='2026-11-26 · 연결 체크 초기화';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -5124,7 +5145,7 @@ const SWCOL=[[null,'자동: 기능별 색(도구 막대에서 신호 색 보기�
 let schk=false;
 function schToggleDone(id){const w=SCH.wires.find(x=>x.id===id);if(!w)return;sPush();if(w.done)delete w.done;else w.done=true;sCommit();
   const n=SCH.wires.filter(x=>x.done).length;if(w.done&&n===SCH.wires.length)toast('모든 선을 이었어요 ✓ ('+n+'개)');}
-function schChkLabel(){const n=SCH.wires.filter(x=>x.done).length,t=SCH.wires.length;$('sChkTx').textContent=schk||n?`연결 체크 ${n}/${t}`:'연결 체크';$('sChk').setAttribute('aria-pressed',schk);}
+function schChkLabel(){const n=SCH.wires.filter(x=>x.done).length,t=SCH.wires.length;$('sChkTx').textContent=schk||n?`연결 체크 ${n}/${t}`:'연결 체크';$('sChk').setAttribute('aria-pressed',schk);chkBar('s',schk,n,t);}
 function renderSfbar(){const fb=$('sfbar');if(!ssel||sdrag){fb.hidden=true;return;}
   let h='';if(ssel.type==='part'){const p=spart(ssel.id);if(!p){fb.hidden=true;return;}
     h=`<b>${p.t==='vcc'||p.t==='gnd'?(p.t==='vcc'?'VCC 전원':'GND 접지'):esc(schLabels().get(p.id))+' '+esc(p.t==='ic'?p.chip:p.t==='gate'?p.kind+' 게이트':TNAME[p.t]||p.t)}</b><button data-sa="rot" title="90° 돌리기 (R)">회전</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button>`;
@@ -5347,7 +5368,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   document.querySelectorAll('.vmode [data-vm]').forEach(b=>b.onclick=()=>setVM(b.dataset.vm));
   $('sParts').onclick=openParts;$('sRot').onclick=schRotSel;$('sDel').onclick=schDelSel;$('sUndo').onclick=sUndo;$('sRedo').onclick=sRedo;
   $('sPwr').onclick=()=>{SCH.power=!SCH.power;$('sPwr').setAttribute('aria-pressed',SCH.power);$('sPwrTx').textContent=SCH.power?'전원 ON':'전원 OFF';if(!SCH.power)SRT.clear();renderSch();};
-  $('sColM').onclick=()=>{scolMode=scolMode==='fn'?'sig':'fn';store.set('schCol',scolMode);renderSch();toast(scolMode==='fn'?'선 색: 기능별 — 전원 빨강 · 접지 검정 · 클럭 노랑 · 입력 초록 · 출력 표시 주황 · 신호 파랑':'선 색: 신호 — HIGH 빨강 · LOW 파랑 (직접 고른 색은 그대로)');};$('sChk').onclick=()=>{schk=!schk;ssel=null;renderSch();toast(schk?'연결 체크: 브레드보드에 실제로 이은 선을 누르면 ✓ 표시가 붙어요 · 아직 안 이은 선은 점선이에요':'연결 체크를 껐어요 · ✓ 표시는 그대로 남아요');};$('sFit').onclick=schFit;$('szi').onclick=()=>schZoom(1.25);$('szo').onclick=()=>schZoom(1/1.25);$('sfit2').onclick=schFit;
+  $('sColM').onclick=()=>{scolMode=scolMode==='fn'?'sig':'fn';store.set('schCol',scolMode);renderSch();toast(scolMode==='fn'?'선 색: 기능별 — 전원 빨강 · 접지 검정 · 클럭 노랑 · 입력 초록 · 출력 표시 주황 · 신호 파랑':'선 색: 신호 — HIGH 빨강 · LOW 파랑 (직접 고른 색은 그대로)');};$('schk2').onclick=()=>$('sChk').click();$('scbEnd').onclick=()=>$('sChk').click();$('scbReset').onclick=()=>chkReset('s');$('sChk').onclick=()=>{schk=!schk;ssel=null;renderSch();toast(schk?'연결 체크: 브레드보드에 실제로 이은 선을 누르면 ✓ 표시가 붙어요 · 아직 안 이은 선은 점선이에요':'연결 체크를 껐어요 · ✓ 표시는 그대로 남아요');};$('sFit').onclick=schFit;$('szi').onclick=()=>schZoom(1.25);$('szo').onclick=()=>schZoom(1/1.25);$('sfit2').onclick=schFit;
   $('sToBB').onclick=schToBoard;$('sFromBB').onclick=boardToSch;
   $('sClr').onclick=()=>{if(!SCH.parts.length)return;const b=$('sClr');if(!b.dataset.sure){b.dataset.sure='1';b.querySelector('span').textContent='정말?';setTimeout(()=>{delete b.dataset.sure;b.querySelector('span').textContent='새로';},3000);return;}
     delete b.dataset.sure;b.querySelector('span').textContent='새로';sPush();SCH.parts=[];SCH.wires=[];SRT.clear();ssel=null;spend=null;sCommit();toast('회로도를 비웠어요 · 실행 취소로 되돌릴 수 있어요');};
