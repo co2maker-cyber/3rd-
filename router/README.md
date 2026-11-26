@@ -1,10 +1,11 @@
 # 라우터 콘솔 연습장
 
-시스코 IOS 스타일 명령어를 브라우저에서 직접 입력해 보며 익히는 시뮬레이터의 안내서입니다. 실습 14개와 자유 연습, 명령어 415개를 담고 있습니다.
+업무용 라우터에서 흔히 쓰는 CLI 방식의 명령어를 브라우저에서 직접 입력해 보며 익히는 시뮬레이터의 안내서입니다. 실습 14개와 자유 연습, 명령어 415개를 담고 있습니다.
 
 - 실행 파일: `router/index.html` (브라우저로 열면 바로 동작)
 - 진행 상황은 브라우저에만 저장됩니다.
-- 실제 IOS의 명령과 동작을 단순화해 흉내 낸 연습용입니다.
+- 실제 라우터 운영체제의 명령과 동작을 단순화해 흉내 낸 연습용입니다.
+- 화면에 나오는 장비 이름(PR-4000·PR-3000·PS-2400)·모듈(SER-2P)·이미지 파일(`pr4000-practice-1.0.bin`)·일련번호·MAC 주소(`0200.00a1.0a01` 등, 로컬 관리 주소)는 모두 지어낸 가상 장비이며 실제 제품·회사와 관계없습니다. © 2026 co2maker-cyber.
 
 ## 목차
 
@@ -126,7 +127,7 @@ R1이 쓸 주소: G0/0 `192.168.1.1/24`, S0/0/0 `10.0.0.1/30`, G0/1 `203.0.113.2
 
 1. 호스트 이름을 R1로 바꾸기
 2. 특권 모드 비밀번호를 class로 (enable secret)
-3. 콘솔 비밀번호 cisco, 로그인 시 확인
+3. 콘솔 비밀번호 class, 로그인 시 확인
 4. 접속 경고 배너(MOTD) 달기
 5. 설정 파일 속 평문 비밀번호 암호화
 6. 설정을 startup-config에 저장  
@@ -141,9 +142,9 @@ configure terminal
 hostname R1
 ! 특권 모드 비밀번호를 class로 (enable secret)
 enable secret class
-! 콘솔 비밀번호 cisco, 로그인 시 확인
+! 콘솔 비밀번호 class, 로그인 시 확인
 line console 0
-password cisco
+password class
 login
 exit
 ! 접속 경고 배너(MOTD) 달기
@@ -547,7 +548,7 @@ enable
 configure terminal
 ip domain-name lab.local
 ! 사용자 admin, 권한 15, secret 지정
-username admin privilege 15 secret Cisco123
+username admin privilege 15 secret Admin123
 ! RSA 키 1024비트 이상 만들기
 crypto key generate rsa general-keys modulus 2048
 ! SSH 버전 2만 쓰기

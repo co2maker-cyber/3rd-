@@ -107,7 +107,7 @@ Copyright (c) 2026 co2maker-cyber. All rights reserved.
   * 수정: Google Fonts 연결 제거 → 시스템 글꼴, `index.html` 맨 위 저작권·상표·외부 리소스·출력물 면책 주석 추가, 0절 고지 문구, 3절 자체 구현 표, PCB 점검 창·zip `README.txt`에 거버 교차 확인·면책 추가, `README.md` 저작권 절 갱신.
   * 재점검 수정: 핀 배치도 제목 "데이터시트 기준" → "표준 핀 번호로 직접 그림", 화면 [속성] 안내에 © 줄, `FILE-FORMAT.md` 끝에 저작권·상표 고지, 같은 사이트의 `linux/`·`router/`·`windows/` 페이지도 Google Fonts 연결 제거, 5절 점검표에 외부 연결·고유 형번·고지 유지 항목 추가.
   * 재점검 확인: `index.html` 외부 주소는 깃허브 페이지 안내 주소와 SVG 이름공간뿐, 특정 회사 전용 형번(MAX7219, HT16K33, TM1637, WS2812, HD44780 등) 없음 — 드라이버는 `DRV-SER8`·`DRV-I2C` 같은 기능 이름.
-  * 남은 일(브레드보드 밖): `router/index.html`의 부팅 화면이 실제 회사의 부팅 문구("Copyright (c) 1994-2019 by cisco Systems, Inc." 등)를 그대로 보여 줌 → 브레드보드 범위 밖이라 그대로 두고 사용자에게 알림.
+  * 같은 날 사용자 요청으로 `router/` 정리: 부팅 문구·`show version`·장비 목록·이웃 장비·파일 이름·일련번호·MAC(제조사 OUI → 로컬 관리 주소 `0200.00a1.0a0x`)·연습 비밀번호(`cisco`→`class`, `Cisco123`→`Admin123`)·소개 문구에서 실제 회사·제품 이름을 빼고 지어낸 가상 장비(PR-4000·PR-3000·PS-2400·SER-2P, `pr4000-practice-1.0.bin`)로 바꿈. 화면 아래와 `router/README.md`에 가상 장비 고지.
   * 확인: 제조사 이름(TI, ST, NXP 등)·로고 없음, 타사 시뮬레이터·CAD 이름 없음, 부품 설명 94곳 모두 직접 쓴 한국어(영어 데이터시트 문장 없음), GPL·AGPL 등 외부 코드 없음, 외부 스크립트·이미지 없음.
 
 ## 9. 배포·호스팅 주의
