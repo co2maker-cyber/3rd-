@@ -202,7 +202,7 @@ function inPage() {
     { const pinHole = (k, i) => 'c' + (13 + i), cn = (x, how) => how === 'vcc' ? [{ t: 'wire', pins: ['a' + x, 'tp' + x] }] : how === 'gnd' ? [{ t: 'wire', pins: ['a' + x, 'tn' + x] }]
         : [{ t: 'res', pins: ['d' + x, 'g' + x], ohms: how[1] === 'v' ? 1000 : 4700 }, { t: 'wire', pins: ['j' + x, how[0] === 'v' ? 'bp' + x : 'bn' + x] }];
       // 기대(이 파일에서 따로 적음): [종류, 핀 순서, 켜는 방법]
-      const SPEC = { q3904: ['npn', 'EBC'], q2222: ['npn', 'EBC'], qbc547: ['npn', 'CBE'], qtip: ['npn', 'BCE'], q3906: ['pnp', 'EBC'], qbc557: ['pnp', 'CBE'], m7000: ['nmos', 'SGD'], mnpow: ['nmos', 'GDS'], mppow: ['pmos', 'GDS'], q3055: ['npn', 'BEC'], q2955: ['pnp', 'BEC'], q2222m: ['npn', 'EBC'], q2907m: ['pnp', 'EBC'], q2219: ['npn', 'EBC'] };
+      const SPEC = { q3904: ['npn', 'EBC'], q2222: ['npn', 'EBC'], qbc547: ['npn', 'CBE'], qtip: ['npn', 'BCE'], q3906: ['pnp', 'EBC'], qbc557: ['pnp', 'CBE'], m7000: ['nmos', 'SGD'], mnpow: ['nmos', 'GDS'], mppow: ['pmos', 'GDS'], q3055: ['npn', 'BEC'], q2955: ['pnp', 'BEC'], q2222m: ['npn', 'EBC'], q2907m: ['pnp', 'EBC'], qp39: ['pnp', 'EBC'], q18s: ['npn', 'EBC'] };
       for (const [k, [ty, ord]] of Object.entries(SPEC)) {
         const run = drive => { const how = {}; const n = ty === 'npn' || ty === 'nmos';
           // 이미터·소스: NPN·N은 GND, PNP·P는 +. 부하(1kΩ): NPN·N은 + 에서 컬렉터·드레인으로, PNP·P는 컬렉터·드레인에서 GND로
@@ -227,10 +227,8 @@ function inPage() {
       const a = run(1), b = run(0);
       rec('수동 소자', `jfn · ${PX.jfn.title}`, a.on && !b.on && a.v > 4.5 && b.v < .3 && PX.jfn.pins.map(p => p[0]).join('') === 'DSG' && PX.jfn.tr.vth < 0,
         `핀 DSG · 게이트=소스(0V) 켜짐, 드레인 ${a.v != null ? a.v.toFixed(2) : '?'}V · 게이트 −5V 꺼짐, 드레인 ${b.v != null ? b.v.toFixed(2) : '?'}V · 문턱 ${PX.jfn.tr.vth}V`); }
-    // 한 줄 브리지(+ ~ ~ −): 입력 방향을 바꿔도 + 가 +
-    { const out = []; for (const flip of [false, true]) { build([{ t: 'px', kind: 'br600', pins: ['c11', 'c13', 'c15', 'c17'] }, { t: 'wire', pins: ['a13', flip ? 'tn13' : 'tp13'] }, { t: 'wire', pins: ['a15', flip ? 'tp15' : 'tn15'] }, { t: 'res', pins: ['d11', 'd17'], ohms: 1000 }]);
-        out.push(vH('e11') - vH('e17')); }
-      rec('수동 소자', `br600 · ${PX.br600.title}`, out.every(x => x > 3.3 && x < 4) && PX.br600.pins.map(p => p[0]).join('') === '+~~−', `핀 + ~ ~ − · 정방향 ${out[0].toFixed(2)}V · 뒤집어도 ${out[1].toFixed(2)}V`); }
+    // 브리지 정류기: 명세의 600V 1A 4핀 브리지는 이미 있는 brdg와 같은 부품 → 중립 이름만 달림
+    rec('수동 소자', '브리지 정류기 중립 이름 (BRIDGE_RECT_600V_1A → brdg)', PX.brdg.nid === 'BRIDGE_RECT_600V_1A' && (pxPart('', 'BRIDGE_RECT_600V_1A', 'BRIDGE_RECT_600V_1A') || {}).kind === 'brdg', PX.brdg.title);
   }
 
   /* ───── ②-2 아날로그 IC: 연산 증폭기·비교기·레귤레이터·DAC (기대값은 회로 식으로 따로 계산) ───── */
@@ -248,16 +246,17 @@ function inPage() {
       { t: 'res', pins: ['g10', 'g11'], ohms: 10000 }, { t: 'res', pins: ['h11', 'h16'], ohms: 10000 }, { t: 'wire', pins: ['j16', 'bn16'] }]);
     { const v = vH('j10'); rec('아날로그 IC', `oa2b · ${PX.oa2b.title}`, v != null && near(v, 2, .02) && A_()[0].st === 'lin', `비반전 이득 2: IN+ ${vH('j12').toFixed(3)}V → 출력 ${v != null ? v.toFixed(3) : '?'}V (기대 2.000V) · ${A_()[0].st}`); }
     // ② 가상 접지 반전 증폭(이득 −2): 12V, 기준 6V(10k/10k), 입력 4V(전원 2) → 10k → IN−, 되먹임 20k → 6 + 2×(6−4) = 10V. 입력 1V면 16V → 위 끝(12 − 1.5 = 10.5V)에 붙음
-    for (const [vin, exp, est] of [[4, 10, 'lin'], [1, 10.5, 'hi']]) {
-      B([...rails12, ...P12(vin, 2, 140), dip('oa2j', 10), { t: 'wire', pins: ['a10', 'tp10'] }, { t: 'wire', pins: ['j13', 'bn13'] },
+    for (const [k, vin, exp, est] of [['oa2j', 4, 10, 'lin'], ['oa2j', 1, 10.5, 'hi'], ['oa2n', 4, 10, 'lin']]) {
+      B([...rails12, ...P12(vin, 2, 140), dip(k, 10), { t: 'wire', pins: ['a10', 'tp10'] }, { t: 'wire', pins: ['j13', 'bn13'] },
         { t: 'res', pins: ['h12', 'h20'], ohms: 10000 }, { t: 'wire', pins: ['j20', 'bp20'] }, { t: 'res', pins: ['i12', 'i22'], ohms: 10000 }, { t: 'wire', pins: ['j22', 'bn22'] },
         { t: 'res', pins: ['h11', 'h25'], ohms: 10000 }, { t: 'wire', pins: ['@2:0', 'j25'] }, { t: 'wire', pins: ['@2:1', 'bn26'] }, { t: 'res', pins: ['g10', 'g11'], ohms: 20000 }]);
-      const v = vH('j10'); rec('아날로그 IC', `oa2j · ${PX.oa2j.title}${est === 'hi' ? ' (포화)' : ''}`, v != null && near(v, exp, .03) && A_()[0].st === est, `입력 ${vin}V, 기준 6V, 이득 −2 → 출력 ${v != null ? v.toFixed(3) : '?'}V (기대 ${exp}V, ${est})`); }
-    // ③ 쿼드: 1번·4번을 전압 팔로워로(OUT→IN−), IN+ 에 3V(전원 2)
-    B([...rails12, ...P12(3, 2, 140), dip('oa4', 10), { t: 'wire', pins: ['j13', 'bp13'] }, { t: 'wire', pins: ['a13', 'tn13'] },
+      const v = vH('j10'); rec('아날로그 IC', `${k} · ${PX[k].title}${est === 'hi' ? ' (포화)' : ''}`, v != null && near(v, exp, .03) && A_()[0].st === est, `입력 ${vin}V, 기준 6V, 이득 −2 → 출력 ${v != null ? v.toFixed(3) : '?'}V (기대 ${exp}V, ${est})`); }
+    // ③ 쿼드(단전원·JFET): 1번·4번을 전압 팔로워로(OUT→IN−), IN+ 에 3V(전원 2)
+    for (const k of ['oa4', 'oa4j']) {
+    B([...rails12, ...P12(3, 2, 140), dip(k, 10), { t: 'wire', pins: ['j13', 'bp13'] }, { t: 'wire', pins: ['a13', 'tn13'] },
       { t: 'wire', pins: ['g10', 'g11'] }, { t: 'wire', pins: ['@2:0', 'h12'] }, { t: 'wire', pins: ['@2:1', 'bn26'] }, { t: 'wire', pins: ['b10', 'b11'] }, { t: 'wire', pins: ['c12', 'i12'] }]);
-    { const v1 = vH('j10'), v4 = vH('a10'); rec('아날로그 IC', `oa4 · ${PX.oa4.title}`, near(v1, 3, .01) && near(v4, 3, .01) && PX.oa4.ana.vcc === 3 && PX.oa4.ana.vee === 10,
-      `팔로워 1번 ${v1 != null ? v1.toFixed(3) : '?'}V · 4번 ${v4 != null ? v4.toFixed(3) : '?'}V (기대 3V) · VCC 4번·VEE 11번 핀`); }
+    { const v1 = vH('j10'), v4 = vH('a10'); rec('아날로그 IC', `${k} · ${PX[k].title}`, near(v1, 3, .01) && near(v4, 3, .01) && PX[k].ana.vcc === 3 && PX[k].ana.vee === 10,
+      `팔로워 1번 ${v1 != null ? v1.toFixed(3) : '?'}V · 4번 ${v4 != null ? v4.toFixed(3) : '?'}V (기대 3V) · VCC 4번·VEE 11번 핀`); } }
     // ④ TO-99 정밀: 팔로워(6번 OUT → 2번 IN−), 3번 IN+ = 6V(10k/10k)
     B([...rails12, dip('oa1p', 10), { t: 'wire', pins: ['a11', 'tp11'] }, { t: 'wire', pins: ['j13', 'bn13'] }, { t: 'wire', pins: ['b12', 'h11'] },
       { t: 'res', pins: ['h12', 'h20'], ohms: 10000 }, { t: 'wire', pins: ['j20', 'bp20'] }, { t: 'res', pins: ['i12', 'i22'], ohms: 10000 }, { t: 'wire', pins: ['j22', 'bn22'] }]);
@@ -273,33 +272,40 @@ function inPage() {
       B([...P12(vi, 1, 20), { t: 'wire', pins: ['@1:0', 'a17'] }, { t: 'wire', pins: ['@1:1', 'tn3'] }, { t: 'px', kind: 'reg317', pins: ['c15', 'c16', 'c17'] },
         { t: 'res', pins: ['d16', 'd15'], ohms: 240 }, { t: 'res', pins: ['b15', 'tn15'], ohms: 720 }, { t: 'res', pins: ['e16', 'f16'], ohms: 1000 }, { t: 'wire', pins: ['j16', 'bn16'] }, { t: 'wire', pins: ['tn7', 'bn7'] }]);
       const v = vH('a16'); rec('아날로그 IC', `reg317 · ${PX.reg317.title}${est === 'drop' ? ' (전압 부족)' : ''}`, near(v, exp, .03) && A_()[0].st === est, `VIN ${vi}V, 240Ω/720Ω → 출력 ${v != null ? v.toFixed(3) : '?'}V (기대 ${exp}V, ${est})`); }
-    // ⑦ DAC: VREF = 0V, OUT2·증폭기 IN+ = 2.5V(전원 2), OUT1 → IN−, RFB → 증폭기 출력 ⇒ 출력 = 2.5 × (1 + 코드/256)
-    { const run = (code, cs) => { const bit = (i, hole) => { const on = (code >> (7 - i)) & 1, up = hole[0] === 'e'; return { t: 'wire', pins: [(up ? 'a' : 'j') + hole.slice(1), (up ? (on ? 'tp' : 'tn') : (on ? 'bp' : 'bn')) + hole.slice(1)] }; };
-        B([...rails12, ...P12(2.5, 2, 140), dip('dac8', 10), dip('oa2b', 30),
-          ...['f13', 'f14', 'f15', 'f16', 'f17', 'e17', 'e16', 'e15'].map((h, i) => bit(i, h)),
-          { t: 'wire', pins: ['a14', cs ? 'tp14' : 'tn14'] }, { t: 'wire', pins: ['a13', 'tn13'] }, { t: 'wire', pins: ['a12', 'tp7'] }, { t: 'wire', pins: ['a11', 'tn11'] }, { t: 'wire', pins: ['j12', 'bn11'] },
+    // ⑦ DAC(10비트): VREF = 0V, IOUT2·증폭기 IN+ = 2.5V(전원 2), IOUT1 → IN−, RFB → 증폭기 출력 ⇒ 출력 = 2.5 × (1 + 코드/1024)
+    { const BH = ['f13', 'f14', 'f15', 'f16', 'f17', 'e17', 'e16', 'e15', 'e14', 'e13'];   // BIT1(MSB, 4번) … BIT10(LSB, 13번)
+      const run = code => { const bit = (i, hole) => { const on = (code >> (9 - i)) & 1, up = hole[0] === 'e'; return { t: 'wire', pins: [(up ? 'a' : 'j') + hole.slice(1), (up ? (on ? 'tp' : 'tn') : (on ? 'bp' : 'bn')) + hole.slice(1)] }; };
+        B([...rails12, ...P12(2.5, 2, 140), dip('dac10', 10), dip('oa2b', 30), ...BH.map((h, i) => bit(i, h)),
+          { t: 'wire', pins: ['a12', 'tp7'] }, { t: 'wire', pins: ['a11', 'tn11'] }, { t: 'wire', pins: ['j12', 'bn11'] },
           { t: 'wire', pins: ['g10', 'g31'] }, { t: 'wire', pins: ['b10', 'h30'] }, { t: 'wire', pins: ['h11', 'h32'] }, { t: 'wire', pins: ['@2:0', 'i32'] }, { t: 'wire', pins: ['@2:1', 'bn35'] },
           { t: 'wire', pins: ['j33', 'bn33'] }, { t: 'wire', pins: ['a30', 'tp31'] }]);
         return { v: vH('j30'), a: A_() }; };
-      const r = [[0, 0], [128, 0], [255, 0], [64, 1]].map(([c, cs]) => ({ c, cs, exp: 2.5 * (1 + (cs ? 0 : c) / 256), ...run(c, cs) }));
-      const ok = r.every(x => x.v != null && near(x.v, x.exp, .01)) && r[1].a[0].code === 128;
-      rec('아날로그 IC', `dac8 · ${PX.dac8.title}`, ok, r.map(x => `${x.cs ? '~CS HIGH(붙잡음) ' : ''}코드 ${x.c} → ${x.v != null ? x.v.toFixed(3) : '?'}V(기대 ${x.exp.toFixed(3)})`).join(' · ')); }
+      const r = [0, 512, 1023, 341].map(c => ({ c, exp: 2.5 * (1 + c / 1024), ...run(c) }));
+      const ok = r.every(x => x.v != null && near(x.v, x.exp, .01)) && r[1].a[0].code === 512 && PX.dac10.pins[3].startsWith('BIT1') && PX.dac10.pins[12].startsWith('BIT10') && PX.dac10.pins[13].startsWith('VDD');
+      rec('아날로그 IC', `dac10 · ${PX.dac10.title}`, ok, r.map(x => `코드 ${x.c} → ${x.v != null ? x.v.toFixed(3) : '?'}V(기대 ${x.exp.toFixed(3)})`).join(' · ') + ' · 핀 4 BIT1 … 13 BIT10, 14 VDD'); }
     // ⑧ 모듈 블록·CPU: 핀 수·이름만, 계산하지 않음(오류 없이 놓임)
-    for (const k of Object.keys(PX).filter(k => PX[k].sub === 'blk')) { const d = PX[k];
+    for (const k of Object.keys(PX).filter(k => PX[k].blk)) { const d = PX[k];
       let ok = !!d.blk && !!d.nid && !d.ana && !d.contacts && !d.tr && !d.dio, msg = `핀 ${d.pins.length}개 · ${d.nid}`;
       if (k === 'cpu64') { const at = n => d.pins[n - 1].split(' ')[0]; ok = ok && d.pins.length === 64 && at(14) === 'VCC' && at(49) === 'VCC' && at(16) === 'GND' && at(53) === 'GND' && at(1) === 'D4' && at(5) === 'D0' && at(29) === 'A1' && at(48) === 'A20' && at(52) === 'A23' && at(54) === 'D15' && at(64) === 'D5' && at(15) === 'CLK' && at(6) === '~AS';
         msg += ` · 1 D4 · 5 D0 · 6 ~AS · 14/49 VCC · 15 CLK · 16/53 GND · 29 A1 · 52 A23 · 54 D15 · 64 D5 · 발자국 줄 간격 ${fpDef({ t: 'px', kind: k }).pads.filter(q => q.k === 0 || q.k === 63).map(q => q.y).join('/')}`; }
       rec('아날로그 IC', `${k} · ${d.title}`, ok, msg); }
     // ⑨ 발자국: TO-18·TO-39 원형, TO-3 장착 구멍 = C, TO-99 8핀 원 지름 5.08mm, DIP-64 줄 간격 22.86mm
     { const F = k => fpDef({ t: 'px', kind: k }), dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y), bad = [];
-      for (const [k, R] of [['q2222m', 1.27], ['q2219', 2.54]]) { const p = F(k).pads, c = { x: (p[0].x + p[2].x) / 2, y: (p[0].y + p[2].y) / 2 }; if (p.length !== 3 || p.some(q => Math.abs(dist(q, c) - R) > .01)) bad.push(k); }
+      for (const [k, R] of [['q2222m', 1.27], ['qp39', 2.54], ['jfn', 1.27]]) { const p = F(k).pads, c = { x: (p[0].x + p[2].x) / 2, y: (p[0].y + p[2].y) / 2 }; if (p.length !== 3 || p.some(q => Math.abs(dist(q, c) - R) > .01)) bad.push(k); }
       { const p = F('q3055').pads; if (p.filter(q => q.k === 2).length !== 2 || Math.abs(dist(p[0], p[1]) - 10.92) > .01) bad.push('q3055'); }
       { const p = F('oa1p').pads, c = { x: p.reduce((s, q) => s + q.x, 0) / 8, y: p.reduce((s, q) => s + q.y, 0) / 8 }; if (p.length !== 8 || p.some(q => Math.abs(dist(q, c) - 2.54) > .01)) bad.push('oa1p'); }
       { const p = F('cpu64').pads; if (p.length !== 64 || Math.abs(Math.abs(p[0].y - p[63].y) - 22.86) > .01) bad.push('cpu64'); }
       rec('아날로그 IC', '발자국 (TO-18·TO-39·TO-3·TO-99·DIP-64 900mil)', !bad.length, bad.length ? '틀림: ' + bad.join(' ') : '원형 지름 2.54/5.08mm · TO-3 다리 10.92mm·장착 구멍 C 2개 · TO-99 8핀 원 · DIP-64 줄 22.86mm'); }
     // ⑩ 목록 불러오기: 중립 이름(nid)도 알아들음
-    { const ok = ['OPAMP_DUAL_JFET_25VUS', 'COMPARATOR_DUAL_OC', 'REG_ADJ_POS_TO220', 'DAC_8BIT_MULT_R2R', 'BJT_NPN_PWR_TO3', 'CPU_16_32_DIP64'].map(n => (pxPart('', n.toUpperCase(), n) || {}).kind);
-      rec('아날로그 IC', '목록 불러오기 중립 이름 (nid)', ok.join() === 'oa2j,cmp2,reg317,dac8,q3055,cpu64', ok.join(' · ')); }
+    { // 명세 문서의 부품 ID 전부(이미 있던 부품은 그 부품으로)
+      const DOC = { CPU_16_32B_ASYNC_8MHZ: 'cpu64', DAC_10B_MULT_R2R: 'dac10', OPAMP_DUAL_JFET_25VUS: 'oa2j', OPAMP_QUAD_JFET_25VUS: 'oa4j', OPAMP_DUAL_JFET_LN_3MHZ: 'oa2n', OPAMP_SGL_EXTCOMP_20V: 'oa1p', COMP_DUAL_OC_36V: 'cmp2', REG_POS_ADJ_1P5A: 'reg317',
+        BJT_NPN_PWR_60V_150W: 'q3055', BJT_NPN_SW_40V_800MA: 'q2222m', BJT_PNP_SW_40V_200MA: 'q2907m', BJT_PNP_HV_SW_80V_1W: 'qp39', BJT_NPN_SS_360MW: 'q18s', JFET_N_DEPL_TO18: 'jfn',
+        DIODE_SW_80V_200MA_2NS: 'd914', DIODE_SCHOTTKY_SS_70V: 'd5711', DIODE_RECT_400V_750MA: 'd4004', BRIDGE_RECT_600V_1A: 'brdg',
+        BLK_RF_STEP_ATTEN_22G: 'batt', BLK_YIG_OSC_2P3_6P1G: 'byto', BLK_YIG_MIXER_22G: 'bytx', BLK_RF_CONV_ACLU: 'bconv', BLK_RF_FILTERS: 'bfilt', BLK_IF_LOG_9STAGE: 'bif', BLK_REF_OSC_10MHZ: 'bref', BLK_CRT_6IN_ESTAT: 'bcrt' };
+      const bad = Object.entries(DOC).filter(([n, k]) => (pxPart('', n, n) || {}).kind !== k || PX[k].nid !== n).map(([n]) => n);
+      const ls = CHIPS['74LS174'] && CHIPS['74LS174'].nid === 'LOGIC_HEX_DFF_CLR_LS';
+      const dup = Object.values(PX).map(d => d.nid).filter(Boolean).filter((n, i, a) => a.indexOf(n) !== i);
+      rec('아날로그 IC', '명세 부품 ID 27개 → 부품 (중복 없음)', !bad.length && ls && !dup.length, bad.length || dup.length ? '틀림: ' + bad.concat(dup).join(' ') : `PX ${Object.keys(DOC).length}개 + 74LS174 · 중복 nid 없음`); }
     // 다 확인했는지
     const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }
