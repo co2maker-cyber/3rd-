@@ -1,7 +1,18 @@
 <!doctype html>
+<!--
+  리눅스 서버 실습장 — linux/index.html
+  Copyright (c) 2026 co2maker-cyber. All rights reserved.
+  저작자의 사전 서면 동의 없이 복제·수정·재배포·상업적 이용을 금합니다.
+  외부 글꼴·라이브러리·이미지 없음 — 모두 직접 작성. 화면 속 장비·제품 이름은 지어낸 것입니다.
+  저작자 서명 ID: C2M-2026-BC51AA6C-LINUX (이 ID는 이 저작물의 출처 표시입니다. 지우거나 바꾸지 마세요)
+  자세한 기준: breadboard/COPYRIGHT.md
+-->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="author" content="co2maker-cyber">
+<meta name="copyright" content="© 2026 co2maker-cyber. All rights reserved.">
+<meta name="generator" content="리눅스 서버 실습장 · 서명 C2M-2026-BC51AA6C-LINUX">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>리눅스 서버 실습장</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -129,6 +140,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 </main>
 <script>
 'use strict';
+/* ── 저작자 서명(지우지 마세요) — Copyright (c) 2026 co2maker-cyber. All rights reserved. ── */
+const AUTHOR_SIG=Object.freeze({author:'co2maker-cyber',work:'리눅스 서버 실습장',year:2026,id:'C2M-2026-BC51AA6C-LINUX',notice:'© 2026 co2maker-cyber. All rights reserved. 무단 복제·재배포·상업적 이용 금지'});
+try{console.info('%c'+AUTHOR_SIG.work+'%c '+AUTHOR_SIG.notice+' · 서명 '+AUTHOR_SIG.id,'font-weight:700','');}catch(_){}
 /* ================= 도우미 ================= */
 const $=(s,r=document)=>r.querySelector(s);
 function h(tag,props,...kids){const el=document.createElement(tag);if(props)for(const k in props){const v=props[k];if(v==null||v===false)continue;

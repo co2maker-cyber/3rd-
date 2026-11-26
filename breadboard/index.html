@@ -14,10 +14,14 @@
   4. 출력물 면책: 거버·드릴·BOM 파일은 설계 보조용입니다. PCB 제작 주문 전에 반드시 외부 거버 뷰어로
      교차 확인해야 하며, 확인하지 않아 생긴 제작 불량·손실은 저작자가 책임지지 않습니다.
   자세한 기준: breadboard/COPYRIGHT.md
+  저작자 서명 ID: C2M-2026-BC51AA6C-BBCAD (이 ID는 이 저작물의 출처 표시입니다. 지우거나 바꾸지 마세요)
 -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="author" content="co2maker-cyber">
+<meta name="copyright" content="© 2026 co2maker-cyber. All rights reserved.">
+<meta name="generator" content="브레드보드 CAD · 서명 C2M-2026-BC51AA6C-BBCAD">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>브레드보드 CAD</title>
 <style>
@@ -1368,6 +1372,9 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 </script>
 <script>
 'use strict';
+/* ── 저작자 서명(지우지 마세요) — Copyright (c) 2026 co2maker-cyber. All rights reserved. ── */
+const AUTHOR_SIG=Object.freeze({author:'co2maker-cyber',work:'브레드보드 CAD',year:2026,id:'C2M-2026-BC51AA6C-BBCAD',notice:'© 2026 co2maker-cyber. All rights reserved. 무단 복제·재배포·상업적 이용 금지'});
+try{console.info('%c'+AUTHOR_SIG.work+'%c '+AUTHOR_SIG.notice+' · 서명 '+AUTHOR_SIG.id,'font-weight:700','');}catch(_){}
 /* ───────── 보드 기하 ───────── */
 const P=20, X0=36;
 /* 브레드보드 종류: 열 수와 전원 레일 유무 */
@@ -4157,7 +4164,7 @@ $('sig').classList.toggle('pri',sigMode);
    (1) 이 기기에 저장: 브라우저 저장소(localStorage)에 이름을 붙여 여러 개 보관  (2) 파일: .json으로 내려받기 / 파일에서 불러오기 */
 let curName=store.get('name','');
 const savedList=()=>{const a=store.get('saves',[]);return Array.isArray(a)?a.filter(e=>e&&e.name&&Array.isArray(e.comps)):[];};
-const circuitData=()=>({app:'breadboard-lab',v:2,name:curName||undefined,boards:S.boards,comps:S.comps,sch:schData(),pcb:pcbData()});
+const circuitData=()=>({app:'breadboard-lab',v:2,generator:'브레드보드 CAD · © 2026 co2maker-cyber · '+AUTHOR_SIG.id,name:curName||undefined,boards:S.boards,comps:S.comps,sch:schData(),pcb:pcbData()});
 function renderSaves(){const L=savedList().sort((a,b)=>b.t-a.t),fmt=t=>{const d=new Date(t),z=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
   const last=store.get('last',null),hasLast=last&&Array.isArray(last.comps)&&(last.comps.length||(last.sch&&last.sch.parts&&last.sch.parts.length));
   $('saveList').innerHTML=(hasLast?`<div class="sitem" data-last="1"><span class="sp"><b>지난번 하던 회로</b><small>${fmt(last.t)} 자동 보관 · 부품 ${last.comps.length}개 · 보드 ${(last.boards||[]).length||1}장${last.sch&&last.sch.parts&&last.sch.parts.length?` · 회로도 기호 ${last.sch.parts.length}개`:''}</small></span><button class="btn pri" data-a="last">불러오기</button></div>`:'')+(L.length?L.map(e=>`<div class="sitem" data-sid="${esc(e.id)}"><span class="sp"><b>${esc(e.name)}</b><small>${fmt(e.t)} · 부품 ${e.comps.length}개 · 보드 ${(e.boards||[]).length||1}장</small></span><button class="btn pri" data-a="load">불러오기</button><button class="btn" data-a="over" title="지금 보드의 회로로 이 저장본을 바꿔요">덮어쓰기</button><button class="btn del" data-a="del">삭제</button></div>`).join('')
@@ -4536,7 +4543,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · 저작권 재점검';
+const APP_VER='2026-11-26 · 저작자 서명';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -6021,7 +6028,7 @@ function makeZip(files){const enc=new TextEncoder(),parts=[],cen=[];let off=0;co
   const cl=cen.reduce((s,x)=>s+x.length,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cl,true);e.setUint32(16,off,true);
   const all=[...parts,...cen,new Uint8Array(e.buffer)],out=new Uint8Array(all.reduce((s,x)=>s+x.length,0));let p=0;for(const x of all){out.set(x,p);p+=x.length;}return out;}
 function pcbGerbers(){const C=pcalc(),H_=PCB.h,gc=v=>Math.round(v*1e6),X=x=>'X'+gc(x),Y=y=>'Y'+gc(H_-y);
-  const head=(fn)=>`G04 브레드보드 CAD PCB*\n%TF.FileFunction,${fn}*%\n%FSLAX46Y46*%\n%MOMM*%\n%LPD*%\n`;
+  const head=(fn)=>`G04 브레드보드 CAD PCB*\nG04 Generator: (c) 2026 co2maker-cyber, sig ${AUTHOR_SIG.id}*\n%TF.FileFunction,${fn}*%\n%FSLAX46Y46*%\n%MOMM*%\n%LPD*%\n`;
   const layer=(fn,build)=>{const ap=new Map();let body='';const D=k=>{if(!ap.has(k))ap.set(k,10+ap.size);return'D'+ap.get(k)+'*\n';};
     let cur='';const use=k=>{if(cur!==k){cur=k;body+=D(k);}};
     build({flash:(k,x,y)=>{use(k);body+=`${X(x)}${Y(y)}D03*\n`;},line:(k,a,b)=>{use(k);body+=`${X(a.x)}${Y(a.y)}D02*\n${X(b.x)}${Y(b.y)}D01*\n`;}});
@@ -6037,11 +6044,11 @@ function pcbGerbers(){const C=pcalc(),H_=PCB.h,gc=v=>Math.round(v*1e6),X=x=>'X'+
   const edge=(o)=>{const k='C,0.100',a={x:0,y:0},b={x:PCB.w,y:0},c={x:PCB.w,y:PCB.h},d={x:0,y:PCB.h};o.line(k,a,b);o.line(k,b,c);o.line(k,c,d);o.line(k,d,a);};
   const drills=new Map();const addD=(dr,x,y)=>{const k=dr.toFixed(2);if(!drills.has(k))drills.set(k,[]);drills.get(k).push([x,y]);};
   for(const q of C.pads)addD(q.dr,q.x,q.y);for(const v of PCB.vias)addD(VIADR,v.x,v.y);
-  let drl='M48\n; 브레드보드 CAD PCB 드릴 파일\nFMAT,2\nMETRIC,TZ\n';let ti=1;const tl=[];for(const k of [...drills.keys()].sort()){drl+=`T${ti}C${k}\n`;tl.push([ti++,k]);}
+  let drl='M48\n; 브레드보드 CAD PCB 드릴 파일\n; Generator: (c) 2026 co2maker-cyber, sig '+AUTHOR_SIG.id+'\nFMAT,2\nMETRIC,TZ\n';let ti=1;const tl=[];for(const k of [...drills.keys()].sort()){drl+=`T${ti}C${k}\n`;tl.push([ti++,k]);}
   drl+='%\nG90\nG05\n';for(const [t,k] of tl){drl+=`T${t}\n`;for(const [x,y] of drills.get(k))drl+=`X${x.toFixed(3)}Y${(H_-y).toFixed(3)}\n`;}drl+='T0\nM30\n';
   const bom='참조,값,발자국\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return[P.ref,P.D.val,P.D.pkg].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');}).join('\n')+'\n';
   const pos='참조,X(mm),Y(mm),회전\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return`${P.ref},${f.x.toFixed(3)},${(H_-f.y).toFixed(3)},${f.rot}`;}).join('\n')+'\n';
-  const readme=`브레드보드 CAD에서 만든 PCB 제작 파일\n\n보드 크기: ${PCB.w} × ${PCB.h} mm, 2층, 스루홀(THT) 부품\n최소 선 굵기: ${Math.min(PCB.tw,...PCB.tr.map(t=>t.w)).toFixed(2)} mm, 최소 간격: ${PCB.clr} mm, 비아 ${VIAD}mm / 드릴 ${VIADR}mm\n\n파일\n- *-F_Cu.gtl  앞면 구리\n- *-B_Cu.gbl  뒷면 구리\n- *-F_Mask.gts / *-B_Mask.gbs  솔더 마스크(패드만 열림, 비아는 덮음)\n- *-F_SilkS.gto  앞면 실크(부품 모양·이름)\n- *-Edge_Cuts.gm1  보드 외곽\n- *.drl  드릴(Excellon, mm)\n- *-BOM.csv  부품표, *-pos.csv 부품 위치\n\n주문 전에 PCB 업체의 거버 미리보기나 외부 거버 뷰어로 반드시 교차 확인하세요.\n\n면책: 이 파일들은 설계 보조용입니다. 확인하지 않아 생긴 제작 불량·손실은 저작자가 책임지지 않습니다.\n부품 번호는 호환성 안내를 위한 기술적 표기이며 각 제조사의 상표권을 침해할 의도가 없습니다.\nCopyright (c) 2026 co2maker-cyber. 브레드보드 CAD에서 만든 파일.\n`;
+  const readme=`브레드보드 CAD에서 만든 PCB 제작 파일\n\n보드 크기: ${PCB.w} × ${PCB.h} mm, 2층, 스루홀(THT) 부품\n최소 선 굵기: ${Math.min(PCB.tw,...PCB.tr.map(t=>t.w)).toFixed(2)} mm, 최소 간격: ${PCB.clr} mm, 비아 ${VIAD}mm / 드릴 ${VIADR}mm\n\n파일\n- *-F_Cu.gtl  앞면 구리\n- *-B_Cu.gbl  뒷면 구리\n- *-F_Mask.gts / *-B_Mask.gbs  솔더 마스크(패드만 열림, 비아는 덮음)\n- *-F_SilkS.gto  앞면 실크(부품 모양·이름)\n- *-Edge_Cuts.gm1  보드 외곽\n- *.drl  드릴(Excellon, mm)\n- *-BOM.csv  부품표, *-pos.csv 부품 위치\n\n주문 전에 PCB 업체의 거버 미리보기나 외부 거버 뷰어로 반드시 교차 확인하세요.\n\n면책: 이 파일들은 설계 보조용입니다. 확인하지 않아 생긴 제작 불량·손실은 저작자가 책임지지 않습니다.\n부품 번호는 호환성 안내를 위한 기술적 표기이며 각 제조사의 상표권을 침해할 의도가 없습니다.\nCopyright (c) 2026 co2maker-cyber. 브레드보드 CAD에서 만든 파일. 서명 ${AUTHOR_SIG.id}\n`;
   return{cu:{F:layer('Copper,L1,Top',cu('F')),B:layer('Copper,L2,Bot',cu('B'))},mask:{F:layer('Soldermask,Top',mask),B:layer('Soldermask,Bot',mask)},silk:layer('Legend,Top',silk),edge:layer('Profile,NP',edge),drl,bom,pos,readme};}
 /* 아주 작은 선 글꼴(숫자·영문 대문자): 실크에 부품 이름을 쓴다. 글자 한 칸은 가로 1 × 세로 2, 꺾은선 목록 */
 const SF={'0':[[0,0,1,0,1,2,0,2,0,0],[1,0,0,2]],'1':[[.2,.4,.5,0,.5,2],[.2,2,.8,2]],'2':[[0,0,1,0,1,1,0,1,0,2,1,2]],'3':[[0,0,1,0,1,2,0,2],[0,1,1,1]],'4':[[0,0,0,1,1,1],[1,0,1,2]],
@@ -6063,7 +6070,7 @@ async function pcbSvgExport(){const C=pcalc();if(!C.fps.length){toast('내보낼
   const keep={...pv},ph=phover,ps=psel;phover=null;psel=null;renderPcb();const g=pcbSvg().cloneNode(true);Object.assign(pv,keep);phover=ph;psel=ps;
   g.setAttribute('viewBox',`-2 -4 ${PCB.w+4} ${PCB.h+6}`);g.setAttribute('width',(PCB.w+4)*10);g.setAttribute('height',(PCB.h+6)*10);g.querySelectorAll('.prat,.pdrc').forEach(e=>e.remove());
   const css=`.psilk *{fill:none;stroke:${PCOL.silk};stroke-width:.15}.pfp{fill:none;stroke:none}.pref{fill:${PCOL.silk};font:.9px sans-serif;text-anchor:middle}.ppad{fill:${PCOL.pad}}.pvia{fill:${PCOL.pad}}.ptr{stroke-linecap:round}.pdim{fill:#888;font:1px sans-serif}`;
-  const data=`<?xml version="1.0" encoding="UTF-8"?>\n`+g.outerHTML.replace('>',`><style>${css}</style>`);renderPcb();
+  const data=`<?xml version="1.0" encoding="UTF-8"?>\n<!-- 브레드보드 CAD에서 만든 PCB 그림 · (c) 2026 co2maker-cyber · 서명 ${AUTHOR_SIG.id} -->\n`+g.outerHTML.replace('>',`><style>${css}</style>`);renderPcb();
   await saveTextFile(((curName||'pcb').replace(/[\\/:*?"<>|]+/g,'_')||'pcb')+'-pcb.svg',data,'image/svg+xml','PCB 그림','.svg');}
 async function saveBinFile(fn,bytes,mime,desc,ext){const r=await saveAny(fn,bytes,mime,desc,ext);if(r==='blocked')toast('이 화면에서는 zip을 바로 내려받을 수 없어요. 깃허브 페이지(co2maker-cyber.github.io/3rd-/breadboard)에서 열어 내려받으세요');}
 

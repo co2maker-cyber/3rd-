@@ -130,3 +130,27 @@ Copyright (c) 2026 co2maker-cyber. All rights reserved.
 - [x] 예제 회로 36종·`FILE-FORMAT.md` 문구는 직접 구성·작성(타사 교재·사이트 복제 아님)
 - [x] `COPYRIGHT.md`(0절)와 `index.html` 맨 위에 저작권·상표 비침해·면책 고지
 - [ ] 상업 배포를 하게 되면: 비공개 저장소 분리 + 상업 이용 허용 호스팅으로 이전 (9절)
+
+## 12. 저작자 서명 (2026-11-26 추가)
+
+코드 속 서명은 복제를 기술적으로 막지는 못하지만, **누가 언제 만들었는지 보여 주는 증거**가 됩니다. 아래 서명은 지우거나 바꾸지 않습니다(`node breadboard/tests/sig-check.js`가 확인).
+
+* **서명 ID:** `C2M-2026-BC51AA6C` + 작품 코드 — 브레드보드 `-BBCAD`, 처음 화면 `-HOME`, 리눅스 `-LINUX`, 라우터 `-ROUTER`, 윈도우 서버 `-WINSRV`. 무작위로 만든 고유 값이라, 다른 곳에서 같은 ID가 발견되면 이 저작물을 가져간 것이라는 출처 증거가 됩니다.
+* **서명 위치**
+  * 모든 페이지 맨 위 저작권 주석(`저작자 서명 ID: …`)
+  * `<meta name="author">`, `<meta name="copyright">`, `<meta name="generator">`(서명 ID 포함)
+  * 코드 상수 `AUTHOR_SIG`(저작자·작품·연도·ID·고지) — 페이지를 열면 브라우저 콘솔에 고지 한 줄을 남김
+  * 화면 [속성] 안내의 © 줄, `FILE-FORMAT.md` 끝 고지
+  * 브레드보드가 만드는 파일: 저장 `.json`의 `generator`, 거버 `G04 Generator:` 줄, 드릴 `; Generator:` 줄, PCB zip `README.txt`, PCB 그림 SVG 주석
+* **파일 지문(SHA-256)** — 서명을 넣은 날의 파일 상태. 커밋 기록(날짜·내용)과 함께 그 시점에 이 코드가 있었다는 증거가 됩니다. 파일을 고치면 값이 바뀌니, 중요한 배포 때마다 새로 적어 둡니다(`sha256sum index.html breadboard/index.html linux/index.html router/index.html windows/index.html`).
+
+  | 파일 | SHA-256 (2026-11-26, 서명 추가 직후) |
+  |---|---|
+  | `index.html` | `cd6cc81af2b9afb7932d611e07837b0440bf256a3b8f742b5702939f1950a0af` |
+  | `breadboard/index.html` | `91f0144924f8f59e6d405e4ad1f2583ef86fdf9a8514e7982c2dfb73dd91259c` |
+  | `linux/index.html` | `7832e219dacf3428b2bdee269d5a92ebadaec4e2e7486f2e627e23fd8d154784` |
+  | `router/index.html` | `e41f4fd19ac50ec222d72876c563dd103c7c49bc3ed586e091412d143dae76d6` |
+  | `windows/index.html` | `c300f6fe2892444a79e9ee70717170b609ad80d525e0b4c4e3cbf35398f24de6` |
+
+* **더 확실한 보호(선택):** 한국저작권위원회 저작권 등록(프로그램 저작물)을 하면 창작 시점과 저작자가 공적으로 기록되어, 분쟁 때 추정력을 가집니다. 등록 때는 이 저장소의 소스와 커밋 기록, 이 문서를 자료로 쓸 수 있습니다.
+* 저작자 표기 `co2maker-cyber`를 실명·상호로 바꾸려면 위 서명 위치를 모두 함께 고치고 `tests/sig-check.js`의 `OWNER`도 바꿉니다. 서명 ID는 바꾸지 않습니다.
