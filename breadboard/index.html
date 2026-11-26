@@ -586,6 +586,7 @@ body.planon .cbar{display:none}
         <option value="pasdio">Ⓟ6 다이오드: 한 방향·OR 묶기·제너 5.1V·브리지·역전압 다이오드</option>
         <option value="pastr">Ⓟ7 트랜지스터·MOSFET: NPN·PNP 스위치·MOSFET·달링턴·릴레이 구동</option>
         <option value="paana">Ⓟ8 연산 증폭기·비교기: 가변저항 전압을 2배로 키우기 · 2.5V 넘으면 LED 켜기</option>
+        <option value="pasa">Ⓟ9 계측기 블록: 10비트 DAC 스윕 전압 · YIG 발진기·믹서 · IF 로그 증폭단 · CRT 연결</option>
         </optgroup>
         <optgroup label="논리 IC 모음 (74LS·74HC 비교)">
         <option value="lg2">ⓘ1 2입력 게이트 9종 + 단독 NAND·NOR·XNOR (스위치 A·B)</option>
@@ -5856,6 +5857,21 @@ Object.assign(EXAMPLES,{
     let x=K.led(1,15,{color:'red'});K.vcc(x.a,330);K.link(x.k,C(0));
     const A=K.px('oa2b',1,null,20);K.vcc(A(7));K.gnd(A(3));K.link(W(1),A(2));K.link(A(0),A(1),10000);K.gnd(A(1),10000);K.gnd(A(4));K.link(A(6),A(5));
     x=K.led(1,27,{color:'green'});K.link(A(0),x.a,330);K.gnd(x.k);
+    return K.fin();},
+  // Ⓟ9 계측기(스펙트럼 분석기) 블록 예제: 보드 1 = 스윕 전압 만들기(DIP 스위치 → 10비트 DAC → 연산 증폭기 → LED),
+  //   보드 2 = 고주파 신호 길(감쇠기 → YIG 믹서 ← YIG 발진기, → 변환 체인 ← 기준 발진기, → IF 로그 증폭단 → CRT). 보드 2 블록은 시뮬레이션 없이 연결만
+  pasa:()=>{const K=ledKit(2);
+    const D=K.px('dac10',1,null,3),A=K.px('oa2b',1,null,16),S=K.px('dip4',1,null,30,{bits:[1,0,1,0]});
+    K.vcc(D(13));K.gnd(D(2));K.gnd(D(14));for(let i=7;i<=12;i++)K.gnd(D(i));          // VDD·GND, VREF = 0V, BIT5~BIT10 = 0
+    K.vcc(A(7));K.gnd(A(3));K.vcc(A(4),35000);K.gnd(A(4),15000);K.link(A(6),A(5));     // 증폭기 2 = 기준 1.5V 버퍼(35k/15k) → 출력 = 1.5V × (1 + 숫자 ÷ 1024)
+    K.link(A(6),D(1));K.link(A(6),A(2));K.link(D(0),A(1));K.link(D(15),A(0));         // IOUT2·IN1+ = 1.5V, IOUT1 → IN1−, RFB → OUT1
+    for(let i=0;i<4;i++){K.vcc(S(7-i));K.link(S(i),D(3+i));K.gnd(D(3+i),10000);}      // DIP 1~4 → BIT1~BIT4(풀다운 10k)
+    const x=K.led(1,25,{color:'yellow'});K.link(A(0),x.a,100);K.gnd(x.k);
+    // 보드 2: 블록 연결
+    const T=K.px('batt',2,'c',2),Y=K.px('byto',2,'c',12),M=K.px('bytx',2,'c',25),C=K.px('bconv',2,'c',34);
+    const F=K.px('bfilt',2,'h',2),I=K.px('bif',2,'h',14),R=K.px('bref',2,'h',26),V=K.px('bcrt',2,'h',33);
+    K.gnd(T(6));K.vcc(T(5));K.gnd(Y(1));K.gnd(M(5));K.gnd(C(5));K.vcc(C(4));K.gnd(F(8));K.gnd(I(8));K.vcc(I(6));K.gnd(R(3));K.vcc(R(2));K.gnd(V(11));
+    K.link(T(1),M(0));K.link(Y(0),M(1));K.link(M(2),F(0));K.link(F(1),C(0));K.link(R(0),C(2));K.link(C(3),I(0));K.link(I(2),V(6));
     return K.fin();},
 });
 

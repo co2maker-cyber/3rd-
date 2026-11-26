@@ -12,6 +12,12 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
   { const l0=leds(),a0=(rt(px('cmp2')).ast||[])[0];px('trim6').pos=.3;st();const l1=leds();
     T('예제 Ⓟ8: 비교기·증폭기 LED (와이퍼 70% → 30%)',l0==='11'&&l1==='01'&&a0&&a0.st===1,l0+' → '+l1);
     T('예제 Ⓟ8: 경고 없음',!SIM.warns.filter(w=>w[0]!=='info').length,SIM.warns.map(w=>w[1].slice(0,40)).join('|')); }
+  // ①-2 예제 Ⓟ9: DIP 1010 → 10비트 코드 640 → 1.5 × (1 + 640/1024) ≈ 2.44V, LED 켜짐 / 모두 끄면 1.5V, LED 꺼짐 · 블록 8종 연결
+  { setVM('bb');const ex=EXAMPLES.pasa();S.power=true;loadComps(ex.comps,false,ex.boards);orthoWires();RT.clear();commit(true);st();
+    const a=px('oa2b'),vo=()=>SIM.vOf(SIM.netOf[HOLES.get(pinHoles(a)[0]).i]),lit=()=>!!(SIM.led.get(S.comps.find(c=>c.t==='led').id)||{}).lit;
+    const v0=vo(),l0=lit(),c0=(rt(px('dac10')).ast||[])[0];px('dip4').bits=[0,0,0,0];st();const v1=vo(),l1=lit();
+    T('예제 Ⓟ9: DAC 스윕 전압·블록 연결',Math.abs(v0-2.4375)<.02&&l0&&c0&&c0.code===640&&Math.abs(v1-1.5)<.01&&!l1&&S.comps.filter(c=>c.t==='px'&&PX[c.kind].blk).length===8&&!SIM.warns.filter(w=>w[0]!=='info').length,
+      `코드 ${c0&&c0.code} → ${v0.toFixed(3)}V(LED ${l0}) · 0 → ${v1.toFixed(3)}V(LED ${l1})`); }
   // ② 새 부품마다 보드에 놓고 그리기·속성 창
   { const bad=[];for(const k of NEW){try{const d=PX[k];if(!d){bad.push(k+' 없음');continue;}const ids=pxHolesAt(k,1,'c',5);if(!ids){bad.push(k+' 자리');continue;}
       loadComps([{t:'px',kind:k,pins:ids}],false);RT.clear();S.power=true;st();render();
