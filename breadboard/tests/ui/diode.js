@@ -33,6 +33,16 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
       loadComps([{t:'px',kind:k,pins:pxHolesAt(k,1,PX[k].lay==='dip'?'e':'c',10)}],false);settle();sel={type:'comp',id:S.comps[0].id};renderInfo();
       const bt=[...document.querySelectorAll('#'+id+' button')].find(x=>x.dataset.v===v||x.dataset.side===v);if(bt)bt.click();got.push(k+':'+(S.comps[0][key]===exp?'ok':'안 바뀜'));}
     T('px 부품 [속성] 버튼이 값을 바꿈',got.every(x=>x.endsWith('ok')),got.join(' ')); }
+  // 파일 배치(목록): 다이오드·릴레이·코일을 알아보고 꽂아서 동작
+  { const txt='SW1 SW off\nU1 DRV-SINK8\nK1 RELAY 5V\nD1 1N4007\nD2 LED green\nR1 R 330\nL1 INDUCTOR 100uH\nD3 D 1N4148\nBR1 BRIDGE\nZD1 ZENER\nK2 relay reed\nL2 coil 공심\nD4 D red\nVCC: SW1.1, K1.A1, K1.COM, D1.K, U1.COM, L1.1\nN1: SW1.2, U1.IN1\nN2: U1.OUT1, K1.A2, D1.A\nN3: K1.NO, R1.1\nN4: R1.2, D2.A\nGND: D2.K, U1.GND\nN5: L1.2, D3.A';
+    const sp=parseSpec(txt),kinds=sp.parts.map(x=>x.kind||x.t).join(' ');
+    T('목록에서 다이오드·릴레이·코일을 알아봄',kinds==='sw ic rlyc d4007 led res indr d4148 brdg dz51 reed indair led'&&!sp.errors.length,kinds);
+    $('impText').value=txt;runImport();const K=S.comps.find(c=>c.kind==='rlyc'),led=S.comps.find(c=>c.t==='led'&&c.color==='green');const a=[rlyOn(K,rt(K)),!!(SIM.led.get(led.id)||{}).lit];
+    S.comps.find(c=>c.t==='sw').on=true;settle();const b_=[rlyOn(K,rt(K)),!!(SIM.led.get(led.id)||{}).lit];
+    T('목록으로 꽂은 릴레이 회로 동작',!a[0]&&!a[1]&&b_[0]&&b_[1]&&!SIM.warns.length,`끔 ${a} → 켬 ${b_} ${SIM.warns.map(w=>w[1].slice(0,30)).join('|')}`); }
+  // 부품 고르기 검색: 영어 낱말
+  { openParts();const n=q=>{$('partQ').value=q;$('partQ').dispatchEvent(new Event('input'));return document.querySelectorAll('#partGrid .pcard').length;};
+    const r={relay:n('relay'),diode:n('diode'),inductor:n('inductor')};closeParts();T('부품 검색 영어(relay·diode·inductor)',r.relay>=5&&r.diode>=8&&r.inductor>=4,JSON.stringify(r)); }
   return out;});
 for(const r of res)console.log((r.ok?'ok  ':'BAD ')+r.k+'  '+r.msg);console.log('errors',errs);
 const bad=res.filter(r=>!r.ok).length+errs.length;console.log(bad?'diode FAIL':'diode PASS');await b.close();})();

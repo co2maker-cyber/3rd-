@@ -15,6 +15,7 @@
 ✓ 릴레이·코일(10차): PX 분류 `rly`·`ind` 추가. 릴레이 `rlyc`(큐브 SPDT)·`rlyd`(DIP DPDT)·`reed`·`rlyl`(래칭, 상태 c.s)·`ssr`(극성, 3V)·`sol`(솔레노이드). 코일 = `coil:[i,j]`+`res`(코일 저항 cv²/cw), settle 끝 `coilUpd`(75% 붙음/10% 떨어짐) → 바뀌면 settle 재귀(깊이 4, 넘으면 `SIM.buzz` 버저 알림·20ms 루프 계속). 회로도는 논리 값(H/L 반대면 정격)으로 같은 처리. 경고: 과전압·전압 부족·IC 출력 직접 구동(>25mA)·DRV-SINK8 COM 미연결. 인덕터 `inda`(색띠 µH)·`indr`·`indt`·`bead` = `thru`(직류 단락, settle·schNets union), [속성] DCR·허용 전류 어림·리액턴스. PCB `pp` 간격. 예제 Ⓟ5 `pasrly`. 시험 `tests/ui/relay.js`
 ✓ 다이오드·SPICE(11차, 사용자가 붙여 넣은 부품 조사 문서를 저작권 안전하게 반영): PX 분류 `dio` — `d4148`·`d4007`·`d5819`·`dz51`(제너 5.1V)·`dge`·`brdg`(4핀 DIP). `dio:[[A,K,특성]]`, `DIOM` 꺾은선(vf·rs, 제너 vz·rz). settle: resolve에서 한 방향 레벨 전파(A의 H→K, K의 L→A), analogStep에서 상태 가정→풀기→고치기(최대 12번), IC 바뀌면 analog 한 번 더. 경고: 저항 없이 정방향 단락·전류 초과·역전압·제너 전력. 릴레이 COM 알림은 코일 양 끝 역방향 다이오드 있으면 생략. 회로도 기호·레벨 전파. 예제 Ⓟ6 `pasdio`(보드 3장). `spice/bbcad-parts.lib`(BB_ 일반 이름, 값 직접 산출)·`spice/README.md`·`tb-*.cir` 3개, `tools/fit-diode.py`, 시험 `tests/spice-check.js`(ngspice: apt-get install ngspice)·`tests/ui/diode.js`. COPYRIGHT 14절(사실만, 남의 모델·문장·회사 형번 없음)
 ✓ 부품 고르기 안내(12차, 같은 조사 문서를 .md로 다시 받음): `breadboard/PARTS-GUIDE.md` 새로 씀(원문 미보관) → index.html `<script id="partsMd">` 사본(guide-sync가 FILE-FORMAT·PARTS-GUIDE 둘 다 맞춤), [부품 고르기] 창 아래 버튼 → 안내서 창(`openGuide('parts')`, `DOCS`). 부품 추가 `duf`(UF4007)·`dbat`(BAT85급)·`indair`(공심 코일, turns·dmm → 휠러식 henry). SPICE `BB_D_UF`·`BB_D_SSCH`. 버그 고침: px 부품 [속성] 버튼이 `#pc` 없으면 안 이어지던 것(가변저항 값·스위치·릴레이 코일 전압·인덕턴스 버튼 모두 먹통이었음) — 시험 diode.js에 추가
+✓ 13차("왜 추가가 안될까?"): 파일 배치·AI 회로 목록(`normPart`)이 px 부품을 몰라 다이오드·릴레이·코일이 안 들어가던 것 고침 — `pxPart`(표준 번호·일반 이름, `D`는 값에 번호 있을 때만 다이오드), `pinIndex` px 핀 이름(A/K, A1/A2/COM/NO/NC, +/−/AC1/AC2), FILE-FORMAT A-2 표에 종류 추가(AI 부탁 문장에도 들어감). 부품 검색 영어 낱말(relay·diode·inductor). `APP_VER='2026-11-26 · 목록으로 다이오드·릴레이·코일'`
 ✓ 시험: verify74 106/106, verify-parts 133/133, guide-sync, sig-check, `tests/ui/license.js` 20항목 PASS(시험용 열쇠 쌍)
 ✓ 전체 시험: 라이선스·로컬 버전까지 회귀+tests/ui 19종 PASS → main 반영(`088216e`). 릴레이·코일 후 tests/ui 20종 재실행
 ✗ 미검증: Claude 미리보기에서 키 창 안 뜨는지(주소 미확인), 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(gerbonara 설치 권한 거부)
@@ -28,7 +29,7 @@
 
 ## 사용자 지시 기록 (COPYRIGHT.md 10절 — 계속 덧붙일 것)
 - ~11-25: 시뮬레이터 방향, AI 호출 금지, 부품 220종 예제, 자동 main, 오류 알림, PCB, 업데이트마다 링크, 깃허브 페이지
-- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기 고침, 전보체 메모, 저작권 가이드 적용·재검토, 라우터 부팅 문구 일반화, 코드 저작권 서명, 복사 막는 라이선스 키, 로컬 버전, 진행 메모(9차), 릴레이·코일 부품 추가, 다이오드·릴레이·코일 조사 문서 반영 + 저작권 문제 없게, 같은 문서(.md) 저작권 위반 없이 추가
+- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기 고침, 전보체 메모, 저작권 가이드 적용·재검토, 라우터 부팅 문구 일반화, 코드 저작권 서명, 복사 막는 라이선스 키, 로컬 버전, 진행 메모(9차), 릴레이·코일 부품 추가, 다이오드·릴레이·코일 조사 문서 반영 + 저작권 문제 없게, 같은 문서(.md) 저작권 위반 없이 추가, "왜 추가가 안될까?"(목록 배치 고침)
 
 ## 이슈/주의
 - 라이선스는 기술적 보호조치일 뿐 — 공개 소스라 수정 우회는 못 막음(저작권법 제104조의2로 보호). 더 강하게 = 저장소 비공개(Pages 유료)

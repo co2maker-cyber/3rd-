@@ -858,6 +858,14 @@ N1:  R3.2, D1.A
 | 커패시터 | `커패시터` `C` `capacitor` `콘덴서` | `10n` `100n` `1u` `10u` `47u` `100u` `470u` (또는 `104` 같은 3자리 코드) | `+` `-` |
 | 클럭 발생기 | `클럭` `CLK` `clock` | Hz: `0.5` `1` `2` `4` `10` | `OUT` (아무 이름이나 하나) |
 | 7세그먼트 | `7세그` `SEG7` `FND` | `cathode`(기본) / `anode` | `a`~`g`, `dp`, `COM` 또는 `1`~`10` |
+| 다이오드 | `다이오드` `diode`, 또는 종류 칸에 번호 그대로(`1N4148` `1N4007` `UF4007` `1N5819` `1N34A` `BAT85`) · `D`는 값에 번호가 있을 때만 다이오드 | 번호(`1N4148` 등) 또는 `신호`·`쇼트키`·`제너` (없으면 1N4007) | `A`(+) `K`(−) |
+| 제너 다이오드 | `제너` `zener` `ZD` `1N4733A` | 없음(5.1V) | `A` `K` |
+| 브리지 정류기 | `브리지` `bridge` `BR` | 없음 | `+` `-` `AC1` `AC2` (또는 `1`~`4`) |
+| 릴레이 | `릴레이` `relay` `K` | `5V`·`12V`·`24V`, `리드`(reed)·`DPDT`·`래칭`·`SSR` (없으면 큐브형 SPDT) | `A1` `A2`(코일) `COM` `NO` `NC` (DPDT는 `COM1` `NO1` `NC1` `COM2` …) |
+| SSR | `SSR` `반도체릴레이` | 없음 | `+` `-`(입력) `출력` 핀은 `3` `4` |
+| 솔레노이드 | `솔레노이드` `solenoid` `SOL` | `5V`·`12V`·`24V` | `1` `2` |
+| 코일·인덕터 | `코일` `인덕터` `inductor` `L` `choke` | 값 `100uH` `1mH` …, `축형`·`토로이드`·`공심`·`비드` (없으면 드럼 코어) | `1` `2` |
+| 가변저항 | `가변저항` `POT` `VR` | `10k` 등 | `1` `2`(와이퍼) `3` |
 
 - 저항·커패시터·클럭 값은 위 목록 중 **가장 가까운 값**으로 맞춰져요. 다른 값(예: 2.2kΩ, 가변저항, 2색 LED, 계측기)이 필요하면 배치한 뒤 CAD에서 바꾸거나 **B 형식**을 쓰세요.
 - IC 핀 번호는 일반 DIP 순서(1번 왼쪽 아래에서 시작해 시계 반대 방향)예요. 핀 이름은 부록 표를 보세요.
@@ -3756,7 +3764,9 @@ function renderParts(){const q=$('partQ').value.trim().toLowerCase();let node=pn
   const card=it=>`<button class="pcard" data-pt="${esc(it.t[0])}"><span class="ic">${it.ico}</span><span><b>${esc(it.t[1])}</b><small>${esc(it.t[2])}</small></span></button>`;
   const fold=n=>{const ico=n.ico||(n.items&&n.items[0]&&n.items[0].ico)||'';return`<button class="pcard pfold" data-pf="${n.k}"><span class="ic">${ico}</span><span><b>${esc(n.label)}</b><small>${esc(n.sub||'')}</small></span><em>${pcount(n)}</em><i>›</i></button>`;};
   let h;
-  if(q){const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]).toLowerCase().includes(q);
+  // 영어로 찾아도 나오게: 수동 소자 분류별 영어 낱말
+  const PXKW={res:'resistor array',pot:'potentiometer pot trimmer',cap:'capacitor',sw:'switch button encoder',dio:'diode rectifier bridge zener schottky',rly:'relay ssr solenoid reed',ind:'inductor coil choke bead'};
+  if(q){const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]+' '+(/^px:/.test(it.t[0])&&PX[it.t[0].slice(3)]?PXKW[PX[it.t[0].slice(3)].sub]||'':/^cap/.test(it.t[0])?'capacitor':/^res/.test(it.t[0])?'resistor':'')).toLowerCase().includes(q);
     h=pleaves(curTree(),[]).map(g=>({...g,items:g.items.filter(hit)})).filter(g=>g.items.length).map(g=>`<h4>${esc(g.label)}</h4>`+g.items.map(card).join('')).join('');}
   else h=node&&node.items?node.items.map(card).join(''):(node?node.kids:curTree()).map(fold).join('');
   $('partGrid').innerHTML=h||'<p class="desc" style="grid-column:1/-1">찾는 부품이 없어요. 이름 일부(예: 47, AND, 카운터)로 검색해 보세요.</p>';
@@ -4636,7 +4646,30 @@ const near=(list,v)=>list.reduce((a,b)=>Math.abs(Math.log(b/v))<Math.abs(Math.lo
 function parseOhms(v){const m=String(v||'').replace(/Ω|ohms?|옴|\s/gi,'').match(/^([\d.]+)\s*([kKmMrR]?)([\d]*)$/);if(!m)return 330;let n=parseFloat(m[1]);const u=m[2].toLowerCase();if(u==='k')n*=1e3;else if(u==='m')n*=1e6;if(m[3])n+=parseFloat('0.'+m[3])*(u==='k'?1e3:u==='m'?1e6:1);return near(OHMS,n||330);}
 function parseFarad(v){const s_=String(v||'').replace(/\s|F$/gi,'');let m=s_.match(/^([\d.]+)\s*([pnuµm]?)/i);if(!m)return 4.7e-5;let n=parseFloat(m[1]);const u=(m[2]||'').toLowerCase();
   if(!u&&/^\d{2}[1-6]$/.test(s_))n=parseInt(s_.slice(0,2))*Math.pow(10,+s_[2])*1e-12;else n*=({p:1e-12,n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[u]||1e-6);return near(FARADS,n);}
+// 표준 번호·일반 이름 → px 부품(파일 배치·AI 회로 목록용). 입력을 알아보기 위한 목록일 뿐, 화면에는 앱의 부품 이름이 나온다
+const DIONUM=[[/^1N(914|4148|4448)/,'d4148'],[/^1N400[1-7]/,'d4007'],[/^UF400[1-7]/,'duf'],[/^1N58(17|18|19)/,'d5819'],[/^1N47(33|32|34)A?/,'dz51'],[/^1N(34|60)A?/,'dge'],[/^BAT(85|43|42|41)/,'dbat'],[/^(DB10[1-7]|DF0[1-9]M?|DF10M|W0[1-9]M|W10M|KBP|2W)/,'brdg']];
+function parseHenry(v){const m=String(v||'').replace(/\s/g,'').match(/^([\d.]+)([nuµm]?)H?$/i);if(!m)return null;const n=parseFloat(m[1])*({n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[(m[2]||'').toLowerCase()]??1e-6);return near(INDV,n);}
+function pxPart(ty,T,v){const V=v.toUpperCase().replace(/[\s_-]/g,'');
+  if(PX[ty])return{t:'px',kind:ty};const kl=Object.keys(PX).find(k=>k.toUpperCase()===T);if(kl)return{t:'px',kind:kl};
+  for(const [re,k] of DIONUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
+  const cv=(v.match(/(\d+)\s*V/i)||[])[1],withCv=(k,o)=>{const x=Object.assign({t:'px',kind:k},o||{});if(cv&&PX[k].cvs&&PX[k].cvs.includes(+cv))x.cv=+cv;return x;};
+  if(/^(DIODE|다이오드)$/.test(T))return{t:'px',kind:/쇼트키|SCHOTTKY/i.test(v)?'d5819':/제너|ZENER/i.test(v)?'dz51':/신호|SIGNAL/i.test(v)?'d4148':'d4007'};
+  if(/^(ZENER|ZD|제너|제너다이오드)$/.test(T))return{t:'px',kind:'dz51'};
+  if(/^(SCHOTTKY|쇼트키|쇼트키다이오드)$/.test(T))return{t:'px',kind:'d5819'};
+  if(/^(BRIDGE|BR|BRIDGERECTIFIER|브리지|브리지정류기|정류기)$/.test(T))return{t:'px',kind:'brdg'};
+  if(/^(SSR|반도체릴레이)$/.test(T))return{t:'px',kind:'ssr'};
+  if(/^(RELAY|RLY|K|릴레이)$/.test(T))return/리드|REED/i.test(v)?withCv('reed'):/SSR|반도체/i.test(v)?{t:'px',kind:'ssr'}:/래칭|LATCH/i.test(v)?withCv('rlyl'):/DPDT|2C|2극|DIP/i.test(v)?withCv('rlyd'):withCv('rlyc');
+  if(/^(REED|REEDRELAY|리드릴레이)$/.test(T))return withCv('reed');
+  if(/^(SOLENOID|SOL|솔레노이드|전자석)$/.test(T))return withCv('sol');
+  if(/^(L|INDUCTOR|COIL|CHOKE|인덕터|코일|초크|FB|BEAD|비드|페라이트비드)$/.test(T)){
+    if(/^(FB|BEAD|비드|페라이트비드)$/.test(T)||/비드|BEAD/i.test(v))return{t:'px',kind:'bead'};
+    const k=/공심|AIR/i.test(v)?'indair':/토로이드|TOROID/i.test(v)?'indt':/축형|AXIAL|색띠/i.test(v)?'inda':'indr',hv=parseHenry((v.match(/[\d.]+\s*[nuµm]?H?/i)||[''])[0]);
+    return k==='indair'?{t:'px',kind:k}:Object.assign({t:'px',kind:k},hv?{henry:hv}:{});}
+  if(/^(POT|VR|POTENTIOMETER|가변저항|볼륨)$/.test(T))return{t:'px',kind:'pot16',ohms:near(POTV,parseOhms(v)||10000)};
+  return null;}
 function normPart(type,value){const ty=String(type||'').trim(),T=ty.toUpperCase().replace(/[\s_]/g,''),v=String(value||'').trim();
+  {const p=pxPart(ty,T,v);if(p&&!(T==='D'&&!DIONUM.some(([re])=>re.test(v.toUpperCase().replace(/[\s_-]/g,'')))))return p;}
+  if(T==='D'&&DIONUM.some(([re])=>re.test(v.toUpperCase().replace(/[\s_-]/g,''))))return pxPart(ty,'DIODE',v)||{t:'px',kind:'d4007'};
   if(/^(R|RES|RESISTOR|저항)$/.test(T))return{t:'res',ohms:parseOhms(v)};
   if(/^(LED|발광다이오드|D)$/.test(T)){const c=/green|초록|녹/i.test(v)?'green':/yellow|노랑|황/i.test(v)?'yellow':/blue|파랑|청/i.test(v)?'blue':'red';return{t:'led',color:c};}
   if(/^(SW|SWITCH|TOGGLE|스위치|토글|토글스위치|DIP|LOGICSTATE)$/.test(T))return{t:'sw',on:/^(on|1|켜짐|켬|high|h)$/i.test(v)};
@@ -4660,6 +4693,11 @@ function pinIndex(_,c,pin){let P_=String(pin).trim(),U=P_.toUpperCase();
   if(c.t==='gate'){const pins=GATES[c.kind].pins;if(/^\d+$/.test(U))return +U-1<pins.length?+U-1:-1;return pins.indexOf(U);}
   if(c.t==='seg7'){if(/^\d+$/.test(U))return +U>=1&&+U<=10?+U-1:-1;const l=P_.toLowerCase();return l==='com'?2:SEG7PINS.indexOf(l);}
   if(c.t==='clk')return 0;
+  if(c.t==='px'){const d=PX[c.kind],nm=d.pins.map(p=>p.toUpperCase().split(' ')[0]);if(/^\d+$/.test(U)&&!nm.includes(U))return +U>=1&&+U<=nm.length?+U-1:-1;
+    let i=nm.indexOf(U);if(i>=0)return i;const al={A:['ANODE','애노드','+','P'],K:['CATHODE','캐소드','C','-','−','N'],'+':['POS','OUT+','V+','DC+'],'−':['NEG','-','OUT-','V-','DC-'],'~':['AC','AC1','~1'],A1:['COIL+','COIL1','+'],A2:['COIL-','COIL2','-'],COM:['C','COMMON','공통']};
+    for(const [k,arr] of Object.entries(al))if(arr.includes(U)){i=nm.indexOf(k);if(i>=0)return i;}
+    if(c.kind==='brdg'&&/^(AC2|~2)$/.test(U))return 3;
+    return -1;}
   if(c.t==='led3'){if(/^(1|R)$/.test(U))return 0;if(/^(2|K|A|COM)$/.test(U))return 1;if(/^(3|G)$/.test(U))return 2;return -1;}
   if(/^(1|A|\+|ANODE|애노드|P|POS)$/.test(U))return 0;if(/^(2|K|C|-|−|CATHODE|캐소드|N|NEG)$/.test(U))return 1;return -1;}
 /* 텍스트 목록 → {parts, nets, errors} */
@@ -4860,7 +4898,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · 부품 고르기 안내';
+const APP_VER='2026-11-26 · 목록으로 다이오드·릴레이·코일';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
