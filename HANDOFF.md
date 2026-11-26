@@ -1,53 +1,48 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 7차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 8차)
 
 ## 목표
-- `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 5300줄): 브레드보드+회로도 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정
+- `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 6100줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정
 
-## 현황 (모두 main 반영, 아티팩트 v49, 화면 버전표시 `APP_VER='2026-11-26 · md 내려받기'`)
-✓ 안내서 `breadboard/FILE-FORMAT.md`(A 부품·연결 목록 / B 저장 .json / IC 핀 표) + index.html 안 사본 `<script id="guideMd">` — 고치면 `node breadboard/tests/guide-sync.js --fix`
-✓ [AI 회로] 버튼: CAD는 AI 직접 호출 안 함(사용자 지시). 부탁 문장+안내서 복사·안내서 보기/내려받기, AI 답 붙여넣기/파일(.md/.txt/.json, 코드블록 섞여도 `pickPayload`) → [보드에 배치하기]. 사진·설명글은 `guideAskFor`로 부탁 칸에 옮겨 안내. 아티팩트 capability = downloads만(sample 제거)
-✓ [전선 정리] `tidyWires`/`applyWireRules`: gridWires 길 + 기능별 색(`wireFnOf`, FNC). 목록 배치·회로도→보드 후 자동 적용
-✓ `autoLayout` 재작성: 작은 부품을 핀 옆에 붙임(VCC/GND면 레일로 세움, 신호면 2~6칸 눕힘), 연결은 나무 모양(빈 구멍 남은 가장 가까운 줄)
-✓ 표시기 잔상: `GLOW_SHORT=.15` 안 켜졌던 칸만 잔상 — 7→6에 '8' 보이던 버그(사용자 "98786") 수정
-✓ 불러오기 버그 수정: `fixComp`(부품 값 검사), `schClean`(회로도 검사), `LOADMAP`+`schLoadIf(o,saved)`(id 재번호 bid 맞춤, 회로도는 quiet 로드, 저장 당시 sig 어긋나면 회로도 재생성) — 저장본 36개가 31개로 돌아오던 버그
-✓ 핀 이름 실제화: DIP 스위치 1..2n 표준번호, DPDT `['1','2 (공통)','3','6','5 (공통)','4']`(4가 1 맞은편)
-✓ 예제 36개: 기존 24 + 논리 IC 모음 12(`ICEX`: lg2 lg3 lbuf lff lcnt lud lshift lmux ldec larith lbus lbcd, 도우미 `icDemo`, `ledKit`에 `seg7` 추가) → 부품 220가지 전부 예제에 쓰임
-✓ 오류 알림(6차): 점검 경고에 부품 id(`W_[i][2]`) → 보드 위 알림 카드(`notifyWarns`, 3초 안 반복 X, 전원 꺼짐 제외)·깜박 테두리(`warnRings`)·[보기]/점검 목록 클릭(`focusComp`). 시험 `tests/ui/alerts.js`
-✓ PCB 설계(6차): 탭 [PCB](VM='pcb'), `#pcbbar`·`#pw`·`#pside`. 회로도(SCH)+`schNets`로 넷, IC VCC/GND 핀은 강제 전원망, J1 전원 헤더 자동, clk→헤더(OUT,GND). `fpDef` 발자국(mm), `PCB={w,h,fps[{key,x,y,rot}],tr[{l,w,a,b}],vias,clr,tw}` 저장 키 'pcb'·파일 `pcb`. `pcalc`(섬·래츠·넷, pcache), `pcbDRC`(캐시), `pcbAutoRoute`/`routeOnce`(1.27mm 격자 A*+방향 상태, 비아, 4번 재시도, 8초 제한), 손 배선(`routeClick`, V=비아), `pcbGerbers`+`makeZip`(거버 6+드릴+BOM+pos+README), SVG 그림. loadComps 때 PCB 비움. 시험 `tests/ui/pcb-examples.js`(36예제 DRC 0, 못이음 199/2878 — 큰 LED·스위치 모음), `tests/ui/pcb-edit.js`
-✓ 연결 체크 막대(7차): 보드·회로도 왼쪽 위 `#bcbar`/`#scbar`(진행·[초기화] 두 번·[끝내기]), 확대 버튼 위 ✓(`#hchk`/`#schk2`) — 휴대폰에서 도구 막대 끝 버튼이 안 보이던 문제. `chkBar`·`chkReset`. 시험 `tests/ui/check-reset.js`
-✓ 순서 카드(7차): 체크 막대 [순서 카드] → `#plan`. `planSteps`: 부품 카드(INST→IC→표시기→나머지, 열 순) + 연결 카드(핀의 줄 `stripOf`=baseRep에서 나가는 전선을 이어서 따라감, 전선 한 번씩). `planOverlay`(노란 띠·번호·링), `planShow`(카드 위 남은 화면에 맞춰 확대), [다 했어요]=c.done. body.planon이면 막대 숨김·토스트 위로. 시험 `tests/ui/plan-cards.js`(36예제 부품·전선 1회·연속)
-✓ 내려받기 고침(7차): `saveAny` 순서 = (저장 창 showSaveFilePicker는 뺌: 윈도우에서 .md 확장자 빠짐, 사용자 스크린샷) → downloads 기능 → 휴대폰 공유 창(navigator.share 파일) → 틀 안이면 'blocked' → `showFallback`(#fbDlg [전체 복사]) / 그 밖 a[download](터치는 octet-stream). saveBinFile도 saveAny. 시험 `tests/ui/save-file.js`(사용자: 안내 md 다운 안 됨)
-✓ 시험 전부 통과: 회귀 45 + verify74 106/106 + verify-parts 111/111 + tests/ui 18종(+alerts, pcb-examples, pcb-edit, check-reset, plan-cards, save-file)(sweep-*, ic-examples, import-layout, sch-to-board, wire-tidy, ai-file, display-glow)
-✗ 실기기 미검증: 아이폰·아이패드 핀치, 아티팩트 파일 내려받기(zip 포함)
-✗ 거버를 외부 뷰어로 검증 못 함(gerbonara 설치가 권한 거부됨) — 자체 구조 검사만
+## 현황 (모두 main 반영 = `dc92878`, 아티팩트 v53, `APP_VER='2026-11-26 · md 내려받기'`)
+✓ 기존: 안내서 `breadboard/FILE-FORMAT.md`(+index.html 사본 `<script id="guideMd">`), [AI 회로](AI 호출 없이 안내·붙여넣기), [전선 정리], `autoLayout`, 표시기 잔상, 불러오기 버그 수정, 예제 36개(부품 220가지 모두 사용)
+✓ 오류 알림: 경고에 부품 id(`W_[i][2]`) → 알림 카드 `notifyWarns`(3초 안 반복 X, 전원 꺼짐 제외)·깜박 테두리 `warnRings`·[보기]/점검 목록 클릭 `focusComp`
+✓ PCB 탭(VM='pcb'): `#pcbbar`·`#pw`·`#pside`. SCH+`schNets`로 넷, IC VCC/GND 강제 전원망, J1 전원 헤더 자동, clk→헤더(OUT,GND). `fpDef`(mm), `PCB={w,h,fps[{key,x,y,rot}],tr[{l,w,a,b}],vias,clr,tw}` 저장 키 'pcb'·파일 `pcb`. `pcalc`/`pcbDRC`(캐시), `pcbAutoRoute`/`routeOnce`(1.27mm A*, 비아, 4회 재시도, 8초 제한), 손 배선 `routeClick`(V=비아), `pcbGerbers`+`makeZip`(거버6+드릴+BOM+pos+README), SVG. loadComps 때 PCB 비움
+✓ 연결 체크 막대: `#bcbar`/`#scbar`(진행·[초기화] 두 번·[끝내기]), 확대 버튼 위 ✓ `#hchk`/`#schk2`(휴대폰에서 도구 막대 끝 버튼 안 보이던 문제). `chkBar`·`chkReset`
+✓ 순서 카드: 체크 막대 [순서 카드] → `#plan`. `planSteps` = 부품 카드(INST→IC→표시기→나머지) + 연결 카드(핀의 줄 `stripOf`=baseRep에서 나가는 전선을 이어서 따라감, 전선 1회씩). `planOverlay`·`planShow`(카드 위 화면에 맞춰 확대), [다 했어요]=c.done. body.planon이면 막대 숨김·토스트 위로
+✓ 내려받기: `saveAny` = downloads 기능 → 휴대폰 공유 창(navigator.share) → 틀 안이면 `showFallback`(#fbDlg [전체 복사]) → a[download](터치는 octet-stream). `saveBinFile`도 saveAny
+✓ 깃허브 페이지 켜져 있음(공개 저장소, main push 1분 뒤 자동 배포): https://co2maker-cyber.github.io/3rd-/breadboard/ — README 맨 위·CLAUDE.md에 기재
+✓ 시험 전부 통과: 회귀 45 + verify74 106/106 + verify-parts 111/111 + guide-sync + tests/ui 18종(alerts, check-reset, plan-cards, save-file, pcb-edit, pcb-examples, sweep-* 등)
+✗ 실기기 미검증: 아이폰 핀치·공유 창 저장, 윈도우 크롬 실제 .md 저장
+✗ 거버 외부 뷰어 검증 못 함 — `pip install gerbonara` 권한 거부, 자체 구조 검사만
+△ PCB 자동 배선: 36예제 DRC 오류 0, 못 이음 199/2878(큰 LED·스위치 모음). 0.635mm 격자 시도 → 대각선 간격 0.05mm 위반·50초 → 되돌림
 
 ## 결정사항
-- CAD 안 AI 호출 금지, 안내만 — 사용자 명시 지시
-- 건전지·PSU 있으면 레일 자동 5V 없음(실제와 같게) → lbcd는 PSU 5V를 네 레일에 전선
-- 미사용 게이트 입력은 비워 둠 — 기존 예제와 같은 방식, 경고 없음
-- 14/16세그 '1'의 위 대각선(j) 허용 — 실제 글꼴도 둘 다 씀
-- ASC4-16 자리 0=왼쪽 유지(실제 비슷한 제품은 오른쪽) — 사용자에게 바꿀지 물었으나 답 없음(?)
+- CAD 안 AI 호출 금지 — 사용자 지시
+- `showSaveFilePicker` 안 씀 — 윈도우에서 .md 확장자 빠짐(사용자 스크린샷)
+- PCB 격자 1.27mm 유지 — 0.635mm는 DRC 위반·느림
+- ASC4-16 자리 0=왼쪽 유지 — 사용자에게 물었으나 답 없음(?)
+- 건전지·PSU 있으면 레일 자동 5V 없음, 미사용 게이트 입력 비움 — 실제와 같게
 
 ## 이슈/주의
-- 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **업데이트마다 접속 링크 무조건**(CLAUDE.md에도 적음), 휴대폰 스크린샷 피드백
-- `CLAUDE.md`: 시험→커밋→`git push -u origin ccr-957126bc-kqjtgb`→`git push origin HEAD:main`(ff 아니면 알림), PR 요청 시만. 커밋 끝 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
-- 코드 수정 = Python 문자열 치환(개수 assert). 긴 줄 → `cut -c`
-- 레일은 6의 배수 열 구멍 없음. 시험 스크립트 우회 열도 6의 배수 피할 것(42 실수 있었음)
-- 회귀 비교 주의: 폰트 접속이 되면 각 스크립트 끝 줄이 `errors []`로 나옴(예전엔 TUNNEL 오류 줄이라 grep으로 빠졌음). `errors []`뿐이면 정상
-- 시험 결과 t20은 시간 의존(매번 조금 다름), t13·t25 출력은 이번에 바뀐 게 정상(t25 31→36)
-- 사용자가 "안 바뀜" 하면 먼저 미리보기 새로고침·[AI 회로] 창 제목 옆 버전표시 확인 안내
+- 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **업데이트마다 아티팩트 링크 무조건**, main 반영 시 깃허브 페이지 주소도, 휴대폰·PC 스크린샷 피드백
+- CLAUDE.md: 시험→커밋→`git push -u origin ccr-957126bc-kqjtgb`→`git push origin HEAD:main`(ff 아니면 알림), PR은 요청 시만. 커밋 끝 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
+- 코드 수정 = Python 문자열 치환(개수 assert). 긴 줄은 `cut -c`
+- 레일은 6의 배수 열 구멍 없음 — 시험 우회 열도 피할 것
+- 회귀: 각 스크립트 끝 줄이 `errors []`면 정상(폰트 접속 되면 나옴). t20은 시간 의존
+- iframe 시험은 setContent 말고 임시 wrapper .html 파일로(about:blank는 file:// 못 띄움)
 - 아티팩트 재게시: 같은 file_path, 새 대화 첫 게시는 거절 후 재시도. 바꾸면 `APP_VER` 올리기
+- "안 바뀜" → 새로고침·[AI 회로] 창 버전표시 확인 안내
 
 ## 다음 할 일
-1. 사용자 피드백 대기(직전 요청: 연결 체크 초기화 + 핀에서 이어지는 전선 순서 카드, 완료·게시)
-2. PCB 개선 후보: 자동 배선 성공률(빽빽한 회로), 구리 채우기(GND 면), 부품 뒷면 배치, 실크 글자 크기, 3D 미리보기
-3. 미답: ASC4-16 자리 순서를 실제처럼 0=오른쪽으로?
-4. 변경 후: 회귀+verify74+verify-parts+tests/ui 전체 → 커밋 → 두 브랜치 push → 아티팩트 재게시 + 링크
+1. 사용자 피드백 대기(직전: 안내서 .md 컴퓨터 내려받기 고침 → main·게시 완료)
+2. PCB 개선 후보: 자동 배선 성공률, GND 구리 채우기, 뒷면 부품, 3D 미리보기
+3. 미답: ASC4-16 자리 0=오른쪽으로 바꿀지(바꾸면 예제 ledasc 수정)
+4. 변경마다: 회귀+verify74+verify-parts+guide-sync+tests/ui 전체 → 커밋 → 두 브랜치 push → 아티팩트 재게시 → 링크 2개 안내
 
 ## 참조
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `breadboard/FILE-FORMAT.md` / `breadboard/README.md` / `breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` / `/home/user/3rd-/HANDOFF.md`
-- 시험(저장소): `node breadboard/tests/verify74.js`, `node breadboard/tests/verify-parts.js -v`, `node breadboard/tests/guide-sync.js`, `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(sweep-examples·sch-to-board 각 수 분)
-- 시험(스크래치패드, 소실 가능): `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` t*.js 회귀, 기준 `reg8.txt`, `real.js <예제키>`(겹침·저항 길이)
-- 회귀 명령: `cd <스크래치패드> && for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31 t32 t33 t34 t35 t36 t37 t38 t39 t40 t41 t42 t43 t44 t45 t46 t47 t48 t49 t50 t53 t54; do node $t.js 2>&1 | grep -v TUNNEL | tail -1; done`
-- 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제: 끝에 `#lg2` `#lbcd` 등)
-- 브랜치: `ccr-957126bc-kqjtgb` = main `0de6032`
+- 시험: `node breadboard/tests/verify74.js`, `node breadboard/tests/verify-parts.js`, `node breadboard/tests/guide-sync.js`(고치면 `--fix`), `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(전체 약 15분, 백그라운드)
+- 회귀(스크래치패드, 소실 가능): `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` t*.js, 기준 `reg8.txt` — `for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31 t32 t33 t34 t35 t36 t37 t38 t39 t40 t41 t42 t43 t44 t45 t46 t47 t48 t49 t50 t53 t54; do node $t.js 2>&1 | grep -v TUNNEL | tail -1; done`
+- 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ (예제는 끝에 `#lg2` 등)
+- 깃허브 페이지: https://co2maker-cyber.github.io/3rd-/breadboard/
+- 브랜치: `ccr-957126bc-kqjtgb` = main `dc92878`
