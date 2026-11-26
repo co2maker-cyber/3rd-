@@ -7,7 +7,7 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
   const px=k=>S.comps.filter(c=>c.t==='px'&&c.kind===k),v=h=>SIM.vOf(SIM.netOf[HOLES.get(h).i]),lit=c=>!!(SIM.led.get(c.id)||{}).lit;
   const ledOf=h=>{const n=SIM.netOf[HOLES.get(h).i];return S.comps.find(c=>c.t==='led'&&S.comps.some(r=>r.t==='res'&&r.pins.some(x=>SIM.netOf[HOLES.get(x).i]===n)&&r.pins.some(x=>SIM.netOf[HOLES.get(x).i]===SIM.netOf[HOLES.get(c.pins[0]).i])));};
   const [d1,d2]=px('d4148');T('바르게 꽂은 1N4148 → LED 켜짐',lit(ledOf(d1.pins[1])));T('거꾸로 꽂은 1N4148 → LED 꺼짐',!lit(ledOf(d2.pins[0])));
-  const drop=k=>{const c=px(k)[0];return v(c.pins[0])-v(c.pins[1]);};const g=drop('dge'),s=drop('d5819'),r=drop('d4007');T('순방향 전압 게르마늄 < 쇼트키 < 실리콘',g<s&&s<r,`${g.toFixed(2)} < ${s.toFixed(2)} < ${r.toFixed(2)}V`);
+  const drop=k=>{const c=px(k)[0];return v(c.pins[0])-v(c.pins[1]);};const g=drop('dge'),s=drop('d5819'),r=drop('d4007');T('순방향 전압: 게르마늄·쇼트키 < 실리콘 (약 9mA에서. 게르마늄은 작은 전류에서만 가장 낮음)',g<r&&s<r,`${g.toFixed(2)} < ${s.toFixed(2)} < ${r.toFixed(2)}V`);
   const br=px('brdg')[0];T('브리지: 입력을 뒤집어 넣어도 + 단자가 +',v(br.pins[0])-v(br.pins[2])>3,(v(br.pins[0])-v(br.pins[2])).toFixed(2)+'V');
   const z=px('dz51')[0],vz=v(z.pins[1]);T('제너 12V → 5.1V 근처',vz>5&&vz<5.4,vz.toFixed(2)+'V');
   T('경고 없음(역전압 다이오드가 있어 COM 알림도 없음)',!SIM.warns.length,SIM.warns.map(w=>w[1].slice(0,40)).join('|'));
