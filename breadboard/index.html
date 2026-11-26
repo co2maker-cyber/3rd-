@@ -1,12 +1,25 @@
 <!doctype html>
+<!--
+  브레드보드 CAD — breadboard/index.html
+  Copyright (c) 2026 co2maker-cyber. All rights reserved.
+
+  1. 라이선스: 코드·화면 구성·예제 회로 36종·안내서(FILE-FORMAT.md)의 저작권은 저작자에게 있습니다.
+     저작자의 사전 서면 동의 없이 복제·수정·재배포·상업적 이용을 금합니다.
+     (오픈소스로 공개하기로 하면 이 항목을 MIT 등으로 바꾸고 LICENSE 파일을 둡니다.)
+  2. 상표: 74LS00·74HC00·NE555·CD4511 등 부품 번호와 핀 배열은 교육·설계 호환성 안내를 위한
+     기술적 표기이며, 각 제조사의 등록 상표권을 침해할 의도가 없습니다. 제조사 로고는 쓰지 않습니다.
+  3. 외부 리소스: 외부 글꼴·라이브러리·아이콘·이미지 없음. 모두 이 파일 안에서 직접 작성(시스템 기본 글꼴 사용).
+     ZIP 묶기(makeZip·crc32), PCB 자동 배선(A*), 거버(RS-274X)·드릴(Excellon) 생성, 실크 선 글꼴은
+     공개 표준 규격만 보고 직접 작성했으며 GPL/AGPL 등 다른 사람의 코드를 넣지 않았습니다.
+  4. 출력물 면책: 거버·드릴·BOM 파일은 설계 보조용입니다. PCB 제작 주문 전에 반드시 외부 거버 뷰어로
+     교차 확인해야 하며, 확인하지 않아 생긴 제작 불량·손실은 저작자가 책임지지 않습니다.
+  자세한 기준: breadboard/COPYRIGHT.md
+-->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>브레드보드 CAD</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* CAD 작업 화면: 위 제목줄·도구 막대, 왼쪽 라이브러리 독, 가운데 격자 캔버스, 오른쪽 속성·점검·객체 독, 아래 명령줄·상태 표시줄 */
 :root{
@@ -15,8 +28,9 @@
   --ok:#1D8F53; --warn:#9A6200; --bad:#C2362F;
   --hi:#E5484D; --lo:#3E63DD; --zz:#9AA3AD; --xx:#E08A00; --sh:#C837AB;
   --grid:#CFD3D9; --grid2:#BCC2CA; --cross:#1C6FD1;
-  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,"D2Coding",monospace;
+  /* 외부 글꼴을 불러오지 않고 기기에 깔린 기본 글꼴만 쓴다(COPYRIGHT.md 7절) */
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"D2Coding","Noto Sans Mono","Liberation Mono",monospace;
   color-scheme:light;
   --sink:var(--fg);
 }
@@ -3304,7 +3318,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li>IC를 선택하면 <b>데이터시트 기준 핀 배치도</b>가 나오고, 보드 위 다리에도 핀 이름이 표시돼요.</li>
 <li><b>저장 · 불러오기</b>: 도구 막대의 [저장](<kbd>Ctrl</kbd>+<kbd>S</kbd>)이나 [열기]를 누르면 창이 떠요. 이름을 붙여 <b>이 기기에 저장</b>해 두었다가 목록에서 불러오거나, <b>파일(.json)로 내려받아</b> 보관하고 다시 불러올 수 있어요. 지금 작업 중인 회로는 따로 저장하지 않아도 자동으로 기억돼요.</li>
 <li><b>일시 정지</b>(<kbd>P</kbd>): 도구 막대의 [일시 정지]를 누르면 클럭·함수 발생기·커패시터·오실로스코프의 시간이 멈추고, 다시 누르면 멈춘 곳에서 이어져요.</li></ol>
-<p class="legal"><b>안내</b> · 이 시뮬레이터는 공부를 돕는 가상 실험 도구예요. 실제 부품의 전기적 특성·발열·제조사별 세부 규격을 완전히 대신하지 않아요. 74LS00·74HC00·NE555·CD4511 같은 이름은 널리 쓰이는 범용 부품 번호이고, 특정 제조사의 공식 제품이거나 제휴·보증된 소프트웨어가 아니에요. 각 회사의 상표는 해당 권리자에게 있어요. 핀 배치도와 설명은 공개된 표준 규격(핀 번호·논리표)을 바탕으로 직접 그리고 썼어요. 글꼴은 IBM Plex Sans KR과 JetBrains Mono(SIL Open Font License 1.1)를 써요.</p>
+<p class="legal"><b>안내</b> · 이 시뮬레이터는 공부를 돕는 가상 실험 도구예요. 실제 부품의 전기적 특성·발열·제조사별 세부 규격을 완전히 대신하지 않아요. 74LS00·74HC00·NE555·CD4511 같은 이름은 널리 쓰이는 범용 부품 번호이고, 특정 제조사의 공식 제품이거나 제휴·보증된 소프트웨어가 아니에요. 각 회사의 상표는 해당 권리자에게 있어요. 핀 배치도와 설명은 공개된 표준 규격(핀 번호·논리표)을 바탕으로 직접 그리고 썼어요. 글꼴은 기기에 깔린 기본 글꼴을 쓰고, 외부 글꼴·라이브러리·이미지는 쓰지 않아요. PCB 내보내기 파일은 설계 보조용이라 주문 전에 외부 거버 뷰어로 꼭 다시 확인하세요.</p>
 <div class="legend"><span><span class="lv H">1</span>HIGH 5V</span><span><span class="lv L">0</span>LOW 0V</span><span><span class="lv Z">—</span>연결 안 됨</span><span><span class="lv X">?</span>알 수 없음</span><span><span class="lv S">!</span>단락</span></div>
 <p class="desc" style="margin-top:10px">회로는 브라우저에 자동 저장돼요. 다른 기기로 옮기려면 [파일로 저장]을 쓰세요.</p>`;}
 
@@ -4517,7 +4531,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · md 내려받기';
+const APP_VER='2026-11-26 · 저작권 정리';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -5954,7 +5968,7 @@ function renderPcbSide(C,E){const box=$('pside');if(box.hidden)return;let h='';
     <label>최소 간격 <select id="pClr">${[.15,.2,.25,.3,.4].map(v=>`<option value="${v}"${Math.abs(v-PCB.clr)<1e-6?' selected':''}>${v}mm</option>`).join('')}</select></label></div>
     <div class="row"><button class="btn" data-pa="fitb">보드 크기를 부품에 맞추기</button></div>`;
   const bad=E.filter(e=>e.k==='bad');
-  h+=`<h4>점검 (DRC) <span class="cnt${bad.length?' b':E.length?' w':''}">${E.length}</span></h4><ul class="warns">${E.length?E.map((e,i)=>`<li class="${e.k}"${e.x!=null?` data-pe="${i}" title="눌러서 그 자리 보기"`:''}>${esc(e.t)}</li>`).join(''):`<li class="ok">${C.fps.length?'문제가 없어요. [내보내기]로 거버 파일을 받아 PCB 제작을 맡길 수 있어요.':'부품이 없어요. 브레드보드나 회로도에 회로를 만들면 여기로 들어와요.'}</li>`}</ul>`;
+  h+=`<h4>점검 (DRC) <span class="cnt${bad.length?' b':E.length?' w':''}">${E.length}</span></h4><ul class="warns">${E.length?E.map((e,i)=>`<li class="${e.k}"${e.x!=null?` data-pe="${i}" title="눌러서 그 자리 보기"`:''}>${esc(e.t)}</li>`).join(''):`<li class="ok">${C.fps.length?'문제가 없어요. [내보내기]로 거버 파일을 받을 수 있어요. 주문 전에 PCB 업체의 거버 미리보기나 외부 거버 뷰어로 꼭 다시 확인하세요(설계 보조용).':'부품이 없어요. 브레드보드나 회로도에 회로를 만들면 여기로 들어와요.'}</li>`}</ul>`;
   box.querySelector('.pbody').innerHTML=h;
   box.querySelectorAll('[data-pa]').forEach(b=>b.onclick=()=>pAction(b.dataset.pa));
   box.querySelectorAll('[data-pe]').forEach(li=>li.onclick=()=>{const e=E[+li.dataset.pe];const {w,h}=pcbSize();pv.s=Math.max(pv.s,14);pv.x=e.x-w/pv.s/2;pv.y=e.y-h/pv.s/2;renderPcb();});
@@ -6022,7 +6036,7 @@ function pcbGerbers(){const C=pcalc(),H_=PCB.h,gc=v=>Math.round(v*1e6),X=x=>'X'+
   drl+='%\nG90\nG05\n';for(const [t,k] of tl){drl+=`T${t}\n`;for(const [x,y] of drills.get(k))drl+=`X${x.toFixed(3)}Y${(H_-y).toFixed(3)}\n`;}drl+='T0\nM30\n';
   const bom='참조,값,발자국\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return[P.ref,P.D.val,P.D.pkg].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');}).join('\n')+'\n';
   const pos='참조,X(mm),Y(mm),회전\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return`${P.ref},${f.x.toFixed(3)},${(H_-f.y).toFixed(3)},${f.rot}`;}).join('\n')+'\n';
-  const readme=`브레드보드 CAD에서 만든 PCB 제작 파일\n\n보드 크기: ${PCB.w} × ${PCB.h} mm, 2층, 스루홀(THT) 부품\n최소 선 굵기: ${Math.min(PCB.tw,...PCB.tr.map(t=>t.w)).toFixed(2)} mm, 최소 간격: ${PCB.clr} mm, 비아 ${VIAD}mm / 드릴 ${VIADR}mm\n\n파일\n- *-F_Cu.gtl  앞면 구리\n- *-B_Cu.gbl  뒷면 구리\n- *-F_Mask.gts / *-B_Mask.gbs  솔더 마스크(패드만 열림, 비아는 덮음)\n- *-F_SilkS.gto  앞면 실크(부품 모양·이름)\n- *-Edge_Cuts.gm1  보드 외곽\n- *.drl  드릴(Excellon, mm)\n- *-BOM.csv  부품표, *-pos.csv 부품 위치\n\n주문 전에 PCB 업체의 거버 미리보기로 한 번 더 확인하세요.\n`;
+  const readme=`브레드보드 CAD에서 만든 PCB 제작 파일\n\n보드 크기: ${PCB.w} × ${PCB.h} mm, 2층, 스루홀(THT) 부품\n최소 선 굵기: ${Math.min(PCB.tw,...PCB.tr.map(t=>t.w)).toFixed(2)} mm, 최소 간격: ${PCB.clr} mm, 비아 ${VIAD}mm / 드릴 ${VIADR}mm\n\n파일\n- *-F_Cu.gtl  앞면 구리\n- *-B_Cu.gbl  뒷면 구리\n- *-F_Mask.gts / *-B_Mask.gbs  솔더 마스크(패드만 열림, 비아는 덮음)\n- *-F_SilkS.gto  앞면 실크(부품 모양·이름)\n- *-Edge_Cuts.gm1  보드 외곽\n- *.drl  드릴(Excellon, mm)\n- *-BOM.csv  부품표, *-pos.csv 부품 위치\n\n주문 전에 PCB 업체의 거버 미리보기나 외부 거버 뷰어로 반드시 교차 확인하세요.\n\n면책: 이 파일들은 설계 보조용입니다. 확인하지 않아 생긴 제작 불량·손실은 저작자가 책임지지 않습니다.\n부품 번호는 호환성 안내를 위한 기술적 표기이며 각 제조사의 상표권을 침해할 의도가 없습니다.\nCopyright (c) 2026 co2maker-cyber. 브레드보드 CAD에서 만든 파일.\n`;
   return{cu:{F:layer('Copper,L1,Top',cu('F')),B:layer('Copper,L2,Bot',cu('B'))},mask:{F:layer('Soldermask,Top',mask),B:layer('Soldermask,Bot',mask)},silk:layer('Legend,Top',silk),edge:layer('Profile,NP',edge),drl,bom,pos,readme};}
 /* 아주 작은 선 글꼴(숫자·영문 대문자): 실크에 부품 이름을 쓴다. 글자 한 칸은 가로 1 × 세로 2, 꺾은선 목록 */
 const SF={'0':[[0,0,1,0,1,2,0,2,0,0],[1,0,0,2]],'1':[[.2,.4,.5,0,.5,2],[.2,2,.8,2]],'2':[[0,0,1,0,1,1,0,1,0,2,1,2]],'3':[[0,0,1,0,1,2,0,2],[0,1,1,1]],'4':[[0,0,0,1,1,1],[1,0,1,2]],

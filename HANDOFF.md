@@ -16,6 +16,11 @@
 ✗ 거버 외부 뷰어 검증 못 함 — `pip install gerbonara` 권한 거부, 자체 구조 검사만
 △ PCB 자동 배선: 36예제 DRC 오류 0, 못 이음 199/2878(큰 LED·스위치 모음). 0.635mm 격자 시도 → 대각선 간격 0.05mm 위반·50초 → 되돌림
 
+## 사용자 지시 기록 (사람의 창작 기여 — COPYRIGHT.md 10절, 계속 덧붙일 것)
+- ~11-24: 브레드보드+회로도 시뮬레이터 기능 방향, CAD 안 AI 직접 호출 금지(안내만), 부품 220종 모두 예제에 쓰기, 자동 main 반영
+- 11-25: 오류 난 부품 알림, PCB 설계 기능, 업데이트마다 접속 링크, 깃허브 페이지로 바로 열기
+- 11-26: 브레드보드 연결 체크 + 초기화 버튼, 핀에서 이어지는 전선을 카드로 순서대로, 안내 md 내려받기 고침(윈도우 저장 창 스크린샷), 전보체 진행 메모, 「저작권법 준수 가이드」(8항목) 적용
+
 ## 결정사항
 - CAD 안 AI 호출 금지 — 사용자 지시
 - `showSaveFilePicker` 안 씀 — 윈도우에서 .md 확장자 빠짐(사용자 스크린샷)
@@ -40,6 +45,7 @@
 4. 변경마다: 회귀+verify74+verify-parts+guide-sync+tests/ui 전체 → 커밋 → 두 브랜치 push → 아티팩트 재게시 → 링크 2개 안내
 
 ## 참조
+- 저작권: `breadboard/COPYRIGHT.md` 0절 고지·3절 자체 구현 표·11절 체크리스트. 외부 글꼴·라이브러리 없음 유지. 부품·문구·에셋 추가 땐 5절 점검
 - 파일: `/home/user/3rd-/breadboard/index.html` 본체 / `breadboard/FILE-FORMAT.md` / `breadboard/README.md` / `breadboard/COPYRIGHT.md` / `/home/user/3rd-/CLAUDE.md` / `/home/user/3rd-/HANDOFF.md`
 - 시험: `node breadboard/tests/verify74.js`, `node breadboard/tests/verify-parts.js`, `node breadboard/tests/guide-sync.js`(고치면 `--fix`), `for f in breadboard/tests/ui/*.js; do node $f | tail -1; done`(전체 약 15분, 백그라운드)
 - 회귀(스크래치패드, 소실 가능): `/tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/` t*.js, 기준 `reg8.txt` — `for t in t t5 t6 t7 t8 t11 t13 t14 t15 t16 t18 t19 t20 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30 t31 t32 t33 t34 t35 t36 t37 t38 t39 t40 t41 t42 t43 t44 t45 t46 t47 t48 t49 t50 t53 t54; do node $t.js 2>&1 | grep -v TUNNEL | tail -1; done`
