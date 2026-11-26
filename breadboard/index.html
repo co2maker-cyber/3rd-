@@ -1139,10 +1139,10 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `rbcd` | 로터리 DIP (0~9) | dip | 0,1,2 | 1 C 4 8 C2 2 | `s:0` |
 | `rhex` | 로터리 DIP (0~15) | dip | 0,1,2 | 1 C 4 8 C2 2 | `s:0` |
 | `enc` | 로터리 인코더 | dip | 0,1,2 | A C B S2 NC S1 | `s:0` |
-| `sel1` | 셀렉터 1극 12단 | dip | 0~6 | C1 A1…A12 NC | `s:0` |
-| `sel2` | 셀렉터 2극 6단 | dip | 0~6 | C1 C2 A1…A6 B1…B6 | `s:0` |
-| `sel3` | 셀렉터 3극 4단 | dip | 0~7 | C1 C2 C3 A1…A4 B1…B4 C1…C4 NC | `s:0` |
-| `sel4` | 셀렉터 4극 3단 | dip | 0~7 | C1…C4 A1…A3 B1…B3 C1…C3 D1…D3 | `s:0` |
+| `sel1` | 셀렉터 1극 12단 | dip | 0~6 | COM1 A1…A12 NC | `s:0` |
+| `sel2` | 셀렉터 2극 6단 | dip | 0~6 | COM1 COM2 A1…A6 B1…B6 | `s:0` |
+| `sel3` | 셀렉터 3극 4단 | dip | 0~7 | COM1 COM2 COM3 A1…A4 B1…B4 C1…C4 NC | `s:0` |
+| `sel4` | 셀렉터 4극 3단 | dip | 0~7 | COM1…COM4 A1…A3 B1…B3 C1…C3 D1…D3 | `s:0` |
 | `d4148` | 1N4148 신호용 다이오드 | row | 0,3 | A(애노드) K(캐소드) | |
 | `d4007` | 1N4007 정류 다이오드 | row | 0,4 | A K | |
 | `d5819` | 1N5819 쇼트키 다이오드 | row | 0,4 | A K | |
@@ -2357,13 +2357,13 @@ const potProps=1;
 const POTD='Pin 1(왼쪽)이 시계 반대 방향 끝, 가운데 Pin 2가 와이퍼(움직이는 접점), Pin 3이 시계 방향 끝이에요. 양 끝을 5V와 GND에 잇고 와이퍼에서 나오는 전압을 쓰면 돌리는 만큼 전압이 바뀌어요(전압 나누기). 보드에서 몸통 왼쪽·오른쪽을 누르면 10%씩 돌아가고, [속성]에서 정확히 맞출 수 있어요.';
 const potTap=(c,side)=>{c.pos=Math.max(0,Math.min(1,Math.round(((c.pos??.5)+(side<0?-.1:.1))*100)/100));return true;};
 for(const [k,title,size,col,extra] of [['pot9','패널 회전형 가변저항 9mm (소형)',7,'#3A3F47',''],['pot16','패널 회전형 가변저항 16mm (표준)',9,'#2B2F35','가장 흔한 크기로, 패널에 나사로 고정하고 손잡이를 끼워 써요. '],['pot24','패널 회전형 가변저항 24mm (대형)',12,'#1E2124','산업용 제어반·악기 앰프처럼 큰 전력(0.25~0.5W)에 써요. ']])
-  pxDef({k,sub:'pot',pre:'VR',title,lay:'row',dc:[0,1,2],pins:['1 (CCW)','2 (와이퍼)','3 (CW)'],init:()=>({ohms:10000,taper:'B',pos:.5}),pot:1,
+  pxDef({k,...(k==='pot9'?{}:{pp:5.08}),sub:'pot',pre:'VR',title,lay:'row',dc:[0,1,2],pins:['1 (CCW)','2 (와이퍼)','3 (CW)'],init:()=>({ohms:10000,taper:'B',pos:.5}),pot:1,
     res:c=>potRes(c,0,1,2),tap:potTap,draw:potDraw(size,col),desc:extra+POTD});
-pxDef({k:'pot16d',sub:'pot',pre:'VR',title:'패널 회전형 가변저항 16mm 2련 (스테레오)',lay:'dip',cols:[0,1,2],pins:['A1','A2 (와이퍼)','A3','B3','B2 (와이퍼)','B1'],init:()=>({ohms:10000,taper:'A',pos:.5}),pot:1,
+pxDef({k:'pot16d',dpp:5.08,sub:'pot',pre:'VR',title:'패널 회전형 가변저항 16mm 2련 (스테레오)',lay:'dip',cols:[0,1,2],pins:['A1','A2 (와이퍼)','A3','B3','B2 (와이퍼)','B1'],init:()=>({ohms:10000,taper:'A',pos:.5}),pot:1,
   res:c=>[...potRes(c,0,1,2),...potRes(c,5,4,3)],tap:potTap,
   draw:(c,ph)=>{const x=(ph[0].x+ph[2].x)/2,y=(ph[0].y+ph[3].y)/2;let s='';for(const p of ph)s+=leg(p,p.x,y+(p.y>y?8:-8));return s+`<rect x="${x-22}" y="${y-16}" width="44" height="32" rx="3" fill="#5C6670"/>`+knob(x,y,11,potAng(c));},
-  desc:'가변저항 두 개(A·B)가 한 축에 붙어 같이 돌아가요. 스테레오 음량처럼 두 채널을 똑같이 바꿀 때 써요(보통 A 커브). 아래 1~3번이 A 단, 위 4~6번이 B 단이에요. '+POTD});
-pxDef({k:'pot16s',sub:'pot',pre:'VR',title:'스위치 내장 가변저항 16mm',lay:'row',dc:[0,1,2,4,5],pins:['1 (CCW)','2 (와이퍼)','3 (CW)','S1','S2'],init:()=>({ohms:10000,taper:'A',pos:.5}),pot:1,
+  desc:'가변저항 두 개(A·B)가 한 축에 붙어 같이 돌아가요. 스테레오 음량처럼 두 채널을 똑같이 바꿀 때 써요(보통 A 커브). 아래 줄 A1~A3이 A 단, 위 줄 B1~B3이 B 단이에요(A1 위가 B1). '+POTD});
+pxDef({k:'pot16s',pp:5.08,sub:'pot',pre:'VR',title:'스위치 내장 가변저항 16mm',lay:'row',dc:[0,1,2,4,5],pins:['1 (CCW)','2 (와이퍼)','3 (CW)','S1','S2'],init:()=>({ohms:10000,taper:'A',pos:.5}),pot:1,
   res:c=>potRes(c,0,1,2),contacts:c=>(c.pos??.5)>.02?[[3,4]]:[],tap:potTap,
   draw:(c,ph)=>{const x=(ph[0].x+ph[4].x)/2,y=ph[0].y-14;let s='';for(const p of ph)s+=leg(p,p.x,y+6);return s+`<rect x="${x-50}" y="${y-8}" width="100" height="14" rx="2" fill="#5C6670"/>`+knob(ph[1].x,y,10,potAng(c))+`<text x="${ph[3].x+10}" y="${y+3}" font-size="6" font-weight="700" fill="#fff" text-anchor="middle">${(c.pos??.5)>.02?'ON':'OFF'}</text>`;},
   desc:'끝까지 왼쪽으로 돌리면 "딸깍" 하고 꺼지는 스위치(S1·S2)가 붙은 가변저항이에요. 옛 라디오의 전원+음량 손잡이처럼 써요. 0%보다 조금이라도 돌리면 S1·S2가 이어져요. '+POTD});
@@ -2415,7 +2415,7 @@ pxDef({k:'slide1',sub:'sw',title:'슬라이드 스위치 SPDT (3핀)',lay:'row',
   desc:'손잡이를 밀어 가운데 핀(공통)을 왼쪽(1번) 또는 오른쪽(3번)에 잇는 스위치예요(1극 2투). 전원·모드 전환에 써요. 누를 때마다 반대쪽으로.'});
 pxDef({k:'slide2',sub:'sw',title:'슬라이드 스위치 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
   draw:(c,ph)=>{const B=dipBody(ph,'#3A3F47');return B.s+`<rect x="${B.x-14}" y="${B.y-3}" width="28" height="6" fill="#111"/><rect x="${B.x+(c.s?3:-13)}" y="${B.y-6}" width="10" height="12" rx="1" fill="#E9ECEF"/>`;},
-  desc:'스위치 두 개(2극)가 함께 움직이는 슬라이드 스위치예요. 아래 줄 가운데(2번)와 위 줄 가운데(5번)가 공통이고, 손잡이가 왼쪽이면 1·6번, 오른쪽이면 3·4번에 이어져요.'});
+  desc:'스위치 두 개(2극)가 함께 움직이는 슬라이드 스위치예요. 아래 줄 가운데(2번)와 위 줄 가운데(5번)가 공통이고, 손잡이가 왼쪽이면 1·4번, 오른쪽이면 3·6번에 이어져요(1번 위가 4번, 3번 위가 6번).'});
 pxDef({k:'tog1',sub:'sw',title:'토글 스위치 SPST (ON-OFF)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({s:0}),contacts:c=>c.s?[[0,1]]:[],tap:sTap(2),
   draw:(c,ph)=>{const B=bodyAbove(ph,5,10,'#8A9098');return B.s+lever(B.x,B.y-4,c.s,2)+`<circle cx="${B.x}" cy="${B.y}" r="5" fill="#C9CED6" stroke="#666"/>`;},
   desc:'레버를 젖히면 켜지고 반대로 젖히면 꺼지는 스위치예요(1극 1투). 누를 때마다 바뀌어요.'});
@@ -2431,7 +2431,7 @@ pxDef({k:'togm',sub:'sw',title:'토글 스위치 (ON)-OFF-(ON) (순간형)',lay:
   desc:'괄호 (ON)은 "손을 떼면 돌아온다"는 뜻이에요. 레버를 한쪽으로 누르는 동안만 그쪽이 이어지고, 놓으면 가운데(끊김)로 돌아와요. 몸통 왼쪽·오른쪽을 누르고 있으면 돼요.'});
 pxDef({k:'tog4',sub:'sw',title:'토글 스위치 DPDT (ON-ON)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
   draw:(c,ph)=>{const B=dipBody(ph,'#8A9098');return B.s+lever(B.x,B.y-2,c.s,2)+`<circle cx="${B.x}" cy="${B.y+2}" r="6" fill="#C9CED6" stroke="#666"/>`;},
-  desc:'스위치 두 개(2극)가 레버 하나로 함께 바뀌어요. 아래 줄 2번·위 줄 5번이 공통이고, 레버에 따라 1·6번 또는 3·4번에 이어져요.'});
+  desc:'스위치 두 개(2극)가 레버 하나로 함께 바뀌어요. 아래 줄 2번·위 줄 5번이 공통이고, 레버에 따라 1·4번 또는 3·6번에 이어져요(1번 위가 4번).'});
 pxDef({k:'rock1',sub:'sw',title:'로커 스위치 SPST',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({s:0}),contacts:c=>c.s?[[0,1]]:[],tap:sTap(2),
   draw:(c,ph)=>{const B=bodyAbove(ph,8,16,'#1E2124');return B.s+`<rect x="${B.x-14}" y="${B.y-6}" width="28" height="12" rx="2" fill="#3A3F47"/><rect x="${B.x+(c.s?0:-13)}" y="${B.y-5}" width="13" height="10" rx="1.5" fill="${c.s?'#E9ECEF':'#7A8088'}"/><text x="${B.x+(c.s?6.5:-6.5)}" y="${B.y+2.5}" font-size="6" font-weight="700" fill="#111" text-anchor="middle">${c.s?'I':'O'}</text>`;},
   desc:'시소처럼 누르는 큰 전원 스위치예요(I = 켜짐, O = 꺼짐). 실제로는 220V 같은 교류 주전원에 쓰니, 고전압 쪽은 이격 거리를 충분히 두어야 해요.'});
@@ -2440,10 +2440,10 @@ pxDef({k:'rock2',sub:'sw',title:'로커 스위치 SPST (네온 램프 내장, 3�
   desc:'켜면 안의 램프에 불이 들어오는 로커 스위치예요. 1번이 전원 입력, 2번이 출력, N번이 램프의 다른 쪽(보통 GND/중성선)이에요. 켜져 있고 2번과 N번 사이에 전압이 걸리면 빨갛게 빛나요.'});
 pxDef({k:'push2',sub:'sw',title:'푸시 스위치 자기유지형 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],init:()=>({s:0}),contacts:c=>c.s?[[1,2],[4,3]]:[[1,0],[4,5]],tap:sTap(2),
   draw:(c,ph)=>{const B=dipBody(ph,'#3A3F47');return B.s+`<rect x="${B.x-9}" y="${B.y-9}" width="18" height="18" rx="2" fill="${c.s?'#7A8088':'#D9DEE4'}" stroke="#111"/>${c.s?`<rect x="${B.x-5}" y="${B.y-5}" width="10" height="10" fill="#555"/>`:''}`;},
-  desc:'한 번 누르면 들어간 채로 남고(켜짐), 다시 누르면 튀어나오는(꺼짐) 스위치예요. 2극이라 두 회로를 함께 바꿔요(공통 2·5번 → 꺼짐 1·6번, 켜짐 3·4번).'});
+  desc:'한 번 누르면 들어간 채로 남고(켜짐), 다시 누르면 튀어나오는(꺼짐) 스위치예요. 2극이라 두 회로를 함께 바꿔요(공통 2·5번 → 꺼짐 1·4번, 켜짐 3·6번).'});
 pxDef({k:'pushm',sub:'sw',title:'푸시 스위치 순간형 DPDT (6핀)',lay:'dip',cols:[0,1,2],pins:['1','2 (공통)','3','6','5 (공통)','4'],mom:1,init:()=>({}),contacts:(c,r)=>r&&r.pr?[[1,2],[4,3]]:[[1,0],[4,5]],
   draw:(c,ph,r)=>{const B=dipBody(ph,'#3A3F47');return B.s+`<rect x="${B.x-9}" y="${B.y-9}" width="18" height="18" rx="2" fill="${r&&r.pr?'#7A8088':'#E8B820'}" stroke="#111"/>`;},
-  desc:'누르는 동안만 바뀌는 2극 푸시 스위치예요(놓으면 돌아옴). 공통 2·5번이 평소엔 1·6번, 누르는 동안 3·4번에 이어져요.'});
+  desc:'누르는 동안만 바뀌는 2극 푸시 스위치예요(놓으면 돌아옴). 공통 2·5번이 평소엔 1·4번, 누르는 동안 3·6번에 이어져요.'});
 for(const n of [4,8])pxDef({k:'dip'+n,sub:'sw',title:`DIP 스위치 ${n}극`,lay:'dip',cols:rng(n,i=>i),pins:rng(2*n,i=>String(i+1)),init:()=>({bits:rng(n,()=>0)}),
   contacts:c=>rng(n,i=>i).filter(i=>(c.bits||[])[i]).map(i=>[i,2*n-1-i]),
   tap:(c,side)=>{const i=Math.max(0,Math.min(n-1,Math.round((side+1)/2*(n-1))));c.bits=(c.bits||rng(n,()=>0)).slice();c.bits[i]=c.bits[i]?0:1;return true;},
@@ -2460,14 +2460,14 @@ pxDef({k:'enc',sub:'sw',pre:'ENC',title:'기계식 로터리 인코더 (푸시 �
   draw:(c,ph,r)=>{const B=dipBody(ph,'#5C6670');return B.s+knob(B.x,B.y,11,(c.s||0)*Math.PI/10,r&&r.pr?'#555':'#2B2F35')+`<text x="${B.x0-4}" y="${B.y+3}" font-size="7" fill="#fff">◀</text><text x="${B.x0+38}" y="${B.y+3}" font-size="7" fill="#fff">▶</text>`;},
   desc:'끝없이 돌아가며 딸깍거릴 때마다 A·B 두 접점이 공통(C)과 차례로 이어졌다 끊겨요. A가 먼저 바뀌는지 B가 먼저인지로 도는 방향을 알아요(직교 위상). 손잡이를 누르면 S1·S2 스위치가 이어져요. 몸통 왼쪽을 누르면 반시계, 오른쪽은 시계 방향 한 칸, 가운데를 누르고 있으면 푸시. 실제로는 접점이 튀니 10kΩ+10nF로 걸러 줘요.'});
 const SELK=[['sel1','1극 12단',1,12],['sel2','2극 6단',2,6],['sel3','3극 4단',3,4],['sel4','4극 3단',4,3]];
-for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'C'+(i+1)),...rng(P*T,i=>String.fromCharCode(65+((i/T)|0))+((i%T)+1))];if(pins.length%2)pins.push('NC');
+for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'COM'+(i+1)),...rng(P*T,i=>String.fromCharCode(65+((i/T)|0))+((i%T)+1))];if(pins.length%2)pins.push('NC');
   pxDef({k,sub:'sw',title:`로터리 셀렉터 스위치 (${nm})`,lay:'dip',cols:rng(pins.length/2,i=>i),pins,init:()=>({s:0}),
     contacts:c=>rng(P,p=>[p,P+p*T+((c.s||0)%T)]),tap:sTap(T),
     draw:(c,ph)=>{const B=dipBody(ph,'#2B2F35');return B.s+knob(B.x,B.y,12,(-150+300*((c.s||0)%T)/Math.max(1,T-1))*Math.PI/180,'#3A3F47')+`<text x="${B.x+20}" y="${B.y+3}" font-size="7" font-weight="700" fill="#fff">${((c.s||0)%T)+1}</text>`;},
-    desc:`손잡이를 돌려 ${T}자리 중 하나를 고르는 스위치예요(${P}극: 공통 ${pins.slice(0,P).join('·')}가 함께 돌아요). 공통 C${P>1?'n':''}이 그 극의 ${T}개 접점(${P>1?'A1~, B1~ …':'A1~A12'}) 중 고른 자리에 이어져요. 계측기 범위·입력 채널 고르기에 써요. 누를 때마다 다음 자리로(실제로는 옮기는 순간 잠깐 끊겼다 이어지는 방식이 많아요).`});}
+    desc:`손잡이를 돌려 ${T}자리 중 하나를 고르는 스위치예요(${P}극: 공통 ${pins.slice(0,P).join('·')}가 함께 돌아요). 공통 COM${P>1?'n':'1'}이 그 극의 ${T}개 접점(${P>1?'A1~, B1~ …':'A1~A12'}) 중 고른 자리에 이어져요. 계측기 범위·입력 채널 고르기에 써요. 누를 때마다 다음 자리로(실제로는 옮기는 순간 잠깐 끊겼다 이어지는 방식이 많아요).`});}
 // ── 다이오드: dio → [[애노드 핀, 캐소드 핀, 특성]]. 특성(DIOM)은 데이터시트에 흔히 나오는 대표 특성점(순방향 전압·전류)에서 이 프로그램이 직접 어림한 꺾은선 모델:
 //    순방향 전압 vf를 넘으면 (V − vf) ÷ rs만큼 흐르고, 제너는 거꾸로 vz를 넘으면 (V − vz) ÷ rz만큼 흐른다. vr 역전압 한계, imax 순방향 전류 한계(평균)
-const DIOM={sig:{vf:.6,rs:3.5,vr:100,imax:.3,nm:'신호용'},rect:{vf:.68,rs:.25,vr:1000,imax:1,nm:'정류용'},sch:{vf:.27,rs:.18,vr:40,imax:1,nm:'쇼트키'},
+const DIOM={sig:{vf:.6,rs:3.5,vr:100,imax:.2,nm:'신호용'},rect:{vf:.68,rs:.25,vr:1000,imax:1,nm:'정류용'},sch:{vf:.27,rs:.18,vr:40,imax:1,nm:'쇼트키'},
   zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},uf:{vf:.72,rs:.5,vr:1000,imax:1,nm:'초고속 정류용'},ssch:{vf:.28,rs:5,vr:30,imax:.2,nm:'소신호 쇼트키'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'},
   be:{vf:.65,rs:25,vr:6,imax:.05,nm:'베이스-이미터'},be2:{vf:1.3,rs:40,vr:5,imax:.12,nm:'베이스-이미터 (달링턴)'}};
 const DIOD=' 다이오드는 애노드(A)에서 캐소드(K, 띠가 있는 쪽)로만 전류를 흘려요. 시뮬레이터는 순방향 전압을 넘으면 켜지는 꺾은선 모델로 계산해요(실제 곡선의 어림).';
@@ -2493,10 +2493,12 @@ pxDef({k:'brdg',sub:'dio',pre:'BR',title:'브리지 정류기 (4핀 DIP, 1A)',la
   desc:'다이오드 4개를 다리(브리지) 모양으로 묶은 부품이에요. 두 ~ 단자에 교류(또는 어느 방향의 직류)를 넣으면 + 단자에 늘 + 가, − 단자에 − 가 나와요(전파 정류). 전류가 다이오드 두 개를 지나서 약 1.4V를 잃어요. 가운데 홈을 걸쳐 꽂아요. 출력에 큰 전해 커패시터를 달면 울퉁불퉁한 전압이 평평해져요.'+LEADN});
 // ── 트랜지스터·MOSFET: tr = {t:'npn'|'pnp'|'nmos'|'pmos', 핀 번호(e·b·c 또는 g·d·s), 정격}. 켜짐·꺼짐만 보는 스위치 모델:
 //    BJT는 베이스-이미터를 다이오드(dio, 약 0.65V)로 계산하고, 베이스 전류가 20µA를 넘으면 컬렉터-이미터가 이어진다(포화)
-//    MOSFET은 게이트-소스 전압이 vth를 넘으면 드레인-소스가 이어진다(게이트로는 전류가 안 흐름). 증폭(선형) 영역은 계산하지 않는다
-//    settle 끝에서 trUpd → 바뀌면 줄 연결부터 다시 계산(릴레이와 같은 방식)
+//    MOSFET은 게이트-소스 전압이 vth를 넘으면 드레인-소스가 이어진다(게이트로는 전류가 안 흐름)
+//    단, 이미터(소스)가 전원·출력(strong)에 바로 붙지 않은 것(팔로워·이미터 저항)은 아날로그 모드(r.an): 접점 없이 analogStep에서
+//    BJT = 컬렉터 전류 beta×베이스 전류(전압 제어 전류원) + 포화(C-E 0.2V), MOSFET = gm×(Vgs−vth−0.5) + 다 켜짐(ron)으로 푼다
+//    스위치 모드는 settle 끝에서 trUpd → 바뀌면 줄 연결부터 다시 계산(릴레이와 같은 방식)
 const TRD={npn:'NPN 트랜지스터',pnp:'PNP 트랜지스터',nmos:'N채널 MOSFET (증가형)',pmos:'P채널 MOSFET (증가형)'};
-const TRN=' 시뮬레이터는 켜짐·꺼짐만 보는 스위치 모델로 계산해요. 켜지면 컬렉터-이미터(드레인-소스)가 이어진 것으로 보고, 증폭(반쯤 켜진) 상태나 전류 한계(hFE)는 계산하지 않아요.';
+const TRN=' 시뮬레이터는 이미터(소스)가 전원·GND에 바로 붙은 스위치 회로는 켜짐·꺼짐(켜지면 C-E·D-S가 이어짐)으로, 이미터 팔로워처럼 이미터(소스)가 저항·부하를 거치는 회로는 hFE(전류 증폭률)·포화 전압 0.2V를 넣은 어림 계산으로 풀어요.';
 const trDot=(x,y,on)=>`<circle cx="${x}" cy="${y}" r="2.4" fill="${on?'#3DDC84':'#30343A'}" stroke="#111" stroke-width=".6"${on?' filter="url(#glow)"':''}/>`;
 // TO-92(반원 기둥): 다리 셋이 한 줄. 평평한 면에 번호
 const to92=lab=>(c,ph,r)=>{const xs=ph.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),y=ph[0].y-10,cx=(x0+x1)/2,w=(x1-x0)/2+7;let s='';for(const p of ph)s+=leg(p,p.x,y);
@@ -2508,39 +2510,37 @@ const BJTN=' NPN은 이미터(E)를 GND에, 부하(LED+저항, 릴레이 코일 
 const BJTP=' PNP는 이미터(E)를 + 에, 부하를 컬렉터(C)와 GND 사이에 달고, 베이스(B)를 저항을 거쳐 LOW로 당기면 켜져요(높은 쪽 스위치). 베이스가 이미터와 같은 전압이면 꺼져요.';
 const BJTR=' 베이스에 저항 없이 전원이나 IC 출력을 바로 물리면 베이스-이미터로 큰 전류가 흘러 타요.';
 const npnE=(k,lab,title,o,desc)=>pxDef(Object.assign({k,sub:'tr',pre:'Q',pkg:'TO-92',title,lay:'row',dc:[0,1,2],init:()=>({}),draw:to92(lab),desc},o));
-npnE('q3904','3904','2N3904 NPN 소신호 트랜지스터 (200mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'npn',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300'},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on?[[2,0]]:[]},
+npnE('q3904','3904','2N3904 NPN 소신호 트랜지스터 (200mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'npn',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300',beta:150},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[]},
   '가장 흔한 작은 NPN 트랜지스터예요. 컬렉터 전류 200mA, 40V까지라 LED 여러 개, 작은 릴레이 코일, 부저를 논리 신호로 켜고 끄는 데 알맞아요. 평평한 면을 보고 왼쪽부터 E·B·C예요.'+BJTN+BJTR+TRN);
-npnE('q3906','3906','2N3906 PNP 소신호 트랜지스터 (200mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'pnp',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300'},dio:[[0,1,'be']],contacts:(c,r)=>r&&r.on?[[0,2]]:[]},
+npnE('q3906','3906','2N3906 PNP 소신호 트랜지스터 (200mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'pnp',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300',beta:150},dio:[[0,1,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[0,2]]:[]},
   '2N3904와 짝을 이루는 PNP 트랜지스터예요(200mA, 40V). 부하의 + 쪽을 켜고 끌 때 써요. 평평한 면을 보고 왼쪽부터 E·B·C예요.'+BJTP+BJTR+TRN);
-npnE('q2222','2222','2N2222A급 NPN 범용 트랜지스터 (600mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'npn',e:0,b:1,c:2,ic:.6,vce:40,hfe:'100~300'},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on?[[2,0]]:[]},
+npnE('q2222','2222','2N2222A급 NPN 범용 트랜지스터 (600mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'npn',e:0,b:1,c:2,ic:.6,vce:40,hfe:'100~300',beta:150},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[]},
   '2N3904보다 전류를 많이(600mA까지) 흘릴 수 있는 NPN 트랜지스터예요. 큐브형 릴레이 코일(약 70mA), 작은 모터, LED 줄을 켜기에 넉넉해요. 플라스틱(TO-92) 몸통은 평평한 면을 보고 왼쪽부터 E·B·C예요(금속 캔 모양은 핀 순서가 달라요).'+BJTN+BJTR+TRN);
-npnE('qbc547','547','BC547 NPN 소신호 트랜지스터 (100mA, 45V)',{pins:['C (컬렉터)','B (베이스)','E (이미터)'],tr:{t:'npn',e:2,b:1,c:0,ic:.1,vce:45,hfe:'110~800'},dio:[[1,2,'be']],contacts:(c,r)=>r&&r.on?[[0,2]]:[]},
+npnE('qbc547','547','BC547 NPN 소신호 트랜지스터 (100mA, 45V)',{pins:['C (컬렉터)','B (베이스)','E (이미터)'],tr:{t:'npn',e:2,b:1,c:0,ic:.1,vce:45,hfe:'110~800',beta:200},dio:[[1,2,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[0,2]]:[]},
   '유럽식 번호의 작은 NPN 트랜지스터예요(100mA, 45V). 2N3904와 쓰임새는 같지만 다리 순서가 반대라 평평한 면을 보고 왼쪽부터 C·B·E예요. 바꿔 끼울 때 순서를 꼭 확인하세요.'+BJTN+BJTR+TRN);
-npnE('qbc557','557','BC557 PNP 소신호 트랜지스터 (100mA, 45V)',{pins:['C (컬렉터)','B (베이스)','E (이미터)'],tr:{t:'pnp',e:2,b:1,c:0,ic:.1,vce:45,hfe:'110~800'},dio:[[2,1,'be']],contacts:(c,r)=>r&&r.on?[[2,0]]:[]},
+npnE('qbc557','557','BC557 PNP 소신호 트랜지스터 (100mA, 45V)',{pins:['C (컬렉터)','B (베이스)','E (이미터)'],tr:{t:'pnp',e:2,b:1,c:0,ic:.1,vce:45,hfe:'110~800',beta:200},dio:[[2,1,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[]},
   'BC547과 짝을 이루는 PNP 트랜지스터예요(100mA, 45V). 평평한 면을 보고 왼쪽부터 C·B·E예요.'+BJTP+BJTR+TRN);
 pxDef({k:'qtip',sub:'tr',pre:'Q',pkg:'TO-220',title:'TIP120급 NPN 달링턴 파워 트랜지스터 (5A, 60V)',lay:'row',dc:[0,1,2],pins:['B (베이스)','C (컬렉터)','E (이미터)'],init:()=>({}),
-  tr:{t:'npn',e:2,b:0,c:1,ic:5,vce:60,hfe:'1000 이상'},dio:[[0,2,'be2']],contacts:(c,r)=>r&&r.on?[[1,2]]:[],draw:to220('TIP'),
+  sl:'TIP120',tr:{t:'npn',e:2,b:0,c:1,ic:5,vce:60,hfe:'1000 이상',beta:1000},dio:[[0,2,'be2']],contacts:(c,r)=>r&&r.on&&!r.an?[[1,2]]:[],draw:to220('TIP'),
   desc:'트랜지스터 두 개를 겹쳐(달링턴) 아주 작은 베이스 전류로 큰 전류(5A까지)를 켜는 파워 트랜지스터예요. 모터, 솔레노이드, 전구, 긴 LED 줄을 논리 신호로 켜요. 베이스-이미터가 약 1.3V에서 켜지고, 켜졌을 때도 C-E에 1V 안팎이 남아 열이 나니 큰 전류는 방열판을 달아요. 앞에서 보아 왼쪽부터 B·C·E이고 쇠 방열판은 C와 이어져 있어요.'+BJTN+' 코일·모터를 켤 때는 역전압 다이오드를 꼭 함께 달아요.'+TRN});
 const MOSN=' 게이트(G)는 전압만 보고 전류는 거의 안 먹어서 IC 출력에 바로 물려도 돼요. 게이트가 떠 있으면 제멋대로 켜질 수 있으니 게이트와 소스 사이에 10kΩ 풀다운 저항을 달아요.';
 pxDef({k:'m7000',sub:'tr',pre:'Q',pkg:'TO-92',title:'2N7000 N채널 MOSFET (200mA, 60V)',lay:'row',dc:[0,1,2],pins:['S (소스)','G (게이트)','D (드레인)'],init:()=>({}),
-  tr:{t:'nmos',s:0,g:1,d:2,vth:2.1,full:4.5,id:.2,vds:60,ron:5},contacts:(c,r)=>r&&r.on?[[2,0]]:[],draw:to92('7000'),
+  tr:{t:'nmos',s:0,g:1,d:2,vth:2.1,full:4.5,id:.2,vds:60,ron:5,gm:.2},contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[],draw:to92('7000'),
   desc:'작은 N채널 MOSFET이에요(200mA, 60V). 소스(S)를 GND에, 부하를 + 와 드레인(D) 사이에 달고 게이트(G)에 HIGH(5V)를 주면 켜져요. 게이트-소스가 약 2V를 넘으면 켜지기 시작하고 4.5V 이상에서 다 켜져요(켜졌을 때 저항 약 5Ω). 3.3V 논리 신호로는 덜 켜질 수 있어요. 평평한 면을 보고 왼쪽부터 S·G·D예요.'+MOSN+TRN});
 pxDef({k:'mnpow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 N채널 파워 MOSFET (TO-220, 30A급)',lay:'row',dc:[0,1,2],pins:['G (게이트)','D (드레인)','S (소스)'],init:()=>({}),
-  tr:{t:'nmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:30,vds:55,ron:.03},contacts:(c,r)=>r&&r.on?[[1,2]]:[],draw:to220('N-FET'),
+  sl:'N-FET',tr:{t:'nmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:30,vds:55,ron:.03,gm:10},contacts:(c,r)=>r&&r.on&&!r.an?[[1,2]]:[],draw:to220('N-FET'),
   desc:'5V 논리 신호로 다 켜지게 만든(로직 레벨) 큰 N채널 MOSFET이에요. 켜졌을 때 저항이 수십 mΩ으로 아주 작아 모터·LED 줄·히터 같은 큰 부하를 낮은 쪽에서 켜고 꺼요. 게이트-소스 약 1.5V부터 켜지기 시작해요. 앞에서 보아 왼쪽부터 G·D·S이고 방열판은 D와 이어져 있어요. 브레드보드 자체는 1A 안쪽까지만 흘리세요.'+MOSN+TRN});
 pxDef({k:'mppow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 P채널 파워 MOSFET (TO-220, 10A급)',lay:'row',dc:[0,1,2],pins:['G (게이트)','D (드레인)','S (소스)'],init:()=>({}),
-  tr:{t:'pmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:10,vds:30,ron:.1},contacts:(c,r)=>r&&r.on?[[1,2]]:[],draw:to220('P-FET'),
+  sl:'P-FET',tr:{t:'pmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:10,vds:30,ron:.1,gm:5},contacts:(c,r)=>r&&r.on&&!r.an?[[1,2]]:[],draw:to220('P-FET'),
   desc:'부하의 + 쪽(높은 쪽)을 켜고 끄는 P채널 MOSFET이에요. 소스(S)를 + 에, 부하를 드레인(D)과 GND 사이에 달고, 게이트(G)를 소스보다 낮게(LOW로) 당기면 켜져요. 게이트가 소스와 같은 전압이면 꺼지니 게이트와 소스 사이에 10kΩ 풀업 저항을 달아 평소에 꺼 두세요. 앞에서 보아 왼쪽부터 G·D·S예요.'+TRN});
-/* 켜짐·꺼짐 갱신(브레드보드): 바뀌면 true. vTop = 회로에서 가장 높은 전원 전압 */
-function trUpd(c,r,v,vTop){const T=PX[c.kind].tr;let on=false;
+/* 켜짐·꺼짐 갱신(브레드보드, 스위치 모드만): 바뀌면 true. t = settle의 트랜지스터 묶음(b 베이스·게이트 줄, e 이미터·소스 줄)
+   스스로 이어 붙여 베이스(게이트)와 이미터(소스)가 같은 줄이 된 경우(다이오드처럼 묶은 회로)는 켜짐을 유지한다 */
+function trUpd(t,v){const {T,r}=t;let on=false;
+  if(r.an)return false;
   if(!S.power){}
-  else if(T.b!=null){const vb=v(T.b),ve=v(T.e),d=(r.di||[])[0],ib=d&&d.st===1?d.i:0;r.ib=ib;
-    if(ib>=2e-5)on=true;
-    // 이미 켜졌고 베이스가 이미터와 같은 쪽에 머물면(이미터 팔로워처럼 켜져서 이미터가 따라 올라간 때) 그대로 켜 둔다
-    else if(r.on&&vb!=null&&ve!=null)on=T.t==='npn'?vb>=ve-.05&&vb>.5:vb<=ve+.05&&vb<vTop-.5;}
-  else{const vg=v(T.g),vs=v(T.s);r.vgs=vg!=null&&vs!=null?vg-vs:null;
-    if(r.vgs!=null){const x=T.t==='nmos'?r.vgs:-r.vgs;on=x>=T.vth+(r.on?-.1:.1);
-      if(!on&&r.on)on=T.t==='nmos'?vg>=vs-.05&&vg>=T.vth:vg<=vs+.05&&vg<=vTop-T.vth;}}
+  else if(t.bj){const ib=t.d&&t.d.st===1?t.d.i:0;r.ib=ib;on=ib>=2e-5||(!!r.on&&t.b===t.e);}
+  else{const vg=v(t.b),vs=v(t.e);r.vgs=vg!=null&&vs!=null?vg-vs:null;
+    if(r.vgs!=null)on=t.pol*r.vgs>=T.vth+(r.on?-.1:.1);if(!on&&r.on&&t.b===t.e)on=true;}
   if(!!r.on!==on){r.on=on;return true;}return false;}
 // ── 릴레이·솔레노이드: 코일(coil: [i,j] 핀)에 걸린 전압으로 접점이 바뀐다(settle 끝에서 coilUpd → 바뀌면 다시 계산)
 //    붙는 전압 정격의 75% 이상, 떨어지는 전압 10% 미만(그 사이는 지금 상태 유지). 코일 저항 = 정격²÷코일 전력(cw)
@@ -2572,7 +2572,7 @@ pxDef({k:'rlyl',pp:5.08,sub:'rly',pre:'K',title:'래칭 릴레이 SPDT (자기�
 pxDef({k:'ssr',pp:5.08,sub:'rly',pre:'K',title:'반도체 릴레이 SSR (입력 3~32V, 4핀)',lay:'row',dc:[0,2,5,8],pins:['+ (입력)','− (입력)','출력 1','출력 2'],init:()=>({}),coil:[0,1],pol:1,rin:470,
   res:coilRes,contacts:(c,r)=>r&&r.on?[[2,3]]:[],
   draw:(c,ph,r)=>{const on=!!(r&&r.on),B=bodyAbove(ph,7,18,'#1E2124');return B.s+`<rect x="${B.x-38}" y="${B.y-6}" width="24" height="12" rx="1.5" fill="#33373E"/>`+rlyTag(B.x-26,B.y-1,c,on)+`<text x="${B.x+14}" y="${B.y+2.5}" font-size="6.5" font-weight="700" fill="#E9ECEF" text-anchor="middle">${on?'ON':'OFF'}</text>`;},
-  desc:'움직이는 접점 없이 빛(포토커플러)과 반도체 스위치로 켜고 끄는 릴레이예요. + (입력)에서 − (입력)으로 3V 이상 걸면 출력 1·2가 이어져요(입력 전류 약 10mA라 IC 출력으로 바로 켜도 돼요, 극성 있음). 소리가 없고 아주 오래가며 빨리 켜고 꺼요. 대신 켜져 있을 때 열이 나고, 꺼져 있어도 아주 작은 전류가 새요. 출력이 교류용(트라이악)인지 직류용(MOSFET)인지 꼭 맞춰 골라요. 이 부품은 둘 다 되는 MOSFET형으로 봐요.'});
+  desc:'움직이는 접점 없이 빛(포토커플러)과 반도체 스위치로 켜고 끄는 릴레이예요. + (입력)에서 − (입력)으로 3V 이상 걸면 출력 1·2가 이어져요(5V에서 입력 전류 약 10mA라 IC 출력으로 바로 켜도 돼요, 극성 있음. 시뮬레이터는 입력을 470Ω으로 계산해서 높은 전압에서는 전류가 실제보다 크게 나와요. 실제 SSR은 안의 정전류 회로로 거의 일정해요). 소리가 없고 아주 오래가며 빨리 켜고 꺼요. 대신 켜져 있을 때 열이 나고, 꺼져 있어도 아주 작은 전류가 새요. 출력이 교류용(트라이악)인지 직류용(MOSFET)인지 꼭 맞춰 골라요. 이 부품은 둘 다 되는 MOSFET형으로 봐요.'});
 pxDef({k:'sol',pp:10.16,sub:'rly',pre:'SOL',title:'푸시-풀 솔레노이드 (전자석)',lay:'row',dc:[0,4],pins:['1','2'],init:()=>({cv:5}),coil:[0,1],cvs:[5,12,24],cw:2.5,
   res:coilRes,
   draw:(c,ph,r)=>{const on=!!(r&&r.on),B=bodyAbove(ph,10,18,'#8A9098'),px_=on?0:9;return B.s+`<rect x="${B.x-16}" y="${B.y-7}" width="22" height="14" fill="#B87333" stroke="#6B4520" stroke-width=".8"/><rect x="${B.x+6-px_}" y="${B.y-2.5}" width="${18+px_}" height="5" fill="#D9DEE4" stroke="#555" stroke-width=".6"/><text x="${B.x-5}" y="${B.y+2.5}" font-size="6" font-weight="700" fill="#fff" text-anchor="middle" font-family="var(--mono)">${coilV(c)}V</text>`;},
@@ -2771,6 +2771,9 @@ function settle(){
   const res=[...S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
   // 다이오드: {c, a 애노드 줄, k 캐소드 줄, m 특성, st 상태(1 순방향, −1 제너 역방향, 0 끊김), i 전류}
   const dioL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].dio){const hs=ph.get(c.id),r=rt(c);r.di=[];PX[c.kind].dio.forEach(([i,j,m],q)=>{const d={c,a:netOf[hs[i]],k:netOf[hs[j]],m:DIOM[m],st:0,i:0};r.di[q]=d;dioL.push(d);});}
+  // 트랜지스터: {r, T, bj, pol(+1 NPN·N, −1 PNP·P), b 베이스·게이트 줄, cN 컬렉터·드레인 줄, e 이미터·소스 줄, d 베이스-이미터 다이오드, st 아날로그 상태}
+  const trL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].tr){const T=PX[c.kind].tr,hs=ph.get(c.id),r=rt(c),bj=T.b!=null,n=k=>netOf[hs[k]];
+    trL.push({c,r,T,bj,pol:T.t==='npn'||T.t==='nmos'?1:-1,b:n(bj?T.b:T.g),cN:n(bj?T.c:T.d),e:n(bj?T.e:T.s),d:bj?(r.di||[])[0]:null,st:0});}
   const ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
   // 클럭 발생기(또는 함수 발생기 출력)가 물린 줄: 그 줄에 + 레일이 있으면 자동 5V를 넣지 않고 클럭 배선으로 쓴다
   const clkNets=new Set([...clks,...fgs].map(c=>netOf[ph.get(c.id)[0]]));
@@ -2806,7 +2809,9 @@ function settle(){
   function analogStep(){
     const caps=S.comps.filter(c=>c.t==='cap');volt=new Map();
     const dtT=Math.min(.05,Math.max(1e-6,now-(SIM.lastA||now)));SIM.lastA=now;
-    if((!caps.length&&!pxR.length&&!dioL.length)||!S.power){for(const c of caps)rt(c).v=0;for(const d of dioL){d.st=0;d.i=0;}return;}
+    // 모드: 이미터·소스가 전원·출력에 바로 붙었으면 스위치, 아니면 아날로그(이미 스스로 이어 붙은 것은 그대로 스위치)
+    for(const t of trL){const an=!!S.power&&!strong.has(t.e)&&!(t.r.on&&!t.r.an&&t.cN===t.e);if(!!t.r.an!==an){if(t.r.on)t.r.anCh=true;t.r.an=an;if(an)t.r.on=false;}}
+    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length)||!S.power){for(const c of caps)rt(c).v=0;for(const d of dioL){d.st=0;d.i=0;}return;}
     const t555=ics.filter(c=>c.t==='ic'&&CHIPS[c.chip].is555&&rt(c).pw&&rt(c).st);
     const pn=(c,k)=>netOf[ph.get(c.id)[CHIPS[c.chip].idx[k]]];
     const Rl=S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/c.ohms]);
@@ -2815,17 +2820,19 @@ function settle(){
     const Cl=caps.map(c=>({r:rt(c),a:netOf[ph.get(c.id)[0]],b:netOf[ph.get(c.id)[1]],C:c.farad}));
     const disch=new Map();for(const c of t555)disch.set(pn(c,'DISCH'),c);
     const adj=new Map(),link=(a,b)=>{if(!adj.has(a))adj.set(a,[]);adj.get(a).push(b);};
-    for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...dioL.map(d=>({a:d.a,b:d.k}))]){link(e.a,e.b);link(e.b,e.a);}
+    const trA=trL.filter(t=>t.r.an);
+    for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...dioL.map(d=>({a:d.a,b:d.k})),...trA.flatMap(t=>[{a:t.cN,b:t.e},{a:t.b,b:t.e}])]){link(e.a,e.b);link(e.b,e.a);}
     const steps=Math.max(1,Math.min(80,Math.ceil(dtT/5e-4))),h=dtT/steps;let V=new Map(),known;
     for(let s=0;s<steps;s++){
       known=new Map();
       for(const [net,v] of strong)if(!disch.has(net))known.set(net,srcV.has(net)?srcV.get(net):v===Hh?5:v===L?0:2.5);
       for(const [net,c] of disch)if(rt(c).st.q===L)known.set(net,0);
       // 미지 노드: 커패시터 단자에서 저항·커패시터로 닿는 줄 (알려진 줄에서 멈춤)
-      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k}))])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
+      // MOSFET 게이트 줄(저항으로만 이어진 것도 전압을 풀어야 한다)·아날로그 트랜지스터 단자도 출발점
+      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e}))])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
       while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);}}
       const N_=U.length;let A,dIt=0,dCh;
-      // 다이오드 상태(켜짐·꺼짐)를 가정하고 풀어 본 뒤, 맞지 않으면 상태를 고쳐 다시 푼다(최대 12번)
+      // 다이오드·아날로그 트랜지스터 상태를 가정하고 풀어 본 뒤, 맞지 않으면 상태를 고쳐 다시 푼다(최대 30번)
       do{A=Array.from({length:N_},()=>new Float64Array(N_+1));
       for(let i=0;i<N_;i++)A[i][i]+=1e-9;
       const stamp=(a,b,G,I)=>{const ia=ix.get(a),ib=ix.get(b),va=known.get(a),vb=known.get(b);
@@ -2835,14 +2842,27 @@ function settle(){
       for(const e of Cl){if(e.a===e.b){e.r.v=0;continue;}const G=e.C/h;stamp(e.a,e.b,G,G*(e.r.v||0));}
       for(const d of dioL){if(d.a===d.k||!(ix.has(d.a)||ix.has(d.k)))continue;const m=d.m;
         if(d.st===1){const G=1/m.rs;stamp(d.a,d.k,G,G*m.vf);}else if(d.st===-1){const G=1/m.rz;stamp(d.a,d.k,G,-G*m.vz);}else stamp(d.a,d.k,1e-9,0);}
+      // 전압 제어 전류원: f 줄에서 t 줄로 gm×(V(cp)−V(cn)) − off 가 흐른다
+      const vccs=(f,t,cp,cn,gm,off)=>{for(const [x,sg] of [[f,1],[t,-1]]){const xi=ix.get(x);if(xi===undefined)continue;
+          for(const [y,k] of [[cp,gm],[cn,-gm]]){const yi=ix.get(y);if(yi!==undefined)A[xi][yi]+=sg*k;else A[xi][N_]-=sg*k*(known.get(y)||0);}A[xi][N_]+=sg*off;}};
+      for(const t of trA){const {T}=t,[hi,lo]=t.pol>0?[t.cN,t.e]:[t.e,t.cN];if(t.cN===t.e)continue;
+        if(t.bj){const m=t.d&&t.d.m;if(t.st==='sat')stamp(hi,lo,1,.2);else if(t.d&&t.d.st===1){const gm=T.beta/m.rs;if(t.pol>0)vccs(t.cN,t.e,t.b,t.e,gm,gm*m.vf);else vccs(t.e,t.cN,t.e,t.b,gm,gm*m.vf);}}
+        else{const vt=T.vth+.5;if(t.st==='lin')stamp(hi,lo,1/T.ron,0);else if(t.st==='on'){if(t.pol>0)vccs(t.cN,t.e,t.b,t.e,T.gm,T.gm*vt);else vccs(t.e,t.cN,t.e,t.b,T.gm,T.gm*vt);}}}
       for(let i=0;i<N_;i++){let p=i;for(let r=i+1;r<N_;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
         const d=A[i][i]||1e-12;for(let r=0;r<N_;r++){if(r===i)continue;const f=A[r][i]/d;if(f)for(let k=i;k<=N_;k++)A[r][k]-=f*A[i][k];}}
       V=new Map();U.forEach((n,i)=>V.set(n,A[i][N_]/(A[i][i]||1e-12)));
       dCh=false;for(const d of dioL){const va=V.has(d.a)?V.get(d.a):known.get(d.a),vk=V.has(d.k)?V.get(d.k):known.get(d.k);if(va==null||vk==null)continue;const v=va-vk,m=d.m,e=1e-6;
         const st=v>m.vf+(d.st===1?-e:e)?1:m.vz&&-v>m.vz+(d.st===-1?-e:e)?-1:0;if(st!==d.st){d.st=st;dCh=true;}
         d.i=st===1?(v-m.vf)/m.rs:st===-1?(v+m.vz)/m.rz:0;}
-      }while(dCh&&++dIt<12);
+      {const vv=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):0;
+        for(const t of trA){if(t.cN===t.e)continue;const {T}=t,vce=t.pol*(vv(t.cN)-vv(t.e));let st=t.st;
+          if(t.bj){const on=t.d&&t.d.st===1;if(!on)st=0;else if(st!=='sat'){if(vce<.2-1e-6)st='sat';else st='act';}else{const isat=vce-.2,ib=t.d.i;if(isat>T.beta*ib+1e-9||isat<-1e-6)st='act';}}
+          else{const x=t.pol*(vv(t.b)-vv(t.e))-(T.vth+.5);if(x<=0)st=0;else if(st==='lin'){if(vce/T.ron>T.gm*x+1e-9||vce<-1e-6)st='on';}else if(vce<.05-1e-6)st='lin';else st='on';}
+          if(st!==t.st){t.st=st;dCh=true;}}}
+      }while(dCh&&++dIt<30);
       const vn=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):null;
+      for(const t of trA){t.r.on=!!t.st;if(t.bj)t.r.ib=t.d&&t.d.st===1?t.d.i:0;else{const g=vn(t.b),sv=vn(t.e);t.r.vgs=g!=null&&sv!=null?g-sv:null;}
+        const vc=vn(t.cN),ve=vn(t.e);t.r.vce=vc!=null&&ve!=null?t.pol*(vc-ve):null;t.r.sat=t.st==='sat'||t.st==='lin';}
       for(const e of Cl){const a=vn(e.a),b=vn(e.b);if(a!=null&&b!=null)e.r.v=a-b;}
       for(const c of t555){const d=CHIPS[c.chip],hs=ph.get(c.id);const va=k=>{const n=netOf[hs[d.idx[k]]];const x=vn(n);return x!=null?x:vOf(n);};
         const g=k=>{const v=lvl.get(netOf[hs[d.idx[k]]]);return v===L||v===Hh?v:Hh;};d.eval(g,rt(c).st,va);}
@@ -2897,7 +2917,9 @@ function settle(){
   let rch=false;const icDrv=new Map(),sinkDrv=new Map(),vOf0=n=>{if(srcV.has(n))return srcV.get(n);const v=lvl.get(n);return v===Hh?5:v===L?0:null;};
   for(const c of S.comps)if(c.t==='px'&&PX[c.kind].coil){const d=PX[c.kind],hs=ph.get(c.id),vC=n=>strong.has(n)?vOf0(n):vOf(n),va=vC(netOf[hs[d.coil[0]]]),vb=vC(netOf[hs[d.coil[1]]]);
     if(coilUpd(c,rt(c),S.power&&va!=null&&vb!=null?va-vb:0))rch=true;}
-  {const vTop=Math.max(5,...srcV.values());for(const c of S.comps)if(c.t==='px'&&PX[c.kind].tr){const hs=ph.get(c.id);if(trUpd(c,rt(c),k=>vOf(netOf[hs[k]]),vTop))rch=true;}}
+  const rchR=rch;let rchT=false;const trFlip=[];
+  for(const t of trL){if(t.r.anCh){t.r.anCh=false;rchT=true;}if(trUpd(t,n=>vOf(n))){rchT=true;trFlip.push(t);}}
+  rch=rch||rchT;
   for(const c of ics){const o=rt(c).out;if(!o)continue;const hs=ph.get(c.id),sk=c.t==='ic'&&c.chip==='DRV-SINK8';o.forEach((v,k)=>{if(v===Hh||v===L)(sk?sinkDrv:icDrv).set(netOf[hs[k]],c);});}
   for(const c of S.comps){const hs=ph.get(c.id),w0=W_.length;
     if(c.t==='px'&&PX[c.kind].dio&&S.power){const nm=`${LBL.get(c.id)} ${PX[c.kind].title.replace(/ \(.*$/,'')}`,vS=n=>strong.has(n)?vOf0(n):vOf(n);let hot=0,rv=0,zp=0,sh=false;
@@ -2917,7 +2939,10 @@ function settle(){
       if(zp>m.pmax)W_.push(['bad',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격 ${m.pmax}W를 넘어서 타요. 직렬 저항을 더 크게 하세요.`]);
       else if(zp>.6*(m.pmax||1))W_.push(['warn',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격의 60%를 넘으면 뜨거워져요.`]);}}
     if(c.t==='px'&&PX[c.kind].tr&&PX[c.kind].tr.g!=null&&S.power){const T=PX[c.kind].tr,nm=`${LBL.get(c.id)} ${PX[c.kind].title.replace(/ \(.*$/,'')}`,vg=vOf(netOf[hs[T.g]]),vs=vOf(netOf[hs[T.s]]),x=vg!=null&&vs!=null?(T.t==='nmos'?vg-vs:vs-vg):null;
-      if(vg==null)W_.push(['warn',`${nm}의 게이트(G)가 아무 데도 안 이어져 있어요(떠 있음). 실제 MOSFET은 게이트에 남은 전하나 정전기로 제멋대로 켜지거나 반쯤 켜져 뜨거워져요. 게이트와 소스 사이에 10kΩ 저항을 달아 주세요.`]);
+      // 게이트가 떠 있음: 그 줄에 전원·출력도, 저항도, 다른 부품 다리도 없다
+      const ng=netOf[hs[T.g]],flo=!strong.has(ng)&&!res.some(([a,b])=>a===ng||b===ng)&&!S.comps.some(o=>o.t!=='wire'&&(ph.get(o.id)||[]).some((h,k)=>netOf[h]===ng&&!(o===c&&k===T.g)));
+      if(flo)W_.push(['warn',`${nm}의 게이트(G)가 아무 데도 안 이어져 있어요(떠 있음). 실제 MOSFET은 게이트에 남은 전하나 정전기로 제멋대로 켜지거나 반쯤 켜져 뜨거워져요. 게이트와 소스 사이에 10kΩ 저항을 달아 주세요.`]);
+      else if(vg==null){}
       else if(x!=null&&Math.abs(x)>20)W_.push(['bad',`${nm}의 게이트-소스에 ${Math.abs(x).toFixed(0)}V가 걸려요. 보통 ±20V가 한계라 게이트가 망가져요.`]);
       else if(rt(c).on&&x!=null&&x<T.full)W_.push(['info',`${nm}: 게이트-소스 ${x.toFixed(1)}V로는 덜 켜져요(${T.full}V 이상에서 다 켜짐). 큰 전류를 흘리면 뜨거워질 수 있어요.`]);}
     if(c.t==='px'&&PX[c.kind].coil&&S.power){const d=PX[c.kind],r=rt(c),dv=r.dv||0,a=Math.abs(dv),nm=`${LBL.get(c.id)} ${d.title.replace(/ \(.*$/,'')}`,cv=coilV(c),cn=d.coil.map(k=>netOf[hs[k]]);
@@ -2982,10 +3007,12 @@ function settle(){
   if(SIM.unstable)W_.push(['warn','회로가 한 상태로 멈추지 않고 계속 바뀌고 있어요(발진). 출력이 자기 입력으로 되돌아가는 연결이 있는지 확인하세요.']);
   if(!S.power)W_.unshift(['warn','전원이 꺼져 있어요. 위쪽 [전원] 버튼을 눌러 켜세요.']);
   // 릴레이 접점이 바뀌었으면 줄 연결부터 다시(최대 5번). 그래도 계속 바뀌면 자기 접점으로 코일을 끊는 회로(버저)
-  const deep=(SIM.rd|0)>=4;   // 한 번 계산에 접점이 홀수 번(5번) 바뀌고 멈춘다 → 버저 회로는 매번 반대 상태로 보여 떨린다
+  // 트랜지스터만 바뀌었으면 단을 하나씩 넘어가므로 더 여러 번(최대 16번) 다시 계산한다
+  const deep=(SIM.rd|0)>=(rchR?4:16);   // 한 번 계산에 접점이 홀수 번(5번) 바뀌고 멈춘다 → 버저 회로는 매번 반대 상태로 보여 떨린다
   if(rch&&!deep){SIM.rd=(SIM.rd|0)+1;try{settle();}finally{SIM.rd--;}return;}
   SIM.buzz=rch&&deep;
-  if(SIM.buzz)W_.push(['info','릴레이가 자기 접점으로 코일 전원을 끊었다 이었다 하면서 떨리고 있어요(버저처럼 "지이잉" 소리가 나요). 일부러 만든 회로가 아니라면 코일 쪽 연결을 확인하세요.']);
+  if(SIM.buzz&&!rchR)W_.push(['warn',`${trFlip.map(t=>LBL.get(t.c.id)).join('·')||'트랜지스터'}가 켜졌다 꺼졌다를 끝없이 되풀이해요(발진). 출력이 자기 베이스·게이트로 되돌아가는 연결이 있는지 확인하세요.`,(trFlip[0]||{c:{}}).c.id]);
+  else if(SIM.buzz)W_.push(['info','릴레이가 자기 접점으로 코일 전원을 끊었다 이었다 하면서 떨리고 있어요(버저처럼 "지이잉" 소리가 나요). 일부러 만든 회로가 아니라면 코일 쪽 연결을 확인하세요.']);
   SIM.warns=W_;
 }
 /* ───────── 슬로우 모드: 신호가 지나가는 길 ─────────
@@ -4770,16 +4797,17 @@ function parseOhms(v){const m=String(v||'').replace(/Ω|ohms?|옴|\s/gi,'').matc
 function parseFarad(v){const s_=String(v||'').replace(/\s|F$/gi,'');let m=s_.match(/^([\d.]+)\s*([pnuµm]?)/i);if(!m)return 4.7e-5;let n=parseFloat(m[1]);const u=(m[2]||'').toLowerCase();
   if(!u&&/^\d{2}[1-6]$/.test(s_))n=parseInt(s_.slice(0,2))*Math.pow(10,+s_[2])*1e-12;else n*=({p:1e-12,n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[u]||1e-6);return near(FARADS,n);}
 // 표준 번호·일반 이름 → px 부품(파일 배치·AI 회로 목록용). 입력을 알아보기 위한 목록일 뿐, 화면에는 앱의 부품 이름이 나온다
-const TRNUM=[[/^(2N|PN|MMBT)3904/,'q3904'],[/^(2N|PN|MMBT)3906/,'q3906'],[/^(2N|PN|P2N|MMBT)2222A?/,'q2222'],[/^BC54[6789][ABC]?/,'qbc547'],[/^BC55[6789][ABC]?/,'qbc557'],[/^TIP12[012]/,'qtip'],[/^(2N700[02]|BS170)/,'m7000']];
+const TRNUM=[[/^(2N|PN|MMBT)3904/,'q3904'],[/^(2N|PN|MMBT)3906/,'q3906'],[/^(2N|PN)(2907|4403)A?/,'q3906'],[/^BC(32[78]|63[68]|640)/,'q3906'],[/^(2N4401|BC33[78])/,'q2222'],[/^(IRF95|IRF4905|IRF5305|NDP60)/,'mppow'],[/^(IRLZ|IRL5|IRLB|IRF5[34]|IRFZ)/,'mnpow'],[/^(2N|PN|P2N|MMBT)2222A?/,'q2222'],[/^BC54[6789][ABC]?/,'qbc547'],[/^BC55[6789][ABC]?/,'qbc557'],[/^TIP12[012]/,'qtip'],[/^(2N700[02]|BS170)/,'m7000']];
 const DIONUM=[[/^1N(914|4148|4448)/,'d4148'],[/^1N400[1-7]/,'d4007'],[/^UF400[1-7]/,'duf'],[/^1N58(17|18|19)/,'d5819'],[/^1N47(33|32|34)A?/,'dz51'],[/^1N(34|60)A?/,'dge'],[/^BAT(85|43|42|41)/,'dbat'],[/^(DB10[1-7]|DF0[1-9]M?|DF10M|W0[1-9]M|W10M|KBP|2W)/,'brdg']];
 function parseHenry(v){const m=String(v||'').replace(/\s/g,'').match(/^([\d.]+)([nuµm]?)H?$/i);if(!m)return null;const n=parseFloat(m[1])*({n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[(m[2]||'').toLowerCase()]??1e-6);return near(INDV,n);}
 function pxPart(ty,T,v){const V=v.toUpperCase().replace(/[\s_-]/g,'');
   if(PX[ty])return{t:'px',kind:ty};const kl=Object.keys(PX).find(k=>k.toUpperCase()===T);if(kl)return{t:'px',kind:kl};
-  for(const [re,k] of DIONUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
+  for(const [re,k] of DIONUM)if(re.test(T)||(/^(D|DIODE|다이오드|BR|BRIDGE|브리지|ZD|ZENER|제너)$/.test(T)&&re.test(V)))return{t:'px',kind:k};
   for(const [re,k] of TRNUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
+  if(/^TIP12[567]/.test(T)||/^TIP12[567]/.test(V))return null;   // PNP 달링턴은 아직 없음 → 모르는 부품으로 알린다
   if(/^(TR|Q|TRANSISTOR|BJT|트랜지스터|NPN)$/.test(T))return{t:'px',kind:/PNP/i.test(v)||T==='PNP'?'q3906':/달링턴|DARLINGTON|파워|POWER/i.test(v)?'qtip':'q3904'};
   if(/^(PNP)$/.test(T))return{t:'px',kind:'q3906'};
-  if(/^(MOSFET|FET|모스펫|NMOS|PMOS|NFET|PFET)$/.test(T))return{t:'px',kind:/^P|P채널|P-?CH/i.test(T==='PMOS'||T==='PFET'?'P':v)?'mppow':/파워|POWER|로직|LOGIC/i.test(v)?'mnpow':'m7000'};
+  if(/^(MOSFET|FET|모스펫|NMOS|PMOS|NFET|PFET)$/.test(T)){const pc=T==='PMOS'||T==='PFET'||(!/^N/.test(T)&&/^P(MOS|FET|-?CH)\b|P채널|P-CHANNEL/i.test(v));return{t:'px',kind:pc?'mppow':/파워|POWER|로직|LOGIC|PWR/i.test(v)?'mnpow':'m7000'};}
   const cv=(v.match(/(\d+)\s*V/i)||[])[1],withCv=(k,o)=>{const x=Object.assign({t:'px',kind:k},o||{});if(cv&&PX[k].cvs&&PX[k].cvs.includes(+cv))x.cv=+cv;return x;};
   if(/^(DIODE|다이오드)$/.test(T))return{t:'px',kind:/쇼트키|SCHOTTKY/i.test(v)?'d5819':/제너|ZENER/i.test(v)?'dz51':/신호|SIGNAL/i.test(v)?'d4148':'d4007'};
   if(/^(ZENER|ZD|제너|제너다이오드)$/.test(T))return{t:'px',kind:'dz51'};
@@ -5564,7 +5592,7 @@ function symOf(p){const pins=[];let w=40,h=20,body='';const lit=SIM_S.led.get(p.
   else if(p.t==='btn'){pin(0,-40,0,-1,0);pin(1,40,0,1,0);const pr=srt(p).pressed;
     body=`<path d="M-40 0H-20M20 0H40"/><circle cx="-20" r="3" style="fill:var(--surface)"/><circle cx="20" r="3" style="fill:var(--surface)"/><path d="M-22 ${pr?-3:-11}H22M0 ${pr?-3:-11}V-20M-6 -20H6" style="stroke-width:2.2"/>`;h=24;}
   else if(p.t==='px'){const d=PX[p.kind];
-    if(d.tr){const T=d.tr,on=!!srt(p).on,lab=`<text x="-14" y="-26" class="sv">${esc(d.title.split(' ')[0])}</text><text x="-14" y="32" class="sv">${on?'ON':'OFF'}</text>`;w=40;h=40;
+    if(d.tr){const T=d.tr,on=!!srt(p).on,lab=`<text x="-14" y="-26" class="sv">${esc(d.sl||d.title.split(' ')[0])}</text><text x="-14" y="32" class="sv">${on?'ON':'OFF'}</text>`;w=40;h=40;
       if(T.b!=null){const pnp=T.t==='pnp',top=pnp?T.e:T.c,bot=pnp?T.c:T.e;pin(T.b,-40,0,-1,0,'B');pin(top,20,-40,0,-1,pnp?'E':'C');pin(bot,20,40,0,1,pnp?'C':'E');
         body=`<circle cx="8" r="22" style="fill:var(--surface)"/><path d="M-40 0H0M0 -13V13" style="stroke-width:2.4"/><path d="M0 -6L20 -20V-40M0 6L20 20V40"/>`
           +(pnp?'<path d="M5 -9.5L12.7 -10.6L8.7 -16.4Z" style="fill:var(--sink)"/>':'<path d="M18 18.6L10.3 17.5L14.3 11.7Z" style="fill:var(--sink)"/>')+lab;}
@@ -5739,7 +5767,7 @@ function schSettle(){const N=schNets(true),now=simNow(),dioS=SCH.parts.filter(p=
     if(coilUpd(p,srt(p),SCH.power?(a===Hh&&b===L?v:a===L&&b===Hh?-v:0):0))rch=true;}
   // 트랜지스터: 회로도는 논리 값으로. NPN·N채널은 베이스·게이트가 HIGH면, PNP·P채널은 LOW면 켜짐(X = 저항으로 끌고 베이스-이미터가 반대로 끄는 중 → 전류가 흐름)
   for(const p of SCH.parts)if(p.t==='px'&&PX[p.kind]&&PX[p.kind].tr){const T=PX[p.kind].tr,r=srt(p),g=lvAt(p.id,T.b!=null?T.b:T.g);
-    const on=!!SCH.power&&(T.t==='npn'?g===Hh||g===X:T.t==='pnp'?g===L||g===X:T.t==='nmos'?g===Hh:g===L);if(!!r.on!==on){r.on=on;rch=true;}}
+    const on=!!SCH.power&&(T.t==='npn'?g===Hh||g===X:T.t==='pnp'?g===L||g===X:T.t==='nmos'?g===Hh||g===X:g===L||g===X);if(!!r.on!==on){r.on=on;rch=true;}}
   if(rch&&(SIM_S.rd|0)<5){SIM_S.rd=(SIM_S.rd|0)+1;try{schSettle();}finally{SIM_S.rd--;}}}
 const sLvlOfPin=(id,k)=>{if(!SIM_S.net)return Z;const v=SIM_S.lvl.get(SIM_S.net.net(id,k));return v===undefined?Z:v;};
 
@@ -5928,7 +5956,7 @@ function _schApply(){syncTerms();const notes=[],real=SCH.parts.filter(p=>p.t!=='
   if(gone.length){touch();const ids=new Set(gone.map(c=>c.id));S.comps=S.comps.filter(c=>!ids.has(c.id));gone.forEach(c=>RT.delete(c.id));}
   for(const p of real)if(p.bid&&!compById(p.bid))delete p.bid;
   // ② 값
-  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','pw','mat','tol','dk','vr','ser'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
+  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','pw','mat','tol','dk','vr','ser','cv','henry','turns','dmm'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
   // ③ 새 부품
   const added=[];
   for(const p of real){if(p.bid)continue;const c=schPlaceOnBoard(p);if(!c){notes.push(`${schLabels().get(p.id)}: 브레드보드에 빈자리가 없어 꽂지 못했어요`);continue;}
@@ -5985,7 +6013,7 @@ function schPlaceOnBoard(p){const B=S.boards[0],pt={x:B.x+bW(B.type)/2,y:B.y+MID
 /* ── 브레드보드로 보내기: 회로도 → 부품·연결 목록 → 자동 배치 ── */
 function schToSpec(){const LB=schLabels(),parts=[],refOf=new Map(),errors=[];
   for(const p of SCH.parts){if(p.t==='vcc'||p.t==='gnd')continue;const ref=LB.get(p.id).replace(/[^A-Za-z0-9_]/g,'');refOf.set(p.id,ref);
-    const it={ref,t:p.t};for(const k of ['chip','kind','ohms','color','farad','on','hz','ca','pos','s','bits','taper','pw','mat','tol','dk','vr','lk','pk','ln','lc','pat'])if(p[k]!==undefined)it[k]=p[k];parts.push(it);}
+    const it={ref,t:p.t};for(const k of ['chip','kind','ohms','color','farad','on','hz','ca','pos','s','bits','taper','pw','mat','tol','dk','vr','lk','pk','ln','lc','pat','cv','henry','turns','dmm'])if(p[k]!==undefined)it[k]=p[k];parts.push(it);}
   const N=schNets(false),groups=new Map();
   for(const p of SCH.parts){const ks=p.t==='seg7'?[0,1,2,3,4,5,6,8,9]:symOf(p).pins.map(q=>q.k);
     for(const k of ks){const n=N.net(p.id,k);if(!groups.has(n))groups.set(n,{pins:[],vcc:false,gnd:false,wired:false});const G=groups.get(n);
@@ -6307,7 +6335,8 @@ function fpDef(p){const pads=[],silk=[];let val='',pkg='';
     const rw=n>=24?15.24:7.62;dip(n,rw,2.54,nets);pkg=`DIP-${n} (${rw===7.62?'300':'600'}mil)`;}
   else if(p.t==='seg7'){val=p.ca?'7세그 공통 애노드':'7세그 공통 캐소드';dip(10,15.24);pkg='7세그 0.56인치 (10핀)';}
   else if(p.t==='gate'){const n=GATES[p.kind].pins.length;row(n);val=p.kind+' 게이트';pkg=`핀 헤더 1×${n}`;}
-  else if(p.t==='res'){const L=(p.pw||.25)>=1?15.24:(p.pw||.25)>=.5?12.7:10.16;pad(0,0,0);pad(1,L,0);box(L/2-3.3,-1.3,L/2+3.3,1.3);silk.push({t:'l',x1:.9,y1:0,x2:L/2-3.3,y2:0},{t:'l',x1:L/2+3.3,y1:0,x2:L-.9,y2:0});val=ohmTx(p.ohms||330);pkg=`축 리드 ${(L/2.54*100).toFixed(0)}mil`;}
+  else if(p.t==='res'){// 전력마다 다리 간격과 몸통 길이: 1/8W·1/4W 400mil, 1/2W 500mil, 1W 600mil, 2W 800mil, 5W(시멘트) 1100mil
+    const pw=p.pw||.25,[L,bl,bh]=pw>=5?[27.94,22,5]:pw>=2?[20.32,15,3.2]:pw>=1?[15.24,11,2.6]:pw>=.5?[12.7,9,1.6]:[10.16,6.6,1.3];pad(0,0,0,pw>=2?{d:2.2,dr:1.2}:{});pad(1,L,0,pw>=2?{d:2.2,dr:1.2}:{});box(L/2-bl/2,-bh,L/2+bl/2,bh);silk.push({t:'l',x1:.9,y1:0,x2:L/2-bl/2,y2:0},{t:'l',x1:L/2+bl/2,y1:0,x2:L-.9,y2:0});val=ohmTx(p.ohms||330);pkg=`축 리드 ${(L/2.54*100).toFixed(0)}mil`;}
   else if(p.t==='led'){pad(0,0,0);pad(1,2.54,0,{sq:true});silk.push({t:'c',x:1.27,y:0,r:2.9},{t:'l',x1:3.9,y1:-1.6,x2:3.9,y2:1.6});val=(p.color||'red')+' LED';pkg='LED 5mm (A·K 2.54mm)';}
   else if(p.t==='cap'){const pol=capPol(p);val=capTx(p.farad||1e-7);
     if(pol){const big=(p.farad||0)>=100e-6,s=big?5.08:2.54,r=big?4:3.15;pad(0,0,0,{sq:true});pad(1,s,0);silk.push({t:'c',x:s/2,y:0,r},{t:'l',x1:-.9,y1:-2.2,x2:-.9,y2:-1.2},{t:'l',x1:-1.4,y1:-1.7,x2:-.4,y2:-1.7});pkg=`전해 지름 ${2*r}mm`;}
@@ -6317,9 +6346,15 @@ function fpDef(p){const pads=[],silk=[];let val='',pkg='';
   else if(p.t==='clk'){pad(0,0,0,{sq:true});pad('g',2.54,0,{net:'GND'});box(-1.5,-1.5,4.04,1.5);val='클럭 입력 (OUT·GND)';pkg='핀 헤더 1×2';}
   else if(p.t==='led3'){pad(0,0,0,{sq:true});pad(1,2.54,0);pad(2,5.08,0);silk.push({t:'c',x:2.54,y:0,r:3.2});val=p.ca?'2색 LED (공통 A)':'2색 LED (공통 K)';pkg='LED 5mm 3핀';}
   else if(p.t==='px'){const d=PX[p.kind],n=d.pins.length;val=d.title||p.kind;
-    if(d.lay==='dip'){if(p.kind==='tact6'||p.kind==='tact12'){const W=p.kind==='tact6'?6.5:12.5,H=p.kind==='tact6'?4.5:5;pad(0,0,H,{sq:true});pad(1,W,H);pad(2,W,0);pad(3,0,0);box(-.5,-1,W+.5,H+1);silk.push({t:'c',x:W/2,y:H/2,r:Math.min(W,H)/2-.4});pkg=p.kind==='tact6'?'택트 6×6mm':'택트 12×12mm';}
-      else{dip(n,7.62);pkg=`DIP-${n}`;}}
-    else{const pitch=d.pp||(/^pot(16|24)$/.test(p.kind)?5.08:2.54);row(n,pitch);pkg=d.pkg?`${d.pkg} (${d.pins.map(x=>x[0]).join('')}, ${pitch}mm)`:`${n}핀 ${pitch}mm`;}}
+    // 택트: 몸통을 가로지르는 두 다리(1-4, 2-3)가 안에서 늘 이어져 있다 → 그 쌍을 긴 간격(6.5mm·12.5mm)에, 누르면 이어지는 1-2는 짧은 간격(4.5mm·5mm)에
+    if(d.lay==='dip'){if(p.kind==='tact6'||p.kind==='tact12'){const W=p.kind==='tact6'?4.5:5,H=p.kind==='tact6'?6.5:12.5;pad(0,0,H,{sq:true});pad(1,W,H);pad(2,W,0);pad(3,0,0);box(-.5,-1,W+.5,H+1);silk.push({t:'c',x:W/2,y:H/2,r:Math.min(W,H)/2-.4});pkg=p.kind==='tact6'?'택트 6×6mm':'택트 12×12mm';}
+      // 가운데 홈을 걸치는 부품: 핀 간격은 브레드보드에서 꽂는 칸(cols)대로, 줄 간격 7.62mm
+      else{const cs=d.cols,h=cs.length,pt=d.dpp||2.54;for(let i=0;i<n;i++){const bot=i<h,x=(bot?cs[i]:cs[n-1-i])*pt;pad(i,x,bot?7.62:0,{sq:i===0});}
+        const x1=cs[h-1]*pt;box(-1.3,1.2,x1+1.3,7.62-1.2);silk.push({t:'a',x:-1.3,y:3.81,r:.8});pkg=`DIP-${n}`+(cs.some((c,i)=>i&&c-cs[i-1]!==1)?` (${cs.map(c=>c*pt).join('·')}mm)`:'');}}
+    // 한 줄 부품: pp가 있으면 그 간격으로 고르게, 없으면 브레드보드에서 꽂는 칸(dc)대로
+    else{const xs=d.pp?d.pins.map((_,i)=>i*d.pp):d.dc.map(k=>k*2.54);xs.forEach((x,i)=>pad(i,x,0,{sq:i===0}));box(-1.5,-1.5,xs[xs.length-1]+1.5,1.5);
+      const gap=d.pp?d.pp+'mm':xs.every((x,i)=>!i||Math.abs(x-xs[i-1]-2.54)<1e-6)?'2.54mm':xs.map(x=>+x.toFixed(2)).join('·')+'mm';
+      pkg=d.pkg?`${d.pkg} (${d.pins.map(x=>x[0]).join('')}, ${gap})`:`${n}핀 ${gap}`;}}
   else{const n=Math.max(1,symOf(p).pins.length);row(n);val=p.t;pkg=`핀 헤더 1×${n}`;}
   // 가운데를 (0,0)으로
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const q of pads){x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);}
@@ -6384,6 +6419,11 @@ function pcalc(){if(pcache)return pcache;
     while(rest.length){let best=null;for(const A of inT)for(let gi=0;gi<rest.length;gi++)for(const i of A)for(const j of rest[gi]){const d=Math.hypot(pads[i].x-pads[j].x,pads[i].y-pads[j].y);if(!best||d<best.d)best={d,i,j,gi};}
       rats.push({a:pads[best.i],b:pads[best.j],net:n,d:best.d});inT.push(rest[best.gi]);rest.splice(best.gi,1);}}
   pcache={parts,byKey,fps,pads,names,trNet,viaNet,rats,shorts,planes,isl:{np,ns,f:isl}};return pcache;}
+// 패드 가장자리까지 거리(사각 패드는 실제 사각형으로): 점 → 패드, 선분 → 패드
+function dPtPad(p,q){if(!q.sq)return Math.hypot(p.x-q.x,p.y-q.y)-q.r;const dx=Math.abs(p.x-q.x)-q.r,dy=Math.abs(p.y-q.y)-q.r;return dx>0||dy>0?Math.hypot(Math.max(dx,0),Math.max(dy,0)):Math.max(dx,dy);}
+function dSegPad(a,b,q){if(!q.sq)return dPtSeg(q,a,b)-q.r;const c=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>({x:q.x+u*q.r,y:q.y+v*q.r}));
+  for(let i=0;i<4;i++)if(segX(a,b,c[i],c[(i+1)%4]))return 0;if(dPtPad(a,q)<=0||dPtPad(b,q)<=0)return 0;
+  return Math.min(dPtPad(a,q),dPtPad(b,q),...c.map(k=>dPtSeg(k,a,b)));}
 function dPtSeg(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,L=dx*dx+dy*dy;let t=L?((p.x-a.x)*dx+(p.y-a.y)*dy)/L:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
 function segX(a,b,c,d){const o=(p,q,r)=>Math.sign((q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x));return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;}
 const dSegSeg=(a,b,c,d)=>segX(a,b,c,d)?0:Math.min(dPtSeg(a,c,d),dPtSeg(b,c,d),dPtSeg(c,a,b),dPtSeg(d,a,b));
@@ -6397,14 +6437,17 @@ function _pcbDRC(C){const E=[],clr=PCB.clr,eps=.005;const mk=(k,t,x,y)=>E.push({
   for(let i=0;i<S_.length;i++)for(let j=i+1;j<S_.length;j++){const A=S_[i],B=S_[j];if(A.s.l!==B.s.l||(A.n===B.n&&A.n>=0)||(A.n<0&&B.n<0&&C.isl.f(C.isl.np+A.j)===C.isl.f(C.isl.np+B.j)))continue;
     const g=dSegSeg(A.s.a,A.s.b,B.s.a,B.s.b)-(A.s.w+B.s.w)/2;if(g<clr-eps)mk('bad',`${LNAME[A.s.l]||A.s.l} 선끼리 너무 가까워요(${nm(A.n)} ↔ ${nm(B.n)}, 간격 ${Math.max(0,g).toFixed(2)}mm < ${clr}mm)`,(A.s.a.x+A.s.b.x+B.s.a.x+B.s.b.x)/4,(A.s.a.y+A.s.b.y+B.s.a.y+B.s.b.y)/4);}
   const same=(i,j)=>C.isl.f(i)===C.isl.f(j);   // 구리로 이미 이어진 것끼리는 가까워도 괜찮다(PCB에서 직접 이은 연결)
-  for(const A of S_)C.pads.forEach((q,qi)=>{if(q.net===A.n&&q.net>=0||!q.np&&same(qi,C.isl.np+A.j))return;const g=dPtSeg(q,A.s.a,A.s.b)-A.s.w/2-q.r*(q.sq?1.2:1);if(g<clr-eps)mk('bad',`선이 ${q.P.ref} ${pinLabel(q)} ${q.np?'자리':`패드(${nm(q.net)})`}에 너무 가까워요 (간격 ${Math.max(0,g).toFixed(2)}mm)`,q.x,q.y);});
-  PCB.vias.forEach((v,i)=>{const n=C.viaNet[i],vi=C.isl.np+C.isl.ns+i;C.pads.forEach((q,qi)=>{if(q.net===n&&n>=0||!q.np&&same(qi,vi))return;const g=Math.hypot(v.x-q.x,v.y-q.y)-VIAD/2-q.r;if(g<clr-eps)mk('bad',`비아가 ${q.P.ref} 패드에 너무 가까워요`,v.x,v.y);});
+  for(const A of S_)C.pads.forEach((q,qi)=>{if(q.net===A.n&&q.net>=0||!q.np&&same(qi,C.isl.np+A.j))return;const g=dSegPad(A.s.a,A.s.b,q)-A.s.w/2;if(g<clr-eps)mk('bad',`선이 ${q.P.ref} ${pinLabel(q)} ${q.np?'자리':`패드(${nm(q.net)})`}에 너무 가까워요 (간격 ${Math.max(0,g).toFixed(2)}mm)`,q.x,q.y);});
+  PCB.vias.forEach((v,i)=>{const n=C.viaNet[i],vi=C.isl.np+C.isl.ns+i;C.pads.forEach((q,qi)=>{if(q.net===n&&n>=0||!q.np&&same(qi,vi))return;const g=dPtPad(v,q)-VIAD/2;if(g<clr-eps)mk('bad',`비아가 ${q.P.ref} 패드에 너무 가까워요`,v.x,v.y);});
     for(const A of S_){if(A.n===n&&n>=0||same(vi,C.isl.np+A.j))continue;const g=dPtSeg(v,A.s.a,A.s.b)-A.s.w/2-VIAD/2;if(g<clr-eps&&g<-.0)mk('bad',`비아가 다른 연결(${nm(A.n)})의 선에 닿아요`,v.x,v.y);else if(g<clr-eps)mk('bad',`비아가 다른 연결(${nm(A.n)})의 선에 너무 가까워요`,v.x,v.y);}});
   for(let i=0;i<C.pads.length;i++)for(let j=i+1;j<C.pads.length;j++){const a=C.pads[i],b=C.pads[j];if(a.fp===b.fp||(a.net===b.net&&a.net>=0))continue;const g=Math.hypot(a.x-b.x,a.y-b.y)-a.r-b.r;if(g<clr-eps)mk('bad',`${a.P.ref}와 ${b.P.ref}의 패드가 너무 가까워요`,(a.x+b.x)/2,(a.y+b.y)/2);}
   // 층 점검
   if(PCB.nl===1&&PCB.vias.length)mk('bad',`1층 보드에는 비아를 쓸 수 없어요(비아 ${PCB.vias.length}개). 점퍼선을 쓰거나 층을 2층 이상으로 늘리세요`,PCB.vias[0].x,PCB.vias[0].y);
   {const LS=pLayers();const bad=PCB.tr.filter(t=>!LS.includes(t.l)||pPlane(t.l));if(bad.length)mk('bad',`판(구리 판) 층이나 없는 층에 선이 ${bad.length}개 있어요. 선을 고르고 다른 층으로 옮기세요`,bad[0].a.x,bad[0].a.y);}
   for(const pl of C.planes)if(pl.n<0||!C.pads.some(q=>q.net===pl.n))E.push({k:'warn',t:`${LNAME[pl.L]} 판의 연결 ${pl.name}에 이어진 패드가 없어요(판이 아무 데도 안 이어져요)`});
+  // 비아끼리: 다른 연결이면 간격, 겹치면 단락
+  for(let i=0;i<PCB.vias.length;i++)for(let j=i+1;j<PCB.vias.length;j++){const a=PCB.vias[i],b=PCB.vias[j],na=C.viaNet[i],nb=C.viaNet[j];if(na===nb&&na>=0)continue;
+    const g=Math.hypot(a.x-b.x,a.y-b.y)-VIAD;if(g<clr-eps)mk('bad',g<0?`비아 두 개가 겹쳐요(${nm(na)} ↔ ${nm(nb)}) — 모든 층이 단락돼요`:`비아끼리 너무 가까워요(${nm(na)} ↔ ${nm(nb)}, 간격 ${g.toFixed(2)}mm)`,(a.x+b.x)/2,(a.y+b.y)/2);}
   const out=(x,y,m)=>x<m||y<m||x>PCB.w-m||y>PCB.h-m;
   for(const s of PCB.tr)if(out(s.a.x,s.a.y,s.w/2+.3)||out(s.b.x,s.b.y,s.w/2+.3)){mk('bad','선이 보드 가장자리 밖으로 나가요(가장자리와 0.3mm 띄우세요)',s.a.x,s.a.y);break;}
   for(const q of C.pads)if(out(q.x,q.y,q.r+.3)){mk('bad',`${q.P.ref} 부품이 보드 밖에 있어요`,q.x,q.y);break;}
@@ -6466,26 +6509,28 @@ function routeOnce(order,deadline){const C=pcalc(),G=PG,W=Math.round(PCB.w/G)+1,
   // 선을 그릴 수 있는 층(판 층 빼고) 차례대로 0,1,2…
   const SL=pSig(),nL=SL.length,ALL=SL.map((_,i)=>i);
   // 칸 주인: 0 빈칸, -1 막힘, n+1 넷 n의 것
-  const own=SL.map(()=>new Int32Array(N));const core=new Uint8Array(N);
-  const claim=(L,i,n)=>{const o=own[L][i];if(o===0)own[L][i]=n+1;else if(o!==n+1&&!(L===2))own[L][i]=-1;};
+  // own[VL] = 비아를 놓아도 되는지(다른 넷 패드·선·비아와 비아 지름만큼 띄움)
+  const own=[...SL.map(()=>new Int32Array(N)),new Int32Array(N)],VL=nL;const core=new Uint8Array(N);
+  const claim=(L,i,n)=>{const o=own[L][i];if(o===0)own[L][i]=n+1;else if(o!==n+1)own[L][i]=-1;};
   const mark=(Ls,x0,y0,x1,y1,rad,n,dist)=>{const cx0=Math.max(0,Math.floor((Math.min(x0,x1)-rad)/G)),cx1=Math.min(W-1,Math.ceil((Math.max(x0,x1)+rad)/G)),cy0=Math.max(0,Math.floor((Math.min(y0,y1)-rad)/G)),cy1=Math.min(H-1,Math.ceil((Math.max(y0,y1)+rad)/G));
     for(let y=cy0;y<=cy1;y++)for(let x=cx0;x<=cx1;x++){if(dist({x:x*G,y:y*G})<rad-1e-6)for(const L of Ls)claim(L,y*W+x,n);}};
   const hw=tw/2;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const px=x*G,py=y*G,m=hw+.3;if(px<m||py<m||px>PCB.w-m||py>PCB.h-m){for(const L of ALL)own[L][y*W+x]=-1;}}
   // 판에 붙는 패드(판 연결)는 이미 이어졌지만, 신호 층에서는 여전히 그 연결의 패드다
-  for(const q of C.pads){const n=q.net>=0?q.net:1e6+C.pads.indexOf(q),rad=q.r*(q.sq?1.2:1)+clr+hw;mark(ALL,q.x,q.y,q.x,q.y,rad,n,p=>Math.hypot(p.x-q.x,p.y-q.y));}
-  PCB.tr.forEach((s,j)=>{const n=C.trNet[j]>=0?C.trNet[j]:2e6+j,L=SL.indexOf(s.l);if(L<0)return;mark([L],s.a.x,s.a.y,s.b.x,s.b.y,s.w/2+clr+hw,n,p=>dPtSeg(p,s.a,s.b));});
-  PCB.vias.forEach((v,i)=>{const n=C.viaNet[i]>=0?C.viaNet[i]:3e6+i;mark(ALL,v.x,v.y,v.x,v.y,VIAD/2+clr+hw,n,p=>Math.hypot(p.x-v.x,p.y-v.y));});
+  const vr=VIAD/2;
+  for(const q of C.pads){const n=q.net>=0?q.net:1e6+C.pads.indexOf(q);mark(ALL,q.x-q.r,q.y-q.r,q.x+q.r,q.y+q.r,clr+hw,n,p=>dPtPad(p,q));mark([VL],q.x-q.r,q.y-q.r,q.x+q.r,q.y+q.r,clr+vr+.02,n,p=>dPtPad(p,q));}
+  PCB.tr.forEach((s,j)=>{const n=C.trNet[j]>=0?C.trNet[j]:2e6+j,L=SL.indexOf(s.l);if(L<0)return;mark([L],s.a.x,s.a.y,s.b.x,s.b.y,s.w/2+clr+hw,n,p=>dPtSeg(p,s.a,s.b));mark([VL],s.a.x,s.a.y,s.b.x,s.b.y,s.w/2+clr+vr+.02,n,p=>dPtSeg(p,s.a,s.b));});
+  PCB.vias.forEach((v,i)=>{const n=C.viaNet[i]>=0?C.viaNet[i]:3e6+i;mark(ALL,v.x,v.y,v.x,v.y,vr+clr+hw,n,p=>Math.hypot(p.x-v.x,p.y-v.y));mark([VL],v.x,v.y,v.x,v.y,2*vr+clr+.02,n,p=>Math.hypot(p.x-v.x,p.y-v.y));});
   // 패드 바로 밑 칸은 그 넷 것으로(다른 넷 여유 칸과 겹쳐도)
   const cellOf=(x,y)=>{const cx=Math.round(x/G),cy=Math.round(y/G);return cx>=0&&cy>=0&&cx<W&&cy<H?cy*W+cx:-1;};
   for(const q of C.pads){const i=cellOf(q.x,q.y);if(i>=0&&q.net>=0){for(const L of ALL)own[L][i]=q.net+1;core[i]=1;}}
-  const rats=C.rats.map((r,i)=>({...r,i}));let list=order?order.map(o=>rats.find(r=>r.a===o.a&&r.b===o.b)||null).filter(Boolean):[...rats].sort((a,b)=>a.d-b.d);
+  const rats=C.rats.map((r,i)=>({...r,i}));const rk=r=>r.a.fp.key+'|'+r.a.k+'>'+r.b.fp.key+'|'+r.b.k;let list=order?order.map(o=>rats.find(r=>rk(r)===rk(o))||null).filter(Boolean):[...rats].sort((a,b)=>a.d-b.d);
   for(const r of rats)if(!list.includes(r))list.push(r);
   const ok=[],fail=[];let len=0;
   const DX=[1,1,0,-1,-1,-1,0,1],DY=[0,1,1,1,0,-1,-1,-1];
   const free=(L,i,n)=>{const o=own[L][i];return o===0||o===n+1;};
   const allFree=(i,n)=>ALL.every(L=>free(L,i,n));
-  const viaOk=(i,n)=>{if(nL<2||core[i])return false;if(!allFree(i,n))return false;const x=i%W,y=(i-x)/W;
+  const viaOk=(i,n)=>{if(nL<2||core[i])return false;if(!allFree(i,n)||!free(VL,i,n))return false;const x=i%W,y=(i-x)/W;
     for(let d=0;d<8;d+=2){const xx=x+DX[d],yy=y+DY[d];if(xx<0||yy<0||xx>=W||yy>=H)return false;const j=yy*W+xx;if(!allFree(j,n))return false;}return true;};
   for(const r of list){const n=r.net,s=cellOf(r.a.x,r.a.y),t=cellOf(r.b.x,r.b.y);if(s<0||t<0||(deadline&&performance.now()>deadline)){fail.push(r);continue;}
     const tx=t%W,ty=(t-tx)/W;const NS=N*nL*8;if(!RBUF||RBUF.g.length<NS)RBUF={g:new Float32Array(NS),from:new Int32Array(NS),gen:new Int32Array(NS),k:0};const RB=RBUF;RB.k++;const gk=RB.k,gg=RB.g,gen=RB.gen,from=RB.from;
@@ -6515,8 +6560,9 @@ function routeOnce(order,deadline){const C=pcalc(),G=PG,W=Math.round(PCB.w/G)+1,
     flush(pts[pts.length-1].L);
     for(const sg of segs){if(sg.a.x===sg.b.x&&sg.a.y===sg.b.y)continue;PCB.tr.push({id:PCB.nextId++,l:sg.l,w:tw,a:sg.a,b:sg.b});len+=Math.hypot(sg.a.x-sg.b.x,sg.a.y-sg.b.y);}
     for(const o of path){own[o.L][o.i]=n+1;}
+    for(const sg of segs){const L=SL.indexOf(sg.l);if(L>=0)mark([L],sg.a.x,sg.a.y,sg.b.x,sg.b.y,tw/2+clr+hw,n,p=>dPtSeg(p,sg.a,sg.b));mark([VL],sg.a.x,sg.a.y,sg.b.x,sg.b.y,tw/2+clr+vr+.02,n,p=>dPtSeg(p,sg.a,sg.b));}
     // 비아 자리도 두 층 모두 이 넷 것
-    for(let k=1;k<path.length;k++)if(path[k].L!==path[k-1].L){const i=path[k].i;for(const L of ALL)own[L][i]=n+1;const x=i%W,y=(i-x)/W;for(let d=0;d<8;d++){const xx=x+DX[d],yy=y+DY[d];if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=yy*W+xx;for(const L of ALL)if(own[L][j]===0)own[L][j]=n+1;}}
+    for(let k=1;k<path.length;k++)if(path[k].L!==path[k-1].L){const i=path[k].i;for(const L of ALL)own[L][i]=n+1;{const x=(i%W)*G,y=Math.floor(i/W)*G;mark([VL],x,y,x,y,2*vr+clr+.02,n,p=>Math.hypot(p.x-x,p.y-y));}const x=i%W,y=(i-x)/W;for(let d=0;d<8;d++){const xx=x+DX[d],yy=y+DY[d];if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=yy*W+xx;for(const L of ALL)if(own[L][j]===0)own[L][j]=n+1;}}
     ok.push(r);}
   pcache=null;return{ok,fail,len};}
 
@@ -6553,7 +6599,7 @@ function renderPcb(){const g=pcbSvg();if(!g||VM!=='pcb')return;g.classList.toggl
     s+=`<mask id="${id}"><rect x="0" y="0" width="${PCB.w}" height="${PCB.h}" fill="#fff"/>${C.pads.map(q=>`<circle cx="${q.x}" cy="${q.y}" r="${r3(q.r*(q.sq?1.42:1)+cl)}" fill="${q.net===pl.n&&pl.n>=0&&!q.np?'#fff':'#000'}"/>`).join('')}${PCB.vias.map((v,i)=>C.viaNet[i]===pl.n&&pl.n>=0?'':`<circle cx="${v.x}" cy="${v.y}" r="${r3(VIAD/2+cl)}" fill="#000"/>`).join('')}</mask>`;
     s+=`<rect class="pplane" x="${m}" y="${m}" width="${r3(PCB.w-2*m)}" height="${r3(PCB.h-2*m)}" fill="${PCOL[pl.L]}" fill-opacity="${cu===pl.L?.85:.3}" mask="url(#${id})" pointer-events="none"/>`;
     // 그 판만 볼 때: 판 연결 패드를 잇는 십자 살(서멀)도 거버와 같게
-    if(cu===pl.L&&pl.n>=0)for(const q of C.pads)if(q.net===pl.n&&!q.np){const R=q.d*(q.sq?.71:.5)+cl+.4;s+=`<path d="M${r3(q.x-R)} ${q.y}H${r3(q.x+R)}M${q.x} ${r3(q.y-R)}V${r3(q.y+R)}" stroke="${PCOL[pl.L]}" stroke-width=".5" pointer-events="none"/>`;}}
+    if(cu===pl.L&&pl.n>=0)for(const q of C.pads)if(q.net===pl.n&&!q.np){const R=q.d/2+cl+.3;s+=`<path mask="url(#${id})" d="M${r3(q.x-R)} ${q.y}H${r3(q.x+R)}M${q.x} ${r3(q.y-R)}V${r3(q.y+R)}" stroke="${PCOL[pl.L]}" stroke-width=".5" pointer-events="none"/>`;}}
   const trSVG=L=>!shown(L)?'':PCB.tr.map((t,j)=>t.l!==L?'':`<line class="ptr${SS.segs.has(t.id)?' sel':''}${C.trNet[j]===hn||C.trNet[j]===selNet&&selNet>=0?' hn':''}" data-seg="${t.id}" x1="${t.a.x}" y1="${t.a.y}" x2="${t.b.x}" y2="${t.b.y}" stroke="${PCOL[L]}" stroke-width="${t.w}" stroke-opacity="${L===player||cu?1:.5}"/>`).join('');
   // 부품 자리(누르면 부품을 고르는 곳): 선보다 아래에 깔아 선을 누를 수 있게
   for(const f of C.fps){const P=C.byKey.get(f.key),b=fpBox(f,P.D),sel=SS.fps.has(f.key);
@@ -6739,7 +6785,7 @@ function routeClick(p){const s=snapRoute(p);
   PCB.tr.push({id:PCB.nextId++,l:player,w:PCB.tw,a:{...a},b:{...b}});proute.n++;proute.pts.push(b);pcache=null;
   if(s.pad||s.via||s.end){routeStop();return;}
   pcbSave();renderPcb();}
-function routeVia(){if(!proute)return false;if(pSig().length<2){pNextLayer();return true;}const a=proute.pts[proute.pts.length-1];
+function routeVia(){if(!proute)return false;if(pSig().length<2){pNextLayer();return true;}const a=proute.pts[proute.pts.length-1];proute.n++;
   if(!PCB.vias.some(v=>Math.hypot(v.x-a.x,v.y-a.y)<.01)&&!pcalc().pads.some(q=>Math.hypot(q.x-a.x,q.y-a.y)<=q.r))PCB.vias.push({id:PCB.nextId++,x:a.x,y:a.y});
   pNextLayer();pcache=null;pcbSave();renderPcb();return true;}
 function pNextLayer(){const SL=pSig();if(SL.length<2){toast('1층 보드는 층을 바꿀 수 없어요. [점검] 창의 층 쌓기에서 층을 늘려요');return;}player=SL[(SL.indexOf(player)+1)%SL.length];if(pview!=='all'&&pview!=='silk'&&pview!=='drill')pview=player;}
@@ -6771,12 +6817,16 @@ function pcbGerbers(){const C=pcalc(),H_=PCB.h,gc=v=>Math.round(v*1e6),X=x=>'X'+
   const plane=pl=>(o)=>{const m=.5,cl=Math.max(PCB.clr,.3);o.region([{x:m,y:m},{x:PCB.w-m,y:m},{x:PCB.w-m,y:PCB.h-m},{x:m,y:PCB.h-m}]);o.pol(false);
     for(const q of C.pads)o.flash(padAp(q,2*cl),q.x,q.y);
     PCB.vias.forEach((v,i)=>{if(!(pl.n>=0&&C.viaNet[i]===pl.n))o.flash(`C,${(VIAD+2*cl).toFixed(3)}`,v.x,v.y);});o.pol(true);
-    for(const q of C.pads)if(pl.n>=0&&q.net===pl.n&&!q.np){const R=q.d*(q.sq?.71:.5)+cl+.4;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])o.line('C,0.500',{x:q.x,y:q.y},{x:q.x+dx*R,y:q.y+dy*R});o.flash(padAp(q),q.x,q.y);}};
+    for(const q of C.pads)if(pl.n>=0&&q.net===pl.n&&!q.np){const R=q.d/2+cl+.3;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])o.line('C,0.500',{x:q.x,y:q.y},{x:q.x+dx*R,y:q.y+dy*R});o.flash(padAp(q),q.x,q.y);}
+    // 살이 다른 연결의 구멍 둘레·판 바깥으로 나가지 않게 다시 비운다
+    o.pol(false);for(const q of C.pads)if(!(pl.n>=0&&q.net===pl.n&&!q.np))o.flash(padAp(q,2*cl),q.x,q.y);
+    PCB.vias.forEach((v,i)=>{if(!(pl.n>=0&&C.viaNet[i]===pl.n))o.flash(`C,${(VIAD+2*cl).toFixed(3)}`,v.x,v.y);});
+    for(const r of [[0,0,PCB.w,m],[0,PCB.h-m,PCB.w,PCB.h],[0,0,m,PCB.h],[PCB.w-m,0,PCB.w,PCB.h]])o.region([{x:r[0],y:r[1]},{x:r[2],y:r[1]},{x:r[2],y:r[3]},{x:r[0],y:r[3]}]);o.pol(true);};
   const mask=(o)=>{for(const q of C.pads){if(q.np){o.flash(`C,${(q.dr+.2).toFixed(3)}`,q.x,q.y);continue;}const d=(q.d+.1).toFixed(3);o.flash(q.sq?`R,${d}X${d}`:`C,${d}`,q.x,q.y);}};
   const silk=(o)=>{const k='C,0.150';for(const f of C.fps){const P=C.byKey.get(f.key),T=(x,y)=>{const p=rotP(x,y,f.rot);return{x:f.x+p.x,y:f.y+p.y};};
       for(const s of P.D.silk){if(s.t==='l')o.line(k,T(s.x1,s.y1),T(s.x2,s.y2));
         else if(s.t==='r'){const a=T(s.x0,s.y0),b=T(s.x1,s.y0),c=T(s.x1,s.y1),d=T(s.x0,s.y1);o.line(k,a,b);o.line(k,b,c);o.line(k,c,d);o.line(k,d,a);}
-        else{const n=s.t==='a'?12:28,a0=s.t==='a'?-Math.PI/2:0,span=s.t==='a'?Math.PI:2*Math.PI;let prev=null;for(let i=0;i<=n;i++){const t=a0+span*i/n,q=T(s.x+s.r*Math.cos(t)*(s.t==='a'?-1:1),s.y+s.r*Math.sin(t));if(prev)o.line(k,prev,q);prev=q;}}}
+        else{const n=s.t==='a'?12:28,a0=s.t==='a'?-Math.PI/2:0,span=s.t==='a'?Math.PI:2*Math.PI;let prev=null;for(let i=0;i<=n;i++){const t=a0+span*i/n,q=T(s.x+s.r*Math.cos(t),s.y+s.r*Math.sin(t));if(prev)o.line(k,prev,q);prev=q;}}}
       // 부품 이름: 작은 선 글꼴
       const b=fpBox(f,P.D);strokeText(o,k,P.ref,b.x0,b.y0-.4,1.1);}};
   const edge=(o)=>{const k='C,0.100',a={x:0,y:0},b={x:PCB.w,y:0},c={x:PCB.w,y:PCB.h},d={x:0,y:PCB.h};o.line(k,a,b);o.line(k,b,c);o.line(k,c,d);o.line(k,d,a);};
@@ -6790,7 +6840,7 @@ function pcbGerbers(){const C=pcalc(),H_=PCB.h,gc=v=>Math.round(v*1e6),X=x=>'X'+
   const pth=[...C.pads.filter(q=>!q.np).map(q=>[q.dr,q.x,q.y]),...PCB.vias.map(v=>[VIADR,v.x,v.y])],npth=C.pads.filter(q=>q.np).map(q=>[q.dr,q.x,q.y]);
   const drl=drillFile(pth,true),ndrl=npth.length?drillFile(npth,false):null;
   const bom='참조,값,발자국\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return[P.ref,P.D.val,P.D.pkg].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');}).join('\n')+'\n';
-  const pos='참조,X(mm),Y(mm),회전\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return`${P.ref},${f.x.toFixed(3)},${(H_-f.y).toFixed(3)},${f.rot}`;}).join('\n')+'\n';
+  const pos='참조,X(mm),Y(mm),회전(반시계, 도)\n'+C.fps.map(f=>{const P=C.byKey.get(f.key);return`${P.ref},${f.x.toFixed(3)},${(H_-f.y).toFixed(3)},${(360-f.rot)%360}`;}).join('\n')+'\n';
   const st=pStack().map(r=>r.k==='cu'?`  L${LS.indexOf(r.L)+1} ${LNAME[r.L]} 구리 35µm — ${(C.planes.find(p=>p.L===r.L)?C.planes.find(p=>p.L===r.L).name+' 판':'신호')}`:`     ${r.k==='core'?'코어':'프리프레그'} ${r.t.toFixed(2)}mm`).join('\n');
   const files=base=>{const L=cuFiles.map(f=>[`${base}-${f.name}`,f.data]);
     if(nl>1)L.push([`${base}-F_Mask.gts`,layer('Soldermask,Top',mask)]);L.push([`${base}-B_Mask.gbs`,layer('Soldermask,Bot',mask)]);
@@ -6909,7 +6959,8 @@ function pcbEnter(){pcache=null;   // 브레드보드·회로도에서 연결이
   window.addEventListener('resize',()=>{if(VM==='pcb')renderPcb();});
   pcbLoad(store.get('pcb',null));})();
 /* 파일·저장본에 PCB가 있으면 불러오고, 없으면 빈 PCB(다음에 PCB 화면을 열 때 회로도에서 새로 만든다) */
-function pcbLoadIf(o){pcbLoad(o&&typeof o==='object'?o:null);phist.length=0;pfut.length=0;psel=null;proute=null;pcbEnter.fitted=false;pcbSave();if(VM==='pcb')pcbEnter();}
+function pcbLoadIf(o){if(o&&typeof o==='object'&&Array.isArray(o.fps)&&LOADMAP.size){o=Object.assign({},o,{fps:o.fps.map(f=>{const m=f&&typeof f.key==='string'&&/^b(\d+):(.*)$/.exec(f.key);if(!m)return f;const n=LOADMAP.get(+m[1]);return n?Object.assign({},f,{key:'b'+n+':'+m[2]}):f;})});}
+  pcbLoad(o&&typeof o==='object'?o:null);phist.length=0;pfut.length=0;psel=null;proute=null;pcbEnter.fitted=false;pcbSave();if(VM==='pcb')pcbEnter();}
 
 /* ───────── 라이선스 키 ─────────
    공식 주소(깃허브 페이지·Claude 미리보기)에서는 키 없이 쓴다. 그 밖(복사한 파일 file://, 다른 사이트)에서는

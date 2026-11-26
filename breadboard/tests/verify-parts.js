@@ -139,7 +139,7 @@ function inPage() {
     for (const [k, n] of [['rbcd', 10], ['rhex', 16]]) { const cases = []; for (let v = 0; v < n; v++) { const on = [1, 2, 4, 8].filter((b, i) => (v >> i) & 1).map(String); cases.push([`값 ${v}`, { s: v }, null, [['C', 'C2', ...on].join('-')]]); } check(k, cases); }
     // 로터리 셀렉터: 극마다 공통 Cx가 위치 s의 단자에
     for (const [k, poles, n] of [['sel1', 1, 12], ['sel2', 2, 6], ['sel3', 3, 4], ['sel4', 4, 3]]) { const cases = []; const L_ = 'ABCD';
-      for (let s = 0; s < n; s++)cases.push([`${s + 1}단`, { s }, null, [...Array(poles).keys()].map(p => `C${p + 1}-${L_[p]}${s + 1}`)]); check(k, cases); }
+      for (let s = 0; s < n; s++)cases.push([`${s + 1}단`, { s }, null, [...Array(poles).keys()].map(p => `COM${p + 1}-${L_[p]}${s + 1}`)]); check(k, cases); }
     // 로터리 인코더: 시계 방향(+1씩)이면 A가 B보다 먼저 C에 붙는다(직교 신호), 누르면 S1-S2
     { const seq = [0, 1, 2, 3, 4].map(s => groups('enc', mk('enc', { s }), null)), push = groups('enc', mk('enc', { s: 0 }), { pr: 1 });
       const A = seq.map(g => /A-C|C-A/.test(g.replace(/-B/, '')) || /A/.test(g) ? 1 : 0), B = seq.map(g => /B/.test(g) ? 1 : 0);
