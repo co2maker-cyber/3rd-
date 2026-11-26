@@ -6,6 +6,7 @@
 //   --dom   쓸 수 있는 곳(쉼표로): file = 내 컴퓨터에서 연 파일, example.com, .example.com = 하위 도메인 포함, * = 어디서나
 //   --exp   만료일(YYYY-MM-DD). 빼면 기한 없음
 //   --id    키 번호(빼면 자동). 키를 취소하려면 index.html의 LIC_REVOKED에 이 번호를 넣어요
+//   --build 파일이름.html  키를 미리 넣은 개인용 로컬 버전 파일도 만들어요(받은 사람은 더블클릭으로 바로 실행)
 // 새 열쇠:   node breadboard/tools/issue-license.js --newkey 저장할경로-PRIVATE.jwk.json
 //   → 비밀 열쇠 파일을 만들고, index.html의 LIC_PUB에 넣을 공개 열쇠를 보여 줘요(바꾸면 예전 키는 모두 못 써요)
 const crypto=require('crypto'),fs=require('fs');
@@ -21,4 +22,9 @@ if(exp&&!/^\d{4}-\d{2}-\d{2}$/.test(exp)){console.error('--exp 는 YYYY-MM-DD');
 const info={v:1,id:arg('id')||('L-'+crypto.randomBytes(4).toString('hex').toUpperCase()),to:arg('to')||'',dom,exp,ed:'BBCAD',iat:new Date().toISOString().slice(0,10)};
 const body=b64u(JSON.stringify(info));
 const sig=crypto.sign('sha256',Buffer.from(body),{key:crypto.createPrivateKey({key:{kty:jwk.kty,crv:jwk.crv,x:jwk.x,y:jwk.y,d:jwk.d},format:'jwk'}),dsaEncoding:'ieee-p1363'});
-console.log(JSON.stringify(info));console.log('BBCAD1.'+body+'.'+b64u(sig));
+const key='BBCAD1.'+body+'.'+b64u(sig);console.log(JSON.stringify(info));console.log(key);
+if(arg('build')){const path=require('path');const src=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');const line='const LIC_EMBED=null;';
+  if(!src.includes(line)){console.error('index.html에서 LIC_EMBED 줄을 찾지 못했어요');process.exit(1);}
+  if(!dom.includes('file')&&!dom.includes('*'))console.error('주의: --dom 에 file 이 없어서 로컬 파일로 열면 키 창이 떠요');
+  const out=src.replace(line,'const LIC_EMBED='+JSON.stringify(key)+';   // 개인용 로컬 버전: '+(info.to||'')+' ('+info.id+')').replace('<title>브레드보드 CAD</title>','<title>브레드보드 CAD · '+(info.to||'로컬')+'</title>');
+  fs.writeFileSync(arg('build'),out);console.log('로컬 버전 파일:',arg('build'));}

@@ -30,6 +30,19 @@ await p.evaluate(()=>{localStorage.clear();});await p.reload();await p.waitForTi
 // 명령줄 도구
 const out=execFileSync('node',[path.join(__dirname,'../../tools/issue-license.js'),'--key',privFile,'--to','이영희','--dom','file,.example.org','--exp','2099-01-01'],{encoding:'utf8'}).trim().split('\n');
 await p.evaluate(()=>{localStorage.clear();});await p.reload();await p.waitForTimeout(1200);r=await tryKey(out[1]);chk('명령줄 도구 키 통과',!r.open&&await p.evaluate(()=>LIC.info.to==='이영희'));
+// 로컬 버전(키를 미리 넣은 파일): 명령줄 --build
+const built=path.join(tmp,'local-cli.html');execFileSync('node',[path.join(__dirname,'../../tools/issue-license.js'),'--key',privFile,'--to','로컬사용자','--dom','file','--build',built]);
+{const q=await ctx.newPage();await q.goto('file://'+built);await q.waitForTimeout(1200);
+  chk('명령줄로 만든 로컬 버전: 키 창 없이 열림',await q.evaluate(()=>$('licGate').hidden&&LIC.mode==='key'&&LIC.local&&LIC.info.to==='로컬사용자'));
+  chk('로컬 버전 제목·[속성]에 받는 사람',(await q.title()).includes('로컬사용자')&&await q.evaluate(()=>helpHTML().includes('개인용 로컬 버전')));await q.close();}
+// 발급 페이지의 [로컬 버전 파일 만들기] (내 컴퓨터에서 연 발급 페이지 → 프로그램 파일 고르기)
+await a.fill('#to','박민수');await a.click('#go');await a.waitForTimeout(300);
+const fcP=a.waitForEvent('filechooser');await a.click('#bld');const fc=await fcP;await fc.setFiles(path.join(__dirname,'../../index.html'));await a.waitForSelector('#bdl:not([hidden])');const dlP=a.waitForEvent('download');await a.click('#bdl');const dl=await dlP;
+const built2=path.join(tmp,'local-admin.html');await dl.saveAs(built2);chk('발급 페이지가 로컬 버전 파일을 만듦: '+dl.suggestedFilename(),/^breadboard-CAD-local-.+\.html$/.test(dl.suggestedFilename()));
+{const q=await ctx.newPage();await q.goto('file://'+built2);await q.waitForTimeout(1200);chk('발급 페이지 로컬 버전: 키 창 없이 열림',await q.evaluate(()=>$('licGate').hidden&&LIC.local&&LIC.info.to==='박민수'));await q.close();}
+// 다른 열쇠로 서명한 키를 넣은 로컬 버전은 잠김
+{const src=fs.readFileSync(path.join(__dirname,'../../index.html'),'utf8').replace('const LIC_EMBED=null;','const LIC_EMBED='+JSON.stringify(sign(Other,{to:'가짜',dom:['file'],exp:null}))+';');const f3=path.join(tmp,'fake.html');fs.writeFileSync(f3,src);
+  const q=await ctx.newPage();await q.goto('file://'+f3);await q.evaluate(()=>localStorage.clear());await q.reload();await q.waitForTimeout(1200);chk('가짜 키를 넣은 로컬 버전은 잠김',await q.evaluate(()=>!$('licGate').hidden));await q.close();}
 // 공식 주소 판정
 chk('공식 주소 목록',await p.evaluate(()=>LIC_OFFICIAL.includes('co2maker-cyber.github.io')));
 chk('페이지 오류 없음 '+errs.join('|'),!errs.length);fs.rmSync(tmp,{recursive:true,force:true});

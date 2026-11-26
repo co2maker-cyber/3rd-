@@ -32,6 +32,10 @@ button.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-w
 <label for="exp">만료일(비우면 기한 없음)</label><input id="exp" type="date">
 <button class="pri" id="go">키 만들기</button><p id="gst"></p>
 <label for="out">발급한 키</label><textarea id="out" readonly></textarea><button id="cp">키 복사</button>
+<h2>3. 개인용 로컬 버전 파일(선택)</h2>
+<p class="muted">위에서 만든 키를 미리 넣은 브레드보드 CAD 파일을 만들어요. 받은 사람은 파일을 더블클릭하면 인터넷 없이 바로 써요(쓸 수 있는 곳에 '내 컴퓨터에서 연 파일'이 있어야 해요). 파일과 화면에 받는 사람 이름이 남아요.</p>
+<button id="bld">로컬 버전 파일 만들기</button> <span class="muted">공식 사이트에서는 바로 만들어져요. 내 컴퓨터에서 이 페이지를 열었다면 프로그램 파일(index.html)을 골라 달라고 해요.</span>
+<input type="file" id="srcf" accept=".html,text/html" hidden><p id="bst"></p><p><a id="bdl" hidden class="ok">⬇ 로컬 버전 파일 내려받기</a></p>
 <p class="muted">키를 취소하려면 키 번호(L-…)를 알려 주세요. 프로그램의 취소 목록(LIC_REVOKED)에 넣어요.</p></div>
 
 <div class="card"><h2 style="margin-top:0">새 열쇠 만들기(열쇠를 잃어버렸거나 바꾸고 싶을 때)</h2>
@@ -53,7 +57,17 @@ $('go').onclick=async()=>{if(!PRIV){$('gst').className='err';$('gst').textConten
   const id='L-'+Array.from(crypto.getRandomValues(new Uint8Array(4)),x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
   const info={v:1,id,to:$('to').value.trim(),dom,exp:$('exp').value||null,ed:'BBCAD',iat:new Date().toISOString().slice(0,10)};
   const body=b64u(enc(JSON.stringify(info)));const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},PRIV,enc(body));
-  $('out').value='BBCAD1.'+body+'.'+b64u(sig);$('gst').className='ok';$('gst').textContent=`발급했어요: ${id} · ${info.to||'(이름 없음)'} · ${dom.join(', ')} · ${info.exp||'기한 없음'}`;};
+  $('out').value='BBCAD1.'+body+'.'+b64u(sig);LAST=info;$('gst').className='ok';$('gst').textContent=`발급했어요: ${id} · ${info.to||'(이름 없음)'} · ${dom.join(', ')} · ${info.exp||'기한 없음'}`;};
+let LAST=null;
+async function buildLocal(src){const key=$('out').value.trim(),line='const LIC_EMBED=null;';if(!src.includes(line)){$('bst').className='err';$('bst').textContent='프로그램 파일에서 LIC_EMBED 줄을 찾지 못했어요(브레드보드 CAD index.html인지 확인하세요).';return;}
+  const to=(LAST&&LAST.to)||'로컬',id=(LAST&&LAST.id)||'';const out=src.replace(line,'const LIC_EMBED='+JSON.stringify(key)+';   // 개인용 로컬 버전: '+to+' ('+id+')').replace('<title>브레드보드 CAD</title>','<title>브레드보드 CAD · '+to+'</title>');
+  const fn='breadboard-CAD-local-'+(id||'user')+'.html';   // 파일 이름은 영문·숫자만(한글 이름은 일부 브라우저가 지움). 받는 사람 이름은 파일 안·제목에 들어감
+  const a=$('bdl');if(a.href)URL.revokeObjectURL(a.href);a.href=URL.createObjectURL(new Blob([out],{type:'application/octet-stream'}));a.download=fn;a.textContent='⬇ '+fn+' 내려받기';a.hidden=false;
+  $('bst').className='ok';$('bst').textContent='만들었어요. 아래 링크를 눌러 내려받고, 받는 사람에게 이 파일 하나만 주면 돼요.';}
+$('bld').onclick=async()=>{if(!/^BBCAD1\./.test($('out').value.trim())){$('bst').className='err';$('bst').textContent='먼저 2번에서 키를 만드세요.';return;}
+  if(LAST&&!LAST.dom.includes('file')&&!LAST.dom.includes('*')){$('bst').className='err';$('bst').textContent="쓸 수 있는 곳에 '내 컴퓨터에서 연 파일'을 넣고 키를 다시 만드세요.";return;}
+  try{if(location.protocol==='file:')throw 0;const r=await fetch('./index.html',{cache:'no-store'});if(!r.ok)throw 0;await buildLocal(await r.text());}catch(_){$('srcf').click();}};
+$('srcf').onchange=async()=>{const f=$('srcf').files[0];$('srcf').value='';if(f)await buildLocal(await f.text());};
 $('cp').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);$('gst').textContent='복사했어요';}catch(_){$('out').select();document.execCommand('copy');}};
 $('nk').onclick=async()=>{const kp=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
   const kid='BBCAD-K'+Date.now().toString(36).toUpperCase(),priv=await crypto.subtle.exportKey('jwk',kp.privateKey),pub=await crypto.subtle.exportKey('jwk',kp.publicKey);
