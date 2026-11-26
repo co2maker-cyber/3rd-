@@ -116,7 +116,7 @@ function inPage() {
       const m = new Map(); for (let i = 0; i < n; i++) { const g = f(i); if (!m.has(g)) m.set(g, []); m.get(g).push(nm(k, i)); }
       return [...m.values()].filter(g => g.length > 1).map(g => g.sort().join('-')).sort().join(' '); };
     const want = list => list.map(g => g.split('-').sort().join('-')).sort().join(' ');
-    const mk = (k, o) => Object.assign(PX[k].init(), o || {});
+    const mk = (k, o) => Object.assign({ kind: k }, PX[k].init(), o || {});
     const check = (k, cases) => { const bad = []; for (const [label, c, r, exp] of cases) { const got = groups(k, mk(k, c), r); if (got !== want(exp)) bad.push(`${label}: ${got || '없음'} (기대 ${want(exp) || '없음'})`); }
       rec('수동 소자', `${k} · ${PX[k].title}`, !bad.length, bad.length ? bad.join(' / ') : cases.map(([l, , , e]) => `${l}: ${e.join(' ') || '끊김'}`).join(' · ')); };
     // 토글·슬라이드·로커·푸시
@@ -160,6 +160,26 @@ function inPage() {
       const exp = [2, 3, 4, 5, 6, 7, 8, 9].map(i => `1-${i}:4700`).sort(); rec('수동 소자', `sipb · ${PX.sipb.title}`, JSON.stringify(rs) === JSON.stringify(exp), rs.join(' ')); }
     { const rs = PX.sipi.res(mk('sipi', { ohms: 330 })).map(([a, b, o]) => [nm('sipi', a), nm('sipi', b)].sort((x, y) => x - y).join('-') + ':' + o).sort();
       const exp = ['1-2:330', '3-4:330', '5-6:330', '7-8:330']; rec('수동 소자', `sipi · ${PX.sipi.title}`, JSON.stringify(rs) === JSON.stringify(exp), rs.join(' ') + (JSON.stringify(rs) === JSON.stringify(exp) ? '' : ` (실제 독립형 8핀: ${exp.join(' ')})`)); }
+    // 릴레이: 코일이 꺼지면 COM→NC, 켜지면 COM→NO (래칭은 상태 s), SSR은 출력 1-2
+    check('rlyc', [['꺼짐', {}, {}, ['COM-NC']], ['켜짐', {}, { on: true }, ['COM-NO']]]);
+    check('rlyd', [['꺼짐', {}, {}, ['COM1-NC1', 'COM2-NC2']], ['켜짐', {}, { on: true }, ['COM1-NO1', 'COM2-NO2']]]);
+    check('reed', [['꺼짐', {}, {}, []], ['켜짐', {}, { on: true }, ['COM-NO']]]);
+    check('rlyl', [['RESET', { s: 0 }, {}, ['COM-NC']], ['SET', { s: 1 }, {}, ['COM-NO']]]);
+    check('ssr', [['꺼짐', {}, {}, []], ['켜짐', {}, { on: true }, ['출력 1-출력 2']]]);
+    // 코일: 정격 전압에서 붙고(75%), 10% 밑에서 떨어짐, 코일 저항 = 정격²÷전력
+    { const bad = []; for (const k of ['rlyc', 'rlyd', 'reed', 'sol']) for (const cv of PX[k].cvs) { const c = mk(k, { cv }), r = {};
+        coilUpd(c, r, .7 * cv); if (r.on) bad.push(`${k} ${cv}V: 70%에서 붙음`); coilUpd(c, r, .76 * cv); if (!r.on) bad.push(`${k} ${cv}V: 76%에서 안 붙음`);
+        coilUpd(c, r, .2 * cv); if (!r.on) bad.push(`${k} ${cv}V: 20%에서 떨어짐`); coilUpd(c, r, .05 * cv); if (r.on) bad.push(`${k} ${cv}V: 5%에서 안 떨어짐`);
+        const R = PX[k].res(c)[0][2]; if (!near(R, cv * cv / PX[k].cw, 1)) bad.push(`${k} 코일 ${R}Ω`); }
+      const s = mk('ssr'), r = {}; coilUpd(s, r, -5); const rev = r.on; coilUpd(s, r, 5); if (rev || !r.on) bad.push('SSR 극성');
+      const l = mk('rlyl'); coilUpd(l, {}, 5); const a1 = l.s; coilUpd(l, {}, 0); const a2 = l.s; coilUpd(l, {}, -5); if (a1 !== 1 || a2 !== 1 || l.s !== 0) bad.push('래칭');
+      for (const k of ['sol']) rec('수동 소자', `${k} · ${PX[k].title}`, !bad.length, bad.join(' / ') || `5V 코일 ${coilR(mk(k))}Ω`);
+      rec('수동 소자', '릴레이 코일 (붙음 75%·떨어짐 10%·코일 저항)', !bad.length, bad.join(' / ') || `큐브 5V ${coilR(mk('rlyc'))}Ω · DIP 5V ${coilR(mk('rlyd'))}Ω · 리드 5V ${coilR(mk('reed'))}Ω · SSR 극성 · 래칭 SET/유지/RESET`); }
+    // 인덕터·비드: 직류로 이어짐(thru), 리액턴스 계산용 값, 색띠(µH)
+    for (const k of ['inda', 'indr', 'indt', 'bead']) { const d = PX[k], ok = d.thru && d.pins.length === 2 && (k === 'bead' || d.init().henry > 0);
+      rec('수동 소자', `${k} · ${d.title}`, ok, ok ? '직류에서 1-2 이어짐' + (k !== 'bead' ? ` · 기본 ${henTx(d.init().henry)}` : '') : '정의 확인'); }
+    { const t = [[1e-4, [1, 0, 1]], [4.7e-5, [4, 7, 0]], [1e-6, [1, 0, -1]], [2.2e-3, [2, 2, 2]]], bad = t.filter(([L_, e]) => indBands(L_).join() !== [BANDC[e[0]], BANDC[e[1]], e[2] < 0 ? '#C9A227' : BANDC[e[2]]].join());
+      rec('수동 소자', '인덕터 색띠 (µH)', !bad.length, bad.length ? bad.map(x => henTx(x[0])).join(' ') : '100µH 갈검갈 · 47µH 노보검 · 1µH 갈검금 · 2.2mH 빨빨빨'); }
     // 다 확인했는지
     const done = new Set(R.filter(r => r.grp === '수동 소자').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }

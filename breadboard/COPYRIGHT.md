@@ -127,7 +127,7 @@ Copyright (c) 2026 co2maker-cyber. All rights reserved.
 - [x] `makeZip`, A* 자동 배선 등 핵심 로직에 GPL/AGPL 코드 없음 — 3절 표
 - [x] 참고한 MIT/BSD/Apache 코드 없음(해당 시 3절·`index.html` 맨 위에 출처·라이선스 기재)
 - [x] 부품 설명에 제조사 데이터시트 원문 복사·제조사 로고 없음
-- [x] 예제 회로 36종·`FILE-FORMAT.md` 문구는 직접 구성·작성(타사 교재·사이트 복제 아님)
+- [x] 예제 회로 37종·`FILE-FORMAT.md` 문구는 직접 구성·작성(타사 교재·사이트 복제 아님)
 - [x] `COPYRIGHT.md`(0절)와 `index.html` 맨 위에 저작권·상표 비침해·면책 고지
 - [ ] 상업 배포를 하게 되면: 비공개 저장소 분리 + 상업 이용 허용 호스팅으로 이전 (9절)
 
