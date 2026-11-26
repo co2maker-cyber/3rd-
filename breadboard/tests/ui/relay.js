@@ -31,7 +31,7 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
   const ind=px('indr')[0],net=i=>SIM.netOf[HOLES.get(ind.pins[i]).i];T('인덕터 직류 통과',net(0)===net(1),'');
   T('색띠 100µH = 갈 검 갈',indBands(1e-4).join()===[BANDC[1],BANDC[0],BANDC[1]].join(),indBands(1e-4).join());
   // 속성 창: 부품마다 열어 보기
-  let pe=0;for(const k of ['rlyc','rlyd','reed','ssr','sol','indr','inda']){try{const x=px(k)[0];sel={id:x.id};renderInfo();}catch(e){pe++;}}T('속성 창 오류 없음',!pe,'');
+  let pe=0;for(const k of ['rlyc','rlyd','reed','ssr','sol','indr','inda']){try{const x=px(k)[0];sel={type:'comp',id:x.id};renderInfo();if(!document.querySelector('#info .prop,#info .desc'))pe++;}catch(e){pe++;}}T('속성 창 오류 없음',!pe,'');
   // COM 핀을 안 이으면 역전압 알림
   { set(1,true);const D=S.comps.find(c=>c.chip==='DRV-SINK8'),comH=pinHoles(D)[CHIPS['DRV-SINK8'].idx.COM],n=SIM.netOf[HOLES.get(comH).i];
     const col=+comH.replace(/\D/g,''),w=S.comps.find(c=>c.t==='wire'&&c.pins.some(h=>/^[a-d]\d+$/.test(h)&&+h.slice(1)===col));S.comps=S.comps.filter(c=>c!==w);settle();

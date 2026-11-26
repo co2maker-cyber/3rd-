@@ -30,6 +30,10 @@
 .model BB_D_GE    D(IS=2.161e-6  N=1.789 RS=15.95  CJO=1p   M=0.4 TT=0    BV=75   IBV=50u EG=0.67)
 * 1A 브리지 정류기 안의 다이오드 1개
 .model BB_D_BRDG  D(IS=1.175e-8  N=1.866 RS=0.0987 CJO=20p  M=0.4 TT=3u   BV=1000 IBV=5u)
+* UF4007급 초고속 회복 정류용 (앱 duf): 1000V, 1A, 역회복 수십 ns
+.model BB_D_UF    D(IS=5.617e-8  N=2.294 RS=0.2593 CJO=15p  M=0.4 TT=50n  BV=1000 IBV=5u)
+* BAT85급 소신호 쇼트키 (앱 dbat): 30V, 약 0.2A
+.model BB_D_SSCH  D(IS=7.005e-8  N=1.278 RS=2.815  CJO=8p   M=0.4 TT=0    BV=30   IBV=10u)
 
 * 브리지 정류기 4핀 (앱 brdg) — 핀: AC1 AC2 POS NEG
 .subckt BB_BRIDGE_1A AC1 AC2 POS NEG
@@ -144,6 +148,8 @@ X1 IN OUT BB_IND L=100u RDC=0.71 SRF=6Meg Q=45 FQ=2.5Meg
 .subckt BB_IND_RADIAL_100U IN OUT
 X1 IN OUT BB_IND L=100u RDC=0.19 SRF=7Meg Q=50 FQ=0.8Meg
 .ends BB_IND_RADIAL_100U
+* 공심 코일 (앱 indair): 앱 [속성]에 나오는 인덕턴스·선 저항을 넣어 BB_IND로 쓴다. 쇠 심이 없어 손실이 적다(Q 크게).
+*   예: 지름 10mm 20회 → 약 2.7µH, 선 저항 약 0.055Ω →  X1 a b BB_IND L=2.7u RDC=0.055 SRF=80Meg Q=150 FQ=7Meg
 * 토로이드 1mH (앱 indt)
 .subckt BB_IND_TOROID_1M IN OUT
 X1 IN OUT BB_IND L=1m RDC=0.2 SRF=2Meg Q=50 FQ=0.25Meg

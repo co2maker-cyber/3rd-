@@ -725,7 +725,7 @@ body.planon .cbar{display:none}
   <div class="mbox pbox">
     <div class="mhead"><b id="partTitle">부품 고르기</b><input class="search" id="partQ" type="search" placeholder="부품 검색 (예: 74LS47, AND, LED)" aria-label="부품 검색" style="margin:0;flex:1;max-width:320px"><button class="btn" id="partX">닫기</button></div>
     <div class="pwrap"><nav class="pcats" id="partCats" aria-label="지금 위치"></nav><div class="pgrid" id="partGrid"></div></div>
-    <div class="mfoot" style="font-size:12px;color:var(--muted)">종류를 눌러 들어가고, ‹ 로 한 단계 나와요. 부품을 누르면 창이 닫히고 보드에서 놓을 자리를 누르면 꽂혀요(두 번 누르면 빈자리에 바로).</div>
+    <div class="mfoot" style="font-size:12px;color:var(--muted)">종류를 눌러 들어가고, ‹ 로 한 단계 나와요. 부품을 누르면 창이 닫히고 보드에서 놓을 자리를 누르면 꽂혀요(두 번 누르면 빈자리에 바로). <button class="btn" id="partGuide" style="margin-left:6px">브레드보드 부품 고르기 안내</button></div>
   </div>
 </div>
 <div class="modal" id="impDlg" hidden role="dialog" aria-modal="true" aria-labelledby="impTitle">
@@ -1116,6 +1116,8 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `d4148` | 1N4148 신호용 다이오드 | row | 0,3 | A(애노드) K(캐소드) | |
 | `d4007` | 1N4007 정류 다이오드 | row | 0,4 | A K | |
 | `d5819` | 1N5819 쇼트키 다이오드 | row | 0,4 | A K | |
+| `duf` | UF4007 초고속 정류 다이오드 | row | 0,4 | A K | |
+| `dbat` | BAT85급 소신호 쇼트키 | row | 0,3 | A K | |
 | `dz51` | 1N4733A 제너 5.1V | row | 0,4 | A K | |
 | `dge` | 1N34A 게르마늄 다이오드 | row | 0,3 | A K | |
 | `brdg` | 브리지 정류기 4핀 | dip | 0,2 | +(출력) ~(교류1) −(출력) ~(교류2) | |
@@ -1129,6 +1131,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `indr` | 레이디얼 인덕터 (드럼 코어) | row | 0,2 | 1 2 | `henry:0.0001` |
 | `indt` | 토로이드 코일 | row | 0,3 | 1 2 | `henry:0.001` |
 | `bead` | 페라이트 비드 | row | 0,3 | 1 2 | |
+| `indair` | 공심 코일(직접 감기) | row | 0,3 | 1 2 | `turns:20, dmm:10` (감은 수, 지름 mm → henry 자동) |
 
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
 
@@ -1404,6 +1407,134 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 
 이 안내서는 브레드보드 CAD의 일부로 직접 작성한 문서예요. © 2026 co2maker-cyber. All rights reserved.
 부품 번호·핀 이름은 호환성 안내를 위한 기술적 표기이며 각 제조사의 상표권을 침해할 의도가 없어요. 회로를 만들기 위해 이 안내서를 AI에 함께 넣어 쓰는 것은 괜찮아요.
+</script>
+<!-- breadboard/PARTS-GUIDE.md 사본. 고친 뒤 node breadboard/tests/guide-sync.js --fix 로 맞춘다 -->
+<script type="text/markdown" id="partsMd">
+# 브레드보드 부품 고르기 안내 — 다이오드 · 릴레이 · 코일
+
+브레드보드에 실제로 꽂아 만들 회로를 이 프로그램과 SPICE 시뮬레이터로 미리 확인할 때, **어떤 부품이 브레드보드에 맞는지**, **이 프로그램의 어떤 부품·모델로 흉내 내면 되는지**를 정리한 안내서예요.
+
+> 숫자는 여러 회사가 공개한 정격·특성에서 흔히 보이는 **대표값을 어림한 것**이에요. 같은 번호의 부품이라도 회사·제조 시기마다 조금씩 다르니, 실제로 살 부품의 자료를 꼭 따로 확인하세요.
+
+---
+
+## 1. 브레드보드에 꽂을 수 있는 부품의 조건
+
+### 1-1. 다리 굵기
+- 브레드보드 구멍 안의 금속 스프링은 **지름 0.4~0.8mm 정도의 단선**을 물도록 만들어져 있어요. 0.6mm 안팎(점퍼선 굵기)이 가장 잘 맞아요.
+- **다리가 1mm를 넘는 부품은 꽂지 마세요.** 3A급 다이오드에 쓰는 큰 축형 패키지(DO-201AD, 다리 약 1.3mm)가 대표적이에요. 억지로 넣으면 스프링이 벌어져서, 그 구멍은 그 뒤로 가는 선이나 IC 다리를 잘 물지 못해요.
+- 1A급 다이오드의 패키지(DO-41)는 꽂을 수 있지만 다리가 조금 굵은 편이라, 같은 구멍에 자주 꽂았다 뺐다 하지 않는 게 좋아요. 유리관 신호용 다이오드(DO-35, DO-34)는 다리가 가늘어 가장 편해요.
+
+### 1-2. 핀 간격
+- 구멍은 **2.54mm(0.1인치) 간격**이고, 가운데 홈 양쪽 줄 사이는 **7.62mm(0.3인치)** 예요. IC(DIP)가 홈을 걸쳐 꽂히는 이유예요.
+- 다리를 구부릴 수 있는 축형 부품(저항 모양)은 간격을 마음대로 맞출 수 있어요.
+- 핀이 여러 개인 부품(릴레이, 브리지 정류기 등)은 **모든 핀이 2.54mm 격자 위에 있어야** 바로 꽂혀요.
+  - 흔한 상자형 5V 파워 릴레이 중에는 핀이 격자에 맞지 않는 것이 많아요 → 릴레이 모듈이나 변환 기판을 거쳐요.
+  - 표면 실장(SMD) 부품은 다리가 없으니 변환 기판(브레이크아웃 보드)이 필요해요.
+
+### 1-3. 전류 — 연속 1A 안쪽
+- 스프링 접점과 레일 금속 띠에도 작은 저항이 있어요(접점 하나에 수십 mΩ, 헐거워지면 더 커짐).
+- 열은 전류의 제곱에 비례해요(P = I² × R). 예를 들어 전원 길 전체 저항이 0.1Ω이면
+  - 1A: 전압 0.1V 떨어짐, 열 0.1W — 괜찮아요.
+  - 5A: 전압 0.5V 떨어짐, 열 2.5W — 25배. 접점이 뜨거워지고 플라스틱이 상할 수 있어요.
+- 그래서 **부품 정격이 2~3A여도 브레드보드에서는 연속 1A 안쪽**으로 쓰세요. 시뮬레이션에서는 `BB_RAIL`·`BB_CONTACT` 모델을 전원 길에 넣어 전압이 얼마나 떨어지는지 볼 수 있어요.
+
+### 1-4. 주파수 — 수 MHz까지
+- 나란한 금속 띠 사이의 작은 커패시턴스, 긴 다리의 인덕턴스 때문에 **대략 10MHz를 넘으면** 회로가 계산대로 움직이지 않기 쉬워요(공진 주파수가 바뀌거나 저절로 발진).
+- 높은 주파수 회로는 만능 기판에 납땜하거나 PCB로 확인하세요.
+
+---
+
+## 2. 다이오드 고르기
+
+| 프로그램 부품 | 표준 번호(급) | 패키지 | 정격(대표) | 이럴 때 써요 | SPICE 모델 |
+|---|---|---|---|---|---|
+| `d4148` | 1N4148 | DO-35 유리관 | 100V, 약 0.2A, 아주 빠름(수 ns) | 논리 신호 OR 묶기, 신호 정리, 작은 코일 역전압 막기 | `BB_D_SIG` |
+| `dbat` | BAT85급 | DO-34 유리관 | 30V, 약 0.2A, 작은 전류에서 0.25~0.35V | 낮은 전압 신호 검출, 논리 입력 보호 | `BB_D_SSCH` |
+| `d4007` | 1N4007 | DO-41 | 1000V, 1A, 1A에서 약 0.9V | 전원 정류, 역극성 보호, 릴레이 코일 역전압 막기 | `BB_D_RECT` |
+| `duf` | UF4007 | DO-41 | 1000V, 1A, 역회복 수십 ns | 스위칭 전원, 빠르게 켜고 끄는 코일 | `BB_D_UF` |
+| `d5819` | 1N5819 | DO-41 | 40V, 1A, 1A에서 약 0.45V | 건전지 회로 역극성 보호, DC-DC 컨버터 | `BB_D_SCHOT` |
+| `dz51` | 1N4733A | DO-41 | 제너 5.1V, 1W | 간단한 정전압, 입력 전압 제한 | `BB_D_ZEN51` |
+| `dge` | 1N34A | 유리관 | 75V, 수십 mA, 0.2~0.3V | 광석 라디오 검파, 오디오 클리핑 실험 | `BB_D_GE` |
+| `brdg` | 1A 브리지 정류기 | 4핀 DIP(줄 간격 7.62mm) | 600~1000V, 1A, 두 다이오드분 약 1.4~2V | 교류 → 직류(전파 정류), 극성 상관없는 입력 | `BB_BRIDGE_1A` |
+
+**꽂지 마세요**: 3A급 정류 다이오드·쇼트키(1N5408, 1N5822 등)는 대개 DO-201AD 패키지라 다리가 너무 굵어요. 큰 전류가 필요하면 브레드보드 밖에서 납땜하세요(어차피 브레드보드는 1A 안쪽).
+
+**고르는 요령**
+- 작은 릴레이(코일 30~40mA)의 역전압 막기 → 1N4148로 충분해요. 100mA가 넘는 코일·모터 → 1N4007이나 UF4007.
+- 전압을 덜 잃어야 하면(건전지) → 쇼트키(1N5819). 대신 거꾸로 새는 전류가 크고 역전압이 낮아요.
+- 아주 작은 신호(수백 mV)를 걸러야 하면 → 게르마늄이나 소신호 쇼트키.
+
+---
+
+## 3. 릴레이 고르기
+
+브레드보드에 바로 꽂히는 릴레이는 크게 세 무리예요.
+
+| 무리 | 모양 | 5V 코일(입력) 대표값 | 움직이는 시간 | 접점 대표값 | 프로그램 부품 · SPICE |
+|---|---|---|---|---|---|
+| 전자기 신호 릴레이 SPDT | 6핀 DIP급 | 약 125~170Ω, 30~40mA, 0.15~0.2W | 붙음 수 ms, 떨어짐 1~4ms | 1~2A, 접촉 저항 0.1Ω 안팎 | (앱 없음) · `BB_RLY_SPDT_DIP` |
+| 전자기 신호 릴레이 DPDT | 8핀 DIP(16핀 IC 자리) | 약 125~180Ω, 28~40mA | 붙음 3~7ms, 떨어짐 3ms 안팎 | 1~2A | `rlyd` · `BB_RLY_DPDT_DIP` |
+| 리드 릴레이 SPST-NO | 4핀 한 줄(SIP) 또는 DIP | 약 500Ω, 10mA | 1ms 안쪽(아주 빠름) | 0.5A 안팎 | `reed` · `BB_RLY_REED_NO` |
+| 반도체(포토MOS) 릴레이 | 4핀 DIP | 입력 LED 1~3mA면 켜짐(5~10mA 권장) | 0.1ms 안팎 | 60V, 0.5A, 켜짐 저항 1~3Ω | `ssr`(직류 입력형) · `BB_SSR_DC` |
+| 상자형 파워 릴레이 | 핀이 격자에 안 맞는 것이 많음 | 약 70Ω, 70mA | 붙음 수~10ms | 10A | `rlyc` · `BB_RLY_SPDT_CUBE` (모듈로 쓰기) |
+
+**주의**
+- 전자기 릴레이는 28~40mA를 먹어요. 마이크로컨트롤러·논리 IC 출력 핀(20mA 안팎)에 바로 잇지 말고 **트랜지스터나 달링턴 드라이버(앱의 DRV-SINK8)** 로 켜세요. 리드 릴레이(10mA)와 포토MOS 릴레이(수 mA)는 출력 핀으로 바로 켤 수 있어요.
+- 코일을 끄는 순간 큰 역전압이 생겨요. **코일 양 끝에 다이오드를 거꾸로(띠를 + 쪽으로)** 달거나 드라이버의 COM 핀을 코일 + 쪽에 이어요. SPICE 시험 회로 `tb-relay.cir`에서 다이오드가 있을 때와 없을 때를 비교해 볼 수 있어요.
+- 안에 다이오드가 든 리드 릴레이는 **코일 + / − 가 정해져 있어요.** 거꾸로 꽂으면 다이오드로 전류가 바로 흘러 망가질 수 있으니 핀 번호를 먼저 확인하세요.
+- 릴레이 코일이 켜지고 꺼질 때 주변 아날로그 선에 잡음이 들어갈 수 있어요. 코일 근처에 센서 선을 붙여 두지 말고, 드라이버 전원 쪽에 바이패스 커패시터(0.1µF + 수십 µF)를 달아요.
+- 표면 실장(SOP 등) 포토MOS 릴레이는 변환 기판이 필요해요.
+
+---
+
+## 4. 코일(인덕터) 고르기
+
+| 종류 | 프로그램 부품 | 장점 | 약점 | 이럴 때 써요 |
+|---|---|---|---|---|
+| 축형(저항 모양, 색띠) | `inda` | 다리가 가늘어 꽂기 편함 | 값이 커질수록 선 저항(DCR)이 수 Ω~수십 Ω, 흘릴 수 있는 전류는 수십~수백 mA | 작은 신호의 LC 필터, 고주파 초크, 발진기 |
+| 레이디얼 드럼 코어 | `indr` | 선이 굵어 DCR이 작고 1A 안팎까지 | 몸통이 크고, 자기장이 조금 밖으로 샘 | 스위칭 전원(벅·부스트), 전원 잡음 거르기 |
+| 토로이드 | `indt` | 자기장이 도넛 안에 갇혀 잡음이 적고 큰 전류 | 크고 비쌈 | 전원 입력 초크, 오디오 |
+| 공심(직접 감기) | `indair` | 쇠 심이 없어 포화가 없고 고주파 손실이 적음 | 같은 값이면 훨씬 큼 | 라디오 수신·발진(동조 회로) |
+| 페라이트 비드 | `bead` | 직류는 그대로, 높은 주파수 잡음만 없앰 | 브레드보드 대역(수 MHz)에서는 효과가 작음 | IC 전원 핀 앞, 케이블 |
+
+같은 100µH라도 축형은 DCR이 수 Ω에 수십 mA짜리가 흔하고, 드럼 코어는 0.3Ω 안팎에 1A 정도를 흘려요. **0.5A를 흘리는 DC-DC 컨버터에 작은 축형 코일을 꽂으면 금방 뜨거워지고 값이 무너져요(포화).** 전류가 큰 곳에는 드럼 코어나 토로이드를 쓰세요.
+
+### 4-1. 쓸모 있는 식
+- **공심 코일(한 층 감기)의 인덕턴스 — 휠러 근사식**: L(µH) = N² · r² ÷ (9r + 10ℓ)
+  - N 감은 수, r 코일 반지름(인치), ℓ 코일 길이(인치). 프로그램의 `indair` [속성]이 이 식으로 계산해요(지름 0.5mm 선을 빈틈없이 감은 것으로 봄).
+- **자기 공진 주파수(SRF)에서 감은 선 사이 커패시턴스**: Cp = 1 ÷ ((2π · SRF)² · L)
+- **품질 계수 Q에서 코어 손실 저항(근사)**: Rp ≈ Q · 2π · f · L
+- SPICE에서는 `BB_IND L= RDC= SRF= Q= FQ=` 에 부품 자료의 값(인덕턴스, 최대 DCR, SRF, Q와 그 주파수)을 넣으면 위 식으로 Cp·Rp가 자동으로 정해져요.
+
+---
+
+## 5. 프로그램 ↔ SPICE로 맞춰 보기
+
+1. 프로그램에서 회로를 만들고 [속성]에서 다이오드 전류·릴레이 코일 전압을 봐요.
+2. 같은 회로를 SPICE 시뮬레이터에 옮겨 `spice/bbcad-parts.lib`의 같은 이름 모델로 돌려요(이름 대응표는 `spice/README.md`).
+3. 두 결과가 크게 다르면 대개 이 둘 중 하나예요.
+   - 프로그램은 다이오드를 꺾은선(켜지는 전압 + 저항)으로, 코일을 직류에서 전선으로 계산해요. 순간적인 변화(코일 역전압, 공진)는 SPICE 쪽이 더 정확해요.
+   - 브레드보드 접점 저항, 긴 점퍼선을 빠뜨렸을 수 있어요 → `BB_RAIL`·`BB_CONTACT`를 넣어 보세요.
+
+---
+
+## 6. 실제로 꽂기 전 점검표
+
+- [ ] 연속 전류가 1A를 넘는 길이 없나요? 0.5A가 넘는 길은 접점 저항으로 전압이 얼마나 떨어지는지 확인했나요?
+- [ ] 다리가 1mm 넘는 부품, 핀이 격자에 안 맞는 부품을 억지로 꽂지 않았나요?
+- [ ] 다이오드·전해 커패시터·LED·제너의 방향(띠·긴 다리)을 확인했나요?
+- [ ] 릴레이·솔레노이드 코일 양 끝에 역전압 다이오드가 있나요? 다이오드가 든 릴레이의 + / − 를 확인했나요?
+- [ ] 코일끼리는 서로 직각으로 놓고, 아날로그 신호선과 떨어뜨렸나요? 드라이버 전원 쪽에 바이패스 커패시터가 있나요?
+- [ ] 스프링이 헐거워진 구멍은 표시해 두었나요? (간헐적인 접촉 불량을 찾는 시간을 아껴요)
+
+---
+
+## 이 안내서에 대해
+
+- 이 안내서는 브레드보드 CAD 저작자가 직접 쓴 글이에요(© 2026 co2maker-cyber. All rights reserved.). 다른 자료의 문장·표를 옮기지 않고, 부품의 치수·정격 같은 **사실**만 골라 새로 정리했어요(`breadboard/COPYRIGHT.md` 14절).
+- 1N4148·1N4007·UF4007·1N5819·1N4733A·1N34A·BAT85 같은 번호는 여러 회사가 같은 규격으로 만드는 **표준 등록 번호**로, 어떤 급의 부품인지 알려 주는 기술 표기로만 썼어요. 특정 회사의 상품명·상표는 쓰지 않았어요. DO-35·DO-41·DO-201AD는 업계 표준 패키지 외형 이름이에요.
+- 이 안내서와 SPICE 모델은 설계를 돕는 참고 자료예요. 실제 제작 전에 쓰는 부품의 공식 자료로 다시 확인해 주세요.
 </script>
 <script>
 'use strict';
@@ -2273,7 +2404,7 @@ for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'C'+(i+1)),...rng(P*T,i=>S
 // ── 다이오드: dio → [[애노드 핀, 캐소드 핀, 특성]]. 특성(DIOM)은 데이터시트에 흔히 나오는 대표 특성점(순방향 전압·전류)에서 이 프로그램이 직접 어림한 꺾은선 모델:
 //    순방향 전압 vf를 넘으면 (V − vf) ÷ rs만큼 흐르고, 제너는 거꾸로 vz를 넘으면 (V − vz) ÷ rz만큼 흐른다. vr 역전압 한계, imax 순방향 전류 한계(평균)
 const DIOM={sig:{vf:.6,rs:3.5,vr:100,imax:.3,nm:'신호용'},rect:{vf:.68,rs:.25,vr:1000,imax:1,nm:'정류용'},sch:{vf:.27,rs:.18,vr:40,imax:1,nm:'쇼트키'},
-  zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'}};
+  zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},uf:{vf:.72,rs:.5,vr:1000,imax:1,nm:'초고속 정류용'},ssch:{vf:.28,rs:5,vr:30,imax:.2,nm:'소신호 쇼트키'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'}};
 const DIOD=' 다이오드는 애노드(A)에서 캐소드(K, 띠가 있는 쪽)로만 전류를 흘려요. 시뮬레이터는 순방향 전압을 넘으면 켜지는 꺾은선 모델로 계산해요(실제 곡선의 어림).';
 const dioAx=(body,band,len)=>(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-9,x=(a.x+b.x)/2,w=len||22;let s='';for(const p of ph)s+=leg(p,p.x,y);
   return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-w/2}" y="${y-4.5}" width="${w}" height="9" rx="2.5" fill="${body}"/><rect x="${x+w/2-6}" y="${y-4.5}" width="3.2" height="9" fill="${band}"/>`;};
@@ -2288,6 +2419,10 @@ pxDef({k:'dz51',pp:10.16,sub:'dio',pre:'ZD',title:'1N4733A 제너 다이오드 (
   desc:'거꾸로(캐소드에 +) 걸린 전압이 5.1V를 넘으면 전류를 흘려서 전압을 5.1V 근처로 붙잡는 다이오드예요. 저항과 직렬로 달아 간단한 정전압 회로, 입력 보호(전압 제한)에 써요. 흘리는 전류만큼 열(5.1V × 전류)이 나니 1W를 넘지 않게 저항을 고르세요(예: 12V → 330Ω → 제너). 정방향으로는 보통 다이오드처럼 약 0.7V에서 흘러요.'+DIOD});
 pxDef({k:'dge',pp:7.62,sub:'dio',pre:'D',title:'1N34A 게르마늄 다이오드 (검파용)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'ge']],draw:dioAx('#B8C8B0','#1A1A1A',18),
   desc:'게르마늄으로 만든 옛날식 다이오드예요. 순방향 전압이 0.2~0.3V로 아주 낮아서, 아주 작은 신호도 걸러낼 수 있어 광석 라디오 검파·오디오 클리핑 실험에 써요. 대신 흘릴 수 있는 전류가 작고(수십 mA), 열에 약하며 거꾸로 새는 전류가 커요.'+DIOD});
+pxDef({k:'duf',pp:10.16,sub:'dio',pre:'D',title:'UF4007 초고속 정류 다이오드 (1A, 1000V)',lay:'row',dc:[0,4],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'uf']],draw:dioAx('#202326','#C9CED6',22),
+  desc:'1N4007과 정격(1A, 1000V)은 같지만, 전류가 거꾸로 바뀔 때 끊어지는 시간(역회복 시간)이 수십 ns로 아주 짧은 정류 다이오드예요. 스위칭 전원, 빠르게 켜고 끄는 릴레이·모터 코일의 역전압 막기처럼 빠른 회로에서 열이 덜 나요. 순방향 전압은 1N4007보다 조금 높아요(1A에서 약 1.2V).'+DIOD});
+pxDef({k:'dbat',pp:7.62,sub:'dio',pre:'D',title:'BAT85급 소신호 쇼트키 다이오드 (유리관, 30V)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'ssch']],draw:dioAx('#C9D3DC','#1A1A1A',16),
+  desc:'작은 유리관에 든 신호용 쇼트키 다이오드예요(30V, 약 0.2A). 작은 전류에서 순방향 전압이 0.25~0.35V로 낮아서, 낮은 전압의 신호 검출, 3.3V·5V 논리 사이의 보호(클램프), 작은 전원의 역류 막기에 써요. 다리가 아주 가늘어 브레드보드에 꽂기 편해요. 이 번호의 원조 제품은 단종됐지만 같은 급의 부품이 여러 회사에서 나와요.'+DIOD});
 pxDef({k:'brdg',sub:'dio',pre:'BR',title:'브리지 정류기 (4핀 DIP, 1A)',lay:'dip',cols:[0,2],pins:['+ (출력)','~ (교류 1)','− (출력)','~ (교류 2)'],init:()=>({}),dio:[[1,0,'br'],[3,0,'br'],[2,1,'br'],[2,3,'br']],
   draw:(c,ph)=>{const B=dipBody(ph,'#24282D',7);return B.s+`<text x="${B.x}" y="${B.y+3}" font-size="9" font-weight="700" fill="#E9ECEF" text-anchor="middle">~ ⧫ ~</text>`;},
   desc:'다이오드 4개를 다리(브리지) 모양으로 묶은 부품이에요. 두 ~ 단자에 교류(또는 어느 방향의 직류)를 넣으면 + 단자에 늘 + 가, − 단자에 − 가 나와요(전파 정류). 전류가 다이오드 두 개를 지나서 약 1.4V를 잃어요. 가운데 홈을 걸쳐 꽂아요. 출력에 큰 전해 커패시터를 달면 울퉁불퉁한 전압이 평평해져요.'+LEADN});
@@ -2347,6 +2482,14 @@ pxDef({k:'indt',pp:7.62,sub:'ind',pre:'L',title:'토로이드 코일 (도넛 모
     for(let i=0;i<14;i++){const t=i/14*2*Math.PI;s+=`<path d="M${x+Math.cos(t)*4} ${y+Math.sin(t)*4}L${x+Math.cos(t)*11} ${y+Math.sin(t)*11}" stroke="#C8763A" stroke-width="1.5"/>`;}
     return s+`<text x="${x}" y="${y+21}" font-size="6.5" font-weight="700" fill="#333" text-anchor="middle" font-family="var(--mono)">${henTx(c.henry||1e-3)}</text>`;},
   desc:'도넛 모양 심에 선을 감은 코일이에요. 자기장이 도넛 안에 갇혀서 옆 부품에 잡음을 덜 퍼뜨리고, 큰 전류(수 A~10A)를 흘릴 수 있어요. 전원 입력의 잡음 막기(초크)·오디오 앰프·스위칭 전원에 써요.'+INDD});
+// 공심 코일(직접 감기): 지름 0.5mm 에나멜선을 촘촘히 감는다고 보고 길이 = 감은 수 × 0.5mm. 휠러 근사식 L(µH) = N²·r² ÷ (9r + 10ℓ) (r·ℓ 인치)
+const airL=c=>{const N=c.turns||20,r=(c.dmm||10)/2/25.4,l=N*0.5/25.4;return +(N*N*r*r/(9*r+10*l)*1e-6).toPrecision(3);};
+const airR=c=>+(0.0870*(c.turns||20)*Math.PI*(c.dmm||10)/1000).toPrecision(2);   // 지름 0.5mm 구리선 약 0.087Ω/m
+pxDef({k:'indair',pp:7.62,sub:'ind',pre:'L',title:'공심 코일 (에나멜선 직접 감기)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({turns:20,dmm:10,henry:airL({turns:20,dmm:10})}),thru:1,ind:1,air:1,
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-12,n=Math.min(12,Math.max(3,Math.round((c.turns||20)/4))),x0=a.x+6,x1=b.x-6,rr=Math.min(9,3+(c.dmm||10)/3);let s='';for(const p of ph)s+=leg(p,p.x,y);
+    for(let i=0;i<n;i++){const x=x0+(x1-x0)*(i+.5)/n;s+=`<ellipse cx="${x}" cy="${y}" rx="${(x1-x0)/n/2}" ry="${rr}" fill="none" stroke="#C8763A" stroke-width="1.6"/>`;}
+    return s+`<text x="${(a.x+b.x)/2}" y="${y+rr+8}" font-size="6.5" font-weight="700" fill="#333" text-anchor="middle" font-family="var(--mono)">${henTx(c.henry||airL(c))}</text>`;},
+  desc:'쇠 심 없이 에나멜선(겉에 얇은 절연 막이 입혀진 구리선)을 연필·빨대 같은 둥근 막대에 감아 만드는 코일이에요. 쇠 심이 없어 큰 전류에도 값이 변하지 않고(포화 없음), 라디오 수신·발진 회로처럼 높은 주파수에서 손실이 적어요. 대신 같은 값이라면 쇠 심 코일보다 훨씬 커요. 다리 끝의 절연 막은 사포나 칼로 벗겨야 브레드보드에 전기가 통해요. [속성]에서 감은 수와 지름을 고르면 휠러 근사식으로 인덕턴스를 계산해 줘요(지름 0.5mm 선을 빈틈없이 감은 것으로 봄).'+INDD});
 pxDef({k:'bead',pp:7.62,sub:'ind',pre:'FB',title:'페라이트 비드 (잡음 막기)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({}),thru:1,ind:1,
   draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10,x=(a.x+b.x)/2;let s='';for(const p of ph)s+=leg(p,p.x,y);return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-11}" y="${y-6}" width="22" height="12" rx="3" fill="#3A3F47"/>`;},
   desc:'전선에 페라이트 구슬을 끼운 부품이에요. 직류와 낮은 주파수는 그대로 통과시키고(저항 거의 0), 수십 MHz 이상의 높은 주파수 잡음만 열로 바꿔 없애요(보통 100MHz에서 약 600Ω). IC 전원 핀 앞, USB·케이블 선에 달아요. 시뮬레이터는 직류로 계산해서 전선처럼 이어 줘요.'});
@@ -3380,6 +3523,10 @@ function propEditor(c){
       h+=`<p class="desc">${d.pol?'입력 저항':'코일 저항'} 약 ${ohmTx(R_)}${d.pol?' (3V 이상에서 켜짐)':` · 정격에서 ${(coilV(c)/R_*1000).toFixed(0)}mA · 붙는 전압 ${(coilV(c)*.75).toFixed(2)}V 이상`}<br>지금 ${d.pol?'입력':'코일'}에 걸린 전압: <b>${fmtV(dv)}</b> → <b>${d.latch?(on?'SET (COM→NO)':'RESET (COM→NC)'):on?(d.contacts?'붙음':'당김'):(d.contacts?'떨어짐':'놓음')}</b></p>`;}
     else if(d.dio){const di=rt(c).di||[],m=DIOM[d.dio[0][2]],fA=x=>Math.abs(x)>=1?Math.abs(x).toFixed(2)+' A':(Math.abs(x)*1000).toFixed(1)+' mA';
       h+=`<p class="desc">${m.nm} · 켜지는 전압 약 ${m.vf}V${m.vz?` · 제너 전압 ${m.vz}V (정격 ${m.pmax}W)`:` · 역전압 한계 ${m.vr}V`} · 전류 한계 ${m.imax>=1?m.imax+'A':m.imax*1000+'mA'}<br>지금: ${di.length?di.map((x,q)=>(di.length>1?`D${q+1} `:'')+(x.st===1?'정방향 '+fA(x.i):x.st===-1?'제너 동작 '+fA(x.i):'끊김')).join(' · '):'끊김'}</p>`;}
+    else if(d.air){const L_=airL(c),X=f=>ohmTx(Math.max(.01,+(2*Math.PI*f*L_).toPrecision(3)));
+      h+=`<div class="prop"><label>감은 수</label><div class="seg" id="pxN">${[5,10,15,20,30,50,80,120].map(v=>`<button data-v="${v}" aria-pressed="${(c.turns||20)===v}">${v}회</button>`).join('')}</div></div>`
+        +`<div class="prop"><label>코일 지름</label><div class="seg" id="pxD">${[5,8,10,15,20,30].map(v=>`<button data-v="${v}" aria-pressed="${(c.dmm||10)===v}">${v}mm</button>`).join('')}</div></div>`
+        +`<p class="desc">길이 약 ${((c.turns||20)*.5).toFixed(1)}mm(0.5mm 선) → 인덕턴스 약 <b>${henTx(L_)}</b> (휠러 근사식) · 선 저항 약 ${ohmTx(airR(c))}<br>교류 저항(리액턴스): 1MHz ${X(1e6)} · 10MHz ${X(1e7)}</p>`;}
     else if(d.ind&&c.kind!=='bead'){const L_=c.henry||1e-4,X=f=>ohmTx(Math.max(.01,+(2*Math.PI*f*L_).toPrecision(3)));
       h+=`<div class="prop"><label>인덕턴스</label><div class="seg" id="pxH">${INDV.map(v=>`<button data-v="${v}" aria-pressed="${L_===v}">${henTx(v)}</button>`).join('')}</div></div>`
         +`<p class="desc">선 저항(DCR) 약 ${ohmTx(indDcr(c))} · 흘릴 수 있는 전류 약 ${indImax(c)}A (어림값)<br>교류 저항(리액턴스): 50Hz ${X(50)} · 1kHz ${X(1e3)} · 100kHz ${X(1e5)}</p>`;}
@@ -3412,7 +3559,7 @@ function bindProps(c){
       let v=+inp.value;if(!Number.isFinite(v)||inp.value===''){inp.value=c[f];return;}v=Math.max(+inp.min,Math.min(+inp.max,+(Math.round(v/st)*st).toFixed(dec)));
       if(v===+c[f]){inp.value=v;return;}pushHist();c[f]=v;commit(true);});
     const pr=$('psuR'),pv=$('info').querySelector('input[data-n="v"]');if(pr){pr.oninput=()=>{if(pv)pv.value=pr.value;};pr.onchange=()=>{const v=+pr.value;if(v!==+c.v){pushHist();c.v=v;commit(true);}};}return;}
-  const pc=$('pc');if(!pc)return;
+  const pc=$('pc');   // px(가변저항·스위치·릴레이·코일)처럼 #pc가 없는 부품도 아래 자기 버튼은 이어 준다
   {const pk=$('pcPk');if(pk&&c.t==='led')pk.onchange=()=>{pushHist();if(pk.value==='r5')delete c.pk;else c.pk=pk.value;commit(true);};
    const lnb=$('pcLn');if(lnb&&c.t==='led')lnb.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();if(b.dataset.v==='diff')delete c.ln;else c.ln=b.dataset.v;commit(true);});
    const pcc=$('pcLc');if(pcc)pcc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.lc=b.dataset.v;commit(true);});
@@ -3423,9 +3570,10 @@ function bindProps(c){
      btns('rPw',d=>{c.pw=+d.v;if(c.pw===.25)delete c.pw;});btns('rMat',d=>{c.mat=d.v;delete c.tol;if(d.v==='carbon')delete c.mat;});btns('rTol',d=>{c.tol=+d.v;});}
    if(c.t==='cap'){const dk=q('cDk'),vr=q('cVr');if(dk)dk.onchange=()=>{pushHist();c.dk=dk.value;delete c.vr;if(c.dk==='edlc'&&c.farad<.01)c.farad=1;if(c.dk!=='edlc'&&c.farad>=.01)c.farad=1e-4;commit(true);};
      if(vr)vr.onchange=()=>{pushHist();c.vr=+vr.value;commit(true);};}
-   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});
+   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});
      const pp=q('pxP');if(pp){pp.oninput=()=>{c.pos=+pp.value/100;settle();render();};pp.onchange=()=>{pushHist();c.pos=+pp.value/100;commit(true);};}}}
   const pc2=$('pc2');if(pc2&&c.t==='led')pc2.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;if(v==='std')delete c.lk;else c.lk=v;opt.lk=v;store.set('opt',opt);commit(true);});
+  if(!pc)return;
   if(c.t==='ic'){pc.onchange=()=>{pushHist();c.chip=pc.value;RT.delete(c.id);commit(true);};return;}
   pc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;
     if(c.t==='seg7'||c.t==='led3'){c.ca=v==='ca';if(c.t==='seg7')opt.seg=v;}else if(c.t==='gate'){c.kind=v;RT.delete(c.id);}else if(c.t==='wire'){c.color=v;opt.wire=v;}else if(c.t==='res'){c.ohms=+v;opt.ohms=+v;}else if(c.t==='led'){c.color=v;opt.led=v;}else if(c.t==='clk'){c.hz=+v;opt.hz=+v;}else if(c.t==='cap'){c.farad=+v;opt.farad=+v;}
@@ -4557,7 +4705,7 @@ function autoLayout(spec){const report={placed:0,wires:0,fail:[],auto:[],boards:
     else if(it.t==='seg7')c={t:'seg7',col:col+1,b,ca:it.ca};
     else if(it.t==='gate')c={t:'gate',kind:it.kind,pins:gatePinCols(it.kind).map(k=>pf+'c'+(col+k))};
     else if(it.t==='clk')c={t:'clk',pins:[pf+'c'+col],hz:it.hz};
-    else if(it.t==='px'){c=Object.assign({t:'px',kind:it.kind,pins:pxHolesAt(it.kind,b,PX[it.kind].lay==='dip'?'e':'c',col)},PX[it.kind].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry'])if(it[kk]!==undefined)c[kk]=it[kk];}
+    else if(it.t==='px'){c=Object.assign({t:'px',kind:it.kind,pins:pxHolesAt(it.kind,b,PX[it.kind].lay==='dip'?'e':'c',col)},PX[it.kind].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry','turns','dmm'])if(it[kk]!==undefined)c[kk]=it[kk];}
     else if(it.t==='led3')c={t:'led3',pins:[0,1,2].map(k=>pf+'c'+(col+k)),ca:!!it.ca};
     else c=smallComp(it,[pf+'e'+col,pf+'f'+col]);
     return c;};
@@ -4667,9 +4815,11 @@ function mdHtml(md){const inl=t=>esc(t).replace(/`([^`]+)`/g,'<code>$1</code>').
     if(/^---\s*$/.test(l)||!l.trim()){i++;continue;}
     const b=[];while(i<L.length&&L[i].trim()&&!/^(```|#{1,4}\s|\||>|\s*[-*]\s|---\s*$)/.test(L[i]))b.push(L[i++]);o.push('<p>'+b.map(inl).join('<br>')+'</p>');}
   return o.join('');}
-function openGuide(){$('gBody').innerHTML=mdHtml(GUIDE_MD());$('guideDlg').hidden=false;$('guideDlg').querySelector('.mbox').scrollTop=0;}
+// 안내서 창 하나로 두 안내서를 보여 준다: 파일 만들기 안내서(FILE-FORMAT.md), 부품 고르기 안내(PARTS-GUIDE.md)
+const DOCS={file:{title:'파일 만들기 안내서',md:GUIDE_MD,fn:GUIDE_FN},parts:{title:'브레드보드 부품 고르기 안내',md:()=>$('partsMd').textContent.replace(/^\n/,''),fn:'breadboard-CAD-parts-guide.md'}};let curDoc='file';
+function openGuide(k){curDoc=typeof k==='string'&&DOCS[k]?k:'file';const d=DOCS[curDoc];$('gTitle').textContent=d.title;$('gBody').innerHTML=mdHtml(d.md());$('guideDlg').hidden=false;$('guideDlg').querySelector('.mbox').scrollTop=0;}
 function closeGuide(){$('guideDlg').hidden=true;}
-const saveGuide=()=>saveTextFile(GUIDE_FN,GUIDE_MD(),'text/markdown','파일 만들기 안내서','.md');
+const saveGuide=function(){const d=DOCS[this&&this.id==='gSave2'?curDoc:'file'];return saveTextFile(d.fn,d.md(),'text/markdown',d.title,'.md');};
 /* 다른 AI에게 붙여 넣을 부탁 문장(안내서 포함) */
 const EXT_PROMPT=ask=>`아래 "브레드보드 CAD 파일 만들기 안내서"를 따라 다음 회로를 설계해서 이 CAD에 넣을 파일을 만들어 줘.
 
@@ -4710,7 +4860,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · 다이오드·SPICE';
+const APP_VER='2026-11-26 · 부품 고르기 안내';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -4782,7 +4932,7 @@ GND: R1.2, R2.2, R3.2, R4.2, R5.2, R6.2`;
 $('upl').onclick=()=>openImport();
 $('wTidy').onclick=e=>{e.stopPropagation();openTidyMenu();};
 $('aiBtn').onclick=()=>{openImport();setTimeout(()=>$('aiAsk').focus(),60);};
-$('aiCopy').onclick=copyAiPrompt;$('gView').onclick=openGuide;$('gSave').onclick=$('gSave2').onclick=saveGuide;$('gX').onclick=closeGuide;
+$('aiCopy').onclick=copyAiPrompt;$('gView').onclick=()=>openGuide('file');$('partGuide').onclick=()=>{closeParts&&closeParts();openGuide('parts');};$('gSave').onclick=$('gSave2').onclick=saveGuide;$('gX').onclick=closeGuide;
 $('guideDlg').addEventListener('pointerdown',e=>{if(e.target===$('guideDlg'))closeGuide();});
 $('impX').onclick=closeImport;
 $('impDlg').addEventListener('pointerdown',e=>{if(e.target===$('impDlg'))closeImport();});
@@ -5631,7 +5781,7 @@ function schPlaceOnBoard(p){const B=S.boards[0],pt={x:B.x+bW(B.type)/2,y:B.y+MID
     if(p.t==='gate'){tool='gate:'+p.kind;const g=gateGhost(pt);if(!g||!g.ok)return null;return{t:'gate',kind:p.kind,pins:g.hs.map(h=>h.id)};}}finally{tool=t0;}
   const o=occ(),rects=bodyRects(),emptyStrip=(b,c,top)=>(top?'abcde':'fghij').split('').every(r=>!o.has(pref(b)+r+c));
   for(const Bd of S.boards){const N_=BTYPES[Bd.type].cols;for(let c=1;c<=N_;c++){
-    if(p.t==='px'){const k=p.kind,dip=PX[k].lay==='dip';for(const r of dip?['e']:['c','h']){const ids=pxHolesAt(k,Bd.id,r,c);if(!ids||ids.some(id=>o.has(id)))continue;const t=Object.assign({t:'px',kind:k,pins:ids},PX[k].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry'])if(p[kk]!==undefined)t[kk]=p[kk];if(fitsHere(t,o,rects))return t;}continue;}
+    if(p.t==='px'){const k=p.kind,dip=PX[k].lay==='dip';for(const r of dip?['e']:['c','h']){const ids=pxHolesAt(k,Bd.id,r,c);if(!ids||ids.some(id=>o.has(id)))continue;const t=Object.assign({t:'px',kind:k,pins:ids},PX[k].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry','turns','dmm'])if(p[kk]!==undefined)t[kk]=p[kk];if(fitsHere(t,o,rects))return t;}continue;}
     if(p.t==='led3'){if(c+2>N_||![0,1,2].every(k=>emptyStrip(Bd.id,c+k,true)))continue;const t={t:'led3',pins:[0,1,2].map(k=>pref(Bd.id)+'c'+(c+k)),ca:!!p.ca};if(fitsHere(t,o,rects))return t;continue;}
     if(p.t==='clk'){if(!emptyStrip(Bd.id,c,true))continue;const t={t:'clk',pins:[pref(Bd.id)+'c'+c],hz:p.hz||1};if(fitsHere(t,o,rects))return t;continue;}
     if(!emptyStrip(Bd.id,c,true)||!emptyStrip(Bd.id,c,false))continue;
@@ -5703,7 +5853,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   // 처음 그릴 때 부품이 많으면: 종류별 세로줄이 너무 길어지지 않게 높이 LIM에서 다음 줄로 넘긴다(종류 묶음은 왼쪽→오른쪽)
   const flow=first&&comps.length>14,LIM=Math.max(700,Math.sqrt(comps.length)*150);let fx=0,fy=0,fw=0,fk=-1;
   for(const c of [...comps].sort((a,b)=>col(a)-col(b))){const p=Object.assign({id:nid++,x:X_[col(c)],y:0,rot:0,bid:c.id},schNew(c.t==='ic'?'ic:'+c.chip:c.t==='gate'?'gate:'+c.kind:c.t==='px'?'px:'+c.kind:c.t));
-    for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','cv','henry','pw','mat','tol','dk','vr','ser'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
+    for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','cv','henry','turns','dmm','pw','mat','tol','dk','vr','ser'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
     if(sameKind(o,c)){p.x=o.x;p.y=o.y;p.rot=o.rot||0;}
     else if(flow){const s=symOf(p),k=col(c);if(k!==fk){if(fk>=0){fx+=fw+260;}fy=0;fw=0;fk=k;}
       if(fy>0&&fy+2*s.h>LIM){fx+=fw+260;fy=0;fw=0;}p.x=snapG(fx+s.w);p.y=snapG(fy+s.h+10);fy=p.y+s.h+80;fw=Math.max(fw,2*s.w);}

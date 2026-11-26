@@ -5,6 +5,7 @@
 - `bbcad-parts.lib` — 모델 라이브러리
 - `tb-relay.cir` · `tb-inductor.cir` · `tb-bridge.cir` — 확인용 시험 회로(ngspice에서 `ngspice -b tb-relay.cir`)
 - 자동 확인: `node breadboard/tests/spice-check.js` (ngspice가 깔려 있을 때)
+- 어떤 부품을 브레드보드에 꽂을지 고르는 안내: `breadboard/PARTS-GUIDE.md` (앱의 [부품 고르기] 창 아래 버튼으로도 볼 수 있어요)
 
 > 값은 **대표값을 어림한 것**이에요. 실제 부품은 회사·제조 시기마다 다르니, 정확한 설계에는 그 부품을 만든 회사가 공개한 자료와 모델을 따로 확인하세요.
 
@@ -15,6 +16,8 @@
 | 1N4148 신호용 (`d4148`) | `BB_D_SIG` (다이오드 모델) | A K |
 | 1N4007 정류용 (`d4007`) | `BB_D_RECT` | A K |
 | 1N5819 쇼트키 (`d5819`) | `BB_D_SCHOT` | A K |
+| UF4007 초고속 정류 (`duf`) | `BB_D_UF` | A K |
+| BAT85급 소신호 쇼트키 (`dbat`) | `BB_D_SSCH` | A K |
 | 1N4733A 제너 5.1V (`dz51`) | `BB_D_ZEN51` | A K |
 | 1N34A 게르마늄 (`dge`) | `BB_D_GE` | A K |
 | 브리지 정류기 (`brdg`) | `BB_BRIDGE_1A` | AC1 AC2 POS NEG |
@@ -27,7 +30,7 @@
 | 축형 인덕터 100µH (`inda`) | `BB_IND_AXIAL_100U` | IN OUT |
 | 레이디얼 인덕터 100µH (`indr`) | `BB_IND_RADIAL_100U` | IN OUT |
 | 토로이드 1mH (`indt`) | `BB_IND_TOROID_1M` | IN OUT |
-| 다른 값의 인덕터 | `BB_IND L= RDC= SRF= Q= FQ=` | IN OUT |
+| 공심 코일 (`indair`) · 다른 값의 인덕터 | `BB_IND L= RDC= SRF= Q= FQ=` (공심 코일은 앱 [속성]의 L·선 저항을 넣기) | IN OUT |
 | 브레드보드 접점·레일 | `BB_CONTACT R=` · `BB_RAIL INCH= RC=` | A B |
 
 - 릴레이는 `VC`(코일 정격 전압)·`PC`(코일 전력)를 바꿔 12V·24V 코일도 쓸 수 있어요. 예: `X1 a b com no nc BB_RLY_SPDT_CUBE VC=12`

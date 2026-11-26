@@ -175,13 +175,16 @@ function inPage() {
       const l = mk('rlyl'); coilUpd(l, {}, 5); const a1 = l.s; coilUpd(l, {}, 0); const a2 = l.s; coilUpd(l, {}, -5); if (a1 !== 1 || a2 !== 1 || l.s !== 0) bad.push('래칭');
       for (const k of ['sol']) rec('수동 소자', `${k} · ${PX[k].title}`, !bad.length, bad.join(' / ') || `5V 코일 ${coilR(mk(k))}Ω`);
       rec('수동 소자', '릴레이 코일 (붙음 75%·떨어짐 10%·코일 저항)', !bad.length, bad.join(' / ') || `큐브 5V ${coilR(mk('rlyc'))}Ω · DIP 5V ${coilR(mk('rlyd'))}Ω · 리드 5V ${coilR(mk('reed'))}Ω · SSR 극성 · 래칭 SET/유지/RESET`); }
+    // 공심 코일: 휠러 근사식 L(µH) = N²r²/(9r+10ℓ), 지름 10mm 20회(길이 10mm) → r=0.197in, ℓ=0.394in → 약 2.7µH
+    { const c = mk('indair', { turns: 20, dmm: 10 }), L_ = airL(c), r = 5 / 25.4, l = 10 / 25.4, exp = 400 * r * r / (9 * r + 10 * l) * 1e-6, c2 = mk('indair', { turns: 40, dmm: 10 });
+      rec('수동 소자', `indair · ${PX.indair.title}`, near(L_, exp, exp * .01) && airL(c2) > 1.5 * L_ && PX.indair.thru, `20회 지름 10mm → ${henTx(L_)} (식 ${henTx(+exp.toPrecision(3))}) · 40회 → ${henTx(airL(c2))} · 직류로 이어짐`); }
     // 인덕터·비드: 직류로 이어짐(thru), 리액턴스 계산용 값, 색띠(µH)
     for (const k of ['inda', 'indr', 'indt', 'bead']) { const d = PX[k], ok = d.thru && d.pins.length === 2 && (k === 'bead' || d.init().henry > 0);
       rec('수동 소자', `${k} · ${d.title}`, ok, ok ? '직류에서 1-2 이어짐' + (k !== 'bead' ? ` · 기본 ${henTx(d.init().henry)}` : '') : '정의 확인'); }
     { const t = [[1e-4, [1, 0, 1]], [4.7e-5, [4, 7, 0]], [1e-6, [1, 0, -1]], [2.2e-3, [2, 2, 2]]], bad = t.filter(([L_, e]) => indBands(L_).join() !== [BANDC[e[0]], BANDC[e[1]], e[2] < 0 ? '#C9A227' : BANDC[e[2]]].join());
       rec('수동 소자', '인덕터 색띠 (µH)', !bad.length, bad.length ? bad.map(x => henTx(x[0])).join(' ') : '100µH 갈검갈 · 47µH 노보검 · 1µH 갈검금 · 2.2mH 빨빨빨'); }
     // 다이오드: 5V → 다이오드 → 1kΩ → GND 에서 캐소드 전압(= 5 − 순방향 전압), 거꾸로 꽂으면 전류 없음(캐소드 쪽이 5V 그대로)
-    for (const [k, lo, hi] of [['d4148', .55, .75], ['d4007', .55, .78], ['d5819', .15, .38], ['dge', .12, .45], ['dz51', .55, .78]]) {
+    for (const [k, lo, hi] of [['d4148', .55, .75], ['d4007', .55, .78], ['d5819', .15, .38], ['dge', .12, .45], ['dz51', .55, .78], ['duf', .6, .85], ['dbat', .25, .45]]) {
       const e = 3 + PX[k].dc[1];
       build([{ t: 'wire', pins: ['a3', 'tp3'] }, { t: 'px', kind: k, pins: ['c3', 'c' + e] }, { t: 'res', pins: ['d' + e, 'd' + (e + 4)], ohms: 1000 }, { t: 'wire', pins: ['a' + (e + 4), 'tn' + (e + 4)] }]);
       const vf = 5 - vH('e' + e);

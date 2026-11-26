@@ -27,7 +27,12 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
     const sws=SCH.parts.filter(q=>q.t==='sw');for(const q of sws)q.on=false;renderSch();const led=()=>[...SIM_S.led.values()].filter(x=>x.lit).length;const n0=led();
     sws[sws.length-1].on=true;renderSch();const n1=led();T('회로도: 다이오드 OR 스위치를 켜면 LED가 더 켜짐',n1>n0,n0+' → '+n1);setVM('bb');}
   // 속성 창
-  let pe=0;for(const k of ['d4148','d4007','d5819','dz51','dge','brdg'])try{const ex=EXAMPLES.pasdio();loadComps(ex.comps,false,ex.boards);settle();sel={id:px(k)[0].id};renderInfo();}catch(e){pe++;}T('속성 창 오류 없음',!pe,'');
+  let pe=0;for(const k of ['d4148','d4007','d5819','dz51','dge','brdg'])try{const ex=EXAMPLES.pasdio();loadComps(ex.comps,false,ex.boards);settle();sel={type:'comp',id:px(k)[0].id};renderInfo();if(!document.querySelector('#info .desc'))pe++;}catch(e){pe++;}T('속성 창 오류 없음',!pe,'');
+  // [속성] 버튼이 실제로 값을 바꾸는지(px 부품: 가변저항·릴레이 코일·인덕터·공심 코일·스위치)
+  { const got=[];for(const [k,id,v,key,exp] of [['pot16','pxV','1000','ohms',1000],['rlyc','pxC','12','cv',12],['indr','pxH','0.001','henry',.001],['indair','pxN','50','turns',50],['tog1','pxS','1','s',1]]){
+      loadComps([{t:'px',kind:k,pins:pxHolesAt(k,1,PX[k].lay==='dip'?'e':'c',10)}],false);settle();sel={type:'comp',id:S.comps[0].id};renderInfo();
+      const bt=[...document.querySelectorAll('#'+id+' button')].find(x=>x.dataset.v===v||x.dataset.side===v);if(bt)bt.click();got.push(k+':'+(S.comps[0][key]===exp?'ok':'안 바뀜'));}
+    T('px 부품 [속성] 버튼이 값을 바꿈',got.every(x=>x.endsWith('ok')),got.join(' ')); }
   return out;});
 for(const r of res)console.log((r.ok?'ok  ':'BAD ')+r.k+'  '+r.msg);console.log('errors',errs);
 const bad=res.filter(r=>!r.ok).length+errs.length;console.log(bad?'diode FAIL':'diode PASS');await b.close();})();
