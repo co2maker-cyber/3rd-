@@ -92,7 +92,8 @@
 .pside .pst.di{min-height:16px;padding:1px 6px 1px 24px;font-size:10.5px;color:var(--muted);background:repeating-linear-gradient(90deg,rgba(160,140,60,.12) 0 6px,transparent 6px 9px)}.pside .pst.di.core{min-height:22px}
 .pside .pst .eye{border:0;background:none;color:var(--fg);cursor:pointer;font-size:13px;min-width:26px;min-height:24px;opacity:.85}.pside .pst .eye[aria-pressed="false"]{opacity:.3}
 .pside .pst select{font-size:11.5px;padding:1px 3px}
-#pStackH{scroll-margin-top:44px}.pside .flash{animation:pflash 1.2s ease-out}@keyframes pflash{0%{box-shadow:0 0 0 3px #4FC3F7;background:rgba(79,195,247,.25)}100%{box-shadow:0 0 0 0 transparent}}
+#pStackH{scroll-margin-top:44px}.gbrt{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0}.gbrt th,.gbrt td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}.gbrt code{font-size:11.5px;word-break:break-all}.gbrt .btn{padding:2px 8px;min-height:26px}
+.pside .flash{animation:pflash 1.2s ease-out}@keyframes pflash{0%{box-shadow:0 0 0 3px #4FC3F7;background:rgba(79,195,247,.25)}100%{box-shadow:0 0 0 0 transparent}}
 #pcbbar .ldot{display:inline-block;width:14px;height:14px;border-radius:3px;margin:2px auto 3px}
 #sch{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--surface)}
 .sbody path,.sbody rect,.sbody circle{stroke:var(--sink);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -650,7 +651,7 @@ body.planon .cbar{display:none}
       <button class="tbtn" id="pStackB" title="층 쌓기: 1·2·4·6층, 안쪽 층(신호·GND 판·VCC 판), 보드 두께, 층 보이기·감추기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5l9 4.5 9-4.5"/></svg><span id="pStackN">2층</span></button>
       <button class="tbtn" id="pSide" aria-pressed="true" title="보드 크기·선 굵기·점검(DRC) 창 열기/닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>점검</button>
       <button class="tbtn" id="pFit" title="화면에 맞춤 (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8" y="8" width="8" height="8"/></svg>맞춤</button>
-      <button class="tbtn" id="pExp" title="PCB 제작 파일(층마다 구리 거버·마스크·실크·외곽·드릴·부품표)을 zip으로 내려받아요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M4 18v2h16v-2"/></svg>내보내기</button>
+      <button class="tbtn pri" id="pExp" title="거버 받기: PCB 제작 파일(층마다 구리 거버·마스크·실크·외곽·드릴·부품표·조립도)을 zip 하나로 내려받아요. PCB 업체에 이 zip을 그대로 올리면 돼요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M4 18v2h16v-2"/></svg>거버 받기</button>
       <button class="tbtn" id="pBom" title="부품표(BOM)를 CSV로: 같은 값·발자국끼리 묶어 수량·참조 번호"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>BOM</button>
       <button class="tbtn" id="pAsm" title="조립 도면(위에서 본 모습, 1번 핀·극성 표시, 부품표)을 SVG로 — 브라우저에서 열어 PDF로 인쇄할 수 있어요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="1"/><rect x="7" y="8" width="4" height="4"/><path d="M14 9h4M14 13h4M8 21h8"/></svg>조립도</button>
       <button class="tbtn" id="pImg" title="PCB 그림을 SVG로 내려받아요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>그림</button>
@@ -806,6 +807,12 @@ GND: D1.K</pre>
     <div class="mhead"><b id="fbTitle">파일 저장이 막혔어요</b><button class="btn pri" id="fbCopy">전체 복사</button><button class="btn" id="fbX">닫기</button></div>
     <div class="mbody"><p class="desc" id="fbMsg" style="margin:0 0 8px"></p>
       <textarea id="fbText" readonly spellcheck="false" style="width:100%;height:min(52vh,420px);font:12px/1.45 var(--mono);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px;resize:vertical"></textarea></div>
+  </div>
+</div>
+<div class="modal" id="gbrDlg" hidden role="dialog" aria-modal="true" aria-labelledby="gbrTitle">
+  <div class="mbox gbox">
+    <div class="mhead"><b id="gbrTitle">거버 파일 받기</b><button class="btn pri" id="gbrGo">zip 내려받기</button><button class="btn" id="gbrX">닫기</button></div>
+    <div class="mbody" id="gbrBody"></div>
   </div>
 </div>
 <div class="modal" id="ercDlg" hidden role="dialog" aria-modal="true" aria-labelledby="ercTitle">
@@ -4690,7 +4697,7 @@ $('sbadge').addEventListener('click',e=>{const b=e.target.closest('button');if(!
 function syncPower(){$('pwr').setAttribute('aria-pressed',S.power);$('pwrTx').textContent=S.power?'전원 ON':'전원 OFF';}
 $('pwr').onclick=()=>{S.power=!S.power;if(!S.power)for(const r of RT.values()){r.st=null;r.out=null;}commit(true);};
 $('undo').onclick=undo;
-const anyModal=()=>['impDlg','guideDlg','partDlg','saveDlg','ercDlg','fbDlg','licGate','tut'].some(id=>{const el=document.getElementById(id);return el&&!el.hidden;});
+const anyModal=()=>['impDlg','guideDlg','partDlg','saveDlg','ercDlg','gbrDlg','fbDlg','licGate','tut'].some(id=>{const el=document.getElementById(id);return el&&!el.hidden;});
 $('clr').onclick=()=>{if(!S.comps.length&&S.boards.length===1)return;pushHist();S.comps=[];RT.clear();sel=null;setBoards(null);commit(true);if(typeof pcbLoadIf==='function')pcbLoadIf(null);curName='';store.set('name','');fitView();toast('모두 지웠어요 · 실행 취소로 되돌릴 수 있어요');};
 $('sig').setAttribute('aria-pressed',sigMode);
 $('hchk').onclick=()=>$('bChk').click();$('bcbPlan').onclick=()=>planOpen(!PLAN.on);$('planX').onclick=()=>planOpen(false);$('planGo').onclick=planGo;$('planP').onclick=()=>planMove(-1);$('planNx').onclick=()=>planMove(1);$('planLs').onclick=()=>{$('planL').hidden=!$('planL').hidden;renderPlan();};$('bcbEnd').onclick=()=>$('bChk').click();$('bcbReset').onclick=()=>chkReset('b');
@@ -4733,13 +4740,14 @@ async function saveAny(fn,data,mime,desc,ext){
   // (저장 위치 고르는 창은 윈도우에서 .md 같은 확장자가 빠지는 일이 있어 쓰지 않는다. 위치를 고르려면 브라우저 설정 '다운로드 전에 저장 위치 확인'을 켜요)
   let dl=null;try{dl=window.claude&&await window.claude.use('downloads');}catch(_){}
   if(dl){try{await dl.save({filename:fn,data});toast('파일로 저장했어요 ('+fn+')');return'ok';}
-    catch(e){const c=e&&e.code;if(c==='declined')return'cancel';if(c==='rate_limited'){toast('저장 창이 이미 떠 있어요. 잠시 뒤 다시 눌러 주세요');return'cancel';}}}
+    catch(e){const c=e&&e.code;if(c==='declined'){toast('내려받기를 취소했어요');return'cancel';}if(c==='rate_limited'){toast('저장 창이 이미 떠 있어요. 잠시 뒤 다시 눌러 주세요');return'cancel';}
+      if(c==='host_unavailable'){toast('이 앱에서는 파일을 저장할 수 없어요. 브라우저나 컴퓨터에서 열어 주세요');return'blocked';}}}
   if(isTouch()&&navigator.canShare){try{const f=new File([data],fn,{type:mime});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});toast('공유 창에서 [파일에 저장]을 고르면 돼요');return'ok';}}catch(e){if(e&&e.name==='AbortError')return'cancel';}}
   if(inFrame())return'blocked';   // 미리보기 틀 안에서는 내려받기 링크가 막혀 있다
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:isTouch()?'application/octet-stream':mime}));a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
   toast('파일을 내려받았어요 ('+fn+') · 다운로드 폴더를 확인하세요');return'ok';}
 async function saveTextFile(fn,data,mime,desc,ext){const r=await saveAny(fn,data,mime,desc,ext);if(r==='blocked')showFallback(fn,data);}
-function showFallback(fn,data){$('fbMsg').innerHTML=`이 화면에서는 파일을 바로 내려받을 수 없어요. <b>[전체 복사]</b>를 누른 뒤 메모장·파일 앱에 붙여 넣고 <code>${esc(fn)}</code> 이름으로 저장하세요. 또는 깃허브 페이지(https://co2maker-cyber.github.io/3rd-/breadboard/)에서 열면 바로 내려받을 수 있어요.`;
+function showFallback(fn,data,view){$('fbTitle').textContent=view?'파일 내용 보기':'파일 저장이 막혔어요';if(view){$('fbMsg').innerHTML=`<code>${esc(fn)}</code> 파일 내용이에요. zip을 받을 수 없을 때 <b>[전체 복사]</b>를 눌러 메모장에 붙여 넣고 이 이름 그대로 저장하세요.`;$('fbText').value=data;$('fbDlg').hidden=false;$('fbText').scrollTop=0;return;}$('fbMsg').innerHTML=`이 화면에서는 파일을 바로 내려받을 수 없어요. <b>[전체 복사]</b>를 누른 뒤 메모장·파일 앱에 붙여 넣고 <code>${esc(fn)}</code> 이름으로 저장하세요. 또는 깃허브 페이지(https://co2maker-cyber.github.io/3rd-/breadboard/)에서 열면 바로 내려받을 수 있어요.`;
   $('fbText').value=data;$('fbDlg').hidden=false;$('fbText').scrollTop=0;}
 $('fbX').onclick=()=>{$('fbDlg').hidden=true;};
 $('fbCopy').onclick=async()=>{const t=$('fbText');let ok=false;try{await navigator.clipboard.writeText(t.value);ok=true;}catch(_){t.focus();t.select();try{ok=document.execCommand('copy');}catch(__){}}
@@ -7036,19 +7044,33 @@ const SF={'0':[[0,0,1,0,1,2,0,2,0,0],[1,0,0,2]],'1':[[.2,.4,.5,0,.5,2],[.2,2,.8,
   R:[[0,2,0,0,1,0,1,1,0,1,1,2]],S:[[1,0,0,0,0,1,1,1,1,2,0,2]],T:[[0,0,1,0],[.5,0,.5,2]],U:[[0,0,0,2,1,2,1,0]],V:[[0,0,.5,2,1,0]],W:[[0,0,.25,2,.5,1,.75,2,1,0]],
   X:[[0,0,1,2],[1,0,0,2]],Y:[[0,0,.5,1,1,0],[.5,1,.5,2]],Z:[[0,0,1,0,0,2,1,2]],'-':[[0,1,1,1]]};
 function strokeText(o,k,txt,x,y,hgt){const sc=hgt/2;let cx=x;for(const ch of String(txt).toUpperCase()){for(const pl of SF[ch]||[]){for(let i=0;i+3<pl.length;i+=2)o.line(k,{x:cx+pl[i]*sc*.6,y:y-hgt+pl[i+1]*sc},{x:cx+pl[i+2]*sc*.6,y:y-hgt+pl[i+3]*sc});}cx+=hgt*.5;}}
-async function pcbExport(){const C=pcalc();if(!C.fps.length){toast('내보낼 부품이 없어요');return;}
-  const E=pcbDRC(),bad=E.filter(e=>e.k==='bad').length;
-  if((bad||C.rats.length)&&!$('pExp').dataset.sure){$('pExp').dataset.sure='1';setTimeout(()=>{delete $('pExp').dataset.sure;},4000);toast(`점검에서 오류 ${bad}개, 안 이은 연결 ${C.rats.length}개가 있어요. 그래도 받으려면 [내보내기]를 한 번 더 누르세요`);return;}
-  delete $('pExp').dataset.sure;
-  const G=pcbGerbers(),base=((curName||'pcb').replace(/[^A-Za-z0-9_-]+/g,'_').replace(/^_+|_+$/g,'')||'pcb');
-  const zip=makeZip(G.files(base));
-  await saveBinFile(`${base}-gerber-${PCB.nl}L.zip`,zip,'application/zip','PCB 거버 파일','.zip');toast(`거버 ${G.layers.length}층(구리) + 마스크·실크·외곽·드릴을 zip으로 만들었어요`);}
+/* 거버 받기: 창에서 들어갈 파일·크기·점검 결과를 보여 주고 zip 하나로 내려받는다.
+   zip을 내려받을 수 없는 화면(미리보기 틀 등)에서는 파일마다 내용을 열어 복사할 수 있게 한다 */
+let gbrCache=null;
+function pcbExport(){const C=pcalc();if(!C.fps.length){toast('내보낼 부품이 없어요. 브레드보드·회로도에 회로를 만들거나 PCB에서 [부품]으로 놓으세요');return;}
+  const E=pcbDRC(),bad=E.filter(e=>e.k==='bad'),G=pcbGerbers(),base=((curName||'pcb').replace(/[^A-Za-z0-9_-]+/g,'_').replace(/^_+|_+$/g,'')||'pcb');
+  const files=G.files(base),enc=new TextEncoder(),kb=t=>{const n=enc.encode(t).length;return n<1024?n+'B':(n/1024).toFixed(1)+'KB';};
+  const what=nm=>/_Cu\./.test(nm)?'구리':/Mask/.test(nm)?'솔더 마스크':/SilkS/.test(nm)?'실크':/Edge_Cuts/.test(nm)?'보드 외곽':/NPTH\.drl$/.test(nm)?'드릴(도금 없음)':/\.drl$/.test(nm)?'드릴(도금)':/BOM/.test(nm)?'부품표':/pos\.csv$/.test(nm)?'부품 위치':/assembly/.test(nm)?'조립 도면':/README/.test(nm)?'설명':'';
+  gbrCache={files,base,zipName:`${base}-gerber-${PCB.nl}L.zip`};
+  let h=`<p class="desc">보드 ${PCB.w} × ${PCB.h} mm · ${PCB.nl}층 · 두께 ${PCB.th}mm · 부품 ${C.fps.length}개 · 선 ${PCB.tr.length} · 비아 ${PCB.vias.length}<br>아래 파일을 <b>${esc(gbrCache.zipName)}</b> 하나로 묶어 내려받아요. PCB 업체 주문 화면에 이 zip을 그대로 올리면 돼요.</p>`;
+  if(bad.length||C.rats.length)h+=`<ul class="warns">${bad.length?`<li class="bad">점검 오류 ${bad.length}개: ${esc(bad[0].t)}${bad.length>1?' 외':''}</li>`:''}${C.rats.length?`<li class="warn">아직 안 이은 연결 ${C.rats.length}개(노란 점선) — 이대로 만들면 그 연결은 끊긴 채로 나와요</li>`:''}</ul><p class="desc">그래도 받을 수는 있어요. 주문 전에 고치는 것을 권해요.</p>`;
+  else h+=`<ul class="warns"><li class="ok">점검 오류 없음 · 모든 연결이 이어졌어요</li></ul>`;
+  h+=`<table class="gbrt"><tr><th>파일</th><th>내용</th><th>크기</th><th></th></tr>${files.map(([nm,t],i)=>`<tr><td><code>${esc(nm)}</code></td><td>${esc(what(nm))}</td><td>${kb(t)}</td><td><button class="btn" data-gv="${i}" title="내용 보기·복사(zip을 받을 수 없을 때)">보기</button></td></tr>`).join('')}</table>
+    <p class="desc">주문 전에 업체의 거버 미리보기나 거버 뷰어로 꼭 확인하세요(설계 보조용). 이 화면에서 zip이 안 받아지면 각 파일의 [보기]에서 내용을 복사해 같은 이름으로 저장하거나, 깃허브 페이지(co2maker-cyber.github.io/3rd-/breadboard)에서 열어 받으세요.</p>`;
+  $('gbrBody').innerHTML=h;$('gbrDlg').hidden=false;
+  $('gbrBody').querySelectorAll('[data-gv]').forEach(b=>b.onclick=()=>{const [nm,t]=files[+b.dataset.gv];showFallback(nm,t,true);});}
+async function gbrDownload(){if(!gbrCache)return;const {files,zipName}=gbrCache,zip=makeZip(files);const r=await saveAny(zipName,zip,'application/zip','PCB 거버 파일','.zip');
+  if(r==='ok'){$('gbrDlg').hidden=true;toast(`거버 zip을 내려받았어요(${zipName}) · 파일 ${files.length}개`);}
+  else if(r==='blocked')toast('이 화면에서는 zip을 바로 내려받을 수 없어요. 아래 파일의 [보기]에서 복사하거나 깃허브 페이지에서 열어 받으세요');}
 async function pcbSvgExport(){const C=pcalc();if(!C.fps.length){toast('내보낼 부품이 없어요');return;}
   const keep={...pv},ph=phover,ps=psel,vw=pview;phover=null;psel=null;pview='all';renderPcb();const g=pcbSvg().cloneNode(true);Object.assign(pv,keep);phover=ph;psel=ps;pview=vw;
   g.setAttribute('viewBox',`-2 -4 ${PCB.w+4} ${PCB.h+6}`);g.setAttribute('width',(PCB.w+4)*10);g.setAttribute('height',(PCB.h+6)*10);g.querySelectorAll('.prat,.pdrc').forEach(e=>e.remove());
   const css=`.psilk *{fill:none;stroke:${PCOL.silk};stroke-width:.15}.pfp{fill:none;stroke:none}.pref{fill:${PCOL.silk};font:.9px sans-serif;text-anchor:middle}.ppad{fill:${PCOL.pad}}.ppad.np{fill:none;stroke:#8FA89A;stroke-width:.15}.pvia{fill:${PCOL.pad}}.ptr{stroke-linecap:round}.pdim{fill:#888;font:1px sans-serif}`;
   const data=`<?xml version="1.0" encoding="UTF-8"?>\n<!-- 브레드보드 CAD에서 만든 PCB 그림 · (c) 2026 co2maker-cyber · 서명 ${AUTHOR_SIG.id} -->\n`+g.outerHTML.replace('>',`><style>${css}</style>`);renderPcb();
   await saveTextFile(((curName||'pcb').replace(/[\\/:*?"<>|]+/g,'_')||'pcb')+'-pcb.svg',data,'image/svg+xml','PCB 그림','.svg');}
+(function wireGbr(){const g=document.getElementById('gbrGo');if(!g)return;g.onclick=gbrDownload;$('gbrX').onclick=()=>{$('gbrDlg').hidden=true;};
+  $('gbrDlg').addEventListener('pointerdown',e=>{if(e.target===$('gbrDlg'))$('gbrDlg').hidden=true;});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('gbrDlg').hidden&&$('fbDlg').hidden){e.stopImmediatePropagation();$('gbrDlg').hidden=true;}},true);})();
 async function saveBinFile(fn,bytes,mime,desc,ext){const r=await saveAny(fn,bytes,mime,desc,ext);if(r==='blocked')toast('이 화면에서는 zip을 바로 내려받을 수 없어요. 깃허브 페이지(co2maker-cyber.github.io/3rd-/breadboard)에서 열어 내려받으세요');}
 
 /* ── 포인터 ── */

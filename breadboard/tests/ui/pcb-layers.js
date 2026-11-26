@@ -1,7 +1,7 @@
 // PCB 시험 4: PCB에서 부품 놓기(회로도·브레드보드에도 들어감)·장착 구멍·지우기·되돌리기, PCB 연결 → 회로도 반영,
 // 층 쌓기(1·2·4·6층, 안쪽 신호 층·GND/VCC 판), 여러 층 자동 배선, 층별 거버·드릴(NPTH)·README, 저장·불러오기
 const {chromium}=require('playwright');const path=require('path');
-(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
+(async()=>{const b=await chromium.launch();const p=await (await b.newContext({acceptDownloads:true,viewport:{width:1300,height:850}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const ok=[];const chk=(n,v,x)=>{ok.push(!!v);console.log((v?'ok  ':'FAIL')+' '+n+(x?' '+x:''));};
 const scr=async(x,y)=>p.evaluate(([x,y])=>{const r=pcbSvg().getBoundingClientRect();return{x:r.left+(x-pv.x)*pv.s,y:r.top+(y-pv.y)*pv.s};},[x,y]);
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(1000);
@@ -86,5 +86,11 @@ await p.click('#pLbar [data-pv="In1"]');r=await cnt();chk('In1 GND 판만: 판 �
 await p.click('#pLbar [data-pv="silk"]');r=await cnt();chk('실크만',!r.tr&&r.silk===1,JSON.stringify(r));
 await p.click('#pLbar [data-pv="drill"]');r=await p.evaluate(()=>({h:document.querySelectorAll('#pcb .pdh').length,n:pcalc().pads.length+PCB.vias.length}));chk('구멍만: 구멍마다 표시',r.h===r.n,JSON.stringify(r));
 await p.keyboard.press('0');r=await cnt();chk('키 0 → 모든 층',r.pv==='all'&&r.silk===1,JSON.stringify(r));
+// ⑥ [거버 받기] 창: 파일 목록 → zip 내려받기
+await p.click('#pExp');await p.waitForTimeout(150);
+r=await p.evaluate(()=>({open:!document.getElementById('gbrDlg').hidden,names:[...document.querySelectorAll('#gbrBody code')].map(c=>c.textContent)}));
+chk('거버 창: 층마다 구리·마스크·실크·외곽·드릴·BOM·조립도',r.open&&['F_Cu.gtl','In1_Cu.g1','B_Cu.gbl','F_Mask.gts','F_SilkS.gto','Edge_Cuts.gm1','.drl','BOM.csv','assembly-top.svg'].every(x=>r.names.some(n=>n.endsWith(x))),r.names.join(' '));
+const [dl]=await Promise.all([p.waitForEvent('download',{timeout:5000}).catch(()=>null),p.click('#gbrGo')]);
+chk('zip 내려받기',dl&&/-gerber-\dL\.zip$/.test(dl.suggestedFilename()),dl&&dl.suggestedFilename());
 chk('페이지 오류 없음 '+errs.join('|'),!errs.length);
 console.log(ok.every(Boolean)?'pcb-layers PASS':'pcb-layers FAIL');await b.close();})();
