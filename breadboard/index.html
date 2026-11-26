@@ -576,6 +576,7 @@ body.planon .cbar{display:none}
         <option value="passw">Ⓟ4 스위치·인코더: 택트·토글·DIP·로터리·셀렉터</option>
         <option value="pasrly">Ⓟ5 릴레이·솔레노이드·코일: 드라이버로 켜기·자기유지·SSR</option>
         <option value="pasdio">Ⓟ6 다이오드: 한 방향·OR 묶기·제너 5.1V·브리지·역전압 다이오드</option>
+        <option value="pastr">Ⓟ7 트랜지스터·MOSFET: NPN·PNP 스위치·MOSFET·달링턴·릴레이 구동</option>
         </optgroup>
         <optgroup label="논리 IC 모음 (74LS·74HC 비교)">
         <option value="lg2">ⓘ1 2입력 게이트 9종 + 단독 NAND·NOR·XNOR (스위치 A·B)</option>
@@ -874,6 +875,8 @@ N1:  R3.2, D1.A
 | 릴레이 | `릴레이` `relay` `K` | `5V`·`12V`·`24V`, `리드`(reed)·`DPDT`·`래칭`·`SSR` (없으면 큐브형 SPDT) | `A1` `A2`(코일) `COM` `NO` `NC` (DPDT는 `COM1` `NO1` `NC1` `COM2` …) |
 | SSR | `SSR` `반도체릴레이` | 없음 | `+` `-`(입력) `출력` 핀은 `3` `4` |
 | 솔레노이드 | `솔레노이드` `solenoid` `SOL` | `5V`·`12V`·`24V` | `1` `2` |
+| 트랜지스터 | `트랜지스터` `transistor` `TR` `Q` `NPN` `PNP`, 또는 번호 그대로(`2N3904` `2N3906` `2N2222A` `BC547` `BC557` `TIP120`) | 번호, 또는 `PNP`·`달링턴` (없으면 2N3904) | `E` `B` `C` (`emitter` `base` `collector`도 돼요) |
+| MOSFET | `MOSFET` `FET` `NMOS` `PMOS`, 또는 `2N7000` | `파워`·`로직`(TO-220 N채널), `P채널` (없으면 2N7000) | `G` `D` `S` (`gate` `drain` `source`도 돼요) |
 | 코일·인덕터 | `코일` `인덕터` `inductor` `L` `choke` | 값 `100uH` `1mH` …, `축형`·`토로이드`·`공심`·`비드` (없으면 드럼 코어) | `1` `2` |
 | 가변저항 | `가변저항` `POT` `VR` | `10k` 등 | `1` `2`(와이퍼) `3` |
 
@@ -1088,7 +1091,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 - IC와 같은 방식(10핀). 핀 순서: 1 `e`, 2 `d`, 3 `COM`, 4 `c`, 5 `dp`, 6 `b`, 7 `a`, 8 `COM`, 9 `f`, 10 `g`
 - `ca`: `true` 공통 애노드, `false` 공통 캐소드
 
-#### 수동 소자·스위치 `px` (가변저항, 저항 어레이, 여러 가지 스위치, 다이오드, 릴레이, 코일)
+#### 수동 소자·스위치 `px` (가변저항, 저항 어레이, 여러 가지 스위치, 다이오드, 릴레이, 코일, 트랜지스터)
 ```json
 {"t": "px", "kind": "pot16", "pins": ["c20", "c21", "c22"], "ohms": 10000, "taper": "B", "pos": 0.5}
 ```
@@ -1150,6 +1153,15 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `indt` | 토로이드 코일 | row | 0,3 | 1 2 | `henry:0.001` |
 | `bead` | 페라이트 비드 | row | 0,3 | 1 2 | |
 | `indair` | 공심 코일(직접 감기) | row | 0,3 | 1 2 | `turns:20, dmm:10` (감은 수, 지름 mm → henry 자동) |
+| `q3904` | 2N3904 NPN 소신호 (TO-92) | row | 0,1,2 | E B C | |
+| `q3906` | 2N3906 PNP 소신호 (TO-92) | row | 0,1,2 | E B C | |
+| `q2222` | 2N2222A급 NPN 범용 600mA (TO-92) | row | 0,1,2 | E B C | |
+| `qbc547` | BC547 NPN 소신호 (TO-92) | row | 0,1,2 | C B E | |
+| `qbc557` | BC557 PNP 소신호 (TO-92) | row | 0,1,2 | C B E | |
+| `qtip` | TIP120급 NPN 달링턴 (TO-220) | row | 0,1,2 | B C E | |
+| `m7000` | 2N7000 N채널 MOSFET (TO-92) | row | 0,1,2 | S G D | |
+| `mnpow` | 로직 레벨 N채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
+| `mppow` | 로직 레벨 P채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
 
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
 
@@ -1527,6 +1539,30 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 
 ---
 
+## 4-2. 트랜지스터 고르기
+
+트랜지스터는 작은 신호(IC 출력·스위치)로 큰 부하(LED 여러 개·릴레이 코일·모터)를 켜고 끄는 데 써요. 프로그램은 **켜짐·꺼짐만 보는 스위치 모델**로 계산해요.
+
+| 프로그램 부품 | 표준 번호(급) | 패키지·다리 순서 | 정격(대표) | 이럴 때 써요 |
+|---|---|---|---|---|
+| `q3904` | 2N3904 | TO-92 · E B C | NPN, 200mA, 40V | LED 몇 개, 작은 릴레이(40mA 안팎), 부저 |
+| `q3906` | 2N3906 | TO-92 · E B C | PNP, 200mA, 40V | 부하의 + 쪽 켜기(LOW에서 켜짐) |
+| `q2222` | 2N2222A급 | TO-92 · E B C | NPN, 600mA, 40V | 큐브형 릴레이(70mA 안팎), 작은 모터 |
+| `qbc547` | BC547 | TO-92 · **C B E** | NPN, 100mA, 45V | 2N3904 자리(다리 순서가 반대!) |
+| `qbc557` | BC557 | TO-92 · **C B E** | PNP, 100mA, 45V | 2N3906 자리(다리 순서가 반대!) |
+| `qtip` | TIP120급 | TO-220 · B C E | NPN 달링턴, 5A, 60V | 모터·솔레노이드·전구(방열판) |
+| `m7000` | 2N7000 | TO-92 · S G D | N채널 MOSFET, 200mA, 60V | 5V 논리로 작은 부하, 레벨 바꾸기 |
+| `mnpow` | 로직 레벨 N채널 | TO-220 · G D S | 수십 A급, 켜졌을 때 수십 mΩ | LED 줄·모터를 낮은 쪽에서 |
+| `mppow` | 로직 레벨 P채널 | TO-220 · G D S | 10A급 | 부하의 + 쪽(높은 쪽) 켜기 |
+
+**고르는 요령**
+- 부하 전류가 100mA 안쪽 → 2N3904·BC547이나 2N7000. 100~500mA → 2N2222A급. 그보다 크면 → 달링턴이나 파워 MOSFET.
+- 베이스 저항: (논리 전압 − 0.7V) ÷ (부하 전류 ÷ 10) 쯤으로 정하면 확실히 켜져요(5V, 부하 50mA → 약 860Ω → 1kΩ). MOSFET 게이트는 저항 없이 이어도 되지만 10kΩ 풀다운은 꼭 달아요.
+- 3.3V 논리로 켤 때는 2N7000이 덜 켜질 수 있어요. 바이폴라 트랜지스터나 '로직 레벨' 표시가 있는 MOSFET을 고르세요.
+- 같은 모양(TO-92)이라도 번호마다 다리 순서가 달라요. 꽂기 전에 평평한 면을 보고 E·B·C 순서를 꼭 확인하세요.
+
+---
+
 ## 5. 프로그램 ↔ SPICE로 맞춰 보기
 
 1. 프로그램에서 회로를 만들고 [속성]에서 다이오드 전류·릴레이 코일 전압을 봐요.
@@ -1542,6 +1578,7 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 - [ ] 연속 전류가 1A를 넘는 길이 없나요? 0.5A가 넘는 길은 접점 저항으로 전압이 얼마나 떨어지는지 확인했나요?
 - [ ] 다리가 1mm 넘는 부품, 핀이 격자에 안 맞는 부품을 억지로 꽂지 않았나요?
 - [ ] 다이오드·전해 커패시터·LED·제너의 방향(띠·긴 다리)을 확인했나요?
+- [ ] 트랜지스터 베이스에 저항이 있나요? MOSFET 게이트에 풀다운(또는 풀업) 저항이 있나요? 다리 순서(E·B·C, G·D·S)를 확인했나요?
 - [ ] 릴레이·솔레노이드 코일 양 끝에 역전압 다이오드가 있나요? 다이오드가 든 릴레이의 + / − 를 확인했나요?
 - [ ] 코일끼리는 서로 직각으로 놓고, 아날로그 신호선과 떨어뜨렸나요? 드라이버 전원 쪽에 바이패스 커패시터가 있나요?
 - [ ] 스프링이 헐거워진 구멍은 표시해 두었나요? (간헐적인 접촉 불량을 찾는 시간을 아껴요)
@@ -1551,7 +1588,7 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 ## 이 안내서에 대해
 
 - 이 안내서는 브레드보드 CAD 저작자가 직접 쓴 글이에요(© 2026 co2maker-cyber. All rights reserved.). 다른 자료의 문장·표를 옮기지 않고, 부품의 치수·정격 같은 **사실**만 골라 새로 정리했어요(`breadboard/COPYRIGHT.md` 14절).
-- 1N4148·1N4007·UF4007·1N5819·1N4733A·1N34A·BAT85 같은 번호는 여러 회사가 같은 규격으로 만드는 **표준 등록 번호**로, 어떤 급의 부품인지 알려 주는 기술 표기로만 썼어요. 특정 회사의 상품명·상표는 쓰지 않았어요. DO-35·DO-41·DO-201AD는 업계 표준 패키지 외형 이름이에요.
+- 1N4148·1N4007·UF4007·1N5819·1N4733A·1N34A·BAT85·2N3904·2N3906·2N2222A·BC547·BC557·TIP120·2N7000 같은 번호는 여러 회사가 같은 규격으로 만드는 **표준 등록 번호**로, 어떤 급의 부품인지 알려 주는 기술 표기로만 썼어요. 특정 회사의 상품명·상표는 쓰지 않았어요. DO-35·DO-41·DO-201AD·TO-92·TO-220은 업계 표준 패키지 외형 이름이에요.
 - 이 안내서와 SPICE 모델은 설계를 돕는 참고 자료예요. 실제 제작 전에 쓰는 부품의 공식 자료로 다시 확인해 주세요.
 </script>
 <script>
@@ -2286,7 +2323,7 @@ segDrv('DRV-14SEG',false);segDrv('DRV-16SEG',true);
    종류마다: 핀 이름(pins), 꽂는 모양(lay: 'row' 누른 줄에서 오른쪽으로 dc 칸들 | 'dip' 가운데 홈을 걸쳐 cols 칸들, 번호는 IC처럼),
    지금 닫힌 접점(contacts → [[i,j]]), 안의 저항(res → [[i,j,옴]]), 누르기(tap: 좌우 위치 side −1~1), 그리기(draw).
    가변저항 분압은 아날로그 계산(커패시터와 같은 방식)으로 풀어 와이퍼 전압을 정한다 */
-const PXSUB=[['res','고정 저항 · 저항 어레이'],['pot','가변 저항 · 트리머'],['cap','커패시터'],['sw','스위치 · 인코더'],['dio','다이오드 · 브리지 정류기'],['rly','릴레이 · 솔레노이드'],['ind','코일 · 인덕터']];
+const PXSUB=[['res','고정 저항 · 저항 어레이'],['pot','가변 저항 · 트리머'],['cap','커패시터'],['sw','스위치 · 인코더'],['dio','다이오드 · 브리지 정류기'],['rly','릴레이 · 솔레노이드'],['ind','코일 · 인덕터'],['tr','트랜지스터 · MOSFET']];
 const PX={};
 function pxDef(o){o.pre=o.pre||'SW';PX[o.k]=o;}
 const POTV=[1000,2000,5000,10000,20000,50000,100000,250000,500000,1000000];
@@ -2422,7 +2459,8 @@ for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'C'+(i+1)),...rng(P*T,i=>S
 // ── 다이오드: dio → [[애노드 핀, 캐소드 핀, 특성]]. 특성(DIOM)은 데이터시트에 흔히 나오는 대표 특성점(순방향 전압·전류)에서 이 프로그램이 직접 어림한 꺾은선 모델:
 //    순방향 전압 vf를 넘으면 (V − vf) ÷ rs만큼 흐르고, 제너는 거꾸로 vz를 넘으면 (V − vz) ÷ rz만큼 흐른다. vr 역전압 한계, imax 순방향 전류 한계(평균)
 const DIOM={sig:{vf:.6,rs:3.5,vr:100,imax:.3,nm:'신호용'},rect:{vf:.68,rs:.25,vr:1000,imax:1,nm:'정류용'},sch:{vf:.27,rs:.18,vr:40,imax:1,nm:'쇼트키'},
-  zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},uf:{vf:.72,rs:.5,vr:1000,imax:1,nm:'초고속 정류용'},ssch:{vf:.28,rs:5,vr:30,imax:.2,nm:'소신호 쇼트키'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'}};
+  zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},uf:{vf:.72,rs:.5,vr:1000,imax:1,nm:'초고속 정류용'},ssch:{vf:.28,rs:5,vr:30,imax:.2,nm:'소신호 쇼트키'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'},
+  be:{vf:.65,rs:25,vr:6,imax:.05,nm:'베이스-이미터'},be2:{vf:1.3,rs:40,vr:5,imax:.12,nm:'베이스-이미터 (달링턴)'}};
 const DIOD=' 다이오드는 애노드(A)에서 캐소드(K, 띠가 있는 쪽)로만 전류를 흘려요. 시뮬레이터는 순방향 전압을 넘으면 켜지는 꺾은선 모델로 계산해요(실제 곡선의 어림).';
 const dioAx=(body,band,len)=>(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-9,x=(a.x+b.x)/2,w=len||22;let s='';for(const p of ph)s+=leg(p,p.x,y);
   return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-w/2}" y="${y-4.5}" width="${w}" height="9" rx="2.5" fill="${body}"/><rect x="${x+w/2-6}" y="${y-4.5}" width="3.2" height="9" fill="${band}"/>`;};
@@ -2444,6 +2482,57 @@ pxDef({k:'dbat',pp:7.62,sub:'dio',pre:'D',title:'BAT85급 소신호 쇼트키 �
 pxDef({k:'brdg',sub:'dio',pre:'BR',title:'브리지 정류기 (4핀 DIP, 1A)',lay:'dip',cols:[0,2],pins:['+ (출력)','~ (교류 1)','− (출력)','~ (교류 2)'],init:()=>({}),dio:[[1,0,'br'],[3,0,'br'],[2,1,'br'],[2,3,'br']],
   draw:(c,ph)=>{const B=dipBody(ph,'#24282D',7);return B.s+`<text x="${B.x}" y="${B.y+3}" font-size="9" font-weight="700" fill="#E9ECEF" text-anchor="middle">~ ⧫ ~</text>`;},
   desc:'다이오드 4개를 다리(브리지) 모양으로 묶은 부품이에요. 두 ~ 단자에 교류(또는 어느 방향의 직류)를 넣으면 + 단자에 늘 + 가, − 단자에 − 가 나와요(전파 정류). 전류가 다이오드 두 개를 지나서 약 1.4V를 잃어요. 가운데 홈을 걸쳐 꽂아요. 출력에 큰 전해 커패시터를 달면 울퉁불퉁한 전압이 평평해져요.'+LEADN});
+// ── 트랜지스터·MOSFET: tr = {t:'npn'|'pnp'|'nmos'|'pmos', 핀 번호(e·b·c 또는 g·d·s), 정격}. 켜짐·꺼짐만 보는 스위치 모델:
+//    BJT는 베이스-이미터를 다이오드(dio, 약 0.65V)로 계산하고, 베이스 전류가 20µA를 넘으면 컬렉터-이미터가 이어진다(포화)
+//    MOSFET은 게이트-소스 전압이 vth를 넘으면 드레인-소스가 이어진다(게이트로는 전류가 안 흐름). 증폭(선형) 영역은 계산하지 않는다
+//    settle 끝에서 trUpd → 바뀌면 줄 연결부터 다시 계산(릴레이와 같은 방식)
+const TRD={npn:'NPN 트랜지스터',pnp:'PNP 트랜지스터',nmos:'N채널 MOSFET (증가형)',pmos:'P채널 MOSFET (증가형)'};
+const TRN=' 시뮬레이터는 켜짐·꺼짐만 보는 스위치 모델로 계산해요. 켜지면 컬렉터-이미터(드레인-소스)가 이어진 것으로 보고, 증폭(반쯤 켜진) 상태나 전류 한계(hFE)는 계산하지 않아요.';
+const trDot=(x,y,on)=>`<circle cx="${x}" cy="${y}" r="2.4" fill="${on?'#3DDC84':'#30343A'}" stroke="#111" stroke-width=".6"${on?' filter="url(#glow)"':''}/>`;
+// TO-92(반원 기둥): 다리 셋이 한 줄. 평평한 면에 번호
+const to92=lab=>(c,ph,r)=>{const xs=ph.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),y=ph[0].y-10,cx=(x0+x1)/2,w=(x1-x0)/2+7;let s='';for(const p of ph)s+=leg(p,p.x,y);
+  return s+`<path d="M${cx-w} ${y}V${y-11}A${w} ${r3(w*.55)} 0 0 1 ${cx+w} ${y-11}V${y}Z" fill="#23262B"/><text x="${cx}" y="${y-4}" font-size="6.5" font-weight="700" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${lab}</text>`+trDot(cx,y-17,!!(r&&r.on));};
+// TO-220(파워): 검은 몸통 위에 구멍 뚫린 쇠 방열판
+const to220=lab=>(c,ph,r)=>{const xs=ph.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),y=ph[0].y-8,cx=(x0+x1)/2,w=(x1-x0)/2+9;let s='';for(const p of ph)s+=leg(p,p.x,y);
+  return s+`<rect x="${cx-w}" y="${y-34}" width="${2*w}" height="15" rx="1.5" fill="#B8BDC4"/><circle cx="${cx}" cy="${y-27}" r="3.6" fill="#5A6068"/><rect x="${cx-w}" y="${y-20}" width="${2*w}" height="20" rx="1.5" fill="#1E2125"/><text x="${cx}" y="${y-8}" font-size="6.5" font-weight="700" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${lab}</text>`+trDot(cx+w-5,y-5,!!(r&&r.on));};
+const BJTN=' NPN은 이미터(E)를 GND에, 부하(LED+저항, 릴레이 코일 등)를 + 와 컬렉터(C) 사이에 달고, 베이스(B)에 저항(보통 1k~10kΩ)을 거쳐 HIGH를 넣으면 켜져요(낮은 쪽 스위치).';
+const BJTP=' PNP는 이미터(E)를 + 에, 부하를 컬렉터(C)와 GND 사이에 달고, 베이스(B)를 저항을 거쳐 LOW로 당기면 켜져요(높은 쪽 스위치). 베이스가 이미터와 같은 전압이면 꺼져요.';
+const BJTR=' 베이스에 저항 없이 전원이나 IC 출력을 바로 물리면 베이스-이미터로 큰 전류가 흘러 타요.';
+const npnE=(k,lab,title,o,desc)=>pxDef(Object.assign({k,sub:'tr',pre:'Q',pkg:'TO-92',title,lay:'row',dc:[0,1,2],init:()=>({}),draw:to92(lab),desc},o));
+npnE('q3904','3904','2N3904 NPN 소신호 트랜지스터 (200mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'npn',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300'},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on?[[2,0]]:[]},
+  '가장 흔한 작은 NPN 트랜지스터예요. 컬렉터 전류 200mA, 40V까지라 LED 여러 개, 작은 릴레이 코일, 부저를 논리 신호로 켜고 끄는 데 알맞아요. 평평한 면을 보고 왼쪽부터 E·B·C예요.'+BJTN+BJTR+TRN);
+npnE('q3906','3906','2N3906 PNP 소신호 트랜지스터 (200mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'pnp',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300'},dio:[[0,1,'be']],contacts:(c,r)=>r&&r.on?[[0,2]]:[]},
+  '2N3904와 짝을 이루는 PNP 트랜지스터예요(200mA, 40V). 부하의 + 쪽을 켜고 끌 때 써요. 평평한 면을 보고 왼쪽부터 E·B·C예요.'+BJTP+BJTR+TRN);
+npnE('q2222','2222','2N2222A급 NPN 범용 트랜지스터 (600mA, 40V)',{pins:['E (이미터)','B (베이스)','C (컬렉터)'],tr:{t:'npn',e:0,b:1,c:2,ic:.6,vce:40,hfe:'100~300'},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on?[[2,0]]:[]},
+  '2N3904보다 전류를 많이(600mA까지) 흘릴 수 있는 NPN 트랜지스터예요. 큐브형 릴레이 코일(약 70mA), 작은 모터, LED 줄을 켜기에 넉넉해요. 플라스틱(TO-92) 몸통은 평평한 면을 보고 왼쪽부터 E·B·C예요(금속 캔 모양은 핀 순서가 달라요).'+BJTN+BJTR+TRN);
+npnE('qbc547','547','BC547 NPN 소신호 트랜지스터 (100mA, 45V)',{pins:['C (컬렉터)','B (베이스)','E (이미터)'],tr:{t:'npn',e:2,b:1,c:0,ic:.1,vce:45,hfe:'110~800'},dio:[[1,2,'be']],contacts:(c,r)=>r&&r.on?[[0,2]]:[]},
+  '유럽식 번호의 작은 NPN 트랜지스터예요(100mA, 45V). 2N3904와 쓰임새는 같지만 다리 순서가 반대라 평평한 면을 보고 왼쪽부터 C·B·E예요. 바꿔 끼울 때 순서를 꼭 확인하세요.'+BJTN+BJTR+TRN);
+npnE('qbc557','557','BC557 PNP 소신호 트랜지스터 (100mA, 45V)',{pins:['C (컬렉터)','B (베이스)','E (이미터)'],tr:{t:'pnp',e:2,b:1,c:0,ic:.1,vce:45,hfe:'110~800'},dio:[[2,1,'be']],contacts:(c,r)=>r&&r.on?[[2,0]]:[]},
+  'BC547과 짝을 이루는 PNP 트랜지스터예요(100mA, 45V). 평평한 면을 보고 왼쪽부터 C·B·E예요.'+BJTP+BJTR+TRN);
+pxDef({k:'qtip',sub:'tr',pre:'Q',pkg:'TO-220',title:'TIP120급 NPN 달링턴 파워 트랜지스터 (5A, 60V)',lay:'row',dc:[0,1,2],pins:['B (베이스)','C (컬렉터)','E (이미터)'],init:()=>({}),
+  tr:{t:'npn',e:2,b:0,c:1,ic:5,vce:60,hfe:'1000 이상'},dio:[[0,2,'be2']],contacts:(c,r)=>r&&r.on?[[1,2]]:[],draw:to220('TIP'),
+  desc:'트랜지스터 두 개를 겹쳐(달링턴) 아주 작은 베이스 전류로 큰 전류(5A까지)를 켜는 파워 트랜지스터예요. 모터, 솔레노이드, 전구, 긴 LED 줄을 논리 신호로 켜요. 베이스-이미터가 약 1.3V에서 켜지고, 켜졌을 때도 C-E에 1V 안팎이 남아 열이 나니 큰 전류는 방열판을 달아요. 앞에서 보아 왼쪽부터 B·C·E이고 쇠 방열판은 C와 이어져 있어요.'+BJTN+' 코일·모터를 켤 때는 역전압 다이오드를 꼭 함께 달아요.'+TRN});
+const MOSN=' 게이트(G)는 전압만 보고 전류는 거의 안 먹어서 IC 출력에 바로 물려도 돼요. 게이트가 떠 있으면 제멋대로 켜질 수 있으니 게이트와 소스 사이에 10kΩ 풀다운 저항을 달아요.';
+pxDef({k:'m7000',sub:'tr',pre:'Q',pkg:'TO-92',title:'2N7000 N채널 MOSFET (200mA, 60V)',lay:'row',dc:[0,1,2],pins:['S (소스)','G (게이트)','D (드레인)'],init:()=>({}),
+  tr:{t:'nmos',s:0,g:1,d:2,vth:2.1,full:4.5,id:.2,vds:60,ron:5},contacts:(c,r)=>r&&r.on?[[2,0]]:[],draw:to92('7000'),
+  desc:'작은 N채널 MOSFET이에요(200mA, 60V). 소스(S)를 GND에, 부하를 + 와 드레인(D) 사이에 달고 게이트(G)에 HIGH(5V)를 주면 켜져요. 게이트-소스가 약 2V를 넘으면 켜지기 시작하고 4.5V 이상에서 다 켜져요(켜졌을 때 저항 약 5Ω). 3.3V 논리 신호로는 덜 켜질 수 있어요. 평평한 면을 보고 왼쪽부터 S·G·D예요.'+MOSN+TRN});
+pxDef({k:'mnpow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 N채널 파워 MOSFET (TO-220, 30A급)',lay:'row',dc:[0,1,2],pins:['G (게이트)','D (드레인)','S (소스)'],init:()=>({}),
+  tr:{t:'nmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:30,vds:55,ron:.03},contacts:(c,r)=>r&&r.on?[[1,2]]:[],draw:to220('N-FET'),
+  desc:'5V 논리 신호로 다 켜지게 만든(로직 레벨) 큰 N채널 MOSFET이에요. 켜졌을 때 저항이 수십 mΩ으로 아주 작아 모터·LED 줄·히터 같은 큰 부하를 낮은 쪽에서 켜고 꺼요. 게이트-소스 약 1.5V부터 켜지기 시작해요. 앞에서 보아 왼쪽부터 G·D·S이고 방열판은 D와 이어져 있어요. 브레드보드 자체는 1A 안쪽까지만 흘리세요.'+MOSN+TRN});
+pxDef({k:'mppow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 P채널 파워 MOSFET (TO-220, 10A급)',lay:'row',dc:[0,1,2],pins:['G (게이트)','D (드레인)','S (소스)'],init:()=>({}),
+  tr:{t:'pmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:10,vds:30,ron:.1},contacts:(c,r)=>r&&r.on?[[1,2]]:[],draw:to220('P-FET'),
+  desc:'부하의 + 쪽(높은 쪽)을 켜고 끄는 P채널 MOSFET이에요. 소스(S)를 + 에, 부하를 드레인(D)과 GND 사이에 달고, 게이트(G)를 소스보다 낮게(LOW로) 당기면 켜져요. 게이트가 소스와 같은 전압이면 꺼지니 게이트와 소스 사이에 10kΩ 풀업 저항을 달아 평소에 꺼 두세요. 앞에서 보아 왼쪽부터 G·D·S예요.'+TRN});
+/* 켜짐·꺼짐 갱신(브레드보드): 바뀌면 true. vTop = 회로에서 가장 높은 전원 전압 */
+function trUpd(c,r,v,vTop){const T=PX[c.kind].tr;let on=false;
+  if(!S.power){}
+  else if(T.b!=null){const vb=v(T.b),ve=v(T.e),d=(r.di||[])[0],ib=d&&d.st===1?d.i:0;r.ib=ib;
+    if(ib>=2e-5)on=true;
+    // 이미 켜졌고 베이스가 이미터와 같은 쪽에 머물면(이미터 팔로워처럼 켜져서 이미터가 따라 올라간 때) 그대로 켜 둔다
+    else if(r.on&&vb!=null&&ve!=null)on=T.t==='npn'?vb>=ve-.05&&vb>.5:vb<=ve+.05&&vb<vTop-.5;}
+  else{const vg=v(T.g),vs=v(T.s);r.vgs=vg!=null&&vs!=null?vg-vs:null;
+    if(r.vgs!=null){const x=T.t==='nmos'?r.vgs:-r.vgs;on=x>=T.vth+(r.on?-.1:.1);
+      if(!on&&r.on)on=T.t==='nmos'?vg>=vs-.05&&vg>=T.vth:vg<=vs+.05&&vg<=vTop-T.vth;}}
+  if(!!r.on!==on){r.on=on;return true;}return false;}
 // ── 릴레이·솔레노이드: 코일(coil: [i,j] 핀)에 걸린 전압으로 접점이 바뀐다(settle 끝에서 coilUpd → 바뀌면 다시 계산)
 //    붙는 전압 정격의 75% 이상, 떨어지는 전압 10% 미만(그 사이는 지금 상태 유지). 코일 저항 = 정격²÷코일 전력(cw)
 const coilV=c=>{const d=PX[c.kind];return d.pol?5:(c.cv||d.cvs[0]);};
@@ -2799,6 +2888,7 @@ function settle(){
   let rch=false;const icDrv=new Map(),sinkDrv=new Map(),vOf0=n=>{if(srcV.has(n))return srcV.get(n);const v=lvl.get(n);return v===Hh?5:v===L?0:null;};
   for(const c of S.comps)if(c.t==='px'&&PX[c.kind].coil){const d=PX[c.kind],hs=ph.get(c.id),vC=n=>strong.has(n)?vOf0(n):vOf(n),va=vC(netOf[hs[d.coil[0]]]),vb=vC(netOf[hs[d.coil[1]]]);
     if(coilUpd(c,rt(c),S.power&&va!=null&&vb!=null?va-vb:0))rch=true;}
+  {const vTop=Math.max(5,...srcV.values());for(const c of S.comps)if(c.t==='px'&&PX[c.kind].tr){const hs=ph.get(c.id);if(trUpd(c,rt(c),k=>vOf(netOf[hs[k]]),vTop))rch=true;}}
   for(const c of ics){const o=rt(c).out;if(!o)continue;const hs=ph.get(c.id),sk=c.t==='ic'&&c.chip==='DRV-SINK8';o.forEach((v,k)=>{if(v===Hh||v===L)(sk?sinkDrv:icDrv).set(netOf[hs[k]],c);});}
   for(const c of S.comps){const hs=ph.get(c.id),w0=W_.length;
     if(c.t==='px'&&PX[c.kind].dio&&S.power){const nm=`${LBL.get(c.id)} ${PX[c.kind].title.replace(/ \(.*$/,'')}`,vS=n=>strong.has(n)?vOf0(n):vOf(n);let hot=0,rv=0,zp=0,sh=false;
@@ -2807,11 +2897,20 @@ function settle(){
         else{if(d.i>hot)hot=d.i;if(m.vz&&d.i<0)zp=Math.max(zp,-d.i*m.vz);}
         if(!m.vz&&-v>m.vr)rv=Math.max(rv,-v);}
       const m=DIOM[PX[c.kind].dio[0][2]];
+      if(PX[c.kind].tr){const T=PX[c.kind].tr;
+        if(sh)W_.push(['bad',`${nm}의 베이스(B)가 저항 없이 전원(또는 IC 출력)에 바로 이어져 있어요. 베이스-이미터는 다이오드처럼 약 ${m.vf}V를 넘으면 전류가 마구 흘러 실제로는 트랜지스터나 IC 출력이 타요. 베이스에 1k~10kΩ 저항을 넣으세요.`]);
+        else if(hot>m.imax)W_.push(['bad',`${nm}의 베이스로 약 ${(hot*1000).toFixed(0)}mA가 흘러요. 베이스 전류는 ${m.imax*1000}mA 안쪽이 좋아요. 베이스 저항을 더 크게 하세요.`]);
+        if(rv)W_.push(['bad',`${nm}의 베이스-이미터에 거꾸로 ${rv.toFixed(1)}V가 걸려요. 약 ${m.vr}V를 넘으면 망가져요. ${T.t==='npn'?'이미터가 베이스보다 높은 전압에 이어져 있지 않은지':'베이스가 이미터보다 많이 높은 전압에 이어져 있지 않은지'} 보세요.`]);}
+      else{
       if(sh)W_.push(['bad',`${nm}가 전원(또는 출력) 사이에 저항 없이 ${PX[c.kind].dio.length>1?'':'정방향으로 '}바로 이어져 있어요. 아주 큰 전류가 흘러 실제로는 다이오드가 타거나 전원이 꺼져요. 직렬 저항이나 부하를 넣으세요.`]);
       else if(hot>m.imax)W_.push(['bad',`${nm}에 약 ${hot>=1?hot.toFixed(1)+'A':(hot*1000).toFixed(0)+'mA'}가 흘러요. 이 다이오드는 ${m.imax>=1?m.imax+'A':m.imax*1000+'mA'}까지라 실제로는 뜨거워져 타요.`]);
       if(rv)W_.push(['bad',`${nm}에 거꾸로 ${rv.toFixed(0)}V가 걸려요. 역전압 한계 ${m.vr}V를 넘어서 실제로는 망가져요.`]);
       if(zp>m.pmax)W_.push(['bad',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격 ${m.pmax}W를 넘어서 타요. 직렬 저항을 더 크게 하세요.`]);
-      else if(zp>.6*(m.pmax||1))W_.push(['warn',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격의 60%를 넘으면 뜨거워져요.`]);}
+      else if(zp>.6*(m.pmax||1))W_.push(['warn',`${nm}에서 약 ${zp.toFixed(2)}W가 열로 나가요. 정격의 60%를 넘으면 뜨거워져요.`]);}}
+    if(c.t==='px'&&PX[c.kind].tr&&PX[c.kind].tr.g!=null&&S.power){const T=PX[c.kind].tr,nm=`${LBL.get(c.id)} ${PX[c.kind].title.replace(/ \(.*$/,'')}`,vg=vOf(netOf[hs[T.g]]),vs=vOf(netOf[hs[T.s]]),x=vg!=null&&vs!=null?(T.t==='nmos'?vg-vs:vs-vg):null;
+      if(vg==null)W_.push(['warn',`${nm}의 게이트(G)가 아무 데도 안 이어져 있어요(떠 있음). 실제 MOSFET은 게이트에 남은 전하나 정전기로 제멋대로 켜지거나 반쯤 켜져 뜨거워져요. 게이트와 소스 사이에 10kΩ 저항을 달아 주세요.`]);
+      else if(x!=null&&Math.abs(x)>20)W_.push(['bad',`${nm}의 게이트-소스에 ${Math.abs(x).toFixed(0)}V가 걸려요. 보통 ±20V가 한계라 게이트가 망가져요.`]);
+      else if(rt(c).on&&x!=null&&x<T.full)W_.push(['info',`${nm}: 게이트-소스 ${x.toFixed(1)}V로는 덜 켜져요(${T.full}V 이상에서 다 켜짐). 큰 전류를 흘리면 뜨거워질 수 있어요.`]);}
     if(c.t==='px'&&PX[c.kind].coil&&S.power){const d=PX[c.kind],r=rt(c),dv=r.dv||0,a=Math.abs(dv),nm=`${LBL.get(c.id)} ${d.title.replace(/ \(.*$/,'')}`,cv=coilV(c),cn=d.coil.map(k=>netOf[hs[k]]);
       if(d.pol){if(dv<=-3)W_.push(['warn',`${nm}의 입력이 거꾸로예요. + (입력) 핀이 높은 전압 쪽이어야 켜져요.`]);else if(dv>32)W_.push(['bad',`${nm} 입력에 ${dv.toFixed(1)}V가 걸려요. 입력은 3~32V까지예요.`]);}
       else if(a>1.3*cv)W_.push(['bad',`${nm}: 코일 정격 ${cv}V인데 ${a.toFixed(1)}V가 걸려요. 실제로는 코일이 뜨거워져 타요. [속성]에서 정격 전압이 맞는 것을 고르거나 전압을 낮추세요.`]);
@@ -3539,6 +3638,8 @@ function propEditor(c){
     else if(d.coil){const r=rt(c),on=rlyOn(c,r),R_=coilR(c),dv=r.dv||0;
       if(!d.pol)h+=`<div class="prop"><label>코일 정격 전압</label><div class="seg" id="pxC">${d.cvs.map(v=>`<button data-v="${v}" aria-pressed="${coilV(c)===v}">${v}V</button>`).join('')}</div></div>`;
       h+=`<p class="desc">${d.pol?'입력 저항':'코일 저항'} 약 ${ohmTx(R_)}${d.pol?' (3V 이상에서 켜짐)':` · 정격에서 ${(coilV(c)/R_*1000).toFixed(0)}mA · 붙는 전압 ${(coilV(c)*.75).toFixed(2)}V 이상`}<br>지금 ${d.pol?'입력':'코일'}에 걸린 전압: <b>${fmtV(dv)}</b> → <b>${d.latch?(on?'SET (COM→NO)':'RESET (COM→NC)'):on?(d.contacts?'붙음':'당김'):(d.contacts?'떨어짐':'놓음')}</b></p>`;}
+    else if(d.tr){const T=d.tr,r=rt(c),bj=T.b!=null,di=(r.di||[])[0],fA=x=>Math.abs(x)>=1?+Math.abs(x).toPrecision(3)+'A':+(Math.abs(x)*1000).toPrecision(3)+'mA';
+      h+=`<p class="desc">${TRD[T.t]} · ${d.pkg} · ${bj?`hFE ${T.hfe} · 컬렉터 최대 ${fA(T.ic)} · ${T.vce}V · 켜지는 베이스 전압 약 ${DIOM[d.dio[0][2]].vf}V`:`문턱 전압 약 ${T.vth}V(다 켜짐 ${T.full}V) · 드레인 최대 ${fA(T.id)} · ${T.vds}V · 켜졌을 때 저항 약 ${ohmTx(T.ron)}`}<br>다리: ${d.pins.map(p=>esc(p)).join(' · ')}<br>지금: <b>${r.on?(bj?'켜짐 (C-E 이어짐)':'켜짐 (D-S 이어짐)'):'꺼짐'}</b>${bj&&di&&di.st===1?` · 베이스 전류 ${fA(di.i)}`:''}${!bj&&r.vgs!=null?` · 게이트-소스 ${r.vgs.toFixed(2)}V`:''}</p>`;}
     else if(d.dio){const di=rt(c).di||[],m=DIOM[d.dio[0][2]],fA=x=>Math.abs(x)>=1?Math.abs(x).toFixed(2)+' A':(Math.abs(x)*1000).toFixed(1)+' mA';
       h+=`<p class="desc">${m.nm} · 켜지는 전압 약 ${m.vf}V${m.vz?` · 제너 전압 ${m.vz}V (정격 ${m.pmax}W)`:` · 역전압 한계 ${m.vr}V`} · 전류 한계 ${m.imax>=1?m.imax+'A':m.imax*1000+'mA'}<br>지금: ${di.length?di.map((x,q)=>(di.length>1?`D${q+1} `:'')+(x.st===1?'정방향 '+fA(x.i):x.st===-1?'제너 동작 '+fA(x.i):'끊김')).join(' · '):'끊김'}</p>`;}
     else if(d.air){const L_=airL(c),X=f=>ohmTx(Math.max(.01,+(2*Math.PI*f*L_).toPrecision(3)));
@@ -3778,7 +3879,7 @@ function renderParts(){const q=$('partQ').value.trim().toLowerCase();let node=pn
   const fold=n=>{const ico=n.ico||(n.items&&n.items[0]&&n.items[0].ico)||'';return`<button class="pcard pfold" data-pf="${n.k}"><span class="ic">${ico}</span><span><b>${esc(n.label)}</b><small>${esc(n.sub||'')}</small></span><em>${pcount(n)}</em><i>›</i></button>`;};
   let h;
   // 영어로 찾아도 나오게: 수동 소자 분류별 영어 낱말
-  const PXKW={res:'resistor array',pot:'potentiometer pot trimmer',cap:'capacitor',sw:'switch button encoder',dio:'diode rectifier bridge zener schottky',rly:'relay ssr solenoid reed',ind:'inductor coil choke bead'};
+  const PXKW={res:'resistor array',pot:'potentiometer pot trimmer',cap:'capacitor',sw:'switch button encoder',dio:'diode rectifier bridge zener schottky',rly:'relay ssr solenoid reed',ind:'inductor coil choke bead',tr:'transistor bjt npn pnp mosfet fet darlington'};
   if(q){const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]+' '+(/^px:/.test(it.t[0])&&PX[it.t[0].slice(3)]?PXKW[PX[it.t[0].slice(3)].sub]||'':/^cap/.test(it.t[0])?'capacitor':/^res/.test(it.t[0])?'resistor':'')).toLowerCase().includes(q);
     h=pleaves(curTree(),[]).map(g=>({...g,items:g.items.filter(hit)})).filter(g=>g.items.length).map(g=>`<h4>${esc(g.label)}</h4>`+g.items.map(card).join('')).join('');}
   else h=node&&node.items?node.items.map(card).join(''):(node?node.kids:curTree()).map(fold).join('');
@@ -4660,11 +4761,16 @@ function parseOhms(v){const m=String(v||'').replace(/Ω|ohms?|옴|\s/gi,'').matc
 function parseFarad(v){const s_=String(v||'').replace(/\s|F$/gi,'');let m=s_.match(/^([\d.]+)\s*([pnuµm]?)/i);if(!m)return 4.7e-5;let n=parseFloat(m[1]);const u=(m[2]||'').toLowerCase();
   if(!u&&/^\d{2}[1-6]$/.test(s_))n=parseInt(s_.slice(0,2))*Math.pow(10,+s_[2])*1e-12;else n*=({p:1e-12,n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[u]||1e-6);return near(FARADS,n);}
 // 표준 번호·일반 이름 → px 부품(파일 배치·AI 회로 목록용). 입력을 알아보기 위한 목록일 뿐, 화면에는 앱의 부품 이름이 나온다
+const TRNUM=[[/^(2N|PN|MMBT)3904/,'q3904'],[/^(2N|PN|MMBT)3906/,'q3906'],[/^(2N|PN|P2N|MMBT)2222A?/,'q2222'],[/^BC54[6789][ABC]?/,'qbc547'],[/^BC55[6789][ABC]?/,'qbc557'],[/^TIP12[012]/,'qtip'],[/^(2N700[02]|BS170)/,'m7000']];
 const DIONUM=[[/^1N(914|4148|4448)/,'d4148'],[/^1N400[1-7]/,'d4007'],[/^UF400[1-7]/,'duf'],[/^1N58(17|18|19)/,'d5819'],[/^1N47(33|32|34)A?/,'dz51'],[/^1N(34|60)A?/,'dge'],[/^BAT(85|43|42|41)/,'dbat'],[/^(DB10[1-7]|DF0[1-9]M?|DF10M|W0[1-9]M|W10M|KBP|2W)/,'brdg']];
 function parseHenry(v){const m=String(v||'').replace(/\s/g,'').match(/^([\d.]+)([nuµm]?)H?$/i);if(!m)return null;const n=parseFloat(m[1])*({n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[(m[2]||'').toLowerCase()]??1e-6);return near(INDV,n);}
 function pxPart(ty,T,v){const V=v.toUpperCase().replace(/[\s_-]/g,'');
   if(PX[ty])return{t:'px',kind:ty};const kl=Object.keys(PX).find(k=>k.toUpperCase()===T);if(kl)return{t:'px',kind:kl};
   for(const [re,k] of DIONUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
+  for(const [re,k] of TRNUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
+  if(/^(TR|Q|TRANSISTOR|BJT|트랜지스터|NPN)$/.test(T))return{t:'px',kind:/PNP/i.test(v)||T==='PNP'?'q3906':/달링턴|DARLINGTON|파워|POWER/i.test(v)?'qtip':'q3904'};
+  if(/^(PNP)$/.test(T))return{t:'px',kind:'q3906'};
+  if(/^(MOSFET|FET|모스펫|NMOS|PMOS|NFET|PFET)$/.test(T))return{t:'px',kind:/^P|P채널|P-?CH/i.test(T==='PMOS'||T==='PFET'?'P':v)?'mppow':/파워|POWER|로직|LOGIC/i.test(v)?'mnpow':'m7000'};
   const cv=(v.match(/(\d+)\s*V/i)||[])[1],withCv=(k,o)=>{const x=Object.assign({t:'px',kind:k},o||{});if(cv&&PX[k].cvs&&PX[k].cvs.includes(+cv))x.cv=+cv;return x;};
   if(/^(DIODE|다이오드)$/.test(T))return{t:'px',kind:/쇼트키|SCHOTTKY/i.test(v)?'d5819':/제너|ZENER/i.test(v)?'dz51':/신호|SIGNAL/i.test(v)?'d4148':'d4007'};
   if(/^(ZENER|ZD|제너|제너다이오드)$/.test(T))return{t:'px',kind:'dz51'};
@@ -4707,7 +4813,7 @@ function pinIndex(_,c,pin){let P_=String(pin).trim(),U=P_.toUpperCase();
   if(c.t==='seg7'){if(/^\d+$/.test(U))return +U>=1&&+U<=10?+U-1:-1;const l=P_.toLowerCase();return l==='com'?2:SEG7PINS.indexOf(l);}
   if(c.t==='clk')return 0;
   if(c.t==='px'){const d=PX[c.kind],nm=d.pins.map(p=>p.toUpperCase().split(' ')[0]);if(/^\d+$/.test(U)&&!nm.includes(U))return +U>=1&&+U<=nm.length?+U-1:-1;
-    let i=nm.indexOf(U);if(i>=0)return i;const al={A:['ANODE','애노드','+','P'],K:['CATHODE','캐소드','C','-','−','N'],'+':['POS','OUT+','V+','DC+'],'−':['NEG','-','OUT-','V-','DC-'],'~':['AC','AC1','~1'],A1:['COIL+','COIL1','+'],A2:['COIL-','COIL2','-'],COM:['C','COMMON','공통']};
+    let i=nm.indexOf(U);if(i>=0)return i;const al={A:['ANODE','애노드','+','P'],K:['CATHODE','캐소드','C','-','−','N'],'+':['POS','OUT+','V+','DC+'],'−':['NEG','-','OUT-','V-','DC-'],'~':['AC','AC1','~1'],A1:['COIL+','COIL1','+'],A2:['COIL-','COIL2','-'],COM:['C','COMMON','공통'],E:['EMITTER','이미터'],B:['BASE','베이스'],C:['COLLECTOR','컬렉터'],G:['GATE','게이트'],D:['DRAIN','드레인'],S:['SOURCE','소스']};
     for(const [k,arr] of Object.entries(al))if(arr.includes(U)){i=nm.indexOf(k);if(i>=0)return i;}
     if(c.kind==='brdg'&&/^(AC2|~2)$/.test(U))return 3;
     return -1;}
@@ -4911,7 +5017,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · PCB 부품 놓기·층 쌓기';
+const APP_VER='2026-11-26 · 트랜지스터·MOSFET';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -5392,6 +5498,23 @@ Object.assign(EXAMPLES,{
     const s1=K.sw(K.at(3,false,2),true),s2=K.sw(K.at(3,false,4),false);const A=K.px('d4148',3,'h',8),B=K.px('d4148',3,'h',13);
     K.link(s1,A(0));K.link(s2,B(0));K.link(A(1),B(1));out(B(1),3,20,'yellow');
     return K.fin();},
+  // Ⓟ7 트랜지스터·MOSFET: 스위치(켜면 HIGH, 끄면 10kΩ로 LOW)로 베이스·게이트를 움직여 LED를 켠다
+  //   보드 1: NPN 낮은 쪽(2N3904) · PNP 높은 쪽(2N3906, LOW에서 켜짐) · 2N7000 · BC547(C·B·E 순서)
+  //   보드 2: 2N2222A로 릴레이 코일 + 역전압 다이오드 · TIP120 달링턴 · N채널 파워 MOSFET · P채널 파워 MOSFET(LOW에서 켜짐)
+  pastr:()=>{const K=ledKit(2);
+    const out=(p,b,col,color)=>{const x=K.led(b,col,{color:color||'green'});K.link(p,x.a,330);K.gnd(x.k);};
+    const sink=(p,b,col,color)=>{const x=K.led(b,col,{color:color||'green'});K.vcc(x.a,330);K.link(x.k,p);};
+    let s=K.sw(K.at(1,true,2),true),Q=K.px('q3904',1,'c',5);K.link(s,Q(1),4700);K.gnd(Q(0));sink(Q(2),1,10,'green');
+    s=K.sw(K.at(1,true,13),false);Q=K.px('q3906',1,'c',15);K.vcc(Q(0));K.link(s,Q(1),4700);out(Q(2),1,20,'yellow');
+    s=K.sw(K.at(1,true,24),true);Q=K.px('m7000',1,'c',26);K.gnd(Q(0));K.link(s,Q(1));sink(Q(2),1,31,'blue');
+    s=K.sw(K.at(1,true,35),false);Q=K.px('qbc547',1,'c',37);K.link(s,Q(1),4700);K.gnd(Q(2));sink(Q(0),1,42,'red');
+    s=K.sw(K.at(2,true,2),false);Q=K.px('q2222',2,'c',4);K.link(s,Q(1),1000);K.gnd(Q(0));
+    const R=K.px('rlyc',2,'c',9);K.vcc(R(0));K.link(R(1),Q(2));K.vcc(R(2));out(R(4),2,20,'green');
+    const f=K.px('d4007',2,'h',10);K.link(f(1),R(0),0,ORG);K.link(f(0),R(1),0,ORG);
+    s=K.sw(K.at(2,true,23),false);Q=K.px('qtip',2,'c',25);K.link(s,Q(0),2200);K.gnd(Q(2));sink(Q(1),2,29,'yellow');
+    s=K.sw(K.at(2,true,32),true);Q=K.px('mnpow',2,'c',34);K.link(s,Q(0));K.gnd(Q(2));sink(Q(1),2,38,'white');
+    s=K.sw(K.at(2,true,41),true);Q=K.px('mppow',2,'c',43);K.link(s,Q(0));K.vcc(Q(2));out(Q(1),2,48,'blue');
+    return K.fin();},
 });
 
 </script>
@@ -5432,7 +5555,14 @@ function symOf(p){const pins=[];let w=40,h=20,body='';const lit=SIM_S.led.get(p.
   else if(p.t==='btn'){pin(0,-40,0,-1,0);pin(1,40,0,1,0);const pr=srt(p).pressed;
     body=`<path d="M-40 0H-20M20 0H40"/><circle cx="-20" r="3" style="fill:var(--surface)"/><circle cx="20" r="3" style="fill:var(--surface)"/><path d="M-22 ${pr?-3:-11}H22M0 ${pr?-3:-11}V-20M-6 -20H6" style="stroke-width:2.2"/>`;h=24;}
   else if(p.t==='px'){const d=PX[p.kind];
-    if(d.dio&&d.pins.length===2){pin(0,-40,0,-1,0,'A');pin(1,40,0,1,0,'K');w=40;h=20;const z=d.dio[0][2];
+    if(d.tr){const T=d.tr,on=!!srt(p).on,lab=`<text x="-14" y="-26" class="sv">${esc(d.title.split(' ')[0])}</text><text x="-14" y="32" class="sv">${on?'ON':'OFF'}</text>`;w=40;h=40;
+      if(T.b!=null){const pnp=T.t==='pnp',top=pnp?T.e:T.c,bot=pnp?T.c:T.e;pin(T.b,-40,0,-1,0,'B');pin(top,20,-40,0,-1,pnp?'E':'C');pin(bot,20,40,0,1,pnp?'C':'E');
+        body=`<circle cx="8" r="22" style="fill:var(--surface)"/><path d="M-40 0H0M0 -13V13" style="stroke-width:2.4"/><path d="M0 -6L20 -20V-40M0 6L20 20V40"/>`
+          +(pnp?'<path d="M5 -9.5L12.7 -10.6L8.7 -16.4Z" style="fill:var(--sink)"/>':'<path d="M18 18.6L10.3 17.5L14.3 11.7Z" style="fill:var(--sink)"/>')+lab;}
+      else{const pm=T.t==='pmos',top=pm?T.s:T.d,bot=pm?T.d:T.s;pin(T.g,-40,10,-1,0,'G');pin(top,20,-40,0,-1,pm?'S':'D');pin(bot,20,40,0,1,pm?'D':'S');
+        body=`<circle cx="6" r="22" style="fill:var(--surface)"/><path d="M-40 10H-8M-8 -12V12"/><path d="M-2 -14V-8M-2 -3V3M-2 8V14" style="stroke-width:2.4"/><path d="M-2 -11H20V-40M-2 11H20V40M-2 0H20V11"/>`
+          +(pm?'<path d="M12 0L5 -3.5V3.5Z" style="fill:var(--sink)"/>':'<path d="M0 0L7 -3.5V3.5Z" style="fill:var(--sink)"/>')+lab;}}
+    else if(d.dio&&d.pins.length===2){pin(0,-40,0,-1,0,'A');pin(1,40,0,1,0,'K');w=40;h=20;const z=d.dio[0][2];
       body=`<path d="M-40 0H40"/><path d="M-10 -10L10 0L-10 10Z" style="fill:var(--surface)"/>${z==='zen'?'<path d="M6 -12L10 -10V10L14 12"/>':z==='sch'?'<path d="M14 -7V-10H10V10H6V7"/>':'<path d="M10 -10V10"/>'}<text x="0" y="-16" class="sv">${esc(d.title.split(' ')[0])}</text>`;}
     else if(d.ind){pin(0,-40,0,-1,0,'1');pin(1,40,0,1,0,'2');w=40;h=20;
       body=`<path d="M-40 0H-24a6 6 0 0 1 12 0a6 6 0 0 1 12 0a6 6 0 0 1 12 0a6 6 0 0 1 12 0H40" style="fill:none"/>${p.kind==='bead'?'<rect x="-14" y="-7" width="28" height="14" rx="2" style="fill:var(--surface)"/>':p.kind!=='inda'?'<path d="M-24 -10H24M-24 -13H24"/>':''}<text x="0" y="-16" class="sv">${p.kind==='bead'?'비드':henTx(p.henry||1e-4)}</text>`;}
@@ -5598,6 +5728,9 @@ function schSettle(){const N=schNets(true),now=simNow(),dioS=SCH.parts.filter(p=
   // 릴레이 코일: 회로도는 논리 값만 계산하므로 한쪽 HIGH·다른 쪽 LOW면 정격 전압이 걸린 것으로 본다
   let rch=false;for(const p of SCH.parts)if(p.t==='px'&&PX[p.kind]&&PX[p.kind].coil){const d=PX[p.kind],a=lvAt(p.id,d.coil[0]),b=lvAt(p.id,d.coil[1]),v=coilV(p);
     if(coilUpd(p,srt(p),SCH.power?(a===Hh&&b===L?v:a===L&&b===Hh?-v:0):0))rch=true;}
+  // 트랜지스터: 회로도는 논리 값으로. NPN·N채널은 베이스·게이트가 HIGH면, PNP·P채널은 LOW면 켜짐(X = 저항으로 끌고 베이스-이미터가 반대로 끄는 중 → 전류가 흐름)
+  for(const p of SCH.parts)if(p.t==='px'&&PX[p.kind]&&PX[p.kind].tr){const T=PX[p.kind].tr,r=srt(p),g=lvAt(p.id,T.b!=null?T.b:T.g);
+    const on=!!SCH.power&&(T.t==='npn'?g===Hh||g===X:T.t==='pnp'?g===L||g===X:T.t==='nmos'?g===Hh:g===L);if(!!r.on!==on){r.on=on;rch=true;}}
   if(rch&&(SIM_S.rd|0)<5){SIM_S.rd=(SIM_S.rd|0)+1;try{schSettle();}finally{SIM_S.rd--;}}}
 const sLvlOfPin=(id,k)=>{if(!SIM_S.net)return Z;const v=SIM_S.lvl.get(SIM_S.net.net(id,k));return v===undefined?Z:v;};
 
@@ -5714,7 +5847,7 @@ function schToggleDone(id){const w=SCH.wires.find(x=>x.id===id);if(!w)return;sPu
 function schChkLabel(){const n=SCH.wires.filter(x=>x.done).length,t=SCH.wires.length;$('sChkTx').textContent=schk||n?`연결 체크 ${n}/${t}`:'연결 체크';$('sChk').setAttribute('aria-pressed',schk);chkBar('s',schk,n,t);}
 function renderSfbar(){const fb=$('sfbar');if(!ssel||sdrag){fb.hidden=true;return;}
   let h='';if(ssel.type==='part'){const p=spart(ssel.id);if(!p){fb.hidden=true;return;}
-    h=`<b>${p.t==='vcc'||p.t==='gnd'?(p.t==='vcc'?'VCC 전원':'GND 접지'):esc(schLabels().get(p.id))+' '+esc(p.t==='ic'?p.chip:p.t==='gate'?p.kind+' 게이트':TNAME[p.t]||p.t)}</b><button data-sa="rot" title="90° 돌리기 (R)">회전</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button>`;
+    h=`<b>${p.t==='vcc'||p.t==='gnd'?(p.t==='vcc'?'VCC 전원':'GND 접지'):esc(schLabels().get(p.id))+' '+esc(p.t==='ic'?p.chip:p.t==='gate'?p.kind+' 게이트':p.t==='px'&&PX[p.kind]?PX[p.kind].title.replace(/ \(.*$/,''):TNAME[p.t]||p.t)}</b><button data-sa="rot" title="90° 돌리기 (R)">회전</button><button class="del" data-sa="del" title="지우기 (Delete)">${TRASH}삭제</button>`;
     if(p.t==='res')h+=`<select data-sv="ohms">${OHMS.map(v=>`<option value="${v}"${v===p.ohms?' selected':''}>${ohmTx(v)}</option>`).join('')}</select>`;
     if(p.t==='led')h+=`<select data-sv="color">${Object.entries(LEDC).map(([k,[,n]])=>`<option value="${k}"${k===p.color?' selected':''}>${n}</option>`).join('')}</select>`;
     if(p.t==='clk')h+=`<select data-sv="hz">${HZ.map(v=>`<option value="${v}"${v===p.hz?' selected':''}>${v}Hz</option>`).join('')}</select>`;
@@ -6176,7 +6309,7 @@ function fpDef(p){const pads=[],silk=[];let val='',pkg='';
   else if(p.t==='px'){const d=PX[p.kind],n=d.pins.length;val=d.title||p.kind;
     if(d.lay==='dip'){if(p.kind==='tact6'||p.kind==='tact12'){const W=p.kind==='tact6'?6.5:12.5,H=p.kind==='tact6'?4.5:5;pad(0,0,H,{sq:true});pad(1,W,H);pad(2,W,0);pad(3,0,0);box(-.5,-1,W+.5,H+1);silk.push({t:'c',x:W/2,y:H/2,r:Math.min(W,H)/2-.4});pkg=p.kind==='tact6'?'택트 6×6mm':'택트 12×12mm';}
       else{dip(n,7.62);pkg=`DIP-${n}`;}}
-    else{const pitch=d.pp||(/^pot(16|24)$/.test(p.kind)?5.08:2.54);row(n,pitch);pkg=`${n}핀 ${pitch}mm`;}}
+    else{const pitch=d.pp||(/^pot(16|24)$/.test(p.kind)?5.08:2.54);row(n,pitch);pkg=d.pkg?`${d.pkg} (${d.pins.map(x=>x[0]).join('')}, ${pitch}mm)`:`${n}핀 ${pitch}mm`;}}
   else{const n=Math.max(1,symOf(p).pins.length);row(n);val=p.t;pkg=`핀 헤더 1×${n}`;}
   // 가운데를 (0,0)으로
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const q of pads){x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);}

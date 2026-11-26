@@ -198,6 +198,29 @@ function inPage() {
     { const out = []; for (const flip of [false, true]) { build([{ t: 'px', kind: 'brdg', pins: ['f10', 'f12', 'e12', 'e10'] }, { t: 'wire', pins: ['j12', flip ? 'bp13' : 'bn13'] }, { t: 'wire', pins: ['a10', flip ? 'tn10' : 'tp10'] }, { t: 'res', pins: ['i10', 'i16'], ohms: 1000 }, { t: 'wire', pins: ['a12', 'a16'] }]);
         out.push(vH('j10') - vH('e12')); }
       rec('수동 소자', `brdg · ${PX.brdg.title}`, out.every(x => x > 3.3 && x < 4), `입력 정방향 +−사이 ${out[0].toFixed(2)}V · 뒤집어도 ${out[1].toFixed(2)}V`); }
+    // 트랜지스터·MOSFET: 열 13·14·15에 꽂고 핀마다 전원·GND·저항(1kΩ/4.7kΩ, 홈 건너 아래 레일로)으로 잇는다 → 켜고 끈 뒤 부하 쪽 전압
+    { const pinHole = (k, i) => 'c' + (13 + i), cn = (x, how) => how === 'vcc' ? [{ t: 'wire', pins: ['a' + x, 'tp' + x] }] : how === 'gnd' ? [{ t: 'wire', pins: ['a' + x, 'tn' + x] }]
+        : [{ t: 'res', pins: ['d' + x, 'g' + x], ohms: how[1] === 'v' ? 1000 : 4700 }, { t: 'wire', pins: ['j' + x, how[0] === 'v' ? 'bp' + x : 'bn' + x] }];
+      // 기대(이 파일에서 따로 적음): [종류, 핀 순서, 켜는 방법]
+      const SPEC = { q3904: ['npn', 'EBC'], q2222: ['npn', 'EBC'], qbc547: ['npn', 'CBE'], qtip: ['npn', 'BCE'], q3906: ['pnp', 'EBC'], qbc557: ['pnp', 'CBE'], m7000: ['nmos', 'SGD'], mnpow: ['nmos', 'GDS'], mppow: ['pmos', 'GDS'] };
+      for (const [k, [ty, ord]] of Object.entries(SPEC)) {
+        const run = drive => { const how = {}; const n = ty === 'npn' || ty === 'nmos';
+          // 이미터·소스: NPN·N은 GND, PNP·P는 +. 부하(1kΩ): NPN·N은 + 에서 컬렉터·드레인으로, PNP·P는 컬렉터·드레인에서 GND로
+          how[n ? (ty === 'npn' ? 'E' : 'S') : (ty === 'pnp' ? 'E' : 'S')] = n ? 'gnd' : 'vcc';
+          how[ty === 'npn' || ty === 'pnp' ? 'C' : 'D'] = n ? 'vr' : 'gr';
+          // 베이스(4.7kΩ)·게이트(바로): 켤 때 NPN·N은 +, PNP·P는 GND
+          const on = drive === 'on', toV = n ? on : !on, bjt = ty === 'npn' || ty === 'pnp';
+          how[bjt ? 'B' : 'G'] = bjt ? (toV ? 'vb' : 'gb') : (toV ? 'vcc' : 'gnd');
+          const comps = [{ t: 'px', kind: k, pins: [0, 1, 2].map(i => pinHole(k, i)) }];
+          for (let i = 0; i < 3; i++) comps.push(...cn(13 + i, how[ord[i]]));
+          build(comps); const load = 13 + ord.indexOf(bjt ? 'C' : 'D'); return { v: vH('b' + load), on: !!rt(S.comps.find(c => c.t === 'px')).on, bad: SIM.warns.filter(w => w[0] === 'bad').map(w => w[1]) }; };
+        const a = run('on'), b = run('off'), n = ty === 'npn' || ty === 'nmos';
+        const ok = a.on && !b.on && (n ? a.v < .3 && b.v > 4.7 : a.v > 4.7 && b.v < .3) && !a.bad.length && !b.bad.length && PX[k].pins.map(p => p[0]).join('') === ord;
+        rec('수동 소자', `${k} · ${PX[k].title}`, ok, `핀 ${ord} · 켬: 부하 쪽 ${a.v != null ? a.v.toFixed(2) : '?'}V · 끔: ${b.v != null ? b.v.toFixed(2) : '?'}V${a.bad.concat(b.bad).length ? ' · 경고 ' + a.bad.concat(b.bad).join('/') : ''}`); }
+      // 베이스에 저항 없이 + → 경고, 게이트가 떠 있으면 경고
+      build([{ t: 'px', kind: 'q3904', pins: ['c13', 'c14', 'c15'] }, { t: 'wire', pins: ['a13', 'tn13'] }, { t: 'wire', pins: ['a14', 'tp14'] }]); const w1 = warn(/베이스\(B\)가 저항 없이/);
+      build([{ t: 'px', kind: 'm7000', pins: ['c13', 'c14', 'c15'] }, { t: 'wire', pins: ['a13', 'tn13'] }]); const w2 = warn(/게이트\(G\)가 아무 데도/);
+      rec('수동 소자', '트랜지스터 경고 (베이스 저항 없음 · 게이트 떠 있음)', w1 && w2, `베이스 바로 + : ${w1 ? '경고' : '없음'} · 게이트 떠 있음: ${w2 ? '경고' : '없음'}`); }
     // 다 확인했는지
     const done = new Set(R.filter(r => r.grp === '수동 소자').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }
