@@ -1,4 +1,4 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 18차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 19차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 6700줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정. 같은 저장소 `linux/`·`router/`·`windows/` 실습장, 루트 `index.html`
@@ -15,6 +15,9 @@
 ✓ 16차 PCB 부품 놓기·층 쌓기·거버: [부품](`#pAdd`, A키) → 부품 고르기 창 `PCBTREE`(맨 앞 'PCB 기구' 장착 구멍 `MHK` mh25·mh3·mh4 + SCHTREE에서 전원 기호 뺌) → `pcbPick`·`ptool='place'`·미리보기 `pGhost`·R 돌리기 → `pcbPlaceAt`: 회로 부품은 `schAddPart`(링크면 브레드보드에도), 구멍은 `PCB.xp`(PCB에만, np 패드·NPTH). 하나 골라 Delete/`pDelFp` = 회로도에서도 뺌. `pPush(ssnap())` → 되돌리기 때 회로도도 복원(`pSwap`, bid 바뀌면 열쇠 다시 매김). `pcbToSch`: PCB에서 구리로 이은 연결 → 회로도 선([점검] 창 [회로도에 반영]). 층: `PCB.nl` 1·2·4·6(`pLayers`, 1층 = B만), `PCB.inner` In1~4 신호/GND·VCC 판(`pPlane`, 판 연결 패드·비아는 pcalc에서 판 노드로 묶음 → 래츠 빠짐), `PCB.th` 두께, `pStack` 층 표(옆 창 '층 쌓기', 눈 = `pvis`). 자동 배선 신호 층 n장(`pSig`), 층 버튼·V = 다음 층. DRC: 같은 섬 패드·비아는 간격 예외, 1층 비아·판 층 선 오류. 거버: 층마다 `Copper,Ln,Top/Inr/Bot,Signal/Plane`(In = `.g1`~`.g4`), 판 = 영역+LPC 안티패드+서멀 살, 드릴 PTH(`Plated,1,n`)·NPTH 따로, README 층 순서. 시험 `tests/ui/pcb-layers.js`(23종째)
 ✓ 17차 트랜지스터·MOSFET: PX 분류 `tr`(PXSUB 끝) 9종 — `q3904`·`q2222`(NPN EBC)·`qbc547`(NPN CBE)·`q3906`(PNP EBC)·`qbc557`(PNP CBE)·`qtip`(TIP120급 달링턴 BCE, TO-220)·`m7000`(2N7000 SGD)·`mnpow`·`mppow`(로직 레벨 N/P 파워 GDS, TO-220). `tr:{t,e,b,c | g,d,s, 정격}`, 스위치 모델: BJT = 베이스-이미터 `dio`(DIOM `be` 0.65V·`be2` 1.3V) + 베이스 전류 20µA 넘으면 `contacts` C-E(포화), MOSFET = Vgs ≥ vth(±0.1 이력) → D-S. `trUpd`(settle 끝 코일 다음, 바뀌면 rch → 다시 계산), 팔로워처럼 켜진 뒤 이미터가 따라 올라가도 켜짐 유지. 회로도는 논리 값(NPN·N = B/G HIGH(또는 X), PNP·P = LOW(또는 X)). 경고: 베이스 저항 없음·베이스 전류·BE 역전압·게이트 떠 있음·Vgs 20V·덜 켜짐(`full` 미만) info. 속성 창, 회로도 기호(BJT 원·화살표, MOSFET), PCB `pkg` TO-92/TO-220, 파일 목록 `TRNUM`·TR/Q/MOSFET 낱말·핀 별칭(EMITTER…), 검색 `PXKW.tr`. 예제 Ⓟ7 `pastr`(보드 2장). 문서: FILE-FORMAT A-2·px 표, PARTS-GUIDE 4-2절, COPYRIGHT 8절 기록. 시험 `tests/ui/transistor.js`, verify-parts 143/143. SPICE 모델은 아직 없음
 ✓ 18차 PCB 층: 도구 막대 [층 쌓기](`#pStackB`, 층 수 표시 `#pStackN`, 누르면 옆 창 `#pStackH`로 스크롤·반짝임). 층별로 보기: 캔버스 왼쪽 위 막대 `#pLbar`(`renderPLbar`, pcbStatus에서 그림), `pview` = 'all'·층 이름·'silk'·'drill'(store 'pview'), `pSetView`(신호 층 고르면 player도), 키 0 = 모든 층·1~6 = 층. renderPcb: solo면 보드 어둡게·그 층 선만·판은 진하게(.85)+서멀 살·판에 안 붙는 패드는 구멍만·실크는 'all'/'silk'에서만·구멍 보기는 지름별 색(인라인 style, CSS .ppad 덮어쓰기 피함)·래츠는 모든 층/신호 층만. V·L로 층 바꾸면 solo도 따라감. SVG 그림 내보내기는 늘 모든 층
+✓ 19차 검토 3회(사용자 지시 "소자부터 검토 3번") — 1차: 소자(택트 PCB 패드 쌍·DPDT 설명·셀렉터 COM 이름·발자국 간격 dc/cols·저항 2W·5W·1N4148 0.2A), 시뮬레이션(트랜지스터 아날로그 모드 `r.an`: 이미터·소스가 strong이 아니면 VCCS beta×Ib + 포화 0.2V / MOSFET gm×(Vgs−vth)+lin ron, MOSFET 게이트 MNA 시드, 단 사슬 재계산), PCB(판 서멀 살 단락·LOADMAP 열쇠·라우터 재시도 rk·3번째 층·선 둘레·비아 격자 own[VL]·사각 패드 dPtPad·비아끼리 DRC·손 비아 되돌리기·실크 홈·pos 회전). 2차: 직류 길 없는 미지 줄은 volt에서 뺌(떠 있음 = null), 트랜지스터는 한 번에 하나씩 바꿈(래치), 릴레이 rr(4)·전체 rd(24) 따로, 회로도 자동 동기화는 실행 취소 단계 아님, ssnap에 보드 snap(bb) → 되돌리기 때 보드 그대로, pending·spend 초기화, DIP px 붙여넣기 fixed, 모두 지우기·목록 배치 PCB 비움·이름 비움, `anyModal()` 단축키 막기, 배선 중 층 바꾸면 비아(`routeViaTo`), A 키 preventDefault
+✓ 19차 PCB 표준 기능 1단계(사용자 명세서 .md — 원문 미보관): 회로도 넷 이름표 `lbl`(`isSchSym`, `lblName`, schNets 'L:'이름, PCB 넷 이름), ERC(`schERC`/`#ercDlg`, 툴바 sErc), 번호 정리(`schAnnotate`). PCB: 동박 채우기 `PCB.pour[L]`(GND/VCC, `pourRaster` 0.25mm 격자로 연결·죽은 조각, 거버 Mixed: 영역−다른 연결 둘레−죽은 사각형+서멀, 다시 비움), 정렬 `pAlign`(al-l…ds-y), 둥근 모서리 `PCB.rc`(`inRRect`/`boardPoly`), 선 저항·허용 전류(`trR`·`trImax` IPC-2221), 묶음 BOM `pcbBOMRows`/`pcbBOM`(#pBom), 조립도 SVG `pcbAssemblySVG`(#pAsm, zip에도)
+✗ 남은 것(2단계·3단계 예정): 블라인드·베리드 비아, 3D 보기·높이 간섭, 여러 시트(계층), 풋프린트·심볼 편집기, 길이 맞춤, 밀어내기 배선, SI/PI. 알려진 문제: 예제·파일 불러오기를 실행 취소하면 PCB·회로도 전용 기호는 안 돌아옴
 ✓ 시험 전부 통과(16차 직후, sig-check 드릴 서명 검사식 새 형식으로): tests/ui 23종, verify-parts 133/133, verify74 106/106, sig-check, guide-sync, spice-check
 ✗ 미검증: Claude 미리보기에서 키 창 뜨는지, 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(특히 판 층 LPC·서멀, 안쪽 층 .g1~ 이름 — 업체 업로드 확인 필요, gerbonara 설치는 권한 거절됨)
 
@@ -39,7 +42,7 @@
 
 ## 사용자 지시 기록 (COPYRIGHT.md 10절 근거)
 - ~11-25: 시뮬레이터 방향, AI 호출 금지, 부품 220종, 자동 main, 오류 알림, PCB, 업데이트마다 링크, 깃허브 페이지
-- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기, 저작권 가이드, 라우터 일반화, 서명, 라이선스 키, 로컬 버전, 릴레이·코일, 조사 문서 저작권 안전 반영(2회), "왜 추가가 안될까?", PCB 드래그·지우개, 진행 메모(15차), PCB 부품 배치·층 쌓기·거버(16차), 트랜지스터 부품(17차), PCB 레이어 쌓기 버튼·층별 보기(18차)
+- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기, 저작권 가이드, 라우터 일반화, 서명, 라이선스 키, 로컬 버전, 릴레이·코일, 조사 문서 저작권 안전 반영(2회), "왜 추가가 안될까?", PCB 드래그·지우개, 진행 메모(15차), PCB 부품 배치·층 쌓기·거버(16차), 트랜지스터 부품(17차), PCB 레이어 쌓기 버튼·층별 보기(18차), 검토 3회·PCB 표준 기능 명세서 반영(19차)
 
 ## 다음 할 일
 1. 사용자 다음 요청 대기 — 최근 "왜 추가가 안될까?"는 목록 배치 원인으로 추정해 고침(미확인), 여전하면 어디서 무엇을 추가했는지 확인
