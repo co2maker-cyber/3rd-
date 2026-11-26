@@ -4162,20 +4162,20 @@ async function saveToFile(){const data=JSON.stringify(circuitData(),null,1),fn=(
   await saveTextFile(fn,data,'application/json','브레드보드 회로','.json');}
 /* 글 파일 저장: 저장 위치를 고를 수 있는 브라우저에서는 저장 창을 띄우고, claude.ai 미리보기에서는 downloads 기능, 그 밖에는 일반 내려받기 */
 /* 파일 저장 — 되는 방법을 차례로 시도한다
-   ① 저장 위치를 고르는 창(컴퓨터의 크롬·엣지, 미리보기 밖)  ② claude.ai 미리보기의 downloads 기능
+   ① (안 씀) ② claude.ai 미리보기의 downloads 기능
    ③ 휴대폰 공유 창(파일 앱에 저장)  ④ 보통 내려받기 링크
    미리보기 안처럼 내려받기가 막힌 곳에서는 ⑤ 내용을 보여 주고 [전체 복사]로 옮겨 저장하게 한다(글 파일만) */
 const inFrame=()=>{try{return window.self!==window.top;}catch(_){return true;}};
 const isTouch=()=>matchMedia('(pointer:coarse)').matches;
 async function saveAny(fn,data,mime,desc,ext){
-  if(window.showSaveFilePicker&&!inFrame()&&!isTouch()){try{const h=await window.showSaveFilePicker({suggestedName:fn,types:[{description:desc,accept:{[mime]:[ext]}}]});const w=await h.createWritable();await w.write(data);await w.close();toast('파일로 저장했어요 ('+fn+')');return'ok';}catch(e){if(e&&e.name==='AbortError')return'cancel';}}
+  // (저장 위치 고르는 창은 윈도우에서 .md 같은 확장자가 빠지는 일이 있어 쓰지 않는다. 위치를 고르려면 브라우저 설정 '다운로드 전에 저장 위치 확인'을 켜요)
   let dl=null;try{dl=window.claude&&await window.claude.use('downloads');}catch(_){}
   if(dl){try{await dl.save({filename:fn,data});toast('파일로 저장했어요 ('+fn+')');return'ok';}
     catch(e){const c=e&&e.code;if(c==='declined')return'cancel';if(c==='rate_limited'){toast('저장 창이 이미 떠 있어요. 잠시 뒤 다시 눌러 주세요');return'cancel';}}}
   if(isTouch()&&navigator.canShare){try{const f=new File([data],fn,{type:mime});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});toast('공유 창에서 [파일에 저장]을 고르면 돼요');return'ok';}}catch(e){if(e&&e.name==='AbortError')return'cancel';}}
   if(inFrame())return'blocked';   // 미리보기 틀 안에서는 내려받기 링크가 막혀 있다
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:isTouch()?'application/octet-stream':mime}));a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-  toast('파일을 내려받았어요 ('+fn+') · 안 보이면 브라우저의 다운로드 목록을 확인하세요');return'ok';}
+  toast('파일을 내려받았어요 ('+fn+') · 다운로드 폴더를 확인하세요');return'ok';}
 async function saveTextFile(fn,data,mime,desc,ext){const r=await saveAny(fn,data,mime,desc,ext);if(r==='blocked')showFallback(fn,data);}
 function showFallback(fn,data){$('fbMsg').innerHTML=`이 화면에서는 파일을 바로 내려받을 수 없어요. <b>[전체 복사]</b>를 누른 뒤 메모장·파일 앱에 붙여 넣고 <code>${esc(fn)}</code> 이름으로 저장하세요. 또는 깃허브 페이지(https://co2maker-cyber.github.io/3rd-/breadboard/)에서 열면 바로 내려받을 수 있어요.`;
   $('fbText').value=data;$('fbDlg').hidden=false;$('fbText').scrollTop=0;}
@@ -4517,7 +4517,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · 내려받기 고침';
+const APP_VER='2026-11-26 · md 내려받기';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}

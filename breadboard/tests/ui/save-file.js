@@ -1,8 +1,12 @@
-// 파일 저장 시험: ① 휴대폰(터치, 공유 창 없음) → 보통 내려받기로 .md가 받아지는지
+// 파일 저장 시험: ⓪ 컴퓨터 → 저장 창 없이 바로 .md로 ① 휴대폰(터치, 공유 창 없음) → 보통 내려받기로 .md가 받아지는지
 // ② 미리보기처럼 틀(iframe) 안 → 내려받기 대신 [전체 복사] 창이 뜨고 안내서 내용이 다 들어 있는지
 const {chromium,devices}=require('playwright');const path=require('path');const fs=require('fs');const os=require('os');
 (async()=>{const b=await chromium.launch();const ok=[];const chk=(n,v)=>{ok.push(!!v);console.log((v?'ok  ':'FAIL')+' '+n);};const url='file://'+path.join(__dirname,'../../index.html');
 const prep=async f=>{await f.evaluate(()=>{const t=document.getElementById('tut');if(t&&!t.hidden&&typeof endTut==='function')endTut(true);});await f.evaluate(()=>openImport());};
+{const ctx=await b.newContext({viewport:{width:1300,height:850},acceptDownloads:true});const p=await ctx.newPage();await p.goto(url);await p.waitForTimeout(900);await prep(p);
+  const dP=p.waitForEvent('download',{timeout:6000}).catch(()=>null);await p.click('#gSave');const d=await dP;
+  let txt='';if(d){const f=path.join(os.tmpdir(),'g'+Date.now()+'.md');await d.saveAs(f);txt=fs.readFileSync(f,'utf8');fs.unlinkSync(f);}
+  chk('컴퓨터: 이름 그대로 .md로 받아짐 '+(d?d.suggestedFilename():'없음'),d&&d.suggestedFilename()==='breadboard-CAD-file-guide.md'&&txt.includes('## B.'));await ctx.close();}
 {const ctx=await b.newContext({...devices['iPhone 13'],acceptDownloads:true});const p=await ctx.newPage();await p.goto(url);await p.waitForTimeout(900);await prep(p);
   const dP=p.waitForEvent('download',{timeout:6000}).catch(()=>null);await p.tap('#gSave');const d=await dP;
   let txt='';if(d){const f=path.join(os.tmpdir(),'g'+Date.now()+'.md');await d.saveAs(f);txt=fs.readFileSync(f,'utf8');fs.unlinkSync(f);}

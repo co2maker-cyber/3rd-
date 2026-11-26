@@ -3,7 +3,7 @@
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 5300줄): 브레드보드+회로도 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정
 
-## 현황 (모두 main 반영, 아티팩트 v49, 화면 버전표시 `APP_VER='2026-11-26 · 내려받기 고침'`)
+## 현황 (모두 main 반영, 아티팩트 v49, 화면 버전표시 `APP_VER='2026-11-26 · md 내려받기'`)
 ✓ 안내서 `breadboard/FILE-FORMAT.md`(A 부품·연결 목록 / B 저장 .json / IC 핀 표) + index.html 안 사본 `<script id="guideMd">` — 고치면 `node breadboard/tests/guide-sync.js --fix`
 ✓ [AI 회로] 버튼: CAD는 AI 직접 호출 안 함(사용자 지시). 부탁 문장+안내서 복사·안내서 보기/내려받기, AI 답 붙여넣기/파일(.md/.txt/.json, 코드블록 섞여도 `pickPayload`) → [보드에 배치하기]. 사진·설명글은 `guideAskFor`로 부탁 칸에 옮겨 안내. 아티팩트 capability = downloads만(sample 제거)
 ✓ [전선 정리] `tidyWires`/`applyWireRules`: gridWires 길 + 기능별 색(`wireFnOf`, FNC). 목록 배치·회로도→보드 후 자동 적용
@@ -16,7 +16,7 @@
 ✓ PCB 설계(6차): 탭 [PCB](VM='pcb'), `#pcbbar`·`#pw`·`#pside`. 회로도(SCH)+`schNets`로 넷, IC VCC/GND 핀은 강제 전원망, J1 전원 헤더 자동, clk→헤더(OUT,GND). `fpDef` 발자국(mm), `PCB={w,h,fps[{key,x,y,rot}],tr[{l,w,a,b}],vias,clr,tw}` 저장 키 'pcb'·파일 `pcb`. `pcalc`(섬·래츠·넷, pcache), `pcbDRC`(캐시), `pcbAutoRoute`/`routeOnce`(1.27mm 격자 A*+방향 상태, 비아, 4번 재시도, 8초 제한), 손 배선(`routeClick`, V=비아), `pcbGerbers`+`makeZip`(거버 6+드릴+BOM+pos+README), SVG 그림. loadComps 때 PCB 비움. 시험 `tests/ui/pcb-examples.js`(36예제 DRC 0, 못이음 199/2878 — 큰 LED·스위치 모음), `tests/ui/pcb-edit.js`
 ✓ 연결 체크 막대(7차): 보드·회로도 왼쪽 위 `#bcbar`/`#scbar`(진행·[초기화] 두 번·[끝내기]), 확대 버튼 위 ✓(`#hchk`/`#schk2`) — 휴대폰에서 도구 막대 끝 버튼이 안 보이던 문제. `chkBar`·`chkReset`. 시험 `tests/ui/check-reset.js`
 ✓ 순서 카드(7차): 체크 막대 [순서 카드] → `#plan`. `planSteps`: 부품 카드(INST→IC→표시기→나머지, 열 순) + 연결 카드(핀의 줄 `stripOf`=baseRep에서 나가는 전선을 이어서 따라감, 전선 한 번씩). `planOverlay`(노란 띠·번호·링), `planShow`(카드 위 남은 화면에 맞춰 확대), [다 했어요]=c.done. body.planon이면 막대 숨김·토스트 위로. 시험 `tests/ui/plan-cards.js`(36예제 부품·전선 1회·연속)
-✓ 내려받기 고침(7차): `saveAny` 순서 = 저장 창(틀 밖·비터치) → downloads 기능 → 휴대폰 공유 창(navigator.share 파일) → 틀 안이면 'blocked' → `showFallback`(#fbDlg [전체 복사]) / 그 밖 a[download](터치는 octet-stream). saveBinFile도 saveAny. 시험 `tests/ui/save-file.js`(사용자: 안내 md 다운 안 됨)
+✓ 내려받기 고침(7차): `saveAny` 순서 = (저장 창 showSaveFilePicker는 뺌: 윈도우에서 .md 확장자 빠짐, 사용자 스크린샷) → downloads 기능 → 휴대폰 공유 창(navigator.share 파일) → 틀 안이면 'blocked' → `showFallback`(#fbDlg [전체 복사]) / 그 밖 a[download](터치는 octet-stream). saveBinFile도 saveAny. 시험 `tests/ui/save-file.js`(사용자: 안내 md 다운 안 됨)
 ✓ 시험 전부 통과: 회귀 45 + verify74 106/106 + verify-parts 111/111 + tests/ui 18종(+alerts, pcb-examples, pcb-edit, check-reset, plan-cards, save-file)(sweep-*, ic-examples, import-layout, sch-to-board, wire-tidy, ai-file, display-glow)
 ✗ 실기기 미검증: 아이폰·아이패드 핀치, 아티팩트 파일 내려받기(zip 포함)
 ✗ 거버를 외부 뷰어로 검증 못 함(gerbonara 설치가 권한 거부됨) — 자체 구조 검사만
