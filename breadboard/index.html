@@ -586,7 +586,7 @@ body.planon .cbar{display:none}
         <option value="pasdio">Ⓟ6 다이오드: 한 방향·OR 묶기·제너 5.1V·브리지·역전압 다이오드</option>
         <option value="pastr">Ⓟ7 트랜지스터·MOSFET: NPN·PNP 스위치·MOSFET·달링턴·릴레이 구동</option>
         <option value="paana">Ⓟ8 연산 증폭기·비교기: 가변저항 전압을 2배로 키우기 · 2.5V 넘으면 LED 켜기</option>
-        <option value="pasa">Ⓟ9 계측기 블록: 10비트 DAC 스윕 전압 · YIG 발진기·믹서 · IF 로그 증폭단 · CRT 연결</option>
+        <option value="pasa">Ⓟ9 계측기 구조: 튜닝 DAC 스윕 · RF 섹션(YIG 발진기·믹서·변환) · IF·표시 섹션(로그 증폭·CRT)</option>
         </optgroup>
         <optgroup label="논리 IC 모음 (74LS·74HC 비교)">
         <option value="lg2">ⓘ1 2입력 게이트 9종 + 단독 NAND·NOR·XNOR (스위치 A·B)</option>
@@ -1202,6 +1202,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `qp39` | PNP 고내압 80V 1W (금속 캔 TO-39) | row | 0,1,2 | E B C | |
 | `q18s` | NPN 소신호 360mW (금속 캔 TO-18) | row | 0,1,2 | E B C | |
 | `jfn` | N채널 JFET 공핍형 (금속 캔 TO-18) | row | 0,1,2 | D S G | |
+| `jfn92` | N채널 JFET 공핍형 (TO-92) | row | 0,1,2 | D S G | |
 | `oa2j` | 듀얼 JFET 입력 연산 증폭기 25V/µs (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
 | `oa4j` | 쿼드 JFET 입력 연산 증폭기 25V/µs (DIP-14) | dip | 0~6 | OUT1 IN1− IN1+ VCC IN2+ IN2− OUT2 OUT3 IN3− IN3+ VEE IN4+ IN4− OUT4 | |
 | `oa2n` | 저잡음 듀얼 JFET 연산 증폭기 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
@@ -1616,7 +1617,7 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 | `q2907m` | PNP 고속 스위칭 | 금속 캔 TO-18 · E B C | PNP, 200mA, 40V, 360mW | 작은 부하의 + 쪽 켜기 |
 | `qp39` | PNP 고내압 | 금속 캔 TO-39 · E B C | PNP, 80V 넘음, 1W, fT 200MHz | 높은 전압 빠른 스위칭(편향 구동) |
 | `q18s` | NPN 소신호 | 금속 캔 TO-18 · E B C | NPN, 360mW | 키보드·LED·논리 인터페이스 |
-| `jfn` | N채널 JFET | 금속 캔 TO-18(대체 TO-92) · D S G | 공핍형, 게이트 −2.5V 아래에서 꺼짐 | 높은 입력 저항 버퍼, 아날로그 스위치, 정전류원 |
+| `jfn` · `jfn92` | N채널 JFET | 금속 캔 TO-18 / TO-92 · D S G | 공핍형, 게이트 −2.5V 아래에서 꺼짐 | 높은 입력 저항 버퍼, 아날로그 스위치, 정전류원 |
 
 **금속 캔·TO-3**: 금속 캔(TO-18·TO-39)은 바닥의 작은 돌기(탭) 옆 다리부터 E·B·C예요. TO-3은 다리가 B·E 둘뿐이고 쇠 몸통이 C라, 브레드보드에는 꽂지 못하고 굵은 전선으로 이어요.
 
@@ -2640,7 +2641,7 @@ pxDef({k:'q2955',sub:'tr',pre:'Q',pkg:'TO-3',nid:'BJT_PNP_PWR_TO3',title:'PNP �
   desc:'위 NPN 파워 트랜지스터와 짝을 이루는 PNP예요(10A, 60V). 둘을 위아래로 묶어 푸시풀 출력단(위는 NPN, 아래는 PNP)을 만들거나, 부하의 + 쪽을 큰 전류로 켤 때 써요.'+TO3N+BJTP+TRN});
 pxDef({k:'q2222m',sub:'tr',pre:'Q',pkg:'TO-18',nid:'BJT_NPN_SW_40V_800MA',title:'NPN 스위칭 트랜지스터 (금속 캔 TO-18, 800mA, 40V)',lay:'row',dc:[0,1,2],pins:['E (이미터)','B (베이스)','C (컬렉터)'],init:()=>({}),fp:'to18',
   sl:'NPN 18',tr:{t:'npn',e:0,b:1,c:2,ic:.8,vce:40,hfe:'100~300',beta:150},dio:[[1,0,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[2,0]]:[],draw:toCan('NPN',8),
-  desc:'작은 금속 깡통(TO-18)에 든 범용 NPN 트랜지스터예요(컬렉터 800mA, 40V, 500mW, hFE 100~300). 켜졌을 때 C-E 전압이 0.3V 이하이고, 전이 주파수가 300MHz 이상이라 빠르게 켜고 꺼요(켜짐 25ns·꺼짐 60ns 안쪽). 플라스틱 몸통보다 열과 습기에 강해서 계측기에 많이 썼어요. 바닥을 보면 다리 셋이 둥글게 늘어서 있고, 깡통 옆 작은 돌기(탭) 바로 옆 다리가 1번 E, 그다음 2번 B, 3번 C예요.'+BJTN+BJTR+TRN});
+  desc:'작은 금속 깡통(TO-18)에 든 범용 NPN 트랜지스터예요(컬렉터 800mA, 40V, 500mW, hFE 100~300). 켜졌을 때 C-E 전압이 0.3V 이하이고, 전이 주파수가 300MHz 이상이라 빠르게 켜고 꺼요(지연 10ns·오름 25ns·저장 225ns·내림 60ns 안쪽, 잡음 지수 4dB 미만). 케이스 온도를 25°C로 붙잡아 두면 1.2W까지 견뎌요. 플라스틱 몸통보다 열과 습기에 강해서 계측기에 많이 썼어요. 바닥을 보면 다리 셋이 둥글게 늘어서 있고, 깡통 옆 작은 돌기(탭) 바로 옆 다리가 1번 E, 그다음 2번 B, 3번 C예요.'+BJTN+BJTR+TRN});
 pxDef({k:'q2907m',sub:'tr',pre:'Q',pkg:'TO-18',nid:'BJT_PNP_SW_40V_200MA',title:'PNP 고속 스위칭 트랜지스터 (금속 캔 TO-18, 200mA, 40V)',lay:'row',dc:[0,1,2],pins:['E (이미터)','B (베이스)','C (컬렉터)'],init:()=>({}),fp:'to18',
   sl:'PNP 18',tr:{t:'pnp',e:0,b:1,c:2,ic:.2,vce:40,hfe:'100~300',beta:150},dio:[[0,1,'be']],contacts:(c,r)=>r&&r.on&&!r.an?[[0,2]]:[],draw:toCan('PNP',8),
   desc:'금속 캔(TO-18)에 든 소신호 PNP 트랜지스터예요(컬렉터 200mA, 40V, 360mW). 10mA에서 hFE 100~300, 50mA에서도 30 이상이라 작은 부하의 + 쪽을 빠르게 켜고 꺼요. 탭 옆부터 E·B·C로 그려요(실제 부품은 핀 순서를 확인하세요).'+BJTP+BJTR+TRN});
@@ -2652,9 +2653,12 @@ pxDef({k:'q18s',sub:'tr',pre:'Q',pkg:'TO-18',nid:'BJT_NPN_SS_360MW',title:'NPN �
   desc:'금속 캔(TO-18)에 든 작은 NPN 트랜지스터예요(360mW). 키보드 스캔, LED 표시등, 논리 신호 사이를 잇는(인터페이스) 작은 부하 구동에 써요. 탭 옆부터 E·B·C로 그려요. 명세에 전력만 있어서 시뮬레이터는 200mA·30V·hFE 150으로 어림해요.'+BJTN+BJTR+TRN});
 pxDef({k:'jfn',sub:'tr',pre:'Q',pkg:'TO-18',nid:'JFET_N_DEPL_TO18',title:'N채널 JFET (공핍형, 금속 캔 TO-18)',lay:'row',dc:[0,1,2],pins:['D (드레인)','S (소스)','G (게이트)'],init:()=>({}),fp:'to18',
   sl:'N-JFET',tr:{t:'nmos',jf:1,d:0,s:1,g:2,vth:-2.5,full:0,id:.01,vds:25,ron:300,gm:.004},contacts:(c,r)=>r&&r.on&&!r.an?[[0,1]]:[],draw:toCan('JFET',8),
-  desc:'MOSFET과 반대로 게이트(G)를 소스와 같은 전압(0V)에 두면 이미 켜져 있고, 게이트를 소스보다 낮게(약 −2.5V 아래로) 당기면 꺼지는 트랜지스터예요(공핍형). 게이트로 전류가 거의 안 흘러 입력 저항이 아주 커서, 높은 입력 저항이 필요한 버퍼(계측기 입력단), 아날로그 스위치, 정전류원(게이트-소스를 이어 두면 수 mA로 일정)에 써요. 금속 캔(TO-18)이고 같은 특성의 플라스틱(TO-92)으로 바꿔 쓰기도 해요. 탭 옆부터 D·S·G로 그려요(실제 부품마다 순서가 다르니 확인하세요, 드레인과 소스는 거의 바꿔 써도 돼요). 게이트를 소스보다 0.6V 넘게 높이면 게이트-채널 다이오드로 전류가 흘러요 — 그 쪽으로는 쓰지 않아요. 시뮬레이터는 게이트-소스 전압이 −2.5V보다 높으면 켜짐으로 계산해요(켜졌을 때 약 300Ω).'});
+  desc:'MOSFET과 반대로 게이트(G)를 소스와 같은 전압(0V)에 두면 이미 켜져 있고, 게이트를 소스보다 낮게(약 −2.5V 아래로) 당기면 꺼지는 트랜지스터예요(공핍형). 게이트로 전류가 거의 안 흘러 입력 저항이 아주 커서, 높은 입력 저항이 필요한 버퍼(계측기 입력단), 아날로그 스위치, 정전류원(게이트-소스를 이어 두면 수 mA로 일정)에 써요. 금속 캔(TO-18)이고 같은 특성의 플라스틱(TO-92)으로 바꿔 쓰기도 해요(부품 목록의 TO-92 JFET). 탭 옆부터 D·S·G로 그려요(실제 부품마다 순서가 다르니 확인하세요, 드레인과 소스는 거의 바꿔 써도 돼요). 게이트를 소스보다 0.6V 넘게 높이면 게이트-채널 다이오드로 전류가 흘러요 — 그 쪽으로는 쓰지 않아요. 시뮬레이터는 게이트-소스 전압이 −2.5V보다 높으면 켜짐으로 계산해요(켜졌을 때 약 300Ω).'});
+pxDef({k:'jfn92',sub:'tr',pre:'Q',pkg:'TO-92',nid:'JFET_N_DEPL_TO92',title:'N채널 JFET (공핍형, TO-92)',lay:'row',dc:[0,1,2],pins:['D (드레인)','S (소스)','G (게이트)'],init:()=>({}),
+  sl:'N-JFET',tr:{t:'nmos',jf:1,d:0,s:1,g:2,vth:-2.5,full:0,id:.01,vds:25,ron:300,gm:.004},contacts:(c,r)=>r&&r.on&&!r.an?[[0,1]]:[],draw:to92('JFET'),
+  desc:'위 금속 캔 JFET와 같은 N채널 공핍형 JFET를 플라스틱(TO-92) 몸통에 넣은 것이에요. 게이트를 소스와 같은 전압에 두면 켜져 있고, 소스보다 약 2.5V 넘게 낮추면 꺼져요. 아날로그 스위치, 높은 입력 저항 버퍼에 써요. 평평한 면을 보고 왼쪽부터 D·S·G로 그려요(실제 부품마다 순서가 다르니 확인하세요). 브레드보드에 바로 꽂기 편해요. 시뮬레이터는 게이트-소스 전압이 −2.5V보다 높으면 켜짐으로 계산해요(켜졌을 때 약 300Ω).'});
 pxDef({k:'d914',pp:7.62,sub:'dio',pre:'D',nid:'DIODE_SW_80V_200MA_2NS',title:'고속 스위칭 다이오드 (유리관 DO-35, 80V, 200mA)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'sig80']],draw:dioAx('#E3853A','#1A1A1A',18),
-  desc:'1N4148과 같은 쓰임새의 작은 유리관(DO-35) 스위칭 다이오드예요(역전압 80V, 200mA, 500mW). 200mA에서도 순방향 1.0V 이하이고, 접합 용량이 2.5pF 이하, 끊어지는 시간(역회복)이 약 2ns로 아주 빨라요. 논리 신호 OR 묶기, 클램프, 작은 코일의 역전압 막기, 피크 검출에 써요. 검은 띠가 캐소드 쪽이에요.'+DIOD});
+  desc:'1N4148과 같은 쓰임새의 작은 유리관(DO-35) 스위칭 다이오드예요(항복 전압 75V 이상 — 고른 것은 80V, 평소 거꾸로 거는 전압은 50V까지, 평균 200mA, 500mW). 200mA에서도 순방향 1.0V 이하, 50V를 거꾸로 걸 때 새는 전류 100nA 이하, 접합 용량 2.5pF 이하(0V, 1MHz), 끊어지는 시간(역회복) 4ns 이하(고른 것은 2ns)로 아주 빨라요. 논리 신호 OR 묶기, 클램프, 작은 코일의 역전압 막기, 피크 검출에 써요. 검은 띠가 캐소드 쪽이에요.'+DIOD});
 pxDef({k:'d5711',pp:7.62,sub:'dio',pre:'D',nid:'DIODE_SCHOTTKY_SS_70V',title:'소신호 쇼트키 다이오드 (유리관 DO-35, 70V)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'ss70']],draw:dioAx('#C9D3DC','#1A1A1A',16),
   desc:'금속-반도체 접합으로 만든 아주 빠른 소신호 쇼트키 다이오드예요(역전압 70V, 400mW). 작은 전류(1mA)에서 약 0.4V로 켜지고, 전하가 쌓이지 않아 고주파 검파·클램프·샘플링 회로에 써요. 전류를 조금만 올려도 전압이 빨리 커지니(15mA에서 약 1V) 큰 전류용이 아니에요. 직렬 저항을 꼭 넣어요.'+DIOD});
 pxDef({k:'d4004',pp:10.16,sub:'dio',pre:'D',nid:'DIODE_RECT_400V_750MA',title:'정류 다이오드 (400V, 750mA)',lay:'row',dc:[0,4],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'rect400']],draw:dioAx('#202326','#C9CED6',22),
@@ -2713,9 +2717,9 @@ blkDef('bconv','BLK_RF_CONV_ACLU','RF 주파수 변환 체인 (저대역 → 321
 blkDef('bfilt','BLK_RF_FILTERS','RF 필터 모음 (300MHz·3.6GHz 대역, 1.5·4.0GHz 저역)',['F1 IN (300MHz 대역 통과)','F1 OUT','F2 IN (1.5GHz 저역 통과)','F2 OUT','F3 IN (3.6GHz 대역 통과)','F3 OUT','F4 IN (4.0GHz 저역 통과)','F4 OUT','GND'],'FILT',
   '변환 체인 사이사이에 들어가는 50Ω 동축 2포트 필터 네 개를 한 블록으로 묶었어요. 300MHz·3.6GHz는 그 근처만 통과(대역 통과), 1.5GHz·4.0GHz는 그 아래만 통과(저역 통과)시켜서 원하지 않는 혼합 신호(영상 주파수·고조파)를 걸러요. 수동 부품이라 전원이 없어요.');
 blkDef('bif','BLK_IF_LOG_9STAGE','IF 처리단 (21.4MHz, 9단 로그 증폭기)',['IF IN (21.4MHz, 50Ω)','IF OUT (21.4MHz)','VIDEO OUT (검파 출력)','RBW0 (분해능 선택)','RBW1','RBW2','VCC','VEE','GND'],'IF LOG',
-  '21.4MHz 중간 주파수를 받아 분해능 필터(6dB 폭 10Hz~3MHz, 1-3-10 단계, 수정 필터 포함)로 거르고, 9단 로그 증폭기(앞 5단 + 뒤 4단과 검파기)로 신호 세기의 로그(dB)에 비례하는 비디오 전압을 내요. 90dB 폭의 작은 신호와 큰 신호를 한 화면에 함께 보여 줘요. 기준 입력 레벨은 약 −20dBm. (분해능 선택·전원 핀은 이 프로그램이 정한 것이에요.)');
+  '21.4MHz 중간 주파수를 받아 분해능 필터(6dB 폭 10Hz~3MHz, 1-3-10 단계, 수정 필터 포함)로 거르고, 9단 로그 증폭기(앞 5단 + 뒤 4단과 검파기)로 신호 세기의 로그(dB)에 비례하는 비디오 전압을 내요. 90dB 폭의 작은 신호와 큰 신호를 한 화면에 함께 보여 줘요. 기준 입력 레벨은 약 −20dBm, 단계별 이득 조정이 있고, 표시 범위는 +30~−135dBm에서 교정돼요. (분해능 선택·전원 핀은 이 프로그램이 정한 것이에요.)');
 blkDef('bref','BLK_REF_OSC_10MHZ','기준 발진기 (10MHz)',['INT OUT (10MHz, 0dBm)','EXT IN (외부 기준)','VCC','GND'],'10MHz',
-  '모든 국부 발진기 주파수의 기준이 되는 10MHz 발진기예요(0dBm, 50Ω, 하루 10⁻⁹ 미만으로 변함). EXT IN에 외부 기준(5MHz ±50Hz 또는 10MHz ±100Hz, 0~10dBm)을 넣으면 그쪽에 맞춰 동작해서 여러 장비의 주파수를 일치시킬 수 있어요.');
+  '모든 국부 발진기 주파수의 기준이 되는 10MHz 발진기예요(0dBm, 50Ω, 하루 10⁻⁹ 미만으로 변함). EXT IN에 외부 기준(5MHz ±50Hz 또는 10MHz ±100Hz, 0~10dBm, 100Hz~10kHz 떨어진 곳의 위상 잡음 −140dBc/Hz 미만)을 넣으면 그쪽에 맞춰 동작해서 여러 장비의 주파수를 일치시킬 수 있어요.');
 blkDef('bcrt','BLK_CRT_6IN_ESTAT','정전 편향 CRT (6인치, 흑백)',['HTR1 (히터)','HTR2 (히터)','K (캐소드)','G1 (밝기 그리드)','X+ (가로 편향판)','X− (가로 편향판)','Y+ (세로 편향판)','Y− (세로 편향판)','HV (애노드 고전압)','Z (밝기 변조)','BLANK (끄기)','GND'],'CRT',
   '6인치 직사각형 흑백 브라운관이에요. 편향판 두 쌍(X·Y)에 건 전압으로 전자빔을 휘는 정전 편향식이라, 자석 코일보다 빨리 빔을 움직여 측정 파형을 그려요. 히터 약 4.45V(교류 실효값), 캐소드·G1으로 밝기, Z 입력(0~1V, 1V에서 꺼짐)으로 밝기 변조, BLANK에 TTL HIGH(2.4V 이상)를 주면 빔이 꺼져요. 애노드에는 수 kV 고전압이 걸려 아주 위험하니 실제로는 손대기 전에 꼭 방전해요. (핀 배치는 이 프로그램이 정한 것이에요.)',{lay:'row'});
 // 16/32비트 마이크로프로세서(DIP-64, 900mil, 8MHz): 핀 배치만 — 1~5 D4~D0, 6 ~AS … 29~48 A1~A20, 50~52 A21~A23, 54~64 D15~D5
@@ -5858,20 +5862,27 @@ Object.assign(EXAMPLES,{
     const A=K.px('oa2b',1,null,20);K.vcc(A(7));K.gnd(A(3));K.link(W(1),A(2));K.link(A(0),A(1),10000);K.gnd(A(1),10000);K.gnd(A(4));K.link(A(6),A(5));
     x=K.led(1,27,{color:'green'});K.link(A(0),x.a,330);K.gnd(x.k);
     return K.fin();},
-  // Ⓟ9 계측기(스펙트럼 분석기) 블록 예제: 보드 1 = 스윕 전압 만들기(DIP 스위치 → 10비트 DAC → 연산 증폭기 → LED),
-  //   보드 2 = 고주파 신호 길(감쇠기 → YIG 믹서 ← YIG 발진기, → 변환 체인 ← 기준 발진기, → IF 로그 증폭단 → CRT). 보드 2 블록은 시뮬레이션 없이 연결만
-  pasa:()=>{const K=ledKit(2);
+  // Ⓟ9 계측기(스펙트럼 분석기) 구조 예제 — 실제 계측기처럼 세 묶음으로 나눔
+  //   보드 1 튜닝·스윕 DAC: DIP 스위치 → 10비트 DAC → 연산 증폭기 → 스윕 전압(LED, CRT 가로 편향으로)
+  //   보드 2 RF 섹션: 감쇠기 → YIG 믹서 ← YIG 발진기, → 필터 → 변환 체인 ← 기준 발진기 (블록은 시뮬레이션 없이 연결만)
+  //   보드 3 IF·표시 섹션: IF 로그 증폭단 → CRT 세로 편향, 빔 켜기 스위치 → NPN → CRT BLANK(LED로 표시)
+  pasa:()=>{const K=ledKit(3);
     const D=K.px('dac10',1,null,3),A=K.px('oa2b',1,null,16),S=K.px('dip4',1,null,30,{bits:[1,0,1,0]});
     K.vcc(D(13));K.gnd(D(2));K.gnd(D(14));for(let i=7;i<=12;i++)K.gnd(D(i));          // VDD·GND, VREF = 0V, BIT5~BIT10 = 0
     K.vcc(A(7));K.gnd(A(3));K.vcc(A(4),35000);K.gnd(A(4),15000);K.link(A(6),A(5));     // 증폭기 2 = 기준 1.5V 버퍼(35k/15k) → 출력 = 1.5V × (1 + 숫자 ÷ 1024)
     K.link(A(6),D(1));K.link(A(6),A(2));K.link(D(0),A(1));K.link(D(15),A(0));         // IOUT2·IN1+ = 1.5V, IOUT1 → IN1−, RFB → OUT1
     for(let i=0;i<4;i++){K.vcc(S(7-i));K.link(S(i),D(3+i));K.gnd(D(3+i),10000);}      // DIP 1~4 → BIT1~BIT4(풀다운 10k)
     const x=K.led(1,25,{color:'yellow'});K.link(A(0),x.a,100);K.gnd(x.k);
-    // 보드 2: 블록 연결
+    // 보드 2: RF 섹션
     const T=K.px('batt',2,'c',2),Y=K.px('byto',2,'c',12),M=K.px('bytx',2,'c',25),C=K.px('bconv',2,'c',34);
-    const F=K.px('bfilt',2,'h',2),I=K.px('bif',2,'h',14),R=K.px('bref',2,'h',26),V=K.px('bcrt',2,'h',33);
-    K.gnd(T(6));K.vcc(T(5));K.gnd(Y(1));K.gnd(M(5));K.gnd(C(5));K.vcc(C(4));K.gnd(F(8));K.gnd(I(8));K.vcc(I(6));K.gnd(R(3));K.vcc(R(2));K.gnd(V(11));
-    K.link(T(1),M(0));K.link(Y(0),M(1));K.link(M(2),F(0));K.link(F(1),C(0));K.link(R(0),C(2));K.link(C(3),I(0));K.link(I(2),V(6));
+    const F=K.px('bfilt',2,'h',2),R=K.px('bref',2,'h',26);
+    K.gnd(T(6));K.vcc(T(5));K.gnd(Y(1));K.gnd(M(5));K.gnd(C(5));K.vcc(C(4));K.gnd(F(8));K.gnd(R(3));K.vcc(R(2));
+    K.link(T(1),M(0));K.link(Y(0),M(1));K.link(M(2),F(0));K.link(F(1),C(0));K.link(R(0),C(2));
+    // 보드 3: IF·표시 섹션
+    const I=K.px('bif',3,'c',2),V=K.px('bcrt',3,'c',16);K.gnd(I(8));K.vcc(I(6));K.gnd(V(11));
+    K.link(C(3),I(0));K.link(I(2),V(6));K.link(A(0),V(4));                          // 변환 체인 → IF, 비디오 → Y+, 스윕 → X+
+    const s_=K.sw(K.at(3,false,32),true),Q=K.px('q18s',3,'h',36);K.link(s_,Q(1),4700);K.gnd(Q(0));
+    const b=K.led(3,42,{color:'green'});K.vcc(b.a,330);K.link(b.k,Q(2));K.link(Q(2),V(10));   // 켜면 BLANK가 LOW → 빔 켜짐(초록 LED)
     return K.fin();},
 });
 

@@ -13,8 +13,8 @@
 ✓ 19차 층 수 무제한(`normNL` 1·짝수, `PCB_MAXL`=128, `LNAME`/`LSHORT`/`PCOL` Proxy `In\d+`, `pDefInner`, `pMinTh`, `#pNLn`), 자동 배선 층 자동 늘리기 `PCB.autoL`(`routeBest`·`pAddLayerPair`·`pTrimLayers`, 14초), 층 주 방향 dirP, 배치 최적화 `pcbOptimizePlace`(담금질 HPWL+넓이), [자동 설계] `#pAuto`, [배치 최적화] `#pOpt`
 ✓ 시뮬 구조(19차): 트랜지스터 스위치/아날로그 모드 `r.an`(이미터·소스 strong 아니면 VCCS beta·포화 0.2V / MOSFET gm·lin), 한 번에 서로 물리지 않은 것만 일괄 바꿈, 릴레이 `SIM.rr`(4)·전체 `SIM.rd`(24, 상한 28) 따로, `uf2`(트랜지스터 접점 뺀 연결)로 베이스 눌러 끄기, 직류 길 없는 미지 줄 volt 제외(떠 있음=null), 아날로그 줄 닿은 LED는 다이오드 `ledL`/`ledA`(색별 vf, 켜짐=전류 `rt(c).ai`>0.2mA)
 ✓ 실행 취소: `ssnap()`에 보드 `bb` → `sApply`가 보드 그대로 되돌림(+`pushHist`), `schAutoSync` 보드 바뀌면 PCB `phist` 비움, 자동 동기화는 실행 취소 단계 아님, `boardToSch`가 이름표·부품 차례 유지, `#clr` 되돌리면 `_pcb`·`_name` 복원
-✓ 시험 전부 통과(20차): tests/ui 26종, verify-parts 176/176, verify74 107/107, sig-check, guide-sync, spice-check
-✓ 20차 부품(원본 명세 2차 제공 후 맞춤): 분류 `PXIC`(부품 고르기 최상위 [아날로그 · 혼합신호 IC · 모듈] `PTREE[6]` `aic`, 회로도 목록에도) = `ana` 아날로그 IC(`oa2j`·`oa4j`·`oa2n`·`oa1p` 외부 보상 TO-99·`cmp2`·`reg317` + 명세 밖 `oa2b`·`oa4` 단전원) / `dig`(`dac10` 10비트 래치 없음·`cpu64`) / `blk` 8종(`batt`·`byto`·`bytx`·`bconv`·`bfilt`·`bif`·`bref`·`bcrt`, `blk:1`). 개별 소자는 기존 분류 `tr`(`q3055` 10A 150W·`q2955`·`q2222m`·`q2907m` PNP 200mA·`qp39` PNP 80V TO-39·`q18s`·`jfn` TO-18) / `dio`(`d914`·`d5711`·`d4004` 750mA). 이미 있던 것: 브리지 600V 1A → `brdg`에 nid만, 6채널 DFF → 74LS174에 `nid` + `partOf` CHIPS nid 인식. 모든 명세 ID = `nid`(verify-parts에서 27개 대조, 중복 nid 없음). 속성 `anaTx`(DAC 비트 수 `n`), 전원 없음 경고(핀 번호·이름), JFET 게이트 경고, 예제 Ⓟ8 `paana`·Ⓟ9 `pasa`(DIP → 10비트 DAC → 증폭기 스윕 전압 + 블록 8종 연결), 시험 `tests/ui/analog-ic.js`
+✓ 시험 전부 통과(20차): tests/ui 26종, verify-parts 177/177, verify74 107/107, sig-check, guide-sync, spice-check
+✓ 20차 부품(원본 명세 2·3차 제공 후 맞춤, 명세 ID 28개): 분류 `PXIC`(부품 고르기 최상위 [아날로그 · 혼합신호 IC · 모듈] `PTREE[6]` `aic`, 회로도 목록에도) = `ana` 아날로그 IC(`oa2j`·`oa4j`·`oa2n`·`oa1p` 외부 보상 TO-99·`cmp2`·`reg317` + 명세 밖 `oa2b`·`oa4` 단전원) / `dig`(`dac10` 10비트 래치 없음·`cpu64`) / `blk` 8종(`batt`·`byto`·`bytx`·`bconv`·`bfilt`·`bif`·`bref`·`bcrt`, `blk:1`). 개별 소자는 기존 분류 `tr`(`q3055` 10A 150W·`q2955`·`q2222m`·`q2907m` PNP 200mA·`qp39` PNP 80V TO-39·`q18s`·`jfn` TO-18·`jfn92` TO-92) / `dio`(`d914`·`d5711`·`d4004` 750mA). 이미 있던 것: 브리지 600V 1A → `brdg`에 nid만, 6채널 DFF → 74LS174에 `nid` + `partOf` CHIPS nid 인식. 모든 명세 ID = `nid`(verify-parts에서 27개 대조, 중복 nid 없음). 속성 `anaTx`(DAC 비트 수 `n`), 전원 없음 경고(핀 번호·이름), JFET 게이트 경고, 예제 Ⓟ8 `paana`·Ⓟ9 `pasa`(보드 3개: 튜닝 DAC 스윕 / RF 섹션 블록 / IF·표시 섹션 + 빔 켜기 NPN → CRT BLANK, 스윕 → CRT X+), 시험 `tests/ui/analog-ic.js`
 ✓ 20차 아날로그 IC 계산 틀(`a77dda9`): `anaL`(settle, PX 필드 `ana:{oa:[{o,p,n}],cmp:[{o,p,n}],reg:{adj,out,in,vref,drop,ro},dac:{io1,io2,vref,rfb,vdd,gnd,bits,R},vcc,vee,gnd,A,ro,hd,vmin,ron}`), analogStep 도장(가짜 GND 줄 -1, `vccs` 정의 앞으로 옮김), 상태(oa lin/hi/lo, cmp 0/1, reg reg/drop), 가지치기, `r.ast` 기록. 회로도 시뮬(SIM_S)은 아날로그 계산 안 함(상태 '—')
 ✗ 미검증: 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(gerbonara 설치 권한 거절됨)
 
@@ -41,7 +41,7 @@
 
 ## 사용자 지시 기록 (COPYRIGHT.md 10절 근거)
 - ~11-25: 시뮬레이터 방향, AI 호출 금지, 부품 220종, 자동 main, 오류 알림, PCB, 업데이트마다 링크, 깃허브 페이지
-- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기, 저작권 가이드, 라우터 일반화, 서명, 라이선스 키, 로컬 버전, 릴레이·코일, 조사 문서 반영(2회), "왜 추가가 안될까?", PCB 드래그·지우개, PCB 부품 배치·층 쌓기·거버, 트랜지스터, 층 쌓기 버튼, 층별 보기, 검토 3번, PCB 표준 기능 명세, 거버 다운, 층 자동 늘리기·무한·효율 배치·배선, HP 8566B 기반 부품 명세 추가(20차 완료), 명세 다시 주며 "이미 있는 부품은 추가하지 말고 분류해서"
+- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기, 저작권 가이드, 라우터 일반화, 서명, 라이선스 키, 로컬 버전, 릴레이·코일, 조사 문서 반영(2회), "왜 추가가 안될까?", PCB 드래그·지우개, PCB 부품 배치·층 쌓기·거버, 트랜지스터, 층 쌓기 버튼, 층별 보기, 검토 3번, PCB 표준 기능 명세, 거버 다운, 층 자동 늘리기·무한·효율 배치·배선, HP 8566B 기반 부품 명세 추가(20차 완료), 명세 다시 주며 "이미 있는 부품은 추가하지 말고 분류해서", 상세판(3차) "추가해" → `jfn92`·설명 보강·Ⓟ9 3보드
 
 ## 다음 할 일
 - 사용자 다음 요청 대기. 후보: 음전원(−V 서플라이) 지원, 회로도 시뮬에 아날로그 IC, SPICE 라이브러리에 새 부품 모델, TO-3 발자국 실제 치수 확인

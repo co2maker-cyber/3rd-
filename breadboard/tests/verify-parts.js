@@ -222,11 +222,11 @@ function inPage() {
       build([{ t: 'px', kind: 'm7000', pins: ['c13', 'c14', 'c15'] }, { t: 'wire', pins: ['a13', 'tn13'] }]); const w2 = warn(/게이트\(G\)가 아무 데도/);
       rec('수동 소자', '트랜지스터 경고 (베이스 저항 없음 · 게이트 떠 있음)', w1 && w2, `베이스 바로 + : ${w1 ? '경고' : '없음'} · 게이트 떠 있음: ${w2 ? '경고' : '없음'}`); }
     // ── 20차: 금속 캔·TO-3 트랜지스터는 위 SPEC 표에서 함께 확인. JFET(공핍형): 소스를 +5V에, 드레인 1kΩ → GND. 게이트 = 소스면 켜짐, 게이트 GND(−5V)면 꺼짐
-    { const run = g => { build([{ t: 'px', kind: 'jfn', pins: ['c13', 'c14', 'c15'] }, { t: 'res', pins: ['d13', 'g13'], ohms: 1000 }, { t: 'wire', pins: ['j13', 'bn13'] }, { t: 'wire', pins: ['a14', 'tp14'] }, { t: 'wire', pins: ['a15', g ? 'tp15' : 'tn15'] }]);
+    for (const jk of ['jfn', 'jfn92']) { const run = g => { build([{ t: 'px', kind: jk, pins: ['c13', 'c14', 'c15'] }, { t: 'res', pins: ['d13', 'g13'], ohms: 1000 }, { t: 'wire', pins: ['j13', 'bn13'] }, { t: 'wire', pins: ['a14', 'tp14'] }, { t: 'wire', pins: ['a15', g ? 'tp15' : 'tn15'] }]);
         return { v: vH('a13'), on: !!rt(S.comps[0]).on }; };
       const a = run(1), b = run(0);
-      rec('수동 소자', `jfn · ${PX.jfn.title}`, a.on && !b.on && a.v > 4.5 && b.v < .3 && PX.jfn.pins.map(p => p[0]).join('') === 'DSG' && PX.jfn.tr.vth < 0,
-        `핀 DSG · 게이트=소스(0V) 켜짐, 드레인 ${a.v != null ? a.v.toFixed(2) : '?'}V · 게이트 −5V 꺼짐, 드레인 ${b.v != null ? b.v.toFixed(2) : '?'}V · 문턱 ${PX.jfn.tr.vth}V`); }
+      rec('수동 소자', `${jk} · ${PX[jk].title}`, a.on && !b.on && a.v > 4.5 && b.v < .3 && PX[jk].pins.map(p => p[0]).join('') === 'DSG' && PX[jk].tr.vth < 0,
+        `핀 DSG · 게이트=소스(0V) 켜짐, 드레인 ${a.v != null ? a.v.toFixed(2) : '?'}V · 게이트 −5V 꺼짐, 드레인 ${b.v != null ? b.v.toFixed(2) : '?'}V · 문턱 ${PX[jk].tr.vth}V`); }
     // 브리지 정류기: 명세의 600V 1A 4핀 브리지는 이미 있는 brdg와 같은 부품 → 중립 이름만 달림
     rec('수동 소자', '브리지 정류기 중립 이름 (BRIDGE_RECT_600V_1A → brdg)', PX.brdg.nid === 'BRIDGE_RECT_600V_1A' && (pxPart('', 'BRIDGE_RECT_600V_1A', 'BRIDGE_RECT_600V_1A') || {}).kind === 'brdg', PX.brdg.title);
   }
@@ -299,13 +299,13 @@ function inPage() {
     // ⑩ 목록 불러오기: 중립 이름(nid)도 알아들음
     { // 명세 문서의 부품 ID 전부(이미 있던 부품은 그 부품으로)
       const DOC = { CPU_16_32B_ASYNC_8MHZ: 'cpu64', DAC_10B_MULT_R2R: 'dac10', OPAMP_DUAL_JFET_25VUS: 'oa2j', OPAMP_QUAD_JFET_25VUS: 'oa4j', OPAMP_DUAL_JFET_LN_3MHZ: 'oa2n', OPAMP_SGL_EXTCOMP_20V: 'oa1p', COMP_DUAL_OC_36V: 'cmp2', REG_POS_ADJ_1P5A: 'reg317',
-        BJT_NPN_PWR_60V_150W: 'q3055', BJT_NPN_SW_40V_800MA: 'q2222m', BJT_PNP_SW_40V_200MA: 'q2907m', BJT_PNP_HV_SW_80V_1W: 'qp39', BJT_NPN_SS_360MW: 'q18s', JFET_N_DEPL_TO18: 'jfn',
+        BJT_NPN_PWR_60V_150W: 'q3055', BJT_NPN_SW_40V_800MA: 'q2222m', BJT_PNP_SW_40V_200MA: 'q2907m', BJT_PNP_HV_SW_80V_1W: 'qp39', BJT_NPN_SS_360MW: 'q18s', JFET_N_DEPL_TO18: 'jfn', JFET_N_DEPL_TO92: 'jfn92',
         DIODE_SW_80V_200MA_2NS: 'd914', DIODE_SCHOTTKY_SS_70V: 'd5711', DIODE_RECT_400V_750MA: 'd4004', BRIDGE_RECT_600V_1A: 'brdg',
         BLK_RF_STEP_ATTEN_22G: 'batt', BLK_YIG_OSC_2P3_6P1G: 'byto', BLK_YIG_MIXER_22G: 'bytx', BLK_RF_CONV_ACLU: 'bconv', BLK_RF_FILTERS: 'bfilt', BLK_IF_LOG_9STAGE: 'bif', BLK_REF_OSC_10MHZ: 'bref', BLK_CRT_6IN_ESTAT: 'bcrt' };
       const bad = Object.entries(DOC).filter(([n, k]) => (pxPart('', n, n) || {}).kind !== k || PX[k].nid !== n).map(([n]) => n);
       const ls = CHIPS['74LS174'] && CHIPS['74LS174'].nid === 'LOGIC_HEX_DFF_CLR_LS';
       const dup = Object.values(PX).map(d => d.nid).filter(Boolean).filter((n, i, a) => a.indexOf(n) !== i);
-      rec('아날로그 IC', '명세 부품 ID 27개 → 부품 (중복 없음)', !bad.length && ls && !dup.length, bad.length || dup.length ? '틀림: ' + bad.concat(dup).join(' ') : `PX ${Object.keys(DOC).length}개 + 74LS174 · 중복 nid 없음`); }
+      rec('아날로그 IC', '명세 부품 ID 28개 → 부품 (중복 없음)', !bad.length && ls && !dup.length, bad.length || dup.length ? '틀림: ' + bad.concat(dup).join(' ') : `PX ${Object.keys(DOC).length}개 + 74LS174 · 중복 nid 없음`); }
     // 다 확인했는지
     const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }

@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const path=require('path');
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(900);
 await p.evaluate(()=>{const t=document.getElementById('tut');if(t&&!t.hidden&&typeof endTut==='function')endTut(true);});
 const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,msg:msg||''});
-  const NEW=['q3055','q2955','q2222m','q2907m','qp39','q18s','jfn','d914','d5711','d4004','oa2j','oa4j','oa2n','oa2b','oa4','oa1p','cmp2','reg317','dac10','cpu64','batt','byto','bytx','bconv','bfilt','bif','bref','bcrt'];
+  const NEW=['q3055','q2955','q2222m','q2907m','qp39','q18s','jfn','jfn92','d914','d5711','d4004','oa2j','oa4j','oa2n','oa2b','oa4','oa1p','cmp2','reg317','dac10','cpu64','batt','byto','bytx','bconv','bfilt','bif','bref','bcrt'];
   const st=()=>{for(let i=0;i<6;i++)settle();};
   const load=()=>{setVM('bb');const ex=EXAMPLES.paana();S.power=true;loadComps(ex.comps,false,ex.boards);orthoWires();RT.clear();commit(true);st();};load();
   const px=k=>S.comps.find(c=>c.t==='px'&&c.kind===k),leds=()=>S.comps.filter(c=>c.t==='led').map(c=>(SIM.led.get(c.id)||{}).lit?1:0).join('');
@@ -16,7 +16,8 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
   { setVM('bb');const ex=EXAMPLES.pasa();S.power=true;loadComps(ex.comps,false,ex.boards);orthoWires();RT.clear();commit(true);st();
     const a=px('oa2b'),vo=()=>SIM.vOf(SIM.netOf[HOLES.get(pinHoles(a)[0]).i]),lit=()=>!!(SIM.led.get(S.comps.find(c=>c.t==='led').id)||{}).lit;
     const v0=vo(),l0=lit(),c0=(rt(px('dac10')).ast||[])[0];px('dip4').bits=[0,0,0,0];st();const v1=vo(),l1=lit();
-    T('예제 Ⓟ9: DAC 스윕 전압·블록 연결',Math.abs(v0-2.4375)<.02&&l0&&c0&&c0.code===640&&Math.abs(v1-1.5)<.01&&!l1&&S.comps.filter(c=>c.t==='px'&&PX[c.kind].blk).length===8&&!SIM.warns.filter(w=>w[0]!=='info').length,
+    const sw=S.comps.find(c=>c.t==='sw'),gl=()=>!!(SIM.led.get(S.comps.filter(c=>c.t==='led')[1].id)||{}).lit,g0=gl();sw.on=false;st();const g1=gl();
+    T('예제 Ⓟ9: DAC 스윕 전압·빔 켜기·블록 연결 (보드 3개)',ex.boards.length===3&&g0&&!g1&&Math.abs(v0-2.4375)<.02&&l0&&c0&&c0.code===640&&Math.abs(v1-1.5)<.01&&!l1&&S.comps.filter(c=>c.t==='px'&&PX[c.kind].blk).length===8&&!SIM.warns.filter(w=>w[0]!=='info').length,
       `코드 ${c0&&c0.code} → ${v0.toFixed(3)}V(LED ${l0}) · 0 → ${v1.toFixed(3)}V(LED ${l1})`); }
   // ② 새 부품마다 보드에 놓고 그리기·속성 창
   { const bad=[];for(const k of NEW){try{const d=PX[k];if(!d){bad.push(k+' 없음');continue;}const ids=pxHolesAt(k,1,'c',5);if(!ids){bad.push(k+' 자리');continue;}
@@ -25,7 +26,7 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
       if(d.ana&&!/지금:/.test(tx))bad.push(k+' 속성(지금)');if(d.blk&&!/시뮬레이션 없음|계산하지 않아요/.test(tx))bad.push(k+' 속성(블록)');if(d.tr&&!/지금:/.test(tx))bad.push(k+' 속성(트랜지스터)');
       if(d.nid&&!tx.includes(d.nid)&&(d.ana||d.blk))bad.push(k+' nid 표시');
       const s=d.draw(S.comps[0],pinHoles(S.comps[0]).map(id=>HOLES.get(id)),rt(S.comps[0]),false);if(!s||/NaN|undefined/.test(s))bad.push(k+' 그림');}catch(e){bad.push(k+' '+e.message);}}
-    T('새 부품 28종: 보드 그리기·속성 창',!bad.length,bad.join(' | ')); }
+    T('새 부품 29종: 보드 그리기·속성 창',!bad.length,bad.join(' | ')); }
   // ③ 전원 없는 연산 증폭기 → 경고, 속성 창 "전원 부족"
   { loadComps([{t:'px',kind:'oa2j',pins:pxHolesAt('oa2j',1,'c',5)}],false);RT.clear();S.power=true;st();sel={type:'comp',id:S.comps[0].id};renderInfo();
     T('전원 없는 연산 증폭기: 경고·속성 창',SIM.warns.some(w=>/전원이 안 들어와요/.test(w[1]))&&/전원 부족/.test($('info').textContent),''); }

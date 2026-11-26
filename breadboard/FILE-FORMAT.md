@@ -367,6 +367,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `qp39` | PNP 고내압 80V 1W (금속 캔 TO-39) | row | 0,1,2 | E B C | |
 | `q18s` | NPN 소신호 360mW (금속 캔 TO-18) | row | 0,1,2 | E B C | |
 | `jfn` | N채널 JFET 공핍형 (금속 캔 TO-18) | row | 0,1,2 | D S G | |
+| `jfn92` | N채널 JFET 공핍형 (TO-92) | row | 0,1,2 | D S G | |
 | `oa2j` | 듀얼 JFET 입력 연산 증폭기 25V/µs (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
 | `oa4j` | 쿼드 JFET 입력 연산 증폭기 25V/µs (DIP-14) | dip | 0~6 | OUT1 IN1− IN1+ VCC IN2+ IN2− OUT2 OUT3 IN3− IN3+ VEE IN4+ IN4− OUT4 | |
 | `oa2n` | 저잡음 듀얼 JFET 연산 증폭기 (DIP-8) | dip | 0~3 | OUT1 IN1− IN1+ VEE IN2+ IN2− OUT2 VCC | |
