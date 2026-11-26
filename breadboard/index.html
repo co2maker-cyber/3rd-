@@ -86,6 +86,7 @@
 .pside .pst.di{min-height:16px;padding:1px 6px 1px 24px;font-size:10.5px;color:var(--muted);background:repeating-linear-gradient(90deg,rgba(160,140,60,.12) 0 6px,transparent 6px 9px)}.pside .pst.di.core{min-height:22px}
 .pside .pst .eye{border:0;background:none;color:var(--fg);cursor:pointer;font-size:13px;min-width:26px;min-height:24px;opacity:.85}.pside .pst .eye[aria-pressed="false"]{opacity:.3}
 .pside .pst select{font-size:11.5px;padding:1px 3px}
+#pStackH{scroll-margin-top:44px}.pside .flash{animation:pflash 1.2s ease-out}@keyframes pflash{0%{box-shadow:0 0 0 3px #4FC3F7;background:rgba(79,195,247,.25)}100%{box-shadow:0 0 0 0 transparent}}
 #pcbbar .ldot{display:inline-block;width:14px;height:14px;border-radius:3px;margin:2px auto 3px}
 #sch{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--surface)}
 .sbody path,.sbody rect,.sbody circle{stroke:var(--sink);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -638,6 +639,7 @@ body.planon .cbar{display:none}
       <button class="tbtn bad" id="pClear" title="선과 비아를 모두 지워요 (두 번 눌러요)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18h6l4-12h6"/><path d="M15 15l5 5M20 15l-5 5"/></svg><span>선 지우기</span></button>
     </div>
     <div class="grp">
+      <button class="tbtn" id="pStackB" title="층 쌓기: 1·2·4·6층, 안쪽 층(신호·GND 판·VCC 판), 보드 두께, 층 보이기·감추기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5l9 4.5 9-4.5"/></svg><span id="pStackN">2층</span></button>
       <button class="tbtn" id="pSide" aria-pressed="true" title="보드 크기·선 굵기·점검(DRC) 창 열기/닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>점검</button>
       <button class="tbtn" id="pFit" title="화면에 맞춤 (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8" y="8" width="8" height="8"/></svg>맞춤</button>
       <button class="tbtn" id="pExp" title="PCB 제작 파일(층마다 구리 거버·마스크·실크·외곽·드릴·부품표)을 zip으로 내려받아요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M4 18v2h16v-2"/></svg>내보내기</button>
@@ -6569,7 +6571,7 @@ function renderPcb(){const g=pcbSvg();if(!g||VM!=='pcb')return;g.classList.toggl
   g.innerHTML=s;renderPcbSide(C,E);pcbStatus(C,E);}
 function pcbStatus(C,E){const bad=E.filter(e=>e.k==='bad').length;$('pStat').textContent=`${PCB.nl}층 · 부품 ${C.fps.length} · 선 ${PCB.tr.length} · 비아 ${PCB.vias.length} · 안 이음 ${C.rats.length} · 오류 ${bad}`;
   $('pStat').className='pstat'+(bad?' bad':C.rats.length?' warn':' ok');
-  $('pLayer').textContent=LSHORT[player]||player;$('pLayer').closest('button').dataset.l=player;
+  $('pLayer').textContent=LSHORT[player]||player;$('pStackN').textContent=`${PCB.nl}층`;$('pLayer').closest('button').dataset.l=player;
   document.querySelectorAll('#pcbbar [data-pt]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pt===ptool));}
 function renderPcbSide(C,E){const box=$('pside');if(box.hidden)return;let h='';
   if(psel&&psel.type==='fp'){const f=PCB.fps.find(x=>x.key===psel.key),P=f&&C.byKey.get(f.key);if(P){
@@ -6611,7 +6613,7 @@ function pStack(){const LS=pLayers(),n=LS.length,cu=.035,th=PCB.th;const rows=[]
   const di=n===2?['core']:n===4?['pp','core','pp']:['pp','core','pp','core','pp'];const npp=di.filter(x=>x==='pp').length,nco=di.length-npp;
   const pp=npp?Math.min(.2,(th-n*cu)*.18):0,co=(th-n*cu-npp*pp)/nco;
   LS.forEach((L,i)=>{rows.push({k:'cu',L});if(i<di.length)rows.push({k:di[i],t:r3(di[i]==='pp'?pp:co)});});return rows;}
-function pStackHTML(C){const LS=pLayers();let h=`<h4>층 쌓기 <small>${PCB.nl}층 · 두께 ${PCB.th}mm</small></h4>
+function pStackHTML(C){const LS=pLayers();let h=`<h4 id="pStackH">층 쌓기 <small>${PCB.nl}층 · 두께 ${PCB.th}mm</small></h4>
   <div class="pgrid"><label>층 수 <select id="pNL">${[1,2,4,6].map(n=>`<option value="${n}"${n===PCB.nl?' selected':''}>${n}층${n===1?' (한 면)':n===2?' (양면)':''}</option>`).join('')}</select></label>
   <label>보드 두께 <select id="pTH">${[.8,1,1.2,1.6,2].map(v=>`<option value="${v}"${v===PCB.th?' selected':''}>${v}mm</option>`).join('')}</select></label></div><div class="pstack">`;
   h+=`<div class="pst di">솔더 마스크 · 실크(위)</div>`;
@@ -6849,6 +6851,10 @@ function pcbEnter(){pcache=null;   // 브레드보드·회로도에서 연결이
   $('pUndo').onclick=pUndo;$('pRedo').onclick=pRedo;$('pRot').onclick=pRot;$('pDel').onclick=pDel;
   $('pLayerB').onclick=()=>{if(!routeVia()){pNextLayer();renderPcb();}};
   $('pAdd').onclick=openParts;
+  // [층 쌓기]: 옆 창을 열고 층 쌓기 칸으로 가서 잠깐 빛나게
+  $('pStackB').onclick=()=>{$('pside').hidden=false;$('pSide').setAttribute('aria-pressed','true');renderPcb();const h=$('pStackH');if(!h)return;
+    try{h.scrollIntoView({block:'start'});}catch(_){}const st=h.nextElementSibling&&h.parentNode.querySelector('.pstack');for(const el of [h,st])if(el){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');}
+    const sel=$('pNL');if(sel&&matchMedia('(pointer:fine)').matches)sel.focus();};
   $('pPlace').onclick=()=>{if(!PCB.fps.length)return;pPush();PCB.tr=[];PCB.vias=[];pcbAutoPlace(null,true);pCommit();pcbFit();toast('부품을 회로도 배치에 맞춰 다시 놓았어요(선은 지웠어요) · 되돌리려면 Ctrl+Z');};
   $('pRoute').onclick=()=>{toast('자동 배선 중…');setTimeout(pcbAutoRoute,30);};
   $('pClear').onclick=()=>{if(!PCB.tr.length&&!PCB.vias.length)return;const b=$('pClear');if(!b.dataset.sure){b.dataset.sure='1';b.querySelector('span').textContent='정말?';setTimeout(()=>{delete b.dataset.sure;b.querySelector('span').textContent='선 지우기';},3000);return;}
