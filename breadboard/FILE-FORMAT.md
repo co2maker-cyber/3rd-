@@ -588,3 +588,8 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 | `DRV-PSR8` | 20 | SER SRCK RCK ~SRCLR ~G D0 D1 D2 D3 GND D4 D5 D6 D7 SEROUT NC1 NC2 NC3 NC4 VCC |
 | `DRV-14SEG` | 30 | D0 D1 D2 D3 D4 D5 D6 DPI ~LE BL NC1 NC2 NC3 DP GND m l k j i h g2 g1 f e d c b a VCC |
 | `DRV-16SEG` | 34 | D0 D1 D2 D3 D4 D5 D6 DPI ~LE BL NC1 NC2 NC3 NC4 NC5 DP GND m l k j i h g2 g1 f e d2 d1 c b a2 a1 VCC |
+
+---
+
+이 안내서는 브레드보드 CAD의 일부로 직접 작성한 문서예요. © 2026 co2maker-cyber. All rights reserved.
+부품 번호·핀 이름은 호환성 안내를 위한 기술적 표기이며 각 제조사의 상표권을 침해할 의도가 없어요. 회로를 만들기 위해 이 안내서를 AI에 함께 넣어 쓰는 것은 괜찮아요.

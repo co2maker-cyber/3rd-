@@ -5,17 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>윈도우 서버 실습장</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* 레이아웃: 왼쪽은 Windows Server 2016 바탕 화면을 흉내 낸 실습 화면, 오른쪽은 과제·채점 패널. 좁은 화면에서는 위아래로 쌓는다. */
 :root{
   --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#E2E7ED; --line:#CBD3DC;
   --fg:#131C26; --muted:#56636F; --accent:#1C5FB8; --accent-ink:#FFFFFF;
   --ok:#1D8F53; --warn:#A86F08; --bad:#BE3B34;
-  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,Consolas,"D2Coding",monospace;
+  --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"D2Coding","Noto Sans Mono","Liberation Mono",monospace;
   --win:"Malgun Gothic","맑은 고딕","Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
