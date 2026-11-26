@@ -76,7 +76,7 @@ await p.evaluate(d=>{loadComps(d.comps,false,d.boards);schLoadIf(d.sch,d.comps);
 r=await p.evaluate(()=>({nl:PCB.nl,sig:pSig(),np:pcalc().pads.filter(q=>q.np).length,npth:!!pcbGerbers().npth}));chk('불러오면 그대로·NPTH 드릴',r.nl===4&&r.sig.join()==='F,In2,B'&&r.np===4&&r.npth,JSON.stringify(r));
 // 이상한 값 막기
 r=await p.evaluate(()=>{pcbLoad({w:30,h:30,nl:3,inner:[{t:'x'}],xp:[{key:'bad',kind:'mh3'},{key:'m1',kind:'zz'}],tr:[{l:'In3',w:.4,a:{x:1,y:1},b:{x:2,y:2}}]});return{nl:PCB.nl,xp:PCB.xp.length,l:PCB.tr[0].l,inner:PCB.inner.length};});
-chk('잘못된 층 값 정리',r.nl===2&&r.xp===0&&r.l==='B'&&r.inner===0,JSON.stringify(r));
+chk('잘못된 층 값 정리(3층 → 4층으로 올림, 없는 층 선은 뒷면)',r.nl===4&&r.xp===0&&r.l==='B'&&r.inner===2,JSON.stringify(r));
 // ⑤ 층별로 보기: 막대에서 층을 고르면 그 층만, 키 0 = 모든 층
 await p.evaluate(d=>{loadComps(d.comps,false,d.boards);schLoadIf(d.sch,d.comps);pcbLoadIf(d.pcb);pcbAutoRoute();},sv);await p.waitForTimeout(200);
 r=await p.evaluate(()=>[...document.querySelectorAll('#pLbar [data-pv]')].map(b=>b.dataset.pv).join());chk('층 보기 막대: 모든 층·층마다·실크·구멍',r==='all,F,In1,In2,B,silk,drill',r);
@@ -86,10 +86,16 @@ await p.click('#pLbar [data-pv="In1"]');r=await cnt();chk('In1 GND 판만: 판 �
 await p.click('#pLbar [data-pv="silk"]');r=await cnt();chk('실크만',!r.tr&&r.silk===1,JSON.stringify(r));
 await p.click('#pLbar [data-pv="drill"]');r=await p.evaluate(()=>({h:document.querySelectorAll('#pcb .pdh').length,n:pcalc().pads.length+PCB.vias.length}));chk('구멍만: 구멍마다 표시',r.h===r.n,JSON.stringify(r));
 await p.keyboard.press('0');r=await cnt();chk('키 0 → 모든 층',r.pv==='all'&&r.silk===1,JSON.stringify(r));
+// ⑦ 층 수 제한 없음 · 자동 늘리기 · 배치 최적화
+r=await p.evaluate(()=>{pSetNL(12);const LS=pLayers(),G=pcbGerbers();const a={nl:PCB.nl,LS:LS.length,last:LS[LS.length-2],th:PCB.th,cu:G.layers.length,ext:G.layers.map(f=>f.name).filter(n=>/g10$/.test(n)).length,name:LNAME.In10,col:PCOL.In10};
+  pSetNL(2);PCB.tr=[];PCB.vias=[];pcache=null;pAddLayerPair();pAddLayerPair();const b=PCB.nl;pTrimLayers(2);return{...a,add:b,trim:PCB.nl};});
+chk('12층(안쪽 10장)·두께 자동·거버 .g10 · 빈 층 걷어 내기',r.nl===12&&r.LS===12&&r.last==='In10'&&r.cu===12&&r.ext===1&&r.th>=1.6&&r.name==='안쪽 10(In10)'&&!!r.col&&r.add===6&&r.trim===2,JSON.stringify(r));
+r=await p.evaluate(()=>{const tot=()=>pcalc().rats.reduce((s,x)=>s+x.d,0);PCB.tr=[];PCB.vias=[];pcache=null;const a=tot();const o=pcbOptimizePlace(800);pcache=null;return{a:Math.round(a),b:Math.round(tot()),ov:pcbDRC().filter(e=>/겹쳐요/.test(e.t)).length};});
+chk('배치 최적화: 어림 배선 길이 줄고 겹침 없음',r.b<=r.a&&!r.ov,JSON.stringify(r));
 // ⑥ [거버 받기] 창: 파일 목록 → zip 내려받기
 await p.click('#pExp');await p.waitForTimeout(150);
 r=await p.evaluate(()=>({open:!document.getElementById('gbrDlg').hidden,names:[...document.querySelectorAll('#gbrBody code')].map(c=>c.textContent)}));
-chk('거버 창: 층마다 구리·마스크·실크·외곽·드릴·BOM·조립도',r.open&&['F_Cu.gtl','In1_Cu.g1','B_Cu.gbl','F_Mask.gts','F_SilkS.gto','Edge_Cuts.gm1','.drl','BOM.csv','assembly-top.svg'].every(x=>r.names.some(n=>n.endsWith(x))),r.names.join(' '));
+chk('거버 창: 층마다 구리·마스크·실크·외곽·드릴·BOM·조립도',r.open&&['F_Cu.gtl','B_Cu.gbl','F_Mask.gts','F_SilkS.gto','Edge_Cuts.gm1','.drl','BOM.csv','assembly-top.svg'].every(x=>r.names.some(n=>n.endsWith(x))),r.names.join(' '));
 const [dl]=await Promise.all([p.waitForEvent('download',{timeout:5000}).catch(()=>null),p.click('#gbrGo')]);
 chk('zip 내려받기',dl&&/-gerber-\dL\.zip$/.test(dl.suggestedFilename()),dl&&dl.suggestedFilename());
 chk('페이지 오류 없음 '+errs.join('|'),!errs.length);

@@ -644,6 +644,8 @@ body.planon .cbar{display:none}
     </div>
     <div class="grp">
       <button class="tbtn" id="pPlace" title="회로도 배치를 바탕으로 부품을 다시 놓고 보드 크기를 맞춰요(선은 지워져요)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M14 6h4v4M10 18H6v-4"/></svg>자동 배치</button>
+      <button class="tbtn pri" id="pAuto" title="자동 설계: 배치 최적화 → 자동 배선(다 못 이으면 층을 2장씩 자동으로 늘림)을 한 번에"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.2 4.5L19 8l-3.5 3.4.8 4.9L12 14l-4.3 2.3.8-4.9L5 8l4.8-.5z"/></svg>자동 설계</button>
+      <button class="tbtn" id="pOpt" title="배치 최적화: 이어진 부품끼리 가깝게, 겹치지 않게, 배선 길이가 짧아지도록 부품을 옮기고 돌려요(선은 지워요)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M9 6h4a2 2 0 0 1 2 2v7"/><path d="M12 12l3 3 3-3"/></svg>배치 최적화</button>
       <button class="tbtn pri" id="pRoute" title="아직 안 이은 연결(노란 점선)을 신호 층(앞면·안쪽 신호 층·뒷면) 구리 선으로 자동으로 이어요"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18h6l4-12h6"/><circle cx="4" cy="18" r="1.6"/><circle cx="20" cy="6" r="1.6"/></svg>자동 배선</button>
       <button class="tbtn bad" id="pClear" title="선과 비아를 모두 지워요 (두 번 눌러요)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18h6l4-12h6"/><path d="M15 15l5 5M20 15l-5 5"/></svg><span>선 지우기</span></button>
     </div>
@@ -983,7 +985,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `name` | 선택 | 회로 이름(40자까지) |
 | `app`, `v` | 선택 | 형식 표시. 그대로 써 두면 좋아요 |
 | `sch` | 선택 | 회로도 편집 내용. **빼면** CAD가 보드를 보고 회로도를 새로 그려요. 기호 `t`에는 부품 말고도 `vcc`·`gnd`(전원 기호)와 `lbl`(넷 이름표, `name`이 같은 것끼리 선 없이 이어짐)이 있어요 |
-| `pcb` | 선택 | PCB 편집 내용(부품 자리·구리 선·비아, 단위 mm). 층 쌓기 `nl`(1·2·4·6, 없으면 2), 안쪽 층 `inner`(`{"t":"sig"}` 신호 또는 `{"t":"plane","net":"GND"}`·`"VCC"` 판), 두께 `th`(mm), 장착 구멍 `xp`(`{"key":"m1","kind":"mh3"}`, kind = `mh25`·`mh3`·`mh4`)도 들어가요. 보드 모서리 반지름 `rc`(mm), 동박 채우기 `pour`(`{"B":"GND","F":"VCC"}`처럼 신호 층마다 `GND`·`VCC`)도 있어요. 선의 층 `l` = `F`·`In1`~`In4`·`B`. **빼면** PCB 화면을 열 때 회로도를 보고 새로 놓아요. AI가 만들 때는 빼 두세요 |
+| `pcb` | 선택 | PCB 편집 내용(부품 자리·구리 선·비아, 단위 mm). 층 쌓기 `nl`(1 또는 2·4·6·8…짝수, 128층까지, 없으면 2), 층 자동 늘리기 `autoL`(true/false), 안쪽 층 `inner`(`{"t":"sig"}` 신호 또는 `{"t":"plane","net":"GND"}`·`"VCC"` 판), 두께 `th`(mm), 장착 구멍 `xp`(`{"key":"m1","kind":"mh3"}`, kind = `mh25`·`mh3`·`mh4`)도 들어가요. 보드 모서리 반지름 `rc`(mm), 동박 채우기 `pour`(`{"B":"GND","F":"VCC"}`처럼 신호 층마다 `GND`·`VCC`)도 있어요. 선의 층 `l` = `F`·`In1`·`In2`…·`B`. **빼면** PCB 화면을 열 때 회로도를 보고 새로 놓아요. AI가 만들 때는 빼 두세요 |
 
 부품의 `id`는 쓰지 않아도 돼요. 불러올 때 1번부터 다시 매겨요.
 
@@ -6360,12 +6362,18 @@ Object.assign(EXAMPLES,ICEX);
    · 내보내기: 층마다 구리 거버(RS-274X) + 마스크·실크·외곽 + 드릴(Excellon, 도금·비도금) + 부품표(BOM)를 zip 하나로 */
 const PCB={w:0,h:0,fps:[],tr:[],vias:[],nextId:1,clr:.2,tw:.4,nl:2,inner:[],th:1.6,xp:[],rc:0,pour:{}};
 /* 층: 위에서 아래 차례. nl=1이면 뒷면(B) 한 층(스루홀 부품은 앞에 꽂고 뒤에서 납땜) */
-const LALL=['F','In1','In2','In3','In4','B'];
-const LNAME={F:'앞면(F)',In1:'안쪽 1(In1)',In2:'안쪽 2(In2)',In3:'안쪽 3(In3)',In4:'안쪽 4(In4)',B:'뒷면(B)'};
-const LSHORT={F:'앞면(F)',In1:'In1',In2:'In2',In3:'In3',In4:'In4',B:'뒷면(B)'};
-function pLayers(n){n=n||PCB.nl;return n===1?['B']:n===4?['F','In1','In2','B']:n===6?['F','In1','In2','In3','In4','B']:['F','B'];}
-function pDefInner(n){return n===4?[{t:'plane',net:'GND'},{t:'plane',net:'VCC'}]:n===6?[{t:'sig'},{t:'plane',net:'GND'},{t:'plane',net:'VCC'},{t:'sig'}]:[];}
-const pInner=L=>{const m=/^In(\d)$/.exec(L);return m?PCB.inner[+m[1]-1]||{t:'sig'}:null;};
+const PCB_MAXL=128;   // 층 수 한계(실제로는 사실상 없음: 2장씩 얼마든지 늘린다)
+const isLayer=L=>/^(F|B|In[1-9]\d*)$/.test(L);
+// 층 이름·색: 안쪽 층은 번호로 만든다
+const LNAME=new Proxy({F:'앞면(F)',B:'뒷면(B)'},{get:(t,k)=>k in t?t[k]:typeof k==='string'&&/^In\d+$/.test(k)?`안쪽 ${k.slice(2)}(${k})`:undefined});
+const LSHORT=new Proxy({F:'앞면(F)',B:'뒷면(B)'},{get:(t,k)=>k in t?t[k]:typeof k==='string'&&/^In\d+$/.test(k)?k:undefined});
+const INCOL=['#E39B2D','#4CB36B','#B565D9','#2FB5A5','#C2569A','#8FA33A','#5C7FD6','#D9733B','#3BAFC9','#A66BD9'];
+const normNL=n=>{n=Math.round(+n||2);return n<=1?1:Math.min(PCB_MAXL,n%2?n+1:n);};
+function pLayers(n){n=n||PCB.nl;if(n===1)return['B'];const L=['F'];for(let i=1;i<=n-2;i++)L.push('In'+i);L.push('B');return L;}
+// 안쪽 층 기본: 4층 GND·VCC 판, 6층 신호·GND·VCC·신호, 8층부터 신호·GND·신호…·VCC·신호
+function pDefInner(n){if(n===4)return[{t:'plane',net:'GND'},{t:'plane',net:'VCC'}];if(n<4)return[];if(n===6)return[{t:'sig'},{t:'plane',net:'GND'},{t:'plane',net:'VCC'},{t:'sig'}];
+  const a=[{t:'sig'},{t:'plane',net:'GND'}];for(let i=0;i<n-6;i++)a.push({t:'sig'});a.push({t:'plane',net:'VCC'},{t:'sig'});return a;}
+const pInner=L=>{const m=/^In(\d+)$/.exec(L);return m?PCB.inner[+m[1]-1]||{t:'sig'}:null;};
 const pPlane=L=>{const o=pInner(L);return o&&o.t==='plane'?o:null;};
 const pSig=()=>pLayers().filter(L=>!pPlane(L));   // 선을 그릴 수 있는 층
 // 보드 외곽: 모서리 반지름 rc. m만큼 안쪽으로 줄인 모양
@@ -6388,16 +6396,16 @@ const trR=(L,w)=>1.72e-8*(L/1000)/((w/1000)*(CU_T/1000));
 const trImax=(w,inner)=>{const A=(w/.0254)*(CU_T/.0254);return(inner?.024:.048)*Math.pow(10,.44)*Math.pow(A,.725);};
 const fmtR=r=>r<1?(r*1000).toFixed(r<.01?2:1)+'mΩ':r.toFixed(2)+'Ω';
 const r3=v=>Math.round(v*1000)/1000,snapP=v=>Math.round(v/PG)*PG,snapH=v=>Math.round(v/(PG/2))*(PG/2);
-function pcbData(){return{w:PCB.w,h:PCB.h,fps:PCB.fps,tr:PCB.tr,vias:PCB.vias,nextId:PCB.nextId,clr:PCB.clr,tw:PCB.tw,nl:PCB.nl,inner:PCB.inner,th:PCB.th,xp:PCB.xp,rc:PCB.rc,pour:PCB.pour};}
+function pcbData(){return{w:PCB.w,h:PCB.h,fps:PCB.fps,tr:PCB.tr,vias:PCB.vias,nextId:PCB.nextId,clr:PCB.clr,tw:PCB.tw,nl:PCB.nl,inner:PCB.inner,th:PCB.th,xp:PCB.xp,rc:PCB.rc,pour:PCB.pour,autoL:PCB.autoL!==false};}
 function pcbSave(){store.set('pcb',pcbData());}
 function pcbLoad(o){const ok=o&&typeof o==='object';const num=(v,d)=>Number.isFinite(+v)?+v:d;
   PCB.w=ok?Math.max(0,Math.min(500,num(o.w,0))):0;PCB.h=ok?Math.max(0,Math.min(500,num(o.h,0))):0;
   PCB.clr=ok?Math.max(.1,Math.min(1,num(o.clr,.2))):.2;PCB.tw=ok?Math.max(.15,Math.min(3,num(o.tw,.4))):.4;
   PCB.fps=ok&&Array.isArray(o.fps)?o.fps.filter(f=>f&&typeof f.key==='string'&&Number.isFinite(+f.x)&&Number.isFinite(+f.y)).map(f=>({key:f.key,x:+f.x,y:+f.y,rot:[0,90,180,270].includes(+f.rot)?+f.rot:0})):[];
-  PCB.nl=ok&&[1,2,4,6].includes(+o.nl)?+o.nl:2;PCB.th=ok&&[.8,1,1.2,1.6,2].includes(+o.th)?+o.th:1.6;
+  PCB.nl=ok&&Number.isFinite(+o.nl)&&+o.nl>=1?normNL(o.nl):2;PCB.th=ok&&Number.isFinite(+o.th)?Math.max(.4,Math.min(12,+o.th)):1.6;PCB.autoL=ok&&o.autoL===false?false:true;
   {const d=pDefInner(PCB.nl),src=ok&&Array.isArray(o.inner)?o.inner:[];PCB.inner=d.map((x,i)=>{const q=src[i];if(!q||typeof q!=='object')return x;return q.t==='plane'?{t:'plane',net:q.net==='VCC'?'VCC':'GND'}:{t:'sig'};});}
   PCB.rc=ok?Math.max(0,Math.min(10,num(o.rc,0))):0;
-  PCB.pour={};if(ok&&o.pour&&typeof o.pour==='object')for(const L of LALL)if(o.pour[L]==='GND'||o.pour[L]==='VCC')PCB.pour[L]=o.pour[L];
+  PCB.pour={};if(ok&&o.pour&&typeof o.pour==='object')for(const L of pLayers(PCB.nl))if(o.pour[L]==='GND'||o.pour[L]==='VCC')PCB.pour[L]=o.pour[L];
   PCB.xp=[];if(ok&&Array.isArray(o.xp)){const seen=new Set();for(const q of o.xp)if(q&&typeof q.key==='string'&&/^m\d{1,4}$/.test(q.key)&&MHK[q.kind]&&!seen.has(q.key)){seen.add(q.key);PCB.xp.push({key:q.key,kind:q.kind});}}
   const LS=pLayers();
   const pt=q=>q&&Number.isFinite(+q.x)&&Number.isFinite(+q.y)?{x:+q.x,y:+q.y}:null;let id=1;
@@ -6607,6 +6615,38 @@ function pcbAutoPlace(parts,fit){parts=parts||pcbParts();const sp=new Map(SCH.pa
   if(J){let x0=1e9,y0=1e9;for(const f of placed){if(f===J)continue;const b=fpBox(f,parts.find(z=>z.key===f.key).D);x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);}
     if(x0<1e9){J.rot=90;placeFree(J,parts.find(z=>z.key==='pwr').D,x0-5,y0+3,placed);}}
   if(fit)pcbFitBoard();}
+/* 배치 최적화(담금질): 연결마다 패드를 감싸는 상자 둘레의 반(HPWL) 합 + 전체 넓이를 줄이도록 부품을 옮기고·돌리고·맞바꾼다.
+   부품끼리는 자리(코트야드)+0.6mm 이상 띄운다. 장착 구멍은 그대로 둔다. ms 동안 */
+function pcbOptimizePlace(ms){const C=pcalc(),parts=C.fps.filter(f=>!PCB.xp.some(o=>o.key===f.key));if(parts.length<2)return{moved:0,before:0,after:0};
+  const D=new Map(C.fps.map(f=>[f,C.byKey.get(f.key).D])),idx=new Map(C.fps.map((f,i)=>[f,i]));
+  // 연결별 (부품, 패드 상대 위치) 목록
+  const nets=new Map();for(const q of C.pads){if(q.net<0)continue;if(!nets.has(q.net))nets.set(q.net,[]);const P=D.get(q.fp).pads[q.j];nets.get(q.net).push({f:q.fp,x:P.x,y:P.y});}
+  const NL=[...nets.values()].filter(L=>L.length>=2),byF=new Map(C.fps.map(f=>[f,[]]));NL.forEach((L,i)=>{for(const p of L)byF.get(p.f).includes(i)||byF.get(p.f).push(i);});
+  const pos=f=>p=>{const w=rotP(p.x,p.y,f.rot);return{x:f.x+w.x,y:f.y+w.y};};
+  const hp=i=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of NL[i]){const q=pos(p.f)(p);x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);}return(x1-x0)+(y1-y0);};
+  const netCost=new Float64Array(NL.length);let wl=0;NL.forEach((_,i)=>{netCost[i]=hp(i);wl+=netCost[i];});
+  const box=f=>fpBox(f,D.get(f)),gap=.6,hit=(f,ign)=>{const b=box(f);if(!inRRect(b.x0,b.y0,-50))return true;for(const o of C.fps){if(o===f||o===ign)continue;const c=box(o);if(b.x0<c.x1+gap&&c.x0<b.x1+gap&&b.y0<c.y1+gap&&c.y0<b.y1+gap)return true;}return b.x0<1||b.y0<1;};
+  const area=()=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const f of C.fps){const b=box(f);x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}return(x1-x0)*(y1-y0);};
+  const K=.02;   // 넓이 무게(mm² → mm)
+  const before=wl+K*area();let cur=before,moved=new Set();
+  const t0=performance.now();let T=Math.max(2,wl/NL.length/2),it=0;
+  const rnd=n=>Math.floor(Math.random()*n);
+  while(performance.now()-t0<ms){it++;if(it%200===0)T*=.93;
+    const f=parts[rnd(parts.length)],old={x:f.x,y:f.y,rot:f.rot};let g=null,og=null;const kind=Math.random();
+    if(kind<.5){// 이어진 부품들의 무게중심 쪽으로(조금 흔들어)
+      let sx=0,sy=0,n=0;for(const i of byF.get(f))for(const p of NL[i])if(p.f!==f){const q=pos(p.f)(p);sx+=q.x;sy+=q.y;n++;}
+      if(!n)continue;f.x=snapP(sx/n+(Math.random()-.5)*T*2);f.y=snapP(sy/n+(Math.random()-.5)*T*2);}
+    else if(kind<.75){f.x=snapP(f.x+(Math.random()-.5)*T*4);f.y=snapP(f.y+(Math.random()-.5)*T*4);}
+    else if(kind<.88){f.rot=(f.rot+(Math.random()<.5?90:270))%360;}
+    else{g=parts[rnd(parts.length)];if(g===f)continue;og={x:g.x,y:g.y};const tx=f.x,ty=f.y;f.x=g.x;f.y=g.y;g.x=tx;g.y=ty;}
+    if(hit(f,g)||(g&&hit(g,f))){Object.assign(f,old);if(g)Object.assign(g,og);continue;}
+    const touched=new Set([...byF.get(f),...(g?byF.get(g):[])]);let d=0;const nv=new Map();for(const i of touched){const c=hp(i);nv.set(i,c);d+=c-netCost[i];}
+    const na=area(),nc=cur+d+K*(na-((cur-wl)/K));
+    const delta=d+K*na-(cur-wl);
+    if(delta<=0||Math.random()<Math.exp(-delta/T)){for(const [i,c] of nv)netCost[i]=c;wl+=d;cur=wl+K*na;moved.add(f);if(g)moved.add(g);}
+    else{Object.assign(f,old);if(g)Object.assign(g,og);}}
+  for(const f of C.fps){f.x=r3(snapP(f.x));f.y=r3(snapP(f.y));}
+  return{moved:moved.size,before,after:cur,it};}
 function pcbFitBoard(){const parts=pcbParts(),by=new Map(parts.map(x=>[x.key,x]));let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   for(const f of PCB.fps){const P=by.get(f.key);if(!P)continue;const b=fpBox(f,P.D);x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}
   for(const s of PCB.tr)for(const e of [s.a,s.b]){x0=Math.min(x0,e.x-s.w);y0=Math.min(y0,e.y-s.w);x1=Math.max(x1,e.x+s.w);y1=Math.max(y1,e.y+s.w);}
@@ -6617,14 +6657,26 @@ function pcbFitBoard(){const parts=pcbParts(),by=new Map(parts.map(x=>[x.key,x])
 
 /* ── 자동 배선: 1.27mm 격자 위 미로 찾기(A*), 신호 층 여러 장(판 층 빼고), 층을 바꾸면 비아 ──
    안 이은 연결(래츠네스트)을 짧은 것부터 하나씩 잇는다. 못 이은 것이 있으면 순서를 바꿔 몇 번 다시 해 보고 가장 많이 이은 결과를 고른다 */
-function pcbAutoRoute(){const C0=pcalc();if(!C0.rats.length){toast('이을 연결이 없어요. 모두 이어져 있어요');return;}
-  pPush();const base=JSON.stringify({tr:PCB.tr,vias:PCB.vias,nextId:PCB.nextId});let best=null,order=null;const t0=performance.now();
-  for(let att=0;att<4&&performance.now()-t0<4000;att++){const b=JSON.parse(base);PCB.tr=b.tr;PCB.vias=b.vias;PCB.nextId=b.nextId;pcache=null;
-    const r=routeOnce(order,t0+(att?8000:9000));if(!best||r.fail.length<best.fail.length||(r.fail.length===best.fail.length&&r.len<best.len))best={...r,tr:PCB.tr,vias:PCB.vias,nextId:PCB.nextId};
+function routeBest(tBudget){const base=JSON.stringify({tr:PCB.tr,vias:PCB.vias,nextId:PCB.nextId});let best=null,order=null;const t0=performance.now();
+  for(let att=0;att<4&&performance.now()-t0<tBudget;att++){const b=JSON.parse(base);PCB.tr=b.tr;PCB.vias=b.vias;PCB.nextId=b.nextId;pcache=null;
+    const r=routeOnce(order,t0+tBudget*2);if(!best||r.fail.length<best.fail.length||(r.fail.length===best.fail.length&&r.len<best.len))best={...r,tr:PCB.tr,vias:PCB.vias,nextId:PCB.nextId};
     if(!r.fail.length)break;order=[...r.fail,...r.ok];}
-  PCB.tr=best.tr;PCB.vias=best.vias;PCB.nextId=best.nextId;pcache=null;pCommit();
-  const left=pcalc().rats.length,slow=performance.now()-t0>7500;
-  toast(left?`자동 배선: ${best.ok.length}개를 이었고 ${left}개는 길이 없어 못 이었어요. ${slow?'(시간이 오래 걸려 중간에 멈췄어요) ':''}부품을 벌리거나 보드를 키운 뒤 다시 눌러 보세요`:`자동 배선: ${best.ok.length}개 연결을 모두 이었어요 · 비아 ${PCB.vias.length}개 · 되돌리려면 Ctrl+Z`);}
+  PCB.tr=best.tr;PCB.vias=best.vias;PCB.nextId=best.nextId;pcache=null;return best;}
+/* 안쪽 신호 층 2장 더하기(뒷면 바로 위에 붙여 기존 층 이름은 그대로) · 선이 없는 안쪽 신호 층 걷어 내기 */
+function pAddLayerPair(){if(PCB.nl===1){PCB.nl=2;PCB.inner=[];return true;}if(PCB.nl+2>PCB_MAXL)return false;PCB.inner=[...PCB.inner,{t:'sig'},{t:'sig'}];PCB.nl+=2;if(PCB.th<pMinTh(PCB.nl))PCB.th=pMinTh(PCB.nl);return true;}
+function pTrimLayers(minNl){// 끝에서부터 선이 없는 신호 층 짝을 걷어 낸다
+  while(PCB.nl>Math.max(2,minNl)){const a='In'+(PCB.nl-3),b='In'+(PCB.nl-2),ia=PCB.inner[PCB.nl-4],ib=PCB.inner[PCB.nl-3];
+    if(!ia||!ib||ia.t!=='sig'||ib.t!=='sig'||PCB.tr.some(t=>t.l===a||t.l===b)||PCB.pour[a]||PCB.pour[b])break;PCB.inner=PCB.inner.slice(0,-2);PCB.nl-=2;}}
+function pcbAutoRoute(){const C0=pcalc();if(!C0.rats.length){toast('이을 연결이 없어요. 모두 이어져 있어요');return;}
+  pPush();const t0=performance.now(),nl0=PCB.nl,r0=C0.rats.length;let best=routeBest(4000),left=pcalc().rats.length,added=0;
+  // 층 자동 늘리기: 남은 연결이 있으면 2장 더 → 남은 것만 다시. 두 번 연속 나아지지 않거나 시간이 다 되면 멈춤
+  if(left&&PCB.autoL!==false){let stall=0;while(left&&stall<2&&performance.now()-t0<14000){if(!pAddLayerPair())break;added+=2;pcache=null;
+      const r=routeBest(3000),l2=pcalc().rats.length;if(l2<left){left=l2;stall=0;}else stall++;best={ok:best.ok.concat(r.ok)};}
+    pTrimLayers(nl0);pcache=null;left=pcalc().rats.length;}
+  pCommit();if(!pSig().includes(player))player=pSig()[0];
+  const slow=performance.now()-t0>13000,grew=PCB.nl-nl0;
+  toast((left?`자동 배선: ${r0-left}개를 이었고 ${left}개는 길이 없어 못 이었어요. ${slow?'(시간이 오래 걸려 멈췄어요) ':''}부품을 벌리거나 [배치 최적화]를 눌러 보세요`:`자동 배선: ${r0}개 연결을 모두 이었어요 · 비아 ${PCB.vias.length}개`)
+    +(grew>0?` · 층을 ${nl0}층 → ${PCB.nl}층으로 늘렸어요`:added?' · 층을 늘려 봤지만 나아지지 않아 그대로 뒀어요':'')+' · 되돌리려면 Ctrl+Z');}
 let RBUF=null;   // 길 찾기 작업 배열(연결마다 새로 만들지 않고 세대 번호로 비운다)
 function routeOnce(order,deadline){const C=pcalc(),G=PG,W=Math.round(PCB.w/G)+1,H=Math.round(PCB.h/G)+1,N=W*H,tw=PCB.tw,clr=PCB.clr;
   // 선을 그릴 수 있는 층(판 층 빼고) 차례대로 0,1,2…
@@ -6666,7 +6718,8 @@ function routeOnce(order,deadline){const C=pcalc(),G=PG,W=Math.round(PCB.w/G)+1,
       for(let nd=0;nd<8;nd++){const xx=x+DX[nd],yy=y+DY[nd];if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=yy*W+xx;if(!free(L,j,n))continue;
         if(nd%2){const c1=y*W+xx,c2=yy*W+x;if(!free(L,c1,n)||!free(L,c2,n))continue;}
         const turn=nd===d?0:((nd-d+8)%8===4)?99:Math.min((nd-d+8)%8,(d-nd+8)%8)===1?.4:1.2;if(turn>=99)continue;
-        const cost=gst+(nd%2?1.414:1)*G/1.27+turn+(L?.05+(L<nL-1?.15:0):0),ns=(((L*N)+j)*8)+nd;if(cost<g.get(ns)){g.set(ns,cost,st);push(ns,cost+h(j));}}
+        const dirP=nL<2||nd%2?0:((L%2===0)===(DY[nd]===0)?0:.45);   // 층의 주 방향을 거스르면 조금 더 비싸게
+        const cost=gst+(nd%2?1.414:1)*G/1.27+turn+dirP+(L?.05+(L<nL-1?.12:0):0),ns=(((L*N)+j)*8)+nd;if(cost<g.get(ns)){g.set(ns,cost,st);push(ns,cost+h(j));}}
       if(viaOk(i,n))for(const L2 of ALL){if(L2===L)continue;const ns=(((L2*N)+i)*8)+d,cost=gst+8;if(cost<g.get(ns)){g.set(ns,cost,st);push(ns,cost+h(i));}}}
     if(end<0){fail.push(r);continue;}
     // 길 되짚기 → 같은 방향 칸을 묶어 선분으로, 층이 바뀌면 비아
@@ -6688,7 +6741,7 @@ function routeOnce(order,deadline){const C=pcalc(),G=PG,W=Math.round(PCB.w/G)+1,
   pcache=null;return{ok,fail,len};}
 
 /* ── 그리기 ── */
-const PCOL={board:'#17603C',edge:'#E8D44D',F:'#D9483B',B:'#3D7DD8',In1:'#E39B2D',In2:'#4CB36B',In3:'#B565D9',In4:'#2FB5A5',pad:'#D4A93A',hole:'#141414',silk:'#F4F4F0',rats:'#F5E663',sel:'#4FC3F7'};
+const PCOL=new Proxy({board:'#17603C',edge:'#E8D44D',F:'#D9483B',B:'#3D7DD8',pad:'#D4A93A',hole:'#141414',silk:'#F4F4F0',rats:'#F5E663',sel:'#4FC3F7'},{get:(t,k)=>k in t?t[k]:typeof k==='string'&&/^In\d+$/.test(k)?INCOL[(+k.slice(2)-1)%INCOL.length]:undefined});
 function pcbSize(){const r=document.getElementById('pw').getBoundingClientRect();return{w:Math.max(50,r.width),h:Math.max(50,r.height)};}
 function pcbPt(e){const r=pcbSvg().getBoundingClientRect();return{x:pv.x+(e.clientX-r.left)/pv.s,y:pv.y+(e.clientY-r.top)/pv.s};}
 function pcbFit(){const {w,h}=pcbSize(),side=!$('pside').hidden&&w>760?320:0,bw=Math.max(PCB.w,10)+12,bh=Math.max(PCB.h,10)+12;pv.s=Math.max(1,Math.min(60,Math.min((w-side)/bw,h/bh)));pv.x=PCB.w/2-(w-side)/pv.s/2;pv.y=PCB.h/2-h/pv.s/2;renderPcb();}
@@ -6767,7 +6820,7 @@ function renderPcb(){const g=pcbSvg();if(!g||VM!=='pcb')return;g.classList.toggl
   g.innerHTML=s;renderPcbSide(C,E);pcbStatus(C,E);}
 function pcbStatus(C,E){const bad=E.filter(e=>e.k==='bad').length;$('pStat').textContent=`${PCB.nl}층 · 부품 ${C.fps.length} · 선 ${PCB.tr.length} · 비아 ${PCB.vias.length} · 안 이음 ${C.rats.length} · 오류 ${bad}`;
   $('pStat').className='pstat'+(bad?' bad':C.rats.length?' warn':' ok');
-  $('pLayer').textContent=LSHORT[player]||player;$('pStackN').textContent=`${PCB.nl}층`;$('pLayer').closest('button').dataset.l=player;
+  $('pLayer').textContent=LSHORT[player]||player;$('pStackN').textContent=`${PCB.nl}층`;$('pLayer').closest('button').dataset.l=player;{const d=$('pLayer').closest('button').querySelector('.ldot');if(d)d.style.background=PCOL[player];}
   document.querySelectorAll('#pcbbar [data-pt]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pt===ptool));renderPLbar();}
 const pvName=k=>k==='all'?'모든 층':k==='silk'?'실크(글자·모양)':k==='drill'?'구멍(드릴)':(LSHORT[k]||k)+(pPlane(k)?` ${pPlane(k).net} 판`:'');
 function renderPLbar(){const el=$('pLbar');if(!el)return;const LS=pLayers();
@@ -6812,6 +6865,7 @@ function renderPcbSide(C,E){const box=$('pside');if(box.hidden)return;let h='';
   box.querySelectorAll('[data-pour]').forEach(el=>el.onchange=()=>{const L=el.dataset.pour;pPush();if(el.value)PCB.pour[L]=el.value;else delete PCB.pour[L];pCommit();
     toast(el.value?`${LNAME[L]}의 빈 곳을 ${el.value} 구리로 채웠어요 · 다른 연결 둘레는 ${Math.max(PCB.clr,.3)}mm 비우고, 아무 데도 안 닿는 조각은 지워요`:`${LNAME[L]} 동박 채우기를 껐어요`);});
   box.querySelectorAll('[data-it]').forEach(el=>el.onchange=()=>pSetInner(+el.dataset.it,el.value==='sig'?{t:'sig'}:{t:'plane',net:el.value}));
+  {const nn=$('pNLn');if(nn)nn.onchange=()=>pSetNL(+nn.value);const al=$('pAutoL');if(al)al.onchange=()=>{PCB.autoL=al.checked;pcbSave();};}
   {const el=$('pNL');if(el)el.onchange=()=>pSetNL(+el.value);const th=$('pTH');if(th)th.onchange=()=>{pPush();PCB.th=+th.value;pCommit();};}
   nb('pW',v=>PCB.w=Math.max(10,Math.min(500,Math.round(v))));nb('pH',v=>PCB.h=Math.max(10,Math.min(500,Math.round(v))));nb('pTW',v=>PCB.tw=v);nb('pClr',v=>PCB.clr=v);nb('pRC',v=>PCB.rc=Math.max(0,Math.min(10,v)));}
 /* 정렬: 고른 부품들의 자리(코트야드) 상자를 기준으로 맞추거나 고르게 벌린다. 부품 패드에 붙은 선 끝도 함께 옮긴다 */
@@ -6836,12 +6890,13 @@ function pAction(a){if(/^(al|ds)-/.test(a))return pAlign(a);if(a==='rot')return 
 /* ── 층 쌓기 ── 두께: 구리 35µm, 겉 프리프레그 최대 0.2mm, 나머지는 코어 */
 function pStack(){const LS=pLayers(),n=LS.length,cu=.035,th=PCB.th;const rows=[];
   if(n===1){rows.push({k:'core',t:r3(th-cu)},{k:'cu',L:'B'});return rows;}
-  const di=n===2?['core']:n===4?['pp','core','pp']:['pp','core','pp','core','pp'];const npp=di.filter(x=>x==='pp').length,nco=di.length-npp;
-  const pp=npp?Math.min(.2,(th-n*cu)*.18):0,co=(th-n*cu-npp*pp)/nco;
+  const di=n===2?['core']:Array.from({length:n-1},(_,i)=>i%2?'core':'pp');const npp=di.filter(x=>x==='pp').length,nco=di.length-npp;
+  const pp=npp?Math.max(.05,Math.min(.2,(th-n*cu)/(npp+nco*1.2))):0,co=Math.max(.05,(th-n*cu-npp*pp)/nco);
   LS.forEach((L,i)=>{rows.push({k:'cu',L});if(i<di.length)rows.push({k:di[i],t:r3(di[i]==='pp'?pp:co)});});return rows;}
 function pStackHTML(C){const LS=pLayers();let h=`<h4 id="pStackH">층 쌓기 <small>${PCB.nl}층 · 두께 ${PCB.th}mm</small></h4>
-  <div class="pgrid"><label>층 수 <select id="pNL">${[1,2,4,6].map(n=>`<option value="${n}"${n===PCB.nl?' selected':''}>${n}층${n===1?' (한 면)':n===2?' (양면)':''}</option>`).join('')}</select></label>
-  <label>보드 두께 <select id="pTH">${[.8,1,1.2,1.6,2].map(v=>`<option value="${v}"${v===PCB.th?' selected':''}>${v}mm</option>`).join('')}</select></label></div><div class="pstack">`;
+  <div class="pgrid"><label>층 수 <span style="display:flex;gap:4px"><select id="pNL" style="flex:1">${[...new Set([1,2,4,6,8,10,12,16,20,24,32,PCB.nl])].sort((a,b)=>a-b).map(n=>`<option value="${n}"${n===PCB.nl?' selected':''}>${n}층${n===1?' (한 면)':n===2?' (양면)':''}</option>`).join('')}</select><input id="pNLn" type="number" min="1" max="${PCB_MAXL}" step="2" value="${PCB.nl}" style="width:56px" title="직접 입력(2장씩 · ${PCB_MAXL}층까지)"></span></label>
+  <label>보드 두께 <select id="pTH">${[...new Set([.8,1,1.2,1.6,2,2.4,3.2,4,PCB.th])].sort((a,b)=>a-b).map(v=>`<option value="${v}"${v===PCB.th?' selected':''}>${v}mm${v<pMinTh(PCB.nl)?' (얇음)':''}</option>`).join('')}</select></label></div>
+  <label class="fl" style="flex-direction:row;align-items:center;gap:6px;margin:6px 0"><input type="checkbox" id="pAutoL"${PCB.autoL!==false?' checked':''}> 자동 배선 때 다 못 이으면 층을 2장씩 자동으로 늘리기</label><div class="pstack">`;
   h+=`<div class="pst di">솔더 마스크 · 실크(위)</div>`;
   for(const r of pStack()){if(r.k!=='cu'){h+=`<div class="pst di${r.k==='core'?' core':''}">${r.k==='core'?'코어':'프리프레그'} ${r.t.toFixed(2)}mm</div>`;continue;}
     const L=r.L,inn=pInner(L),pl=pPlane(L),i=inn?+L.slice(2)-1:-1;
@@ -6851,7 +6906,8 @@ function pStackHTML(C){const LS=pLayers();let h=`<h4 id="pStackH">층 쌓기 <sm
     h+=`<div class="pst cu${L===player?' on':''}" data-pl="${L}" title="${pl?'구리 판':'눌러서 이 층에 그리기'}"><i style="background:${PCOL[L]}"></i><b>${esc(LNAME[L])}</b><span class="ty">${ty}${pourSel}${nt?`<small>선 ${nt}</small>`:''}</span><button class="eye" data-eye="${L}" aria-pressed="${pvis[L]!==false}" title="보이기·감추기">👁</button></div>`;}
   h+=`<div class="pst di">솔더 마스크(아래)</div></div><p class="desc">판(GND·VCC) 층은 그 연결의 패드를 모두 잇는 구리 판이에요. 그 연결은 선을 안 그어도 이어진 것으로 쳐요. 안쪽 층은 PCB 업체 주문 때 층 순서(위→아래)를 꼭 맞춰 주세요.</p>`;
   return h;}
-function pSetNL(n){if(n===PCB.nl)return;pPush();PCB.nl=n;PCB.inner=pDefInner(n);
+const pMinTh=n=>Math.ceil((n*.035+(n-1)*.1)*10)/10;
+function pSetNL(n){n=normNL(n);if(n===PCB.nl)return;pPush();PCB.nl=n;PCB.inner=pDefInner(n);if(PCB.th<pMinTh(n))PCB.th=pMinTh(n);
   // 없어진 층·판이 된 층의 선은 지우고, 1층이면 비아도 지운다
   const SL=pSig(),gone=PCB.tr.filter(t=>!SL.includes(t.l)).length;PCB.tr=PCB.tr.filter(t=>SL.includes(t.l));const vg=n===1?PCB.vias.length:0;if(n===1)PCB.vias=[];
   if(!SL.includes(player))player=SL[0];pCommit();
@@ -7135,7 +7191,13 @@ function pcbEnter(){pcache=null;   // 브레드보드·회로도에서 연결이
   $('pStackB').onclick=()=>{$('pside').hidden=false;$('pSide').setAttribute('aria-pressed','true');renderPcb();const h=$('pStackH');if(!h)return;
     try{h.scrollIntoView({block:'start'});}catch(_){}const st=h.nextElementSibling&&h.parentNode.querySelector('.pstack');for(const el of [h,st])if(el){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');}
     const sel=$('pNL');if(sel&&matchMedia('(pointer:fine)').matches)sel.focus();};
-  $('pPlace').onclick=()=>{if(!PCB.fps.length)return;pPush();PCB.tr=[];PCB.vias=[];pcbAutoPlace(null,true);pCommit();pcbFit();toast('부품을 회로도 배치에 맞춰 다시 놓았어요(선은 지웠어요) · 되돌리려면 Ctrl+Z');};
+  $('pPlace').onclick=()=>{if(!PCB.fps.length)return;pPush();PCB.tr=[];PCB.vias=[];pcbAutoPlace(null,true);pcache=null;const r=pcbOptimizePlace(1500);pcache=null;pcbFitBoard();pCommit();pcbFit();
+    toast(`부품을 회로도 배치를 바탕으로 놓고, 이어진 것끼리 가깝게 다듬었어요(어림 배선 길이 ${Math.round(r.before)} → ${Math.round(r.after)}) · 선은 지웠어요 · 되돌리려면 Ctrl+Z`);};
+  $('pAuto').onclick=()=>{if(PCB.fps.length<1)return;toast('자동 설계 중… (배치 최적화 → 자동 배선, 몇 초 걸려요)');setTimeout(()=>{pPush();PCB.tr=[];PCB.vias=[];pcache=null;const r=pcbOptimizePlace(2000);pcache=null;pcbFitBoard();pCommit();pcbFit();
+    const nh=phist.length;pcbAutoRoute();if(phist.length>nh)phist.splice(nh,1);   // 되돌리기 한 번에 둘 다
+    },30);};
+  $('pOpt').onclick=()=>{if(PCB.fps.length<2)return;toast('배치를 다듬는 중…');setTimeout(()=>{pPush();const hadTr=PCB.tr.length;PCB.tr=[];PCB.vias=[];pcache=null;const r=pcbOptimizePlace(2500);pcache=null;pcbFitBoard();pCommit();pcbFit();
+    toast(`배치 최적화: 부품 ${r.moved}개를 옮기거나 돌렸어요 · 어림 배선 길이 ${Math.round(r.before)} → ${Math.round(r.after)}${hadTr?' · 선은 지웠어요([자동 배선]을 다시 눌러요)':''} · 되돌리려면 Ctrl+Z`);},30);};
   $('pRoute').onclick=()=>{toast('자동 배선 중…');setTimeout(pcbAutoRoute,30);};
   $('pClear').onclick=()=>{if(!PCB.tr.length&&!PCB.vias.length)return;const b=$('pClear');if(!b.dataset.sure){b.dataset.sure='1';b.querySelector('span').textContent='정말?';setTimeout(()=>{delete b.dataset.sure;b.querySelector('span').textContent='선 지우기';},3000);return;}
     delete b.dataset.sure;b.querySelector('span').textContent='선 지우기';pPush();PCB.tr=[];PCB.vias=[];psel=null;pCommit();toast('선과 비아를 모두 지웠어요 · 되돌리려면 Ctrl+Z');};
@@ -7153,7 +7215,7 @@ function pcbEnter(){pcache=null;   // 브레드보드·회로도에서 연결이
     if(e.key==='Enter'&&proute){routeStop();return;}
     if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();pDel();return;}
     if(k==='r')pRot();else if(k==='t'||k==='w')setPTool('route');else if(k==='s'||k==='v'&&!proute)setPTool('select');else if(k==='e')setPTool('erase');
-    if(/^[0-6]$/.test(k)){const LS=pLayers();if(k==='0')pSetView('all');else if(LS[+k-1])pSetView(LS[+k-1]);return;}
+    if(/^[0-9]$/.test(k)){const LS=pLayers();if(k==='0')pSetView('all');else if(LS[+k-1])pSetView(LS[+k-1]);return;}
     if(k==='v'&&proute)routeVia();else if(k==='l'){if(proute)routeVia();else pNextLayer();if(pview!=='all'&&pSig().includes(player))pview=player;renderPcb();}else if(k==='f')pcbFit();else if(k==='a'){e.preventDefault();openParts();}},true);
   window.addEventListener('resize',()=>{if(VM==='pcb')renderPcb();});
   pcbLoad(store.get('pcb',null));})();
