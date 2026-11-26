@@ -12,7 +12,7 @@ for(const [f,code] of Object.entries(pages)){const s=fs.readFileSync(path.join(r
 const b=fs.readFileSync(path.join(root,'breadboard/index.html'),'utf8');
 chk('저장 .json에 generator 서명',/circuitData=\(\)=>\(\{app:'breadboard-lab',v:2,generator:'브레드보드 CAD · © 2026 co2maker-cyber · '\+AUTHOR_SIG\.id/.test(b));
 chk('거버 G04 서명',b.includes('G04 Generator: (c) 2026 co2maker-cyber, sig ${AUTHOR_SIG.id}*'));
-chk('드릴 주석 서명',b.includes("; Generator: (c) 2026 co2maker-cyber, sig '+AUTHOR_SIG.id"));
+chk('드릴 주석 서명',b.includes("; Generator: (c) 2026 co2maker-cyber, sig ${AUTHOR_SIG.id}\\n"));
 chk('PCB README 서명',b.includes('서명 ${AUTHOR_SIG.id}\\n`;'));
 chk('SVG 그림 서명',b.includes('(c) 2026 co2maker-cyber · 서명 ${AUTHOR_SIG.id} -->'));
 chk('화면 [속성] © 줄',b.includes('© 2026 co2maker-cyber. All rights reserved.'));
