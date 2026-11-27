@@ -202,7 +202,7 @@ function inPage() {
     { const pinHole = (k, i) => 'c' + (13 + i), cn = (x, how) => how === 'vcc' ? [{ t: 'wire', pins: ['a' + x, 'tp' + x] }] : how === 'gnd' ? [{ t: 'wire', pins: ['a' + x, 'tn' + x] }]
         : [{ t: 'res', pins: ['d' + x, 'g' + x], ohms: how[1] === 'v' ? 1000 : 4700 }, { t: 'wire', pins: ['j' + x, how[0] === 'v' ? 'bp' + x : 'bn' + x] }];
       // 기대(이 파일에서 따로 적음): [종류, 핀 순서, 켜는 방법]
-      const SPEC = { q3904: ['npn', 'EBC'], q2222: ['npn', 'EBC'], qbc547: ['npn', 'CBE'], qtip: ['npn', 'BCE'], q3906: ['pnp', 'EBC'], qbc557: ['pnp', 'CBE'], m7000: ['nmos', 'SGD'], mnpow: ['nmos', 'GDS'], mppow: ['pmos', 'GDS'], q3055: ['npn', 'BEC'], q2955: ['pnp', 'BEC'], q2222m: ['npn', 'EBC'], q2907m: ['pnp', 'EBC'], qp39: ['pnp', 'EBC'], q18s: ['npn', 'EBC'] };
+      const SPEC = { q3904: ['npn', 'EBC'], q2222: ['npn', 'EBC'], qbc547: ['npn', 'CBE'], qtip: ['npn', 'BCE'], q3906: ['pnp', 'EBC'], qbc557: ['pnp', 'CBE'], m7000: ['nmos', 'SGD'], mnpow: ['nmos', 'GDS'], mppow: ['pmos', 'GDS'], q3055: ['npn', 'BEC'], q2955: ['pnp', 'BEC'], q2222m: ['npn', 'EBC'], q2907m: ['pnp', 'EBC'], qp39: ['pnp', 'EBC'], q18s: ['npn', 'EBC'], qbc337: ['npn', 'CBE'], qbc327: ['pnp', 'CBE'], q4401: ['npn', 'EBC'], q4403: ['pnp', 'EBC'], qmpsa13: ['npn', 'EBC'], qtip31: ['npn', 'BCE'], qtip32: ['pnp', 'BCE'], qtip125: ['pnp', 'BCE'], qbd139: ['npn', 'ECB'], qbd140: ['pnp', 'ECB'], mbs170: ['nmos', 'DGS'] };
       for (const [k, [ty, ord]] of Object.entries(SPEC)) {
         const run = drive => { const how = {}; const n = ty === 'npn' || ty === 'nmos';
           // 이미터·소스: NPN·N은 GND, PNP·P는 +. 부하(1kΩ): NPN·N은 + 에서 컬렉터·드레인으로, PNP·P는 컬렉터·드레인에서 GND로

@@ -359,6 +359,12 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `qbc547` | BC547 NPN 소신호 (TO-92) | row | 0,1,2 | C B E | |
 | `qbc557` | BC557 PNP 소신호 (TO-92) | row | 0,1,2 | C B E | |
 | `qtip` | TIP120급 NPN 달링턴 (TO-220) | row | 0,1,2 | B C E | |
+| `qbc337` `qbc327` | BC337 NPN · BC327 PNP (TO-92, 800mA) | row | 0,1,2 | C B E | |
+| `q4401` `q4403` | 2N4401 NPN · 2N4403 PNP (TO-92, 600mA) | row | 0,1,2 | E B C | |
+| `qmpsa13` | MPSA13 NPN 달링턴 (TO-92) | row | 0,1,2 | E B C | |
+| `qtip31` `qtip32` `qtip125` | TIP31C급 NPN · TIP32C급 PNP · TIP125급 PNP 달링턴 (TO-220) | row | 0,1,2 | B C E | |
+| `qbd139` `qbd140` | BD139 NPN · BD140 PNP (TO-126) | row | 0,1,2 | E C B | |
+| `mbs170` | BS170 N채널 MOSFET (TO-92) | row | 0,1,2 | D G S | |
 | `m7000` | 2N7000 N채널 MOSFET (TO-92) | row | 0,1,2 | S G D | |
 | `mnpow` | 로직 레벨 N채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
 | `mppow` | 로직 레벨 P채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |

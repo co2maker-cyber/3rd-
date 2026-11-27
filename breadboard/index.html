@@ -1203,6 +1203,12 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `qbc547` | BC547 NPN 소신호 (TO-92) | row | 0,1,2 | C B E | |
 | `qbc557` | BC557 PNP 소신호 (TO-92) | row | 0,1,2 | C B E | |
 | `qtip` | TIP120급 NPN 달링턴 (TO-220) | row | 0,1,2 | B C E | |
+| `qbc337` `qbc327` | BC337 NPN · BC327 PNP (TO-92, 800mA) | row | 0,1,2 | C B E | |
+| `q4401` `q4403` | 2N4401 NPN · 2N4403 PNP (TO-92, 600mA) | row | 0,1,2 | E B C | |
+| `qmpsa13` | MPSA13 NPN 달링턴 (TO-92) | row | 0,1,2 | E B C | |
+| `qtip31` `qtip32` `qtip125` | TIP31C급 NPN · TIP32C급 PNP · TIP125급 PNP 달링턴 (TO-220) | row | 0,1,2 | B C E | |
+| `qbd139` `qbd140` | BD139 NPN · BD140 PNP (TO-126) | row | 0,1,2 | E C B | |
+| `mbs170` | BS170 N채널 MOSFET (TO-92) | row | 0,1,2 | D G S | |
 | `m7000` | 2N7000 N채널 MOSFET (TO-92) | row | 0,1,2 | S G D | |
 | `mnpow` | 로직 레벨 N채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
 | `mppow` | 로직 레벨 P채널 파워 MOSFET (TO-220) | row | 0,1,2 | G D S | |
@@ -1653,6 +1659,17 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 | `m7000` | 2N7000 | TO-92 · S G D | N채널 MOSFET, 200mA, 60V | 5V 논리로 작은 부하, 레벨 바꾸기 |
 | `mnpow` | 로직 레벨 N채널 | TO-220 · G D S | 수십 A급, 켜졌을 때 수십 mΩ | LED 줄·모터를 낮은 쪽에서 |
 | `mppow` | 로직 레벨 P채널 | TO-220 · G D S | 10A급 | 부하의 + 쪽(높은 쪽) 켜기 |
+| `qbc337` | BC337 | TO-92 · **C B E** | NPN, 800mA, 45V | BC547 자리에서 더 큰 부하 |
+| `qbc327` | BC327 | TO-92 · **C B E** | PNP, 800mA, 45V | BC337의 짝 |
+| `q4401` | 2N4401 | TO-92 · E B C | NPN, 600mA, 40V | 2N3904 자리에서 더 큰 부하 |
+| `q4403` | 2N4403 | TO-92 · E B C | PNP, 600mA, 40V | 2N4401의 짝 |
+| `qmpsa13` | MPSA13 | TO-92 · E B C | NPN 달링턴, 500mA, 30V, hFE 5000 이상 | 아주 작은 신호(센서·터치)로 켜기 |
+| `qtip31` | TIP31C급 | TO-220 · B C E | NPN, 3A, 100V, hFE 25~50 | 달링턴보다 덜 뜨거운 파워 스위치 |
+| `qtip32` | TIP32C급 | TO-220 · B C E | PNP, 3A, 100V | TIP31의 짝(푸시풀) |
+| `qtip125` | TIP125급 | TO-220 · B C E | PNP 달링턴, 5A, 60V | TIP120의 짝, 큰 부하의 + 쪽 |
+| `qbd139` | BD139 | TO-126 · **E C B** | NPN, 1.5A, 80V | 작은 모터·오디오 출력단 |
+| `qbd140` | BD140 | TO-126 · **E C B** | PNP, 1.5A, 80V | BD139의 짝 |
+| `mbs170` | BS170 | TO-92 · **D G S** | N채널 MOSFET, 500mA, 60V | 2N7000보다 큰 부하(다리 순서가 반대!) |
 | `q3055` | NPN 파워 | TO-3 · B E (몸통 = C) | NPN, 10A, 60V, 150W, fT 4MHz | 전원 패스 트랜지스터, 출력단(방열판·절연판) |
 | `q2955` | PNP 파워 | TO-3 · B E (몸통 = C) | PNP, 10A, 60V | 위 NPN과 짝(푸시풀) |
 | `q2222m` | NPN 스위칭 | 금속 캔 TO-18 · E B C | NPN, 800mA, 40V, 500mW, fT 300MHz 이상 | 열·습기에 강한 범용 스위치 |
@@ -2705,6 +2722,37 @@ pxDef({k:'mnpow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 N채널 파�
 pxDef({k:'mppow',sub:'tr',pre:'Q',pkg:'TO-220',title:'로직 레벨 P채널 파워 MOSFET (TO-220, 10A급)',lay:'row',dc:[0,1,2],pins:['G (게이트)','D (드레인)','S (소스)'],init:()=>({}),
   sl:'P-FET',tr:{t:'pmos',g:0,d:1,s:2,vth:1.5,full:4.5,id:10,vds:30,ron:.1,gm:5},contacts:(c,r)=>r&&r.on&&!r.an?[[1,2]]:[],draw:to220('P-FET'),
   desc:'부하의 + 쪽(높은 쪽)을 켜고 끄는 P채널 MOSFET이에요. 소스(S)를 + 에, 부하를 드레인(D)과 GND 사이에 달고, 게이트(G)를 소스보다 낮게(LOW로) 당기면 켜져요. 게이트가 소스와 같은 전압이면 꺼지니 게이트와 소스 사이에 10kΩ 풀업 저항을 달아 평소에 꺼 두세요. 앞에서 보아 왼쪽부터 G·D·S예요.'+TRN});
+// ── 26차: 트랜지스터 추가(표준 등록 번호, 다리 순서는 표준 핀 배치 — 사실 정보) ──
+// 핀 이름 순서 문자열(예: 'CBE')로 tr·dio·contacts를 만든다
+const BJ=(ord,t)=>{const i=x=>ord.indexOf(x),e=i('E'),b=i('B'),c=i('C');return{pins:[...ord].map(x=>({E:'E (이미터)',B:'B (베이스)',C:'C (컬렉터)'})[x]),e,b,c,npn:t==='npn',
+  dio:t==='npn'?[[b,e,'be']]:[[e,b,'be']],contacts:(cc,r)=>r&&r.on&&!r.an?[[c,e]]:[]};};
+const bjDef=(k,pkg,lab,title,t,ord,o,desc,draw)=>{const q=BJ(ord,t);pxDef(Object.assign({k,sub:'tr',pre:'Q',pkg,title,lay:'row',dc:[0,1,2],pins:q.pins,init:()=>({}),
+  tr:Object.assign({t,e:q.e,b:q.b,c:q.c},o.tr),dio:o.dar?(t==='npn'?[[q.b,q.e,'be2']]:[[q.e,q.b,'be2']]):q.dio,contacts:q.contacts,draw:draw||(pkg==='TO-92'?to92(lab):to220(lab)),...(o.sl?{sl:o.sl}:{}),desc:desc+(t==='npn'?BJTN:BJTP)+BJTR+TRN}));};
+bjDef('qbc337','TO-92','337','BC337 NPN 범용 트랜지스터 (800mA, 45V)','npn','CBE',{tr:{ic:.8,vce:45,hfe:'100~630',beta:250}},
+  'BC547보다 전류를 많이(800mA까지) 흘리는 NPN 트랜지스터예요. 큐브형 릴레이 코일, 작은 모터, LED 여러 개를 켜기에 좋아요. 다리는 BC547과 같은 순서라 평평한 면을 보고 왼쪽부터 C·B·E예요.');
+bjDef('qbc327','TO-92','327','BC327 PNP 범용 트랜지스터 (800mA, 45V)','pnp','CBE',{tr:{ic:.8,vce:45,hfe:'100~630',beta:250}},
+  'BC337과 짝을 이루는 PNP 트랜지스터예요(800mA, 45V). 부하의 + 쪽을 켜고 끌 때 써요. 평평한 면을 보고 왼쪽부터 C·B·E예요.');
+bjDef('q4401','TO-92','4401','2N4401 NPN 범용 트랜지스터 (600mA, 40V)','npn','EBC',{tr:{ic:.6,vce:40,hfe:'100~300',beta:150}},
+  '2N3904와 다리 순서가 같으면서 전류를 600mA까지 흘리는 NPN 트랜지스터예요. 2N3904 자리에 그대로 바꿔 꽂아 더 큰 부하를 켤 수 있어요. 평평한 면을 보고 왼쪽부터 E·B·C예요.');
+bjDef('q4403','TO-92','4403','2N4403 PNP 범용 트랜지스터 (600mA, 40V)','pnp','EBC',{tr:{ic:.6,vce:40,hfe:'100~300',beta:150}},
+  '2N4401과 짝을 이루는 PNP 트랜지스터예요(600mA, 40V). 평평한 면을 보고 왼쪽부터 E·B·C예요.');
+bjDef('qmpsa13','TO-92','A13','MPSA13 NPN 달링턴 트랜지스터 (TO-92, 500mA, 30V)','npn','EBC',{dar:1,tr:{ic:.5,vce:30,hfe:'5000 이상',beta:5000}},
+  '작은 몸통 안에 트랜지스터 두 개를 겹친(달링턴) NPN이에요. 베이스 전류가 아주 작아도(수 µA) 켜져서 센서·터치 입력이나 높은 저항을 거친 신호로 부하를 켤 때 써요. 베이스-이미터가 약 1.3V에서 켜지고, 켜져도 C-E에 약 1V가 남아요. 평평한 면을 보고 왼쪽부터 E·B·C예요.');
+bjDef('qtip31','TO-220','TIP31','TIP31C급 NPN 파워 트랜지스터 (TO-220, 3A, 100V)','npn','BCE',{sl:'TIP31',tr:{ic:3,vce:100,hfe:'25~50',beta:40}},
+  '3A까지 흘리는 NPN 파워 트랜지스터예요(100V). 달링턴이 아니라 켜졌을 때 C-E 전압이 작지만(약 0.3~1V), 전류 증폭률이 25~50 정도로 낮아서 큰 부하를 다 켜려면 베이스 전류를 넉넉히(부하 전류의 1/10쯤) 줘야 해요. 앞에서 보아 왼쪽부터 B·C·E이고 방열판은 C와 이어져 있어요.');
+bjDef('qtip32','TO-220','TIP32','TIP32C급 PNP 파워 트랜지스터 (TO-220, 3A, 100V)','pnp','BCE',{sl:'TIP32',tr:{ic:3,vce:100,hfe:'25~50',beta:40}},
+  'TIP31과 짝을 이루는 PNP 파워 트랜지스터예요(3A, 100V). 푸시풀 출력단이나 + 쪽 스위치에 써요. 앞에서 보아 왼쪽부터 B·C·E예요.');
+bjDef('qtip125','TO-220','TIP125','TIP125급 PNP 달링턴 파워 트랜지스터 (TO-220, 5A, 60V)','pnp','BCE',{dar:1,sl:'TIP125',tr:{ic:5,vce:60,hfe:'1000 이상',beta:1000}},
+  'TIP120과 짝을 이루는 PNP 달링턴 파워 트랜지스터예요(5A, 60V). 작은 베이스 전류로 부하의 + 쪽을 크게 켜요. 켜졌을 때 E-C에 약 1~2V가 남아 열이 나요. 앞에서 보아 왼쪽부터 B·C·E예요.');
+const to126=lab=>(c,ph,r)=>{const xs=ph.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),y=ph[0].y,cx=(x0+x1)/2,w=Math.max(16,(x1-x0)/2+8);let s='';for(const p of ph)s+=leg(p,p.x,y-6);
+  return s+`<rect x="${cx-w}" y="${y-30}" width="${2*w}" height="24" rx="1.5" fill="#26292E"/><circle cx="${cx}" cy="${y-24}" r="3" fill="#0E0F11" stroke="#555B63"/><rect x="${cx-w+3}" y="${y-14}" width="${2*w-6}" height="1" fill="#3A3F46"/><text x="${cx}" y="${y-9}" font-size="6.5" font-weight="700" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${lab}</text>`+trDot(cx+w-5,y-27,!!(r&&r.on));};
+bjDef('qbd139','TO-126','BD139','BD139 NPN 중전력 트랜지스터 (TO-126, 1.5A, 80V)','npn','ECB',{tr:{ic:1.5,vce:80,hfe:'40~250',beta:100}},
+  '작은 납작 몸통(TO-126)에 1.5A까지 흘리는 NPN 트랜지스터예요(80V). 작은 모터·릴레이·오디오 출력단에 써요. 글씨 쪽에서 보아 왼쪽부터 E·C·B예요(TIP 계열과 순서가 달라요). 뒷면 쇠판은 C와 이어져 있어요.',to126('BD139'));
+bjDef('qbd140','TO-126','BD140','BD140 PNP 중전력 트랜지스터 (TO-126, 1.5A, 80V)','pnp','ECB',{tr:{ic:1.5,vce:80,hfe:'40~250',beta:100}},
+  'BD139와 짝을 이루는 PNP 트랜지스터예요(1.5A, 80V). 글씨 쪽에서 보아 왼쪽부터 E·C·B예요.',to126('BD140'));
+pxDef({k:'mbs170',sub:'tr',pre:'Q',pkg:'TO-92',title:'BS170 N채널 MOSFET (500mA, 60V)',lay:'row',dc:[0,1,2],pins:['D (드레인)','G (게이트)','S (소스)'],init:()=>({}),
+  tr:{t:'nmos',d:0,g:1,s:2,vth:2.1,full:4.5,id:.5,vds:60,ron:5,gm:.25},contacts:(c,r)=>r&&r.on&&!r.an?[[0,2]]:[],draw:to92('BS170'),
+  desc:'2N7000과 비슷한 작은 N채널 MOSFET인데 500mA까지 흘려요(60V). 다리 순서가 2N7000과 반대라 평평한 면을 보고 왼쪽부터 D·G·S예요 — 바꿔 끼울 때 꼭 확인해요. 게이트-소스 약 2V부터 켜지고 4.5V 이상에서 다 켜져요.'+MOSN+TRN});
 // ── 20차 부품 ── 계측기(스펙트럼 분석기) 부품 명세의 부품: 금속 캔·파워 트랜지스터, JFET, 다이오드, 아날로그 IC(연산 증폭기·비교기·레귤레이터), 혼합신호 IC(DAC·CPU), RF·IF·디스플레이 모듈 블록
 //    nid = 부품을 가리키는 중립 이름(회사·제품 번호 대신 기능으로 지은 이름). 목록 불러오기에서 이 이름도 알아들어요
 // 금속 캔(TO-18·TO-39): 위에서 본 동그란 깡통, 이미터 쪽에 작은 돌기(탭)
@@ -3228,22 +3276,75 @@ const MG2={
   can:(x,y,w,h,t1,t2)=>`<rect x="${x+1}" y="${y+1.2}" width="${w}" height="${h}" rx="1.5" fill="#000" opacity=".35"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="url(#mgMetal)" stroke="#5E656D" stroke-width=".7"/><rect x="${x+2.5}" y="${y+2.5}" width="${w-5}" height="${h-5}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".6"/>`
     +`<text x="${x+w/2}" y="${y+h/2-1}" font-size="${Math.min(5,w/9)}" font-weight="700" fill="#3A4048" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${t1||''}</text><text x="${x+w/2}" y="${y+h/2+5}" font-size="${Math.min(3.6,w/12)}" fill="#3A4048" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${t2||''}</text>`,
   usb:(t,x,y,dir)=>t==='b'?MG.usbB(x,y):t==='c'?MG2.usbC(x,y,15,9):t==='mini'?MG2.usbMini(x,y,16,13):MG.usbMicro(x,y,15,11)};
-/* ① 직결형 그림: 핀 줄 위(c·b줄)와 아래(h·i줄) 사이를 덮고, 1번 핀 쪽(왼쪽) 끝에 USB */
+/* 보드 그림 2판: 실제 보드의 부품 배치를 mm로 잡고 실제 크기 비율로 그린다(로고·상표 없음) */
+const AG={   // 화면 점 단위 도우미(px)
+  rect:(x,y,w,h,f,st,rx=0)=>`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${rx}" fill="${f}"${st?` stroke="${st}" stroke-width=".7"`:''}/>`,
+  shadow:(x,y,w,h,rx=0)=>`<rect x="${(x+1.2).toFixed(1)}" y="${(y+1.6).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${rx}" fill="#000" opacity=".32"/>`,
+  chipQ:(cx,cy,s,lab,rot=0,n)=>{n=n||Math.max(6,Math.round(s/3.2));let l='';const lead=Math.max(2,s*.09);for(let i=0;i<n;i++){const t=-s/2+s*.08+i*(s*.84)/(n-1);l+=`M${t.toFixed(1)} ${(-s/2-lead).toFixed(1)}v${lead.toFixed(1)}M${t.toFixed(1)} ${(s/2).toFixed(1)}v${lead.toFixed(1)}M${(-s/2-lead).toFixed(1)} ${t.toFixed(1)}h${lead.toFixed(1)}M${(s/2).toFixed(1)} ${t.toFixed(1)}h${lead.toFixed(1)}`;}
+    return`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${rot})">${AG.shadow(-s/2,-s/2,s,s,1)}<path d="${l}" stroke="#C9CFD6" stroke-width="${Math.max(.6,s*.025).toFixed(2)}"/><rect x="${-s/2}" y="${-s/2}" width="${s}" height="${s}" rx="1" fill="url(#mgChip)"/><circle cx="${-s/2+s*.14}" cy="${-s/2+s*.14}" r="${s*.05}" fill="#0A0B0C" stroke="#3A3E44" stroke-width=".3"/>`
+      +(lab?`<text x="0" y="${s*.06}" font-size="${(s*.13).toFixed(1)}" font-weight="700" fill="#8E98A3" text-anchor="middle" font-family="var(--mono)" pointer-events="none" transform="rotate(${-rot})">${lab}</text>`:'')+`</g>`;},
+  soic:(cx,cy,w,h,n,lab)=>{let l='';for(let i=0;i<n;i++){const t=cx-w/2+w*.12+i*(w*.76)/(n-1);l+=`M${t.toFixed(1)} ${(cy-h/2-h*.28).toFixed(1)}v${(h*.28).toFixed(1)}M${t.toFixed(1)} ${(cy+h/2).toFixed(1)}v${(h*.28).toFixed(1)}`;}
+    return AG.shadow(cx-w/2,cy-h/2,w,h,.6)+`<path d="${l}" stroke="#C9CFD6" stroke-width="${Math.max(.8,w*.035).toFixed(2)}"/>`+AG.rect(cx-w/2,cy-h/2,w,h,'url(#mgChip)',0,.6)+`<circle cx="${(cx-w/2+h*.25).toFixed(1)}" cy="${(cy+h/2-h*.25).toFixed(1)}" r="${(h*.09).toFixed(1)}" fill="#0A0B0C"/>`+(lab?`<text x="${cx}" y="${(cy+h*.12).toFixed(1)}" font-size="${(h*.3).toFixed(1)}" fill="#8E98A3" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${lab}</text>`:'');},
+  sot:(cx,cy,w)=>{const h=w*.55;return AG.shadow(cx-w/2,cy-h/2,w,h)+`<path d="M${(cx-w*.3).toFixed(1)} ${(cy+h/2).toFixed(1)}v${(h*.4).toFixed(1)}M${(cx+w*.3).toFixed(1)} ${(cy+h/2).toFixed(1)}v${(h*.4).toFixed(1)}M${cx.toFixed(1)} ${(cy-h/2).toFixed(1)}v${(-h*.4).toFixed(1)}" stroke="#C9CFD6" stroke-width="${(w*.12).toFixed(2)}"/>`+AG.rect(cx-w/2,cy-h/2,w,h,'url(#mgChip)',0,.4);},
+  smd:(cx,cy,w,h,body,rot)=>{const e=w*.22;const g=AG.shadow(-w/2,-h/2,w,h)+AG.rect(-w/2,-h/2,w,h,body)+AG.rect(-w/2,-h/2,e,h,'#D8DCE1')+AG.rect(w/2-e,-h/2,e,h,'#D8DCE1');return`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)})${rot?` rotate(${rot})`:''}">${g}</g>`;},
+  res:(cx,cy,s,rot)=>AG.smd(cx,cy,s,s*.5,'#1E2023',rot),cap:(cx,cy,s,rot)=>AG.smd(cx,cy,s,s*.5,'#B9925F',rot),
+  diode:(cx,cy,w,rot)=>{const h=w*.5;return`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)})${rot?` rotate(${rot})`:''}">${AG.shadow(-w/2,-h/2,w,h)}${AG.rect(-w/2,-h/2,w,h,'#1E2023')}${AG.rect(w/2-w*.22,-h/2,w*.12,h,'#C9CFD6')}${AG.rect(-w/2-w*.12,-h*.3,w*.12,h*.6,'#C9CFD6')}${AG.rect(w/2,-h*.3,w*.12,h*.6,'#C9CFD6')}</g>`;},
+  fuse:(cx,cy,w)=>{const h=w*.5;return AG.shadow(cx-w/2,cy-h/2,w,h)+AG.rect(cx-w/2,cy-h/2,w,h,'#C8B04A','#7A6A20',.6)+AG.rect(cx-w/2,cy-h/2,w*.2,h,'#D8DCE1')+AG.rect(cx+w/2-w*.2,cy-h/2,w*.2,h,'#D8DCE1');},
+  led:(cx,cy,w,on,col,lab,lp)=>{const h=w*.5;return(on?`<circle cx="${cx}" cy="${cy}" r="${w*1.3}" fill="${col}" opacity=".5" filter="url(#glow)"/>`:'')+AG.rect(cx-w/2,cy-h/2,w,h,'#E6E2D6',0,.4)+AG.rect(cx-w*.32,cy-h*.38,w*.64,h*.76,on?col:'#6A665A',0,.6)+AG.rect(cx-w*.32,cy-h*.38,w*.64,h*.76,'url(#mgLens)',0,.6)
+    +(lab?`<text x="${lp==='l'?cx-w*.75:lp==='r'?cx+w*.75:cx}" y="${lp==='u'?cy-h*.9:lp==='d'?cy+h*1.9:cy+w*.17}" font-size="${(w*.45).toFixed(1)}" font-weight="700" fill="#F2F5F8" text-anchor="${lp==='l'?'end':lp==='r'?'start':'middle'}" font-family="var(--mono)" pointer-events="none">${lab}</text>`:'');},
+  tact:(cx,cy,w,h,lab,capc)=>AG.shadow(cx-w/2,cy-h/2,w,h,1)+AG.rect(cx-w/2,cy-h/2,w,h,'url(#mgMetal)','#5E656D',1)+`<rect x="${(cx-w*.3).toFixed(1)}" y="${(cy-h*.3).toFixed(1)}" width="${(w*.6).toFixed(1)}" height="${(h*.6).toFixed(1)}" rx="${(Math.min(w,h)*.2).toFixed(1)}" fill="${capc||'#F3F3EF'}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/>`
+    +(lab?`<text x="${cx}" y="${(cy+h/2+Math.min(w,h)*.42).toFixed(1)}" font-size="${(Math.min(w,h)*.26).toFixed(1)}" font-weight="700" fill="#F2F5F8" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${lab}</text>`:''),
+  xtalS:(cx,cy,w,lab)=>{const h=w*.42;return AG.shadow(cx-w/2,cy-h/2,w,h,h/2)+AG.rect(cx-w/2,cy-h/2,w,h,'url(#mgMetal)','#6E757D',h/2)+(lab?`<text x="${cx}" y="${(cy+h*.22).toFixed(1)}" font-size="${(h*.5).toFixed(1)}" fill="#4A5058" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${lab}</text>`:'');},
+  reg223:(cx,cy,w)=>{const h=w*.55;return AG.shadow(cx-w/2,cy-h/2,w,h*1.3)+AG.rect(cx-w*.42,cy-h/2-h*.42,w*.84,h*.42,'url(#mgMetal)')+AG.rect(cx-w/2,cy-h/2,w,h,'url(#mgChip)',0,.5)+`<path d="M${(cx-w*.3).toFixed(1)} ${(cy+h/2).toFixed(1)}v${(h*.4).toFixed(1)}M${cx.toFixed(1)} ${(cy+h/2).toFixed(1)}v${(h*.4).toFixed(1)}M${(cx+w*.3).toFixed(1)} ${(cy+h/2).toFixed(1)}v${(h*.4).toFixed(1)}" stroke="#C9CFD6" stroke-width="${(w*.1).toFixed(2)}"/>`;},
+  pad:(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#mgMetal)"/><circle cx="${cx}" cy="${cy}" r="${r*.62}" fill="url(#mgGold)"/><circle cx="${cx}" cy="${cy}" r="${r*.25}" fill="#2A2418"/>`,
+  mhole:(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#mgGold)"/><circle cx="${cx}" cy="${cy}" r="${r*.62}" fill="#2A2418"/><circle cx="${cx-r*.2}" cy="${cy-r*.2}" r="${r*.25}" fill="#4A4232"/>`,
+  silkBox:(x,y,w,h)=>`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="1.2" fill="none" stroke="#F2F5F8" stroke-opacity=".75" stroke-width=".8"/>`,
+  t:(x,y,s,sz,anc='middle',wt=700,op=.9,rot)=>`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${sz}" font-weight="${wt}" fill="#F2F5F8" fill-opacity="${op}" text-anchor="${anc}" font-family="var(--mono)" pointer-events="none"${rot!=null?` transform="rotate(${rot} ${x.toFixed(1)} ${y.toFixed(1)})"`:''}>${s}</text>`,
+  usb:(t,x,y,w,h)=>{   // x = 기판 왼쪽 끝(단자가 조금 튀어나옴), y = 가운데, w = 깊이, h = 폭
+    const o=x-w*.18;
+    if(t==='c')return AG.shadow(o,y-h/2,w,h,h*.45)+AG.rect(o,y-h/2,w,h,'url(#mgMetalH)','#5E656D',h*.45)+AG.rect(o-1,y-h*.3,w*.22,h*.6,'#15171A',0,h*.25)+AG.rect(o-.2,y-h*.1,w*.12,h*.2,'#C9A24A');
+    if(t==='b')return AG.shadow(o,y-h/2,w,h,1.5)+AG.rect(o,y-h/2,w,h,'url(#mgMetal)','#5E656D',1.5)+`<path d="M${o+2} ${y-h*.42}h${w-4}M${o+2} ${y+h*.42}h${w-4}" stroke="#fff" stroke-opacity=".5" stroke-width=".8"/>`+AG.rect(o-1,y-h*.3,w*.55,h*.6,'#15171A',0,1.5)+AG.rect(o+w*.06,y-h*.14,w*.38,h*.28,'#E6E9EC',0,1);
+    return AG.shadow(o,y-h/2,w,h,1)+AG.rect(o,y-h/2,w,h,'url(#mgMetal)','#5E656D',1)+`<path d="M${o+2} ${y-h*.38}h${w-5}M${o+2} ${y+h*.38}h${w-5}" stroke="#fff" stroke-opacity=".45" stroke-width=".7"/>`+AG.rect(o-1,y-h*.28,w*.26,h*.56,'#15171A',0,t==='micro'?h*.12:.6)+AG.rect(o,y-h*.06,w*.14,h*.12,'#C9A24A');}};
+/* ① 직결형: 실제 Nano(45 × 18mm)·MKR(61.5 × 25mm) 배치. 핀 줄 자리(ph)에서 기판 좌표 비율을 구한다 */
 const ardDipDraw=D=>(c,ph,r)=>{const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),yT=Math.min(...ys),yB=Math.max(...ys),pw=!!(r&&r.apw),mkr=D.form==='mkr';
-  const L=x0-(mkr?96:44),R=x1+(mkr?110:20),T=yT-11,B=yB+11,W=R-L,H=B-T,cy=(yT+yB)/2,ix=(x0+x1)/2;let s='';
-  s+=`<rect x="${L+3}" y="${T+4}" width="${W}" height="${H}" rx="3" fill="#000" opacity=".28"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="3" fill="${D.col}"/>`+mgTraces(L,T,W,H,W+H,'rgba(255,255,255,.07)')
-    +`<rect x="${L}" y="${T}" width="${W}" height="${H}" rx="3" fill="url(#mgSheen)"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="3" fill="none" stroke="#06080A"/>`;
-  s+=MG2.usb(D.usb,L-6,cy)+MG.btn(L+(mkr?40:30),cy+(mkr?-30:0),9,'RST');
-  if(mkr){s+=MG2.can(L+22,cy-14,58,36,D.rad,'모듈')+`<rect x="${R-46}" y="${cy-12}" width="20" height="13" rx="1.5" fill="#E8E2D6" stroke="#8A8270"/><text x="${R-36}" y="${cy+9}" font-size="3.4" fill="#F2F5F8" text-anchor="middle" font-family="var(--mono)">BATT</text>`+MG.qfp(R-70,cy+10,14,'',45)+MG.xtal(R-90,cy-20,10,4,'32.768');}
-  else{s+=MG.qfp(ix-6,cy,D.chip.includes('8비트')?15:17,'',45)+MG.xtal(ix-34,cy,11,4.5)+MG.reg(ix+28,cy+12);if(D.rad)s+=MG2.can(ix+18,cy-24,48,26,D.rad,'모듈');}
-  for(let i=0;i<4;i++)s+=MG.smd(ix+(mkr?-20:-50)+i*6,cy+(mkr?24:20),3.4,1.8)+MG.capS(ix+(mkr?10:-50)+i*6,cy+(mkr?-28:-22),3.4,1.8);
-  s+=MG.led(L+(mkr?40:30),cy+(mkr?24:-20),pw,'#3BE36B','ON')+MG.led(L+(mkr?40:30),cy+(mkr?32:20),false,'#FFB224','L');
-  // 수 헤더(아래로 꽂히는 핀): 몸통 위에 금 핀만 보인다
-  for(const p of ph)s+=`<circle cx="${p.x}" cy="${p.y}" r="3.6" fill="#0E0F11"/><circle cx="${p.x}" cy="${p.y}" r="2.6" fill="url(#mgGold)"/>`;
+  const Wm=mkr?61.5:45,Hm=mkr?25:18,L=x0-(mkr?96:44),R=x1+(mkr?110:20),T=yT-11,B=yB+11,W=R-L,H=B-T,kx=W/Wm,ky=H/Hm,k=(kx+ky)/2,X=m=>L+m*kx,Y=m=>T+m*ky;
+  const tx=!!(r&&r.tx);let s='';
+  s+=`<rect x="${L+3}" y="${T+4}" width="${W}" height="${H}" rx="4" fill="#000" opacity=".3"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="4" fill="${D.col}"/>`+mgTraces(L,T,W,H,W+H,'rgba(255,255,255,.06)')
+    +`<rect x="${L}" y="${T}" width="${W}" height="${H}" rx="4" fill="url(#mgSheen)"/><rect x="${L+.8}" y="${T+.8}" width="${W-1.6}" height="${H-1.6}" rx="4" fill="none" stroke="#fff" stroke-opacity=".16"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="4" fill="none" stroke="#06080A"/>`;
+  // 헤더 실크 테두리(핀 줄)
+  for(const y of [yT,yB])s+=AG.silkBox(x0-k*1.4,y-k*1.4,x1-x0+k*2.8,k*2.8);
+  if(!mkr){
+    for(const [mx,my] of [[1.6,1.6],[1.6,16.4],[44.2,4.6],[44.2,13.4]])s+=AG.mhole(X(mx),Y(my),k*.62);
+    s+=AG.usb(D.usb,X(0),Y(9),k*(D.usb==='c'?7.5:9),k*(D.usb==='c'?9:D.usb==='mini'?7.8:7.4));
+    s+=AG.reg223(X(11.5),Y(6.4),k*5.2)+AG.diode(X(11.5),Y(12.8),k*3.6)+AG.fuse(X(8.6),Y(12.8),k*2.6);
+    s+=AG.led(X(16.5),Y(5),k*1.6,tx,'#FFD84A','TX','r')+AG.led(X(16.5),Y(7.6),k*1.6,false,'#FFD84A','RX','r')+AG.led(X(16.5),Y(10.2),k*1.6,pw,'#3BE36B','PWR','r')+AG.led(X(16.5),Y(12.8),k*1.6,false,'#FFB224','L','r');
+    s+=AG.tact(X(24.5),Y(9),k*3.4,k*6,'RESET',D.v<4?'#2B2F35':'#F3F3EF');
+    s+=AG.chipQ(X(33),Y(9),k*(D.chip.includes('8비트')?6.4:5.6),'',45,D.chip.includes('8비트')?8:10)+AG.xtalS(X(28.2),Y(14.2),k*3.6,'');
+    if(D.rad)s+=AG.shadow(X(36.3),Y(3.2),k*6.6,k*11.6,1)+AG.rect(X(36.3),Y(3.2),k*6.6,k*11.6,'url(#mgMetal)','#5E656D',1)+AG.t(X(39.6),Y(9.4),D.rad.split('·')[0],k*1.15,'middle',700,.9,90).replace('#F2F5F8','#3A4048');
+
+    for(let i=0;i<4;i++)s+=AG.res(X(20.5),Y(5+i*2.6),k*1.6,90)+AG.cap(X(28.6+i*1.9),Y(4.2),k*1.5,90);
+    // 오른쪽 끝 ICSP 6패드
+    if(!D.rad){for(let i=0;i<3;i++)for(let j=0;j<2;j++)s+=AG.pad(X(39.6+j*2.54),Y(6.5+i*2.54),k*.62);s+=AG.t(X(40.9),Y(13.8),'ICSP',k*.8);}
+  }
+  else{
+    for(const [mx,my] of [[2,2],[2,23],[59.5,2],[59.5,23]])s+=AG.mhole(X(mx),Y(my),k*1.1);
+    s+=AG.usb('micro',X(0),Y(12.5),k*6,k*7.6);
+    s+=AG.shadow(X(7),Y(3),k*7,k*5.2,.6)+AG.rect(X(7),Y(3),k*7,k*5.2,'#EDE7D9','#8A8270',.6)+AG.rect(X(7.8),Y(3.6),k*5.4,k*1.6,'#C9C0AA')+AG.t(X(10.5),Y(9.6),'BATT 3.7V',k*1.05);
+    s+=AG.tact(X(9),Y(18.5),k*3,k*4,'RESET');
+    s+=AG.led(X(14.5),Y(12),k*1.9,pw,'#3BE36B','ON','r')+AG.led(X(14.5),Y(14.6),k*1.9,false,'#FFB224','L','r')+AG.led(X(14.5),Y(17.2),k*1.9,false,'#E5484D','CHG','r');
+    s+=AG.chipQ(X(27),Y(12.5),k*7,'',45,12)+AG.xtalS(X(34.5),Y(18.2),k*3.2,'')+AG.soic(X(20),Y(19),k*4.2,k*3,4)+AG.reg223(X(20),Y(6.5),k*5);
+    for(let i=0;i<5;i++)s+=AG.res(X(33+i*1.9),Y(6.4),k*1.5,90)+AG.cap(X(33+i*1.9),Y(9.6),k*1.5,90);
+    // 무선 모듈(금속 덮개) + 기판 안테나 자리
+    s+=AG.shadow(X(42.5),Y(5.5),k*13.5,k*14,1.2)+AG.rect(X(42.5),Y(5.5),k*13.5,k*14,'url(#mgMetal)','#5E656D',1.2)+AG.rect(X(43.4),Y(6.4),k*11.7,k*12.2,'none','rgba(255,255,255,.6)',1)
+      +AG.t(X(49.25),Y(12.2),D.rad,k*1.6,'middle',700,1).replace('#F2F5F8','#3A4048')+AG.t(X(49.25),Y(14.4),'모듈',k*1.1,'middle',400,1).replace('#F2F5F8','#3A4048');
+    s+=AG.rect(X(56.6),Y(4),k*4.2,k*17,'rgba(255,255,255,.08)',0,1)+`<path d="M${X(57.4)} ${Y(5)}h${k*2.6}v${k*2.2}h${-k*2.6}v${k*2.2}h${k*2.6}v${k*2.2}h${-k*2.6}v${k*2.2}h${k*2.6}v${k*2.2}h${-k*2.6}" fill="none" stroke="url(#mgGold)" stroke-width="${k*.5}"/>`;
+  }
+  // 핀: 납이 묻은 링 + 이름(PWM은 ~)
+  for(const p of ph)s+=AG.pad(p.x,p.y,k*.66);
   const pins=PX[c.kind].pins,n=pins.length,h2=n/2;
-  ph.forEach((p,i)=>{const w=pins[i].split(' ')[0],m=/^D(\d+)$/.exec(w);s+=`<text x="${p.x}" y="${p.y+(i<h2?-6.5:10)}" font-size="4.2" fill="#F2F5F8" stroke="#0A0C10" stroke-width=".8" paint-order="stroke" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${(m&&D.pwm.includes(+m[1])?'~':'')+w}</text>`;});
-  s+=MG.silk(R-4,T+6,ARDFORM[D.form].replace(' 호환',''),4.2,'end')+MG.silk(R-4,B-3,D.nm,3.6,'end',400);
-  s+=`<rect x="${L}" y="${T-12}" width="44" height="10" rx="3" fill="#0E1013" opacity=".85"/><circle cx="${L+6}" cy="${T-7}" r="2" fill="${pw?'#3BE36B':'#6B7280'}"/><text x="${L+25}" y="${T-4.5}" font-size="6" font-weight="700" fill="${pw?'#3BE36B':'#AEB4BD'}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${pw?'전원 켜짐':'전원 없음'}</text>`;
+  ph.forEach((p,i)=>{const w=pins[i].split(' ')[0],m=/^D(\d+)$/.exec(w);s+=`<text x="${p.x}" y="${(p.y+(i<h2?k*2.55:-k*1.75)).toFixed(1)}" font-size="${(k*.72).toFixed(1)}" font-weight="700" fill="#F2F5F8" stroke="#0A0C10" stroke-width=".7" paint-order="stroke" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${(m&&D.pwm.includes(+m[1])?'~':'')+w}</text>`;});
+  const bx=L-(D.usb==='c'?8:12)-50,by=(T+B)/2-26;   // 상태 표시: 보드 왼쪽 바깥(USB 위)
+  s+=`<rect x="${bx}" y="${by}" width="46" height="11" rx="3" fill="#0E1013" opacity=".85"/><circle cx="${bx+6}" cy="${by+5.5}" r="2" fill="${pw?'#3BE36B':'#6B7280'}"/><text x="${bx+26}" y="${by+8}" font-size="6" font-weight="700" fill="${pw?'#3BE36B':'#AEB4BD'}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${pw?'전원 켜짐':'전원 없음'}</text>`;
   return s;};
 for(const [k,D] of Object.entries(ARDSPEC)){if(D.form!=='nano'&&D.form!=='mkr')continue;const mkr=D.form==='mkr';
   pxDef({k,sub:'ard',pre:'U',title:ardTitle(k,D),lay:'dip',cols:rng(mkr?14:15,i=>i),rows:mkr?['b','i']:['c','h'],rw:mkr?20.32:15.24,pins:mkr?mkrPins(D):nanoPins(D),ard:D,init:()=>({}),draw:ardDipDraw(D),
@@ -3269,7 +3370,17 @@ function ardExtSVG(c,isSel){const A=ARDX[c.t],D=A.D,K=AMM,X=mm=>c.x+mm*K,Y=mm=>c
   if(c.t==='auno3')s+=Z(48,21,3,MG.dip28(0,0,92,20));else s+=Z(mega?50:D.matrix?31:46,D.matrix?20:24,3,MG.qfp(0,0,mega?28:22,'',45));
   if(D.rad)s+=mega?Z(70,40,3,MG2.can(0,0,48,28,D.rad,'모듈')):Z(21,46.5,3,MG2.can(0,0,34,26,D.rad,'모듈'));
   if(D.matrix){let m='';for(let r=0;r<8;r++)for(let q=0;q<12;q++)m+=`<rect x="${X(37+q*1.9)-5.5}" y="${Y(42-r*1.9)-5.5}" width="11" height="11" rx="2" fill="${pw&&(r*3+q)%7===0?'#FF4D4D':'#5A2B2B'}"/>`;s+=`<rect x="${X(35.6)}" y="${Y(43.6)}" width="${24*K}" height="${16.2*K}" rx="3" fill="#E9E3D2"/>`+m+MG.silk(X(47.5),Y(26),'12 × 8 LED',6);}
-  for(let i=0;i<6;i++)s+=Z(26+i*2.6,9,2.6,MG.smd(0,0))+Z(26+i*2.6,12.5,2.6,MG.capS(0,0));
+  for(let i=0;i<6;i++)s+=Z(24+i*2.6,13.2,2.6,i%2?MG.capS(0,0):MG.smd(0,0));
+  // USB 변환 칩·수정(USB 쪽), 퓨즈, 다이오드, 연산 증폭기(SOIC-8), 트랜지스터, 저항 배열
+  if(c.t!=='aleo'&&c.t!=='agiga')s+=AG.chipQ(X(15),Y(42),5*K,'',45,8)+AG.xtalS(X(15),Y(35.2),3.4*K,'');
+  s+=AG.fuse(X(9.5),Y(29),2.6*K)+AG.diode(X(5.5),Y(17.5),3*K,90)+AG.diode(X(19),Y(17.5),3*K,90)+AG.soic(X(37),Y(16.5),4.6*K,3.4*K,4,'')+AG.sot(X(30),Y(17),2.2*K)+AG.sot(X(30),Y(21.5),2.2*K);
+  for(let i=0;i<4;i++)s+=AG.res(X(52+i*2.1),Y(44.8),1.6*K,90)+AG.cap(X(52+i*2.1),Y(14),1.5*K,90);
+  if(c.t==='adue'){s+=Z(-1.2,29,3.2,MG.usbMicro(0,0,15,11))+MG.silk(X(3),Y(24.6),'NATIVE',4.6,'start')+MG.silk(X(3),Y(46.6),'PROG',4.6,'start')+AG.tact(X(9),Y(41.5),2.6*K,2.6*K,'ERASE','#2B2F35');}
+  // 헤더 실크 테두리와 큰 이름표
+  for(const [a,b,yy] of [[18.796,41.656,50.8],[45.72,63.5,50.8],[27.94,45.72,2.54],[50.8,63.5,2.54],...(mega?[[68.58,86.36,50.8],[68.58,86.36,2.54]]:[])])s+=AG.silkBox(X(a)-11,Y(yy)-11,(b-a)*K+22,22);
+  if(mega){s+=AG.silkBox(X(93.98)-11,Y(50.8)-11,2.54*K+22,17*2.54*K+22)+AG.t(X(77.5),Y(43.6),'COMMUNICATION',8)+AG.t(X(77.5),Y(9.2),'ANALOG IN',8)+AG.t(X(91),Y(26),'DIGITAL',9,'middle',700,.9,-90);
+    s+=AG.t(X(78),Y(30),ARDFORM[D.form].replace(' 호환',''),20,'middle',800,.85)+AG.t(X(78),Y(24.5),'호환 보드',9,'middle',400,.8);}
+  else s+=AG.t(X(56),Y(38.4),ARDFORM[D.form].replace(' 호환',''),16,'middle',800,.85)+AG.t(X(56),Y(34.6),'호환 보드',8,'middle',400,.8);
   // 암 헤더 띠(위 2개·아래 2개, Mega는 확장·2×18)
   const strips=[[18.796,41.656,50.8],[45.72,63.5,50.8],[27.94,45.72,2.54],[50.8,63.5,2.54]];if(mega)strips.push([68.58,86.36,50.8],[68.58,86.36,2.54]);
   for(const [a,b,yy] of strips)s+=`<rect x="${X(a)-9}" y="${Y(yy)-9}" width="${(b-a)*K+18}" height="18" rx="1" fill="url(#mgHdr)" stroke="#000" stroke-width=".5"/>`;
@@ -3280,8 +3391,7 @@ function ardExtSVG(c,isSel){const A=ARDX[c.t],D=A.D,K=AMM,X=mm=>c.x+mm*K,Y=mm=>c
     const lab=(/\(PWM\)/.test(A.hdr[i][2])?'~':'')+nm.replace(/^D(?=\d)/,'');
     s+=side?`<text x="${A.hdr[i][0]<95?x-9:x+9}" y="${y+2}" font-size="5" fill="#F2F5F8" text-anchor="${A.hdr[i][0]<95?'end':'start'}" font-family="var(--mono)" pointer-events="none">${lab}</text>`
       :`<text x="${x}" y="${hy>20?y+11:y-11}" font-size="6.4" font-weight="700" fill="#F2F5F8" stroke="#0A0C10" stroke-width=".8" paint-order="stroke" text-anchor="${hy>20?'end':'start'}" font-family="var(--mono)" pointer-events="none" transform="rotate(-90 ${x} ${hy>20?y+11:y-11})" dominant-baseline="middle">${lab}</text>`;});
-  s+=MG.silk(X(mega?52:44),Y(14),ARDFORM[D.form].replace(' 호환',''),9)+MG.silk(X(mega?52:44),Y(10.5),D.nm,5,'middle',400)+MG.silk(X(mega?52:44),Y(6.5),D.v+'V I/O · VIN '+D.vin[0]+'~'+D.vin[1]+'V',4.4,'middle',400);
-  s+=MG.silk(X(30),Y(45.6),'DIGITAL (PWM ~)',4.4)+MG.silk(X(36),Y(7.8),'POWER',4.4)+MG.silk(X(57),Y(7.8),'ANALOG IN',4.4);
+  s+=AG.t(X(41),Y(43.6),'DIGITAL (PWM ~)',8)+AG.t(X(36.8),Y(9.2),'POWER',8)+AG.t(X(57.2),Y(9.2),'ANALOG IN',8)+AG.t(X(55),Y(47.2),'TX→1  RX←0',6,'middle',700,.8);
   s+=`<rect x="${c.x+w-70}" y="${c.y-14}" width="70" height="12" rx="3" fill="#0E1013" opacity=".85"/><circle cx="${c.x+w-63}" cy="${c.y-8}" r="2.2" fill="${pw?'#3BE36B':'#6B7280'}"/><text x="${c.x+w-32}" y="${c.y-4.5}" font-size="7" font-weight="700" fill="${pw?'#3BE36B':'#AEB4BD'}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${pw?'전원 켜짐':'전원 없음'}</text>`;
   return s+'</g>';}
 /* 전기: resolve에서 부른다 — USB·VIN으로 켜지면 5V·3V3·IOREF 핀이 전원을 내고, GND 핀은 늘 접지 */
@@ -5839,7 +5949,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 아두이노 호환 보드 15종 · 스펙트럼 분석기 · 보드 돌리기';
+const APP_VER='2026-11-27 · 트랜지스터 11종 추가 · 아두이노 호환 보드 그림 개선';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}

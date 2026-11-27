@@ -4,6 +4,7 @@
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 8800줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
 
 ## 현황
+- **26차: 트랜지스터 11종 추가**(`bjDef` 도우미, 핀 순서 문자열로 tr·dio·contacts): `qbc337` `qbc327`(CBE) `q4401` `q4403` `qmpsa13`(EBC, 달링턴) `qtip31` `qtip32` `qtip125`(BCE) `qbd139` `qbd140`(TO-126 `to126`, ECB) `mbs170`(DGS). verify-parts SPEC 표에 넣어 223/223. **아두이노 보드 그림 2판**: `AG` 도우미(실제 크기 비율), 직결형은 mm 배치(`ardDipDraw` kx·ky), 점퍼형은 USB 변환 칩·퓨즈·SOIC·실크 테두리·큰 이름표, Due 두 번째 USB·ERASE
 - **25차: 아두이노 호환 보드 15종**(사용자 제공 「아두이노 데이터시트·CAD 레퍼런스」대로). 직결형 px `sub:'ard'` 8종 — Nano 폼팩터 `ano` `anoevery` `anor4`(5V) `ano33iot` `ano33ble` `anorp` `anoesp`(3.3V, 12번 VUSB) 2×15 600mil **c·h줄**, MKR `amkr` 2×14 800mil **b·i줄**(`d.rows`, `pxHolesAt`가 읽음). 점퍼 연결형 7종 — 계측기처럼 보드 밖(`INST`에 등록, `ARDX[t]`, `ISZ` 실제 mm×7.874): UNO `auno3` `aunor4m` `aunor4w`(LED 매트릭스) `aleo`, Mega `amega` `adue` `agiga`. 헤더 좌표 `ardHeaders`(D7–D8 4.064mm, 위·아래 48.26mm, Mega 2×18). 전기 `ardDrive`(USB·VIN → 5V·3V3·VCC·IOREF, GND), 점검 `ardWarns`(VIN 초과·부족, 3.3V 보드 핀 > 3.6V). 그림 `ardDipDraw`·`ardExtSVG`(MG 도우미 재사용, `Z` 배율). `termAt` 가장 가까운 단자. 예제 ⓐ1 `ard1`. 시험 `tests/ui/ard.js`, verify-parts 212. 코드 실행은 없음(사용자가 24차에 마이컴 코드 기능 삭제)
 - **24차: 사용자 요청 "마이컴 전부 없애" → 마이컴 보드 5종·해석기 `MCUC`·편집기·디버거·예제 Ⓜ1·Ⓜ2·`tests/ui/mcu.js` 모두 삭제.** 아래 23차 ①~④·⑧ 마이컴 항목은 지난 기록(git 이력 `f39ac27`에 남음). 남은 것: 스펙트럼 분석기(Ⓟ11은 함수 발생기 구형파·사인파 2대로 바꿈), 보드 돌리기. 시험 `tests/ui/spa-rot.js`
 - 22차까지 main 반영 끝(`412ff85`). 23차(마이컴 보드·편집기·디버거·스펙트럼 분석기·보드 돌리기) = 이 메모와 같은 커밋 → main·아티팩트 반영
