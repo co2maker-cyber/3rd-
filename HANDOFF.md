@@ -13,7 +13,8 @@
 ✓ ⑤ 스펙트럼 분석기 계측기 `spa`(INST, 310×250, 단자 RF IN): `spaSrc`(fg·clk·마이컴 tone/PWM은 푸리에 급수 선 스펙트럼 `spaLines`, 아니면 20ms 표본 FFT) → `spaPoint`(가우스 RBW, 잡음 바닥 −112+10log RBW+감쇠, 믹서 −10dBm 넘으면 눌림) → 스윕 그리기 `spaTick`. 마커는 0Hz 근처 건너뜀. [신호 찾아 맞추기] `spaAuto`
 ✓ ⑥ 보드 돌리기 `B.rot`(90·180·270): `rotXY`, 구멍 `h.x/y`=화면, `h.lx/ly`=돌리기 전. 부품은 `compSVGr`/`inLocal`로 돌리기 전 자리에서 그린 뒤 rotate, `bodyRect`도 돌려서. `gridAt`·`gapSnap` 역회전. 보드 메뉴에 90°·−90°·180°. 끌기 5px(Alt 1px), 보드 간격 2px까지
 ✓ ⑦ 예제(목록 맨 아래 optgroup "마이컴 보드 · 스펙트럼 분석기"): Ⓜ1 `mbasic`(소형, 버튼 토글·가변저항→PWM·시리얼), Ⓜ2 `mlight`(표준형 신호등), Ⓟ11 `pspec`(분석기 2대: 마이컴 음계 tone, 함수 발생기 2Hz 구형파)
-✓ 시험: 새 `tests/ui/mcu.js` 47항목 PASS + 기존 전체(아래 기록)
+✓ ⑧ 보드 그림 품질(사용자 "생김새 그려서"·"퀄리티 올려"): `MG` 그리기 도우미·`MGDEFS` 그라데이션(DEFS 안), `mgTraces` 배선 무늬, 표준형·대형 암 헤더, PWM `~`, 보드마다 `xl·xr·bh` 몸통. 와이파이형 핀 순서 실제대로 고침(VIN↔3V3, EN↔GPIO23)
+✓ 시험: `tests/ui/mcu.js` 47항목 + verify-parts 207/207(마이컴 핀 순서·LED 전압 포함) + 전체 PASS → main `f39ac27`, 아티팩트 v76
 
 ## 결정사항
 - "Arduino"·보드 제품명·칩 회사 형번은 이름에 안 씀 → "마이컴 보드 · 표준형/소형/프로 미니형/대형/와이파이형". 설명·분류에 "아두이노 호환 함수"만(호환 표기). COPYRIGHT 8절·3절 기록
