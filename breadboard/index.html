@@ -1254,7 +1254,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `nano` | 마이컴 보드 · 소형 (5V, 30핀 DIP) — **코드 실행** | dip | 0~14 | D1 D0 RESET GND D2…D12, D13 3V3 AREF A0…A7 5V RESET GND VIN | `code`, `usb`, `bp` |
 | `pro` | 마이컴 보드 · 프로 미니형 (5V, 24핀, USB 없음) — **코드 실행** | dip | 0~11 | D1 D0 RESET GND D2…D9, D10…D13 A0…A3 VCC RESET GND RAW | `code`, `bp` |
 | `mega` | 마이컴 보드 · 대형 (5V, 디지털 54 · 아날로그 16, USB) — **코드 실행** | dip | 0~37 | D0…D37, D38…D53 A0…A15 5V 3V3 GND GND VIN AREF | `code`, `usb`, `bp` |
-| `wifi` | 마이컴 보드 · 와이파이형 (3.3V, 32비트, 30핀) — **코드 실행** | dip | 0~14 | EN GPIO36 39 34 35 32 33 25 26 27 14 12 13 GND VIN, GPIO23 22 1 3 21 19 18 5 17 16 4 2 15 GND 3V3 | `code`, `usb`, `bp` |
+| `wifi` | 마이컴 보드 · 와이파이형 (3.3V, 32비트, 30핀) — **코드 실행** | dip | 0~14 | EN GPIO36 39 34 35 32 33 25 26 27 14 12 13 GND VIN, 3V3 GND GPIO15 2 4 16 17 5 18 19 21 3 1 22 23 | `code`, `usb`, `bp` |
 
 **마이컴 보드**(`uno` `nano` `pro` `mega` `wifi`)의 추가 칸:
 - `code`: 보드에 올린 C 코드(문자열, 줄바꿈은 `\n`). `setup()`과 `loop()`가 꼭 있어야 해요. 빼면 내장 LED 깜박이기 코드가 들어가요.
@@ -3227,11 +3227,11 @@ pxDef({k:'cpu64',sub:'dig',pre:'U',nid:'CPU_16_32B_ASYNC_8MHZ',title:'16/32비�
 // ── 마이컴 보드(코딩 가능, 아두이노 호환 핀 번호·함수): 코드는 MCUC 해석기가 이 페이지 안에서 돌린다
 //   보드마다: 핀 이름(pins) → 핀 번호(D·A·GPIO), 정수 크기(ib), 전원 전압(vcc), ADC 비트, PWM 핀, 내장 LED 핀, USB 전원 여부
 const MCUB={
-  uno:{lab:'표준형',ib:16,vcc:5,adc:10,A0:14,nA:6,pwm:[3,5,6,9,10,11],led:13,usb:1,col:'#0E6A8E',chip:'8비트 MCU 16MHz',flash:32,ram:2},
-  nano:{lab:'소형',ib:16,vcc:5,adc:10,A0:14,nA:8,aOnly:[20,21],pwm:[3,5,6,9,10,11],led:13,usb:1,col:'#1B5C8A',chip:'8비트 MCU',flash:32,ram:2},
-  pro:{lab:'프로 미니형',ib:16,vcc:5,adc:10,A0:14,nA:4,pwm:[3,5,6,9,10,11],led:13,usb:0,col:'#8C2232',chip:'8비트 MCU',flash:32,ram:2},
-  mega:{lab:'대형',ib:16,vcc:5,adc:10,A0:54,nA:16,pwm:[2,3,4,5,6,7,8,9,10,11,12,13,44,45,46],led:13,usb:1,col:'#0D5C86',chip:'8비트 MCU 256KB',flash:256,ram:8},
-  wifi:{lab:'와이파이형',ib:32,vcc:3.3,adc:12,esp:1,led:2,usb:1,col:'#202326',chip:'32비트 듀얼코어 · Wi-Fi',flash:4096,ram:320,inOnly:[34,35,36,39],
+  uno:{kind:'uno',xl:62,xr:34,bh:44,lab:'표준형',ib:16,vcc:5,adc:10,A0:14,nA:6,pwm:[3,5,6,9,10,11],led:13,usb:1,col:'#0E6A8E',chip:'8비트 MCU 16MHz',flash:32,ram:2},
+  nano:{kind:'nano',xl:14,xr:22,bh:16,lab:'소형',ib:16,vcc:5,adc:10,A0:14,nA:8,aOnly:[20,21],pwm:[3,5,6,9,10,11],led:13,usb:1,col:'#1B5C8A',chip:'8비트 MCU',flash:32,ram:2},
+  pro:{kind:'pro',xl:16,xr:10,bh:14,lab:'프로 미니형',ib:16,vcc:5,adc:10,A0:14,nA:4,pwm:[3,5,6,9,10,11],led:13,usb:0,col:'#8C2232',chip:'8비트 MCU',flash:32,ram:2},
+  mega:{kind:'mega',xl:62,xr:34,bh:44,lab:'대형',ib:16,vcc:5,adc:10,A0:54,nA:16,pwm:[2,3,4,5,6,7,8,9,10,11,12,13,44,45,46],led:13,usb:1,col:'#0D5C86',chip:'8비트 MCU 256KB',flash:256,ram:8},
+  wifi:{kind:'wifi',xl:20,xr:34,bh:20,lab:'와이파이형',ib:32,vcc:3.3,adc:12,esp:1,led:2,usb:1,col:'#202326',chip:'32비트 듀얼코어 · Wi-Fi',flash:4096,ram:320,inOnly:[34,35,36,39],
     an:{36:'A0',39:'A3',32:'A4',33:'A5',34:'A6',35:'A7',4:'A10',2:'A12',15:'A13',13:'A14',12:'A15',14:'A16',27:'A17',25:'A18',26:'A19'}}};
 // 핀 이름 → 핀 번호 표, 전원 핀 묶음
 function mcuMap(D,pins){if(D._m)return D._m;const io=new Map(),pw={};
@@ -3262,23 +3262,72 @@ void loop() {
   Serial.println(count);
 }
 `;
-const mcuDraw=D=>(c,ph,r)=>{const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),M=r&&r.m,pw=!!(r&&r.mpw),mp=mcuMap(D,PX[c.kind].pins);
-  const on=k=>pw&&M&&M.mode[k]===1&&(M.out[k]||M.pwm[k]>0),ledK=mp.io.get(D.led);const big=ph.length>40;
-  let s=`<rect x="${x0-16}" y="${y0-15}" width="${x1-x0+32+(D.usb?10:0)}" height="${y1-y0+30}" rx="4" fill="${D.col}" stroke="#0A0C10" stroke-width="1"/>`;
-  if(D.usb)s+=`<rect x="${x1+12}" y="${(y0+y1)/2-8}" width="16" height="16" rx="1.5" fill="#B8BEC6" stroke="#5A6068"/><rect x="${x1+16}" y="${(y0+y1)/2-4}" width="9" height="8" fill="#7B828B"/>`;
-  for(const p of ph)s+=`<rect x="${p.x-4}" y="${p.y-4}" width="8" height="8" fill="#16181C"/><circle cx="${p.x}" cy="${p.y}" r="2.2" fill="#D9B44A"/>`;
-  const pins=PX[c.kind].pins,n=pins.length,h=n/2;
-  ph.forEach((p,k)=>{const nm=pins[k].split(' ')[0].replace('GPIO','');s+=`<text x="${p.x}" y="${p.y+(k<h?-7:11)}" font-size="${big?4.2:4.8}" fill="#E8EEF4" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${nm}</text>`;});
-  const cx=(x0+x1)/2,cy=(y0+y1)/2,cw=Math.min(90,x1-x0-30);
-  s+=`<rect x="${cx-cw/2}" y="${cy-8}" width="${cw}" height="16" rx="1.5" fill="#15171A"/><text x="${cx}" y="${cy+3}" font-size="6" font-weight="700" fill="#C9CFD6" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${D.chip}</text>`;
-  const lx=x0+(D.usb?8:6);const st=M&&M.st,tx=M&&M.tx&&simNow()-M.tx<.12;
-  s+=`<rect x="${lx-4}" y="${cy-9}" width="7" height="5" rx="1" fill="${pw?'#3BE36B':'#20462B'}"/><rect x="${lx-4}" y="${cy-2}" width="7" height="5" rx="1" fill="${ledK!=null&&on(ledK)?'#FFB224':'#4A3A1A'}"/><rect x="${lx-4}" y="${cy+5}" width="7" height="4" rx="1" fill="${tx?'#FFD84A':'#3D3A20'}"/>`;
-  s+=`<text x="${lx+5}" y="${cy-5}" font-size="4.5" fill="#E8EEF4" font-family="var(--mono)" pointer-events="none">ON</text><text x="${lx+5}" y="${cy+2}" font-size="4.5" fill="#E8EEF4" font-family="var(--mono)" pointer-events="none">L</text><text x="${lx+5}" y="${cy+9}" font-size="4.5" fill="#E8EEF4" font-family="var(--mono)" pointer-events="none">TX</text>`;
-  const badge=!M||!M.P?(M&&M.cerr?['코드 오류','#E5484D']:['코드 없음','#8A9099']):st==='err'?['실행 오류','#E5484D']:st==='pause'?['멈춤 '+(M.vm?M.vm.ln:'')+'줄','#F5A524']:!pw?['전원 없음','#8A9099']:['실행 중','#3BE36B'];
-  s+=`<text x="${x1+(D.usb?8:12)}" y="${y0-4}" font-size="6" font-weight="700" fill="${badge[1]}" text-anchor="end" font-family="var(--sans)" pointer-events="none">${D.lab} · ${badge[0]}</text>`;
+/* 마이컴 보드 그림: 보드마다 실제 생김새(기판 색·USB 단자 종류·DC 잭·칩 모양·수정·리셋 단추·LED·커패시터·장착 구멍·안테나)를 직접 그린다(로고 없음).
+   핀 줄(e·f)은 그대로, 몸통은 D.xl(왼쪽)·D.xr(오른쪽)·D.bh(위아래)만큼 넓다. 몸통 상자(bodyRect)도 같은 값을 쓴다 */
+const MG={
+  hole:(x,y)=>`<circle cx="${x}" cy="${y}" r="4.2" fill="#E8E2CF" stroke="#B9A85C" stroke-width="1.6"/>`,
+  usbB:(x,y)=>`<rect x="${x}" y="${y-15}" width="40" height="30" rx="1.5" fill="#C9CED4" stroke="#6E757D"/><rect x="${x+3}" y="${y-11}" width="34" height="22" fill="#A9B0B8"/><rect x="${x+8}" y="${y-7}" width="22" height="14" rx="2" fill="#2A2E33"/><rect x="${x+12}" y="${y-3}" width="14" height="6" fill="#D8DDE2"/>`,
+  usbMini:(x,y,w=16,h=15)=>`<rect x="${x}" y="${y-h/2}" width="${w}" height="${h}" rx="1.2" fill="#C9CED4" stroke="#6E757D"/><rect x="${x+w-6}" y="${y-h/2+3}" width="5" height="${h-6}" fill="#2A2E33"/><path d="M${x+2} ${y-h/2+2}h${w-9}M${x+2} ${y+h/2-2}h${w-9}" stroke="#9AA1A9" stroke-width=".8"/>`,
+  jack:(x,y)=>`<rect x="${x}" y="${y-12}" width="36" height="24" rx="2" fill="#1B1D20" stroke="#000"/><rect x="${x}" y="${y-8}" width="6" height="16" fill="#2C2F33"/><circle cx="${x+9}" cy="${y}" r="5" fill="#0C0D0F" stroke="#3A3E44"/><circle cx="${x+9}" cy="${y}" r="1.6" fill="#B8BEC6"/>`,
+  btn:(x,y,s=11,lab)=>`<rect x="${x-s/2}" y="${y-s/2}" width="${s}" height="${s}" rx="1" fill="#C3C8CE" stroke="#6E757D"/><circle cx="${x}" cy="${y}" r="${s*.3}" fill="${lab==='BOOT'?'#2B2F35':'#8F2E2E'}"/>${lab?`<text x="${x}" y="${y+s/2+5}" font-size="3.8" fill="#E8EEF4" text-anchor="middle" font-family="var(--mono)">${lab}</text>`:''}`,
+  xtal:(x,y,w=15,h=6)=>`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="#D6DADF" stroke="#7B828B" stroke-width=".8"/><text x="${x}" y="${y+1.5}" font-size="3.4" fill="#4A5058" text-anchor="middle" font-family="var(--mono)">16.000</text>`,
+  ecap:(x,y,r=5.5)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#C5CAD0" stroke="#6E757D" stroke-width=".8"/><path d="M${x-r*.7} ${y}h${r*1.4}M${x} ${y-r*.7}v${r*1.4}" stroke="#8A9199" stroke-width=".7"/><path d="M${x-r} ${y} a${r} ${r} 0 0 1 ${r} ${-r}" fill="none" stroke="#2D3640" stroke-width="1.4"/>`,
+  smd:(x,y,w=4,h=2.2,col='#C9A86A')=>`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" fill="${col}" stroke="#6B5530" stroke-width=".3"/>`,
+  reg:(x,y)=>`<rect x="${x-6}" y="${y-4}" width="12" height="8" fill="#1E2124"/><rect x="${x-5}" y="${y-7}" width="10" height="3" fill="#B8BEC6"/><path d="M${x-4} ${y+4}v2.5M${x} ${y+4}v2.5M${x+4} ${y+4}v2.5" stroke="#B8BEC6" stroke-width="1.2"/>`,
+  qfp:(x,y,s,lab,rot=45)=>{let l='';const n=Math.max(5,Math.round(s/2.2));for(let i=0;i<n;i++){const t=-s/2+1.5+i*(s-3)/(n-1);l+=`M${t} ${-s/2-2.2}v2.2M${t} ${s/2}v2.2M${-s/2-2.2} ${t}h2.2M${s/2} ${t}h2.2`;}
+    return`<g transform="translate(${x} ${y}) rotate(${rot})"><path d="${l}" stroke="#B8BEC6" stroke-width=".8"/><rect x="${-s/2}" y="${-s/2}" width="${s}" height="${s}" fill="#15171A"/><circle cx="${-s/2+2.5}" cy="${-s/2+2.5}" r="1" fill="#3A3E44"/></g><text x="${x}" y="${y+1.5}" font-size="3.6" font-weight="700" fill="#AEB6BF" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${lab||''}</text>`;},
+  dip28:(x,y,w,h)=>{let l='';const n=14;for(let i=0;i<n;i++){const t=x-w/2+3+i*(w-6)/(n-1);l+=`M${t} ${y-h/2-3}v3M${t} ${y+h/2}v3`;}
+    return`<path d="${l}" stroke="#B8BEC6" stroke-width="1.6"/><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="1" fill="#151719"/><path d="M${x-w/2} ${y-3}a3 3 0 0 1 0 6" fill="#2B2F35"/><text x="${x}" y="${y+2}" font-size="5" font-weight="700" fill="#9AA3AD" text-anchor="middle" font-family="var(--mono)" pointer-events="none">8비트 MCU · DIP-28</text>`;},
+  icsp:(x,y)=>{let s=`<rect x="${x-8}" y="${y-11}" width="16" height="22" fill="#16181C"/>`;for(let i=0;i<3;i++)for(let j=0;j<2;j++)s+=`<rect x="${x-5+j*7-1.6}" y="${y-7+i*7-1.6}" width="3.2" height="3.2" fill="#D9B44A"/>`;return s;},
+  led:(x,y,on,col,lab,left)=>`<rect x="${x-3}" y="${y-2}" width="6" height="4" rx=".8" fill="${on?col:'#3A3A34'}"${on?` filter="url(#glow)"`:''}/><rect x="${x-3}" y="${y-2}" width="6" height="4" rx=".8" fill="${on?col:'#4A4A40'}"/><text x="${left?x-5:x+5}" y="${y+1.6}" font-size="4" fill="#E8EEF4" font-family="var(--mono)"${left?' text-anchor="end"':''} pointer-events="none">${lab}</text>`,
+  silk:(x,y,t,sz=5,anc='middle',wt=700)=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="${wt}" fill="#F2F5F8" fill-opacity=".85" text-anchor="${anc}" font-family="var(--mono)" pointer-events="none">${t}</text>`};
+const mcuDraw=D=>(c,ph,r)=>{const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),yT=Math.min(...ys),yB=Math.max(...ys),M=r&&r.m,pw=!!(r&&r.mpw),mp=mcuMap(D,PX[c.kind].pins);
+  const on=k=>pw&&M&&M.mode[k]===1&&(M.out[k]||M.pwm[k]>0),ledK=mp.io.get(D.led),tx=!!(M&&M.tx&&simNow()-M.tx<.12),Lon=ledK!=null&&on(ledK);
+  const L=x0-D.xl,R=x1+D.xr,T=yT-D.bh,B=yB+D.bh,W=R-L,H=B-T,cy=(yT+yB)/2,k=D.kind;let s='';
+  // 기판
+  s+=`<rect x="${L+2}" y="${T+3}" width="${W}" height="${H}" rx="${k==='wifi'?3:5}" fill="#000" opacity=".25"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="${k==='wifi'?3:5}" fill="${D.col}" stroke="#0A0C10" stroke-width="1"/>`;
+  s+=`<path d="M${L+6} ${cy-H*.18}h${W*.28}l6 6h${W*.2}M${L+W*.45} ${cy+H*.2}h${W*.3}l5-5h${W*.12}" fill="none" stroke="#000" stroke-opacity=".14" stroke-width="1.2"/>`;
+  // 헤더(검은 플라스틱 띠 + 금 핀)와 핀 글씨
+  for(const y of [yT,yB])s+=`<rect x="${x0-6}" y="${y-5}" width="${x1-x0+12}" height="10" fill="#141619"/>`;
+  for(const p of ph)s+=`<rect x="${p.x-2.6}" y="${p.y-2.6}" width="5.2" height="5.2" fill="#D9B44A"/><circle cx="${p.x}" cy="${p.y}" r="1.2" fill="#8A6E22"/>`;
+  const ix=(L+R)/2;
+  if(k==='uno'||k==='mega'){
+    s+=MG.hole(L+8,T+8)+MG.hole(L+8,B-8)+MG.hole(R-8,T+8)+MG.hole(R-8,B-8);
+    s+=MG.usbB(L-10,yT-12)+MG.jack(L-8,yB+16);                                              // 왼쪽 끝: USB-B, DC 잭(7~12V)
+    s+=MG.btn(L+40,T+10,11)+MG.silk(L+40,T+22,'RESET',3.6);
+    s+=MG.ecap(L+40,yB+28)+MG.ecap(L+53,yB+28)+MG.reg(L+44,yB+14);
+    s+=MG.led(L+38,cy-4,pw,'#3BE36B','ON',true)+MG.led(L+38,cy+3,Lon,'#FFB224','L',true)+MG.led(L+46,cy-4,tx,'#FFD84A','TX')+MG.led(L+46,cy+3,false,'#FFD84A','RX');
+    if(k==='uno'){s+=MG.dip28(ix+6,cy,Math.min(118,x1-x0-70),12)+MG.xtal(L+74,T+16)+MG.icsp(R-16,cy)+MG.qfp(L+96,T+16,8,'',45);
+      s+=MG.silk(ix+20,B-14,'마이컴 보드 · 표준형',6.5)+MG.silk(ix+20,B-6,'5V · 16MHz · 디지털 14 · 아날로그 6',4,'middle',400);}
+    else{s+=MG.qfp(ix,cy,21,'MCU')+MG.xtal(ix-40,cy)+MG.icsp(R-16,cy)+MG.qfp(L+96,T+16,8,'',45);
+      s+=MG.silk(ix,B-14,'마이컴 보드 · 대형',6.5)+MG.silk(ix,B-6,'5V · 16MHz · 디지털 54 · 아날로그 16',4,'middle',400);}
+    s+=(k==='uno'?MG.silk(x0+100,yT-11,'ANALOG IN',3.8)+MG.silk(x1-40,yT-11,'POWER',3.8):MG.silk(ix,yT-11,'D38~53 · ANALOG IN · POWER',3.8))+MG.silk(ix,yB+13,'DIGITAL (PWM ~)',3.8);}
+  else if(k==='nano'){
+    s+=MG.usbMini(R-17,cy,19,16)+MG.qfp(ix-6,cy,15,'',45)+MG.xtal(x0+14,cy-1,12,5)+MG.btn(ix+30,cy,10)+MG.reg(x0+34,cy);
+    s+=MG.led(R-26,cy-6,tx,'#FFD84A','TX',true)+MG.led(R-26,cy-1,false,'#FFD84A','RX',true)+MG.led(R-26,cy+4,pw,'#3BE36B','ON',true)+MG.led(ix+44,cy,Lon,'#FFB224','L');
+    s+=MG.silk(L+5,T+5,'소형',4.2,'start');}
+  else if(k==='pro'){
+    s+=`<rect x="${L+3}" y="${cy-17}" width="9" height="34" fill="#141619"/>`;for(let i=0;i<6;i++)s+=`<rect x="${L+5}" y="${cy-15+i*6}" width="5" height="4" fill="#D9B44A"/>`;   // 프로그램용 6핀 헤더
+    s+=MG.silk(L+16,cy-13,'GND',3.2,'start')+MG.silk(L+16,cy+16,'DTR',3.2,'start');
+    s+=MG.qfp(ix+4,cy,14,'',45)+MG.btn(x1-6,cy,9)+MG.xtal(ix-24,cy,8,4)+MG.reg(ix-38,cy);
+    s+=MG.led(x1-20,cy-5,pw,'#3BE36B','PWR',true)+MG.led(x1-20,cy+5,Lon,'#3BE36B','L',true);s+=MG.silk(R-3,T+5,'프로 미니형',4,'end');}
+  else if(k==='wifi'){
+    // 왼쪽 끝: 금속 덮개 모듈 + 기판 안테나(지그재그 금선), 오른쪽 끝: 마이크로 USB
+    const mx=L+4,mw=Math.min(78,(x1-x0)*.32+44),my=cy-17;
+    s+=`<rect x="${L-24}" y="${cy-20}" width="28" height="40" rx="2" fill="${D.col}" stroke="#0A0C10"/><path d="M${L-20} ${cy-16}v10h6v-10h6v10h6v-10h4M${L-20} ${cy+16}v-12" fill="none" stroke="#C9A24A" stroke-width="1.4"/>`;
+    s+=`<rect x="${mx}" y="${my}" width="${mw}" height="34" rx="1.5" fill="#BAC0C7" stroke="#6E757D"/><rect x="${mx+3}" y="${my+3}" width="${mw-6}" height="28" fill="none" stroke="#9AA1A9" stroke-width=".6"/>`
+      +MG.silk(mx+mw/2,cy-3,'Wi-Fi · BT',5.2).replace('#F2F5F8','#3A4048')+MG.silk(mx+mw/2,cy+5,'32bit 240MHz',3.8,'middle',400).replace('#F2F5F8','#3A4048');
+    s+=MG.usbMini(R-15,cy,17,13)+MG.btn(R-25,cy-10,8,'EN')+MG.btn(R-25,cy+7,8,'BOOT')+MG.reg(ix+24,cy);
+    s+=MG.led(ix+6,cy-6,pw,'#FF4040','PWR',true)+MG.led(ix+6,cy+6,Lon,'#3B82F6','IO2',true);s+=MG.silk(R-2,T+5,'와이파이형',4,'end');}
+  // 핀 이름: 부품 그림 위에 테두리 글씨로(모듈·칩에 가려지지 않게)
+  const pins=PX[c.kind].pins,n=pins.length,h2=n/2,big=n>40;
+  ph.forEach((p,i)=>{const nm=pins[i].split(' ')[0].replace('GPIO','');s+=`<text x="${p.x}" y="${p.y+(i<h2?-8:11.5)}" font-size="${big?3.8:4.4}" fill="#F2F5F8" stroke="#0A0C10" stroke-width=".9" paint-order="stroke" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${nm}</text>`;});
+  // 상태 글(보드 위)
+  const st=M&&M.st,badge=!M||!M.P?(M&&M.cerr?['코드 오류','#FF6B6B']:['코드 없음','#AEB4BD']):st==='err'?['실행 오류','#FF6B6B']:st==='pause'?['멈춤 '+(M.vm?M.vm.ln:'')+'줄','#F5A524']:!pw?['전원 없음','#AEB4BD']:['실행 중','#3BE36B'];
+  s+=`<rect x="${R-56}" y="${T-12}" width="56" height="11" rx="3" fill="#0E1013" opacity=".85"/><text x="${R-28}" y="${T-4}" font-size="6.5" font-weight="700" fill="${badge[1]}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${badge[0]}</text>`;
   return s;};
 const MCUD=' 코드는 [속성]의 [코드 편집 · 디버그]에서 써요. C 언어로 setup( )·loop( )를 쓰고 pinMode·digitalWrite·digitalRead·analogRead·analogWrite·delay·millis·tone·Serial.print 같은 아두이노 호환 함수를 써요. [업로드]하면 보드가 처음부터 다시 돌고, 중단점·한 줄씩 실행·변수 보기로 디버깅해요. 이 프로그램이 직접 만든 해석기라 C++의 클래스·포인터·라이브러리(#include)는 못 써요.';
-const mcuDef=(k,title,cols,pins,desc,extra)=>pxDef(Object.assign({k,sub:'mcu',pre:'U',title,lay:'dip',cols:rng(cols,i=>i),pins,mcu:MCUB[k],bh:12,init:()=>({code:MCU_BLINK}),draw:mcuDraw(MCUB[k]),desc:desc+MCUD,
+const mcuDef=(k,title,cols,pins,desc,extra)=>pxDef(Object.assign({k,sub:'mcu',pre:'U',title,lay:'dip',cols:rng(cols,i=>i),pins,mcu:MCUB[k],bh:MCUB[k].bh,init:()=>({code:MCU_BLINK}),draw:mcuDraw(MCUB[k]),desc:desc+MCUD,
   props:c=>mcuProps(c),bind:c=>mcuBind(c)},extra||{}));
 mcuDef('uno','마이컴 보드 · 표준형 (5V, 디지털 14 · 아날로그 6, USB)',13,
   ['D0 (RX)','D1 (TX)','D2','D3 (PWM)','D4','D5 (PWM)','D6 (PWM)','D7','D8','D9 (PWM)','D10 (PWM)','D11 (PWM)','D12','D13 (내장 LED)','GND','AREF','A0','A1','A2','A3','A4','A5','VIN (7~12V 입력)','GND','5V','3V3'],
@@ -3294,7 +3343,7 @@ mcuDef('mega','마이컴 보드 · 대형 (5V, 디지털 54 · 아날로그 16, 
   '핀이 아주 많은 8비트 마이컴 보드예요(5V, 16MHz, 프로그램 256KB·변수 8KB). 디지털 D0~D53(2~13·44~46은 PWM), 아날로그 A0~A15(핀 번호 54~69)가 있어요. LED를 많이 켜거나 버튼·센서를 여럿 이을 때 써요. 실제 보드는 헤더가 가장자리에 둘러 있지만 이 프로그램에서는 두 줄로 펴서 홈에 걸쳐 꽂게 했어요(핀 순서는 이 프로그램이 정한 것).',{rw:15.24});
 mcuDef('wifi','마이컴 보드 · 와이파이형 (3.3V, 32비트 듀얼코어, 30핀)',15,
   ['EN (리셋)','GPIO36 (입력 전용, A0)','GPIO39 (입력 전용, A3)','GPIO34 (입력 전용, A6)','GPIO35 (입력 전용, A7)','GPIO32 (A4)','GPIO33 (A5)','GPIO25 (A18)','GPIO26 (A19)','GPIO27 (A17)','GPIO14 (A16)','GPIO12 (A15)','GPIO13 (A14)','GND','VIN (5V)',
-   'GPIO23','GPIO22','GPIO1 (TX0)','GPIO3 (RX0)','GPIO21','GPIO19','GPIO18','GPIO5','GPIO17','GPIO16','GPIO4 (A10)','GPIO2 (내장 LED, A12)','GPIO15 (A13)','GND','3V3'],
+   '3V3','GND','GPIO15 (A13)','GPIO2 (내장 LED, A12)','GPIO4 (A10)','GPIO16','GPIO17','GPIO5','GPIO18','GPIO19','GPIO21','GPIO3 (RX0)','GPIO1 (TX0)','GPIO22','GPIO23'],
   '와이파이가 들어 있는 32비트 마이컴 보드예요(3.3V 논리, 240MHz 듀얼코어). 핀은 GPIO 번호로 불러요(예: digitalWrite(2, HIGH) — 내장 LED). 정수 int가 32비트라 큰 수도 넘치지 않아요. 아날로그 입력은 12비트(0~3.3V → 0~4095)이고, GPIO34·35·36·39는 입력 전용이라 출력으로 못 써요. 출력 HIGH는 3.3V예요(5V 부품에 바로 이을 때 조심). 와이파이 통신은 시뮬레이션하지 않아요.',{rw:25.4});
 /* 보드 실행 상태(rt(c).m): vm(해석기), mode/out/pwm/tone(핀 상태, 부품 핀 칸 번호로), ser(시리얼 글), st 'run'|'pause'|'err'|'done' */
 function mcuM(c){const r=rt(c);if(!r.m)r.m={mode:{},out:{},pwm:{},tone:{},pull:{},ser:'',serIn:[],st:'run',bp:new Set(c.bp||[]),dirty:false};return r.m;}
@@ -4663,7 +4712,7 @@ function bodyRect0(c){if(c.t==='wire'||INST.has(c.t))return null;const ph=pinHol
   if(c.t==='clk'){const a=ph[0];return{x0:a.x-20,x1:a.x+20,y0:a.y-34,y1:a.y+4};}
   if(c.t==='led3'){const a=ph[0],b=ph[2];return{x0:a.x-4,x1:b.x+4,y0:a.y-25,y1:a.y+4};}
   if(c.t==='px'){const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),d=PX[c.kind];
-    return d.lay==='dip'?{x0:x0-10-(d.bh||0),x1:x1+10+(d.bh?d.bh+(d.mcu&&d.mcu.usb?10:0):0),y0:y0+3-(d.bh||0),y1:y1-3+(d.bh||0)}:{x0:x0-8,x1:x1+8,y0:y0-(d.pot?26:24),y1:y0+3};}
+    return d.lay==='dip'?(d.mcu?{x0:x0-d.mcu.xl-(d.mcu.kind==='wifi'?24:d.mcu.xl>40?10:0),x1:x1+d.mcu.xr+(d.mcu.kind==='nano'?2:0),y0:y0-d.bh,y1:y1+d.bh}:{x0:x0-10-(d.bh||0),x1:x1+10+(d.bh||0),y0:y0+3-(d.bh||0),y1:y1-3+(d.bh||0)}):{x0:x0-8,x1:x1+8,y0:y0-(d.pot?26:24),y1:y0+3};}
   // 저항·LED처럼 다리 둘인 부품은 비스듬히 놓일 수 있어서, 두 다리를 잇는 선분(seg)으로 따로 검사한다
   const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y);return{x0:Math.min(...xs)-7,x1:Math.max(...xs)+7,y0:Math.min(...ys)-7,y1:Math.max(...ys)+7,seg:ph.length===2?ph:null};}
 const rectHit=(a,b)=>a.x0<b.x1-1&&b.x0<a.x1-1&&a.y0<b.y1-1&&b.y0<a.y1-1;

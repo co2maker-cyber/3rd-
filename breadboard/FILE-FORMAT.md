@@ -385,7 +385,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `nano` | 마이컴 보드 · 소형 (5V, 30핀 DIP) — **코드 실행** | dip | 0~14 | D1 D0 RESET GND D2…D12, D13 3V3 AREF A0…A7 5V RESET GND VIN | `code`, `usb`, `bp` |
 | `pro` | 마이컴 보드 · 프로 미니형 (5V, 24핀, USB 없음) — **코드 실행** | dip | 0~11 | D1 D0 RESET GND D2…D9, D10…D13 A0…A3 VCC RESET GND RAW | `code`, `bp` |
 | `mega` | 마이컴 보드 · 대형 (5V, 디지털 54 · 아날로그 16, USB) — **코드 실행** | dip | 0~37 | D0…D37, D38…D53 A0…A15 5V 3V3 GND GND VIN AREF | `code`, `usb`, `bp` |
-| `wifi` | 마이컴 보드 · 와이파이형 (3.3V, 32비트, 30핀) — **코드 실행** | dip | 0~14 | EN GPIO36 39 34 35 32 33 25 26 27 14 12 13 GND VIN, GPIO23 22 1 3 21 19 18 5 17 16 4 2 15 GND 3V3 | `code`, `usb`, `bp` |
+| `wifi` | 마이컴 보드 · 와이파이형 (3.3V, 32비트, 30핀) — **코드 실행** | dip | 0~14 | EN GPIO36 39 34 35 32 33 25 26 27 14 12 13 GND VIN, 3V3 GND GPIO15 2 4 16 17 5 18 19 21 3 1 22 23 | `code`, `usb`, `bp` |
 
 **마이컴 보드**(`uno` `nano` `pro` `mega` `wifi`)의 추가 칸:
 - `code`: 보드에 올린 C 코드(문자열, 줄바꿈은 `\n`). `setup()`과 `loop()`가 꼭 있어야 해요. 빼면 내장 LED 깜박이기 코드가 들어가요.
