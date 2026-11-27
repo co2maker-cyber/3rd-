@@ -132,9 +132,39 @@ rect.ssel{stroke-width:2;stroke-opacity:.8;stroke-dasharray:5 3;fill:#1F8FFF;fil
 #valPop{position:fixed;z-index:60;width:250px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
 #valPop .vh{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px}#valPop .vh span{flex:1}#valPop .vh button{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px}
 #valPop .vt{display:flex;gap:4px;padding:6px 8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}#valPop .vt button{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);border-radius:12px;background:none;color:var(--fg);cursor:pointer}#valPop .vt button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-#valPop .ip{padding:2px 10px 10px;max-height:min(62vh,480px);overflow-y:auto;overscroll-behavior:contain}#valPop .ipf{margin-top:8px}#valPop .ipf>label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:600}
-#valPop .ipr{display:flex;align-items:center;gap:6px}#valPop .ipr input{flex:1;min-width:0;font-family:var(--mono);font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--sunk,transparent);color:var(--fg)}#valPop .ipr b{font-size:12px;color:var(--muted)}
-#valPop .ipf .vt{border:0;padding:4px 0 0}#valPop .ipf .vt button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}#valPop .ipa{width:100%;margin-top:10px;padding:6px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--fg);cursor:pointer;font-size:12.5px}
+/* 계측기 앞판 */
+#valPop.ipanel{width:min(580px,calc(100vw - 16px));background:linear-gradient(180deg,#3A3F47,#2A2E35);color:#E6E9EE;border:1px solid #0E1013;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);font-family:var(--sans)}
+.ipanel .iph{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-bottom:1px solid #1B1E23}.ipanel .iph>b{font-size:14px;letter-spacing:.5px;white-space:nowrap}.ipanel .ipsub{flex:1;font-size:12px;color:#AEB4BD}
+.ipanel .ipch{flex:1;display:flex;gap:4px;flex-wrap:wrap}.ipanel .ipch button{min-width:46px;padding:5px 9px;border-radius:6px;border:1px solid #14171B;background:linear-gradient(#4A505A,#353A42);color:#DDE1E7;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 2px 0 #14171B}
+.ipanel .ipch button[aria-pressed="true"]{background:linear-gradient(#2F8BFF,#1F6FDB);color:#fff;box-shadow:0 1px 0 #0D3B7A,0 0 10px rgba(47,139,255,.45)}
+.ipanel .ipx{border:0;background:none;color:#AEB4BD;font-size:22px;line-height:1;cursor:pointer;padding:2px 6px}
+.ipanel .ipbody{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px;padding:12px 14px}.ipanel .ipbody.solo{grid-template-columns:1fr}.ipanel .ipbody.solo .iplcd{min-height:120px;justify-content:center}.ipanel .ipbody.solo .ipmv{font-size:48px}
+.ipanel .iplcd{background:#07110C;border:3px solid #15181C;border-radius:8px;box-shadow:inset 0 0 18px rgba(0,0,0,.8);padding:8px 10px;color:var(--tone);font-family:var(--mono);min-height:200px;display:flex;flex-direction:column}
+.ipanel.iplcdgray .iplcd{background:#B8C4A8;color:#16200F;box-shadow:inset 0 0 10px rgba(0,0,0,.3)}
+.ipanel .ipst{font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ipanel .ipmain{display:flex;align-items:baseline;gap:6px;margin:6px 0 8px;padding-bottom:6px;border-bottom:1px dashed currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+.ipanel .ipml{font-size:11px;font-family:var(--sans);opacity:.8;flex:0 1 auto;max-width:40%}.ipanel .ipmv{flex:1;text-align:right;font-size:34px;font-weight:700;line-height:1.05;text-shadow:0 0 10px color-mix(in srgb,currentColor 50%,transparent);white-space:nowrap;overflow:hidden}.ipanel .ipmu{font-size:15px;font-weight:700}
+.ipanel .ipmain.typing .ipmv{color:#FFF3B0}
+.ipanel .iprows{display:flex;flex-direction:column;gap:2px}.ipanel .iprow{display:flex;justify-content:space-between;gap:8px;border:1px solid transparent;border-radius:4px;background:none;color:inherit;font:inherit;font-size:12.5px;padding:3px 6px;cursor:pointer;text-align:left}
+.ipanel .iprow span{font-family:var(--sans);opacity:.85}.ipanel .iprow b{white-space:nowrap}.ipanel .iprow[aria-pressed="true"]{background:color-mix(in srgb,currentColor 20%,transparent);border-color:currentColor}
+.ipanel .ipctl{display:flex;flex-direction:column;gap:8px}
+.ipanel .ipkp{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.ipanel .ipkp button,.ipanel .ipkn>button,.ipanel .ippre button,.ipanel .ipseg button,.ipanel .ipact,.ipanel .iptog{border:1px solid #14171B;border-radius:6px;background:linear-gradient(#4E545E,#383D45);color:#EEF0F3;font-weight:700;cursor:pointer;box-shadow:0 2px 0 #14171B}
+.ipanel .ipkp button{font-family:var(--mono);font-size:16px;padding:7px 0}.ipanel .ipkp button:active,.ipanel .ipkn>button:active{transform:translateY(1px);box-shadow:0 1px 0 #14171B}
+.ipanel .ipkp .ipent{grid-column:span 2;background:linear-gradient(#2F8BFF,#1F6FDB);color:#fff;font-family:var(--sans);font-size:13px}
+.ipanel .iphint{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid #14171B;border-radius:8px;background:rgba(0,0,0,.18);font-size:12px;color:#C9CED6}.ipanel .iphint b{font-size:12.5px;color:#EEF0F3}
+.ipanel .iphint kbd{display:inline-block;min-width:16px;padding:1px 5px;margin:0 1px;border:1px solid #14171B;border-bottom-width:2px;border-radius:4px;background:#4A505A;color:#fff;font-family:var(--mono);font-size:11px;text-align:center}
+.ipanel .ipkn{display:flex;align-items:center;gap:8px}.ipanel .ipkn>button{width:38px;height:34px;font-size:20px}.ipanel .ipkn .ipfine{width:auto;flex:1;font-size:11.5px;height:34px}.ipanel .ipkn .ipfine[aria-pressed="true"]{background:linear-gradient(#F0A43A,#C9801C);color:#1A1C1F}
+.ipanel .knob{--a:0deg;width:50px;height:50px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#6A707A,#2A2E35 70%);border:2px solid #14171B;box-shadow:0 3px 6px rgba(0,0,0,.5);position:relative;cursor:ns-resize;touch-action:none}
+.ipanel .knob i{position:absolute;left:50%;top:5px;width:3px;height:14px;margin-left:-1.5px;border-radius:2px;background:var(--tone);transform-origin:50% 20px;transform:rotate(var(--a))}
+.ipanel.iplcdgray .knob i{background:#F2C230}
+.ipanel .ippre{display:flex;flex-wrap:wrap;gap:4px}.ipanel .ippre button{font-size:11.5px;padding:4px 7px;font-family:var(--mono)}
+.ipanel .ippre button[aria-pressed="true"],.ipanel .ipseg button[aria-pressed="true"]{background:linear-gradient(#2F8BFF,#1F6FDB);color:#fff}
+.ipanel .ipbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;padding:10px 14px 12px;border-top:1px solid #1B1E23;background:rgba(0,0,0,.12);border-radius:0 0 14px 14px}
+.ipanel .ipg{display:flex;flex-direction:column;gap:4px}.ipanel .ipg>span{font-size:10.5px;color:#AEB4BD;font-weight:700;letter-spacing:.5px}
+.ipanel .ipseg{display:flex;flex-wrap:wrap;gap:4px}.ipanel .ipseg button{font-size:12.5px;padding:6px 10px}
+.ipanel .iptog{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:6px 12px}.ipanel .iptog i{width:10px;height:10px;border-radius:50%;background:#3A2626;box-shadow:inset 0 0 2px #000}.ipanel .iptog[aria-pressed="true"] i{background:#4BE38A;box-shadow:0 0 8px #4BE38A}
+.ipanel .ipact{font-size:12.5px;padding:6px 12px}
+@media (max-width:560px){.ipanel .ipbody{grid-template-columns:1fr}.ipanel .iplcd{min-height:0}.ipanel .ipmv{font-size:28px}}
 #bb [data-ied]{cursor:pointer}#bb [data-ied]:hover{fill:rgba(255,255,255,.06)}
 #valPop .vx{padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px}#valPop .vx input{width:100%}
 #valPop .vl{max-height:min(46vh,320px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px 6px 8px}#valPop .vd{font-size:10.5px;color:var(--muted);margin:6px 4px 2px}#valPop .vg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
@@ -3090,44 +3120,85 @@ function valSpec(o){if(o.t==='res')return{title:'저항 값',fmt:ohmTx,key:'ohms
   if(o.t==='px'&&PX[o.kind].pot)return{title:'가변저항 값',fmt:ohmTx,key:'ohms',list:()=>POTVALL,pot:1};
   if(o.t==='px'&&o.kind.startsWith('sip'))return{title:'저항 값 (어레이 전체)',fmt:ohmTx,key:'ohms',skey:'ser',sers:['E6','E12','E24'],ser:o.ser||'E12',list:RVAL};
   return null;}
-function closeValPop(){const e=$('valPop');if(e)e.remove();}
+function closeValPop(){const e=$('valPop');if(e)e.remove();if(typeof IPST!=='undefined'&&IPST){document.removeEventListener('keydown',IPST.keys,true);IPST=null;}}
 /* ── 계측기 표시 창을 누르면 열리는 값 바꾸기 창 (파워 서플라이·건전지·함수 발생기·오실로스코프·멀티미터·스펙트럼 분석기) ──
    칸: num(숫자 입력 + 자주 쓰는 값), tog(켜짐/꺼짐), seg(고르기), btn(동작). 바꾸면 바로 반영(실행 취소 가능)하고 창은 열린 채로 */
 function instSpec(c,key){const [t,a,b]=key.split(':'),N=(l,get,set,min,max,step,u,pre)=>({k:'num',l,get,set,min,max,step,u,pre}),TG=(l,get,set,on='켜짐',off='꺼짐')=>({k:'tog',l,get,set,on,off});
   if(t==='psu'){const i=+a,q=instCh(c,i);return{title:`파워 서플라이 CH${i+1}`,f:[N('전압',()=>+q.v,v=>{q.v=v;},-PSU_MAX,PSU_MAX,.1,'V',[3.3,5,9,12,24,-5,-12]),TG('출력',()=>q.on!==false,v=>{q.on=v;})]};}
   if(t==='bat')return{title:'건전지',f:[N('전압',()=>+c.v,v=>{c.v=v;},.1,48,.1,'V',BAT_V)]};
   if(t==='fg'){const i=+a,q=instCh(c,i);return{title:`함수 발생기 CH${i+1}`,f:[TG('출력',()=>q.on!==false,v=>{q.on=v;}),{k:'seg',l:'파형',opts:Object.entries(WAVES),get:()=>q.wave,set:v=>{q.wave=v;}},
-    N('주파수',()=>num(q.hz,1),v=>{q.hz=v;},.1,10,.1,'Hz',FG_HZ),N('크기 Vpp',()=>num(q.vpp,5),v=>{q.vpp=v;},0,20,.1,'V',FG_VPP),N('가장 낮은 전압 · 오프셋',()=>num(q.off,0),v=>{q.off=v;},-10,10,.1,'V',[0,-2.5,-5]),
+    N('주파수',()=>num(q.hz,1),v=>{q.hz=v;},.1,10,.1,'Hz',FG_HZ),N('크기 Vpp',()=>num(q.vpp,5),v=>{q.vpp=v;},0,20,.1,'V',FG_VPP),N('오프셋 (가장 낮은 전압)',()=>num(q.off,0),v=>{q.off=v;},-10,10,.1,'V',[0,-2.5,-5]),
     N('위상',()=>num(q.ph,0),v=>{q.ph=v;},0,360,1,'°',[0,90,120,180,240,270]),N('듀티비 (구형파)',()=>num(q.duty,50),v=>{q.duty=v;},5,95,1,'%',[25,50,75])]};}
   if(t==='osc'){if(a==='t')return{title:'오실로스코프',f:[N('시간 / 칸',()=>+c.tdiv,v=>{c.tdiv=v;},.01,5,.01,'초',OSC_T),{k:'seg',l:'화면',opts:[[true,'4분할'],[false,'겹침']],get:()=>c.split!==false,set:v=>{c.split=v;}},TG('실행',()=>c.run!==false,v=>{c.run=v;},'실행','정지'),{k:'btn',l:'화면 지우기',act:()=>{rt(c).buf=[];}}]};
     const k=+a,n=k+1,vk=k?'vdiv'+n:'vdiv';return{title:`오실로스코프 CH${n}`,f:[TG('표시',()=>c['on'+n]!==false,v=>{c['on'+n]=v;}),N('전압 / 칸',()=>oscVd(c,k),v=>{c[vk]=v;},.1,100,.1,'V',OSC_V),
-      N('위상 이동 (+ 는 왼쪽 = 앞섬)',()=>num(c['ph'+n],0),v=>{c['ph'+n]=v;},-360,360,1,'°',[0,90,120,180,-90,-120]),...(c.split===false?[N('0V 자리 (위에서 칸)',()=>num(c['pos'+n],OSC_POS[k]),v=>{c['pos'+n]=v;},0,8,.25,'칸',[1.75,3.75,5.75,7.75])]:[])]};}
-  if(t==='dmm'){if(a==='m')return{direct:()=>{c.mode=b;}};return{title:'멀티미터 · '+((rt(c).rd||{}).t||''),f:[{k:'seg',l:'측정 모드',opts:Object.entries(DMM_MODES),get:()=>c.mode||'v',set:v=>{c.mode=v;}},...(rt(c).fuse?[{k:'btn',l:'퓨즈 갈기',act:()=>{delete rt(c).fuse;}}]:[])]};}
-  if(t==='spa'){const hz=v=>v>=1000?v/1000+'k':v+'';return{title:'스펙트럼 분석기',f:[N('가운데 주파수 (CENTER)',()=>num(c.cf,1000),v=>{c.cf=v;},0,100000,.01,'Hz'),{k:'seg',l:'스팬 (화면 폭)',opts:[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000].map(v=>[v,hz(v)+'Hz']),get:()=>num(c.span,2000),set:v=>{c.span=v;}},
-    {k:'seg',l:'기준 레벨 (dBm)',opts:[30,20,10,0,-10,-20,-30,-40].map(v=>[v,(v>0?'+':'')+v]),get:()=>num(c.ref,20),set:v=>{c.ref=v;}},TG('스윕',()=>c.run!==false,v=>{c.run=v;},'실행','정지'),{k:'btn',l:'신호 찾아 맞추기',act:()=>spaAuto(c)}]};}
+      N('위상 이동 (+ 앞섬)',()=>num(c['ph'+n],0),v=>{c['ph'+n]=v;},-360,360,1,'°',[0,90,120,180,-90,-120]),...(c.split===false?[N('0V 자리 (위에서)',()=>num(c['pos'+n],OSC_POS[k]),v=>{c['pos'+n]=v;},0,8,.25,'칸',[1.75,3.75,5.75,7.75])]:[])]};}
+  if(t==='dmm'){if(a==='m')return{direct:()=>{c.mode=b;}};const rd=String((rt(c).rd||{}).t||'---').split(' ');return{title:'멀티미터',lcd:{l:DMM_MODES[c.mode||'v'],v:rd[0],u:rd[1]||''},f:[{k:'seg',l:'측정 모드',opts:Object.entries(DMM_MODES),get:()=>c.mode||'v',set:v=>{c.mode=v;}},...(rt(c).fuse?[{k:'btn',l:'퓨즈 갈기',act:()=>{delete rt(c).fuse;}}]:[])]};}
+  if(t==='spa'){const hz=v=>v>=1000?v/1000+'k':v+'';return{title:'스펙트럼 분석기',f:[N('가운데 주파수',()=>num(c.cf,1000),v=>{c.cf=v;},0,100000,.01,'Hz'),N('스팬 (화면 폭)',()=>num(c.span,2000),v=>{c.span=v;},10,50000,10,'Hz',[10,100,1000,2000,10000,50000]),
+    N('기준 레벨',()=>num(c.ref,20),v=>{c.ref=v;},-40,30,10,'dBm',[20,0,-20]),TG('스윕',()=>c.run!==false,v=>{c.run=v;},'실행','정지'),{k:'btn',l:'신호 찾아 맞추기',act:()=>spaAuto(c)}]};}
   return null;}
+/* 계측기 앞판: 실제 장비처럼 한 판에 — 왼쪽 LCD(모든 설정 값, 고른 값은 크게) · 오른쪽 숫자 키패드·노브(±)·빠른 값 · 아래 하드 키(파형·출력 등) · 위 채널 키
+   - LCD 줄이나 값 이름을 누르면 그 값을 고르고, 키패드(또는 키보드 숫자)로 치고 [입력]/Enter, 노브를 돌리거나(휠·끌기) ± 단추로 한 칸씩
+   - 바꾸면 바로 반영되고 실행 취소할 수 있다 */
+const IPCH={psu:[['psu:0','CH1'],['psu:1','CH2'],['psu:2','CH3']],fg:[['fg:0','CH1'],['fg:1','CH2'],['fg:2','CH3']],osc:[['osc:0','CH1'],['osc:1','CH2'],['osc:2','CH3'],['osc:3','CH4'],['osc:t','시간']]};
+const IPTONE={psu:'#4BE38A',bat:'#FFD08A',fg:'#FFB648',osc:'#5CFFB0',dmm:'#16200F',spa:'#5CFF8F'};
+/* 숫자 키패드는 터치 화면(핸드폰·태블릿)에서만: 손가락이 주된 입력이거나 방금 터치로 눌렀을 때. PC에서는 키보드로 친다 */
+const ipTouch=()=>(typeof lastPtrType!=='undefined'&&(lastPtrType==='touch'||lastPtrType==='pen'))||(!!window.matchMedia&&matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches);
+let IPST=null;   // 열린 앞판 상태 {id,key,sel,buf,fine,hT}
 function openInstPop(c,key,sx,sy){closeValPop();const sp0=instSpec(c,key);if(!sp0)return;const id=c.id;
   if(sp0.direct){pushHist();sp0.direct();commit(true);return;}   // 멀티미터 모드 단추처럼 누르면 바로 바뀌는 것
-  const el=document.createElement('div');el.id='valPop';el.style.width='270px';
-  const apply=f=>{const cc=compById(id);if(!cc)return closeValPop();pushHist();f();commit(true);draw();};
-  const draw=()=>{const cc=compById(id);if(!cc)return closeValPop();const sp=instSpec(cc,key),fx=v=>+(+v).toFixed(4);let h=`<div class="vh"><span>${esc(sp.title)}</span><button aria-label="닫기" data-x>×</button></div><div class="ip">`;
-    sp.f.forEach((f,i)=>{if(f.k==='btn'){h+=`<button class="ipa" data-i="${i}" data-act>${esc(f.l)}</button>`;return;}h+=`<div class="ipf"><label>${esc(f.l)}</label>`;
-      if(f.k==='num')h+=`<div class="ipr"><input type="number" data-i="${i}" min="${f.min}" max="${f.max}" step="${f.step}" value="${fx(f.get())}" aria-label="${esc(f.l)}"><b>${f.u}</b></div>`+(f.pre?`<div class="vt">${f.pre.map(v=>`<button data-i="${i}" data-p="${v}" aria-pressed="${fx(f.get())===v}">${v}${f.u==='초'?'s':f.u}</button>`).join('')}</div>`:'');
-      else if(f.k==='tog')h+=`<div class="vt"><button data-i="${i}" data-b="1" aria-pressed="${!!f.get()}">${f.on}</button><button data-i="${i}" data-b="0" aria-pressed="${!f.get()}">${f.off}</button></div>`;
-      else h+=`<div class="vt">${f.opts.map(([v,t],j)=>`<button data-i="${i}" data-o="${j}" aria-pressed="${f.get()===v}">${esc(String(t))}</button>`).join('')}</div>`;h+='</div>';});
-    el.innerHTML=h+'</div>';el.querySelector('[data-x]').onclick=closeValPop;
-    el.querySelectorAll('[data-p]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(()=>f.set(+bt.dataset.p));});
-    el.querySelectorAll('[data-b]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(()=>f.set(bt.dataset.b==='1'));});
-    el.querySelectorAll('[data-o]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(()=>f.set(f.opts[+bt.dataset.o][0]));});
-    el.querySelectorAll('[data-act]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(f.act);});
-    el.querySelectorAll('input[data-i]').forEach(inp=>{const f=sp.f[+inp.dataset.i],go=()=>{let v=+inp.value;if(inp.value===''||!Number.isFinite(v)){inp.value=fx(f.get());return;}
-        const dec=(String(f.step).split('.')[1]||'').length;v=Math.max(f.min,Math.min(f.max,+(Math.round(v/f.step)*f.step).toFixed(dec)));if(v===fx(f.get())){inp.value=v;return;}apply(()=>f.set(v));
-        const ni=el.querySelector(`input[data-i="${inp.dataset.i}"]`);if(ni){ni.focus();ni.select();}};
-      inp.onchange=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};});};
+  const el=document.createElement('div');el.id='valPop';el.className='ipanel'+(c.t==='dmm'?' iplcdgray':'');el.style.setProperty('--tone',IPTONE[c.t]||'#5CFFB0');
+  IPST={id,key,sel:null,buf:'',fine:true,hT:0};
+  const fx=(v,st)=>{const d=(String(st).split('.')[1]||'').length;return(+v).toFixed(d);};
+  const spec=()=>{const cc=compById(id);return cc?instSpec(cc,IPST.key):null;};
+  const nums=sp=>sp.f.map((f,i)=>[f,i]).filter(([f])=>f.k==='num');
+  const apply=(f,quiet)=>{const cc=compById(id);if(!cc)return closeValPop();const t=performance.now();if(!quiet||t-IPST.hT>800)pushHist();IPST.hT=t;f();commit(true);draw();};
+  const setNum=(f,v)=>{v=Math.max(f.min,Math.min(f.max,+(Math.round(v/f.step)*f.step).toFixed(6)));if(v===+fx(f.get(),f.step))return draw();apply(()=>f.set(v));};
+  const step=dir=>{const sp=spec();if(!sp)return;const f=sp.f[IPST.sel];if(!f||f.k!=='num')return;IPST.buf='';const st=f.step*(IPST.fine?1:10),v=+f.get()+dir*st;
+    const nv=Math.max(f.min,Math.min(f.max,+(Math.round(v/f.step)*f.step).toFixed(6)));if(nv===+f.get())return;apply(()=>f.set(nv),true);};
+  const enter=()=>{const sp=spec();if(!sp)return;const f=sp.f[IPST.sel];if(!f||f.k!=='num'||IPST.buf===''||IPST.buf==='-'||IPST.buf==='.'){IPST.buf='';return draw();}const v=+IPST.buf;IPST.buf='';if(!Number.isFinite(v))return draw();setNum(f,v);};
+  const key_=k=>{if(k==='C'){IPST.buf='';return draw();}if(k==='←'){IPST.buf=IPST.buf.slice(0,-1);return draw();}if(k==='±'){IPST.buf=IPST.buf.startsWith('-')?IPST.buf.slice(1):'-'+IPST.buf;return draw();}
+    if(k==='.'&&IPST.buf.includes('.'))return;if(IPST.buf.replace(/[-.]/g,'').length>=7)return;IPST.buf+=k;draw();};
+  IPST.keys=e=>{if(!document.body.contains(el))return;const k=e.key;if(e.ctrlKey||e.metaKey||e.altKey)return;
+    let hit=true;if(/^[0-9]$/.test(k))key_(k);else if(k==='.'||k===',')key_('.');else if(k==='-')key_('±');else if(k==='Backspace')key_('←');else if(k==='Enter')enter();else if(k==='ArrowUp'||k==='ArrowRight')step(1);else if(k==='ArrowDown'||k==='ArrowLeft')step(-1);
+    else if(k==='Tab'){const sp=spec();const ns=nums(sp).map(x=>x[1]);if(ns.length){IPST.buf='';IPST.sel=ns[(ns.indexOf(IPST.sel)+(e.shiftKey?ns.length-1:1))%ns.length];draw();}}else hit=false;
+    if(hit){e.preventDefault();e.stopImmediatePropagation();}};
+  document.addEventListener('keydown',IPST.keys,true);
+  const draw=()=>{const cc=compById(id);if(!cc)return closeValPop();const sp=instSpec(cc,IPST.key);if(!sp)return closeValPop();const ns=nums(sp);
+    if(IPST.sel==null||!sp.f[IPST.sel]||sp.f[IPST.sel].k!=='num')IPST.sel=ns.length?(ns.find(([f])=>/주파수|전압 \/ 칸|시간 \/ 칸/.test(f.l))||ns[0])[1]:null;
+    const cur=IPST.sel!=null?sp.f[IPST.sel]:null,chs=IPCH[cc.t]||[];
+    const stat=sp.f.filter(f=>f.k==='tog'||f.k==='seg').map(f=>f.k==='tog'?`${f.l} ${f.get()?f.on:f.off}`:(f.opts.find(o=>o[0]===f.get())||[,''])[1]).join(' · ');
+    const main=sp.lcd?sp.lcd:cur?{l:cur.l,v:IPST.buf!==''?IPST.buf+'_':fx(cur.get(),cur.step),u:cur.u,typing:IPST.buf!==''}:{l:'',v:'',u:''};
+    let h=`<div class="iph"><b>${esc(TNAME[cc.t]||'')}</b>${chs.length?`<div class="ipch">${chs.map(([k,t])=>`<button data-ch="${k}" aria-pressed="${k===IPST.key}">${t}</button>`).join('')}</div>`:`<span class="ipsub">${sp.title!==TNAME[cc.t]?esc(sp.title):''}</span>`}<button class="ipx" aria-label="닫기" data-x>×</button></div>`;
+    h+=`<div class="ipbody${cur?'':' solo'}"><div class="iplcd"><div class="ipst">${esc([(chs.find(x=>x[0]===IPST.key)||[,''])[1],stat].filter(Boolean).join(' · '))}</div>`
+      +`<div class="ipmain${main.typing?' typing':''}"><span class="ipml">${esc(main.l)}</span><span class="ipmv">${esc(String(main.v))}</span><span class="ipmu">${esc(main.u||'')}</span></div>`
+      +`<div class="iprows">${ns.map(([f,i])=>`<button class="iprow" data-sel="${i}" aria-pressed="${i===IPST.sel}"><span>${esc(f.l)}</span><b>${fx(f.get(),f.step)} ${esc(f.u)}</b></button>`).join('')}</div></div>`;
+    if(cur){h+=`<div class="ipctl">`+(ipTouch()?`<div class="ipkp">${['7','8','9','←','4','5','6','C','1','2','3','±','0','.'].map(k=>`<button data-k="${k}">${k}</button>`).join('')}<button class="ipent" data-enter>입력 ${esc(cur.u)}</button></div>`
+        :`<div class="iphint"><b>키보드로 입력</b><span><kbd>0</kbd>~<kbd>9</kbd> <kbd>.</kbd> <kbd>−</kbd> 치고 <kbd>Enter</kbd></span><span><kbd>↑</kbd><kbd>↓</kbd> 한 칸 · <kbd>Tab</kbd> 다음 값</span><span><kbd>Esc</kbd> 닫기</span></div>`)
+      +`<div class="ipkn"><button data-st="-1" aria-label="한 칸 내리기">−</button><div class="knob" title="돌리기: 휠을 굴리거나 위아래로 끌어요"><i></i></div><button data-st="1" aria-label="한 칸 올리기">+</button><button class="ipfine" data-fine aria-pressed="${!IPST.fine}">${IPST.fine?'미세 ×1':'크게 ×10'}</button></div>`
+      +(cur.pre?`<div class="ippre">${cur.pre.map(v=>`<button data-p="${v}" aria-pressed="${+fx(cur.get(),cur.step)===v}">${v}${cur.u==='초'?'s':esc(cur.u)}</button>`).join('')}</div>`:'')+`</div>`;}
+    h+=`</div>`;
+    const hard=sp.f.map((f,i)=>[f,i]).filter(([f])=>f.k!=='num');
+    if(hard.length)h+=`<div class="ipbar">${hard.map(([f,i])=>f.k==='tog'?`<div class="ipg"><span>${esc(f.l)}</span><button class="iptog" data-i="${i}" data-b="${f.get()?0:1}" aria-pressed="${!!f.get()}"><i></i>${esc(f.get()?f.on:f.off)}</button></div>`
+      :f.k==='seg'?`<div class="ipg"><span>${esc(f.l)}</span><div class="ipseg">${f.opts.map(([v,t],j)=>`<button data-i="${i}" data-o="${j}" aria-pressed="${f.get()===v}">${esc(String(t))}</button>`).join('')}</div></div>`
+      :`<div class="ipg"><span>&nbsp;</span><button class="ipact" data-i="${i}" data-act>${esc(f.l)}</button></div>`).join('')}</div>`;
+    el.innerHTML=h;
+    el.querySelector('[data-x]').onclick=closeValPop;
+    el.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{const prev=cur&&cur.l;IPST.key=b.dataset.ch;IPST.buf='';const sp2=instSpec(compById(id),IPST.key);const j=sp2.f.findIndex(f=>f.k==='num'&&f.l===prev);IPST.sel=j>=0?j:null;draw();});
+    el.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{IPST.sel=+b.dataset.sel;IPST.buf='';draw();});
+    el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>key_(b.dataset.k));
+    const en=el.querySelector('[data-enter]');if(en)en.onclick=enter;
+    el.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>step(+b.dataset.st));
+    const fi=el.querySelector('[data-fine]');if(fi)fi.onclick=()=>{IPST.fine=!IPST.fine;draw();};
+    el.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{IPST.buf='';setNum(cur,+b.dataset.p);});
+    el.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const f=sp.f[+b.dataset.i];apply(()=>f.set(b.dataset.b==='1'));});
+    el.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const f=sp.f[+b.dataset.i];apply(()=>f.set(f.opts[+b.dataset.o][0]));});
+    el.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{const f=sp.f[+b.dataset.i];apply(f.act);});
+    const kn=el.querySelector('.knob');if(kn){const ang=cur?((+cur.get()-cur.min)/((cur.max-cur.min)||1))*270-135:0;kn.style.setProperty('--a',ang+'deg');
+      kn.onwheel=e=>{e.preventDefault();step(e.deltaY<0?1:-1);};
+      kn.onpointerdown=e=>{e.preventDefault();kn.setPointerCapture(e.pointerId);let y0=e.clientY;kn.onpointermove=m=>{const d=y0-m.clientY;if(Math.abs(d)>=10){step(d>0?1:-1);y0=m.clientY;}};kn.onpointerup=()=>{kn.onpointermove=null;};};}};
   document.body.appendChild(el);draw();
-  const W=270,Hh=el.offsetHeight||300;let x=Math.max(8,Math.min(innerWidth-W-8,sx-W/2)),y=sy+14;if(y+Hh>innerHeight-8)y=Math.max(8,sy-Hh-14);el.style.left=x+'px';el.style.top=y+'px';
-  const fi=el.querySelector('input[data-i]');if(fi&&(typeof lastPtrType==='undefined'||lastPtrType==='mouse')){fi.focus();fi.select();}}
-// o: 부품(보드 c 또는 회로도 p), (sx,sy): 화면에서 부품 아래 가운데, apply(바꿀 값들 객체) → 저장
+  if(c.t==='dmm'){let last=null;const tk=setInterval(()=>{const cc=compById(id);if(!document.body.contains(el)||!cc){clearInterval(tk);return;}const t=(rt(cc).rd||{}).t;if(t!==last){last=t;draw();}},250);}   // 멀티미터는 읽은 값을 계속 보여 준다
+  const W=el.offsetWidth||560,Hh=el.offsetHeight||340;let x=Math.max(8,Math.min(innerWidth-W-8,sx-W/2)),y=sy+14;if(y+Hh>innerHeight-8)y=Math.max(8,sy-Hh-14);el.style.left=x+'px';el.style.top=y+'px';}
 function openValPop(o,sx,sy,apply){closeValPop();const sp=valSpec(o);if(!sp)return;let ser=sp.ser;const el=document.createElement('div');el.id='valPop';
   const cur=()=>o[sp.key];
   const draw=()=>{const L=sp.list(ser);let h=`<div class="vh"><span>${esc(sp.title)} · 지금 ${esc(sp.fmt(cur()))}</span><button aria-label="닫기" data-x>×</button></div>`;
@@ -4657,6 +4728,9 @@ const chTabs=(c,n,sub)=>`<div class="prop"><label>채널 (포트) 고르기</lab
 /* 필드 이름 '채널:칸'(예: '2:v')은 그 채널의 설정, 아니면 몸통 칸 */
 const instObj=(c,f)=>{const m=/^(\d):(.+)$/.exec(f);return m?[instCh(c,+m[1]-1),m[2]]:[c,f];};
 function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`,on=v=>v?'켜짐':'꺼짐';
+  return instPanelBtn(c)+instProps0(c);}
+const instPanelBtn=c=>['psu','bat','fg','osc','dmm','spa'].includes(c.t)?'<div class="row" style="margin:0 0 8px"><button class="btn pri" id="instPanel" title="실제 장비처럼 화면·키패드·노브로 바꾸는 앞판을 열어요 (보드에서 표시 창을 눌러도 열려요)">앞판 열기 (키패드·노브)</button></div>':'';
+function instProps0(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`,on=v=>v?'켜짐':'꺼짐';
   if(c.t==='dmm'){const rd=rt(c).rd||{};return`<div class="prop"><label>지금 읽은 값</label><p class="desc" style="margin:0;font-size:20px;font-family:var(--mono);font-weight:700">${esc(rd.t||'---')}</p></div>`
     +P('측정 모드',segBtns('mode',Object.keys(DMM_MODES),c.mode||'v',v=>DMM_MODES[v]))
     +(rt(c).fuse?'<div class="row" style="margin:2px 0 8px"><button class="btn pri" id="dmmFuse">퓨즈 갈기</button></div>':'')
@@ -4802,6 +4876,7 @@ function propEditor(c){
 function bindProps(c){
   if(INST.has(c.t)){$('info').querySelectorAll('[data-f] button').forEach(b=>b.onclick=()=>{pushHist();const f=b.closest('[data-f]').dataset.f,v=b.dataset.v;
       const [o,key]=instObj(c,f);if(key==='wave'||key==='mode')o[key]=v;else if(['on','run','on1','on2','on3','on4','split'].includes(key))o[key]=v==='1';else o[key]=+v;commit(true);});
+    {const ip=$('instPanel');if(ip)ip.onclick=e=>{e.stopPropagation();const r=ip.getBoundingClientRect(),k={psu:'psu:'+instSel(c,3),fg:'fg:'+instSel(c,3),osc:'osc:'+instSel(c,4)}[c.t]||c.t;setTimeout(()=>openInstPop(c,k,Math.min(r.left,innerWidth-300),r.bottom),0);};}
     {const fz=$('dmmFuse');if(fz)fz.onclick=()=>{pushHist();delete rt(c).fuse;commit(true);toast('퓨즈를 갈았어요');};}
     $('info').querySelectorAll('#chSel [data-ch]').forEach(b=>b.onclick=()=>{INSTSEL.set(c.id,+b.dataset.ch);renderInfo();});
     {const b3=$('fg3ph');if(b3)b3.onclick=()=>{pushHist();for(let i=1;i<3;i++){const q=instCh(c,i);for(const k of ['wave','hz','vpp','off','duty'])q[k]=c[k];q.ph=120*i;q.on=true;}c.ph=0;c.on=true;commit(true);toast('3상 신호를 만들었어요 · CH1 0° · CH2 120° · CH3 240°');};
@@ -6232,7 +6307,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 계측기 표시 창을 누르면 값 바꾸기 · 풀 보드 2장 위아래 묶음';
+const APP_VER='2026-11-27 · 계측기 앞판(실제 장비처럼: LCD·키패드·노브·하드 키)';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}

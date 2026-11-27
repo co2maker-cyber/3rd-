@@ -1,4 +1,4 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 33차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 34차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 9000줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
@@ -22,6 +22,8 @@
 ✓ 32차 멀티미터 `dmm`(INST, 단자 0 COM·1 VΩ·2 A, `mode` v·a·o): 전압 VΩ−COM, 전류 A→COM 0.1Ω 션트(`dmmSh`, 논리 `res`·아날로그 `Rl`), 10A 넘으면 `rt.fuse`(속성 [퓨즈 갈기]), 저항은 수동 소자망(저항·pxR·코일 DCR·션트)을 `gsolve`로 따로 풂(OL). 잘못 꽂은 단자·전원 걸린 저항 측정 경고. 읽기 `rt.rd`, 화면 갱신 `snapOut`. 속성 창 부품 설명은 맨 밑(`.pdesc`). 시험 tests/ui/dmm.js
 
 ✓ 33차 계측기 표시 창 누르면 값 바꾸기: `instSVG`의 투명 판 `data-ied`(psu:i, fg:i, bat, osc:t·osc:k, dmm·dmm:m:모드, spa) → 누르고 안 끌면 `endDrag`에서 `openInstPop`(#valPop 재사용, `instSpec` 칸 num·tog·seg·btn, 바꿔도 창 유지·실행 취소 가능). 풀 보드 2장 묶음 `addBoardPair`는 위아래(아래 보드 y+420). 시험 tests/ui/inst-pop.js. ic-examples `lcnt`도 가끔 흔들림(다시 돌리면 통과)
+
+✓ 34차 계측기 앞판(`openInstPop`, `.ipanel`): 위 채널 키(`IPCH`), 왼쪽 LCD(모든 num 값 줄 `iprow`, 고른 값 크게 `ipmain`), 오른쪽 노브(휠·끌기)·±·미세/크게·빠른 값, 아래 하드 키(tog·seg·btn), 스크롤 없음. 키보드: 숫자·Enter·↑↓·Tab·Esc(`IPST.keys` capture). 숫자 키패드는 터치 화면만(`ipTouch`: 마지막 포인터 touch/pen 또는 coarse 전용), PC는 키보드 안내 `iphint`. 멀티미터는 읽은 값 250ms 갱신. 속성 창 [앞판 열기]
 
 ## 결정사항
 - 제품 상표·로고 안 씀, "UNO/Nano 폼팩터 호환 보드 · 특징"으로 이름 — COPYRIGHT 2절, 8절 기록
