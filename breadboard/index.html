@@ -1217,6 +1217,31 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_JFET_25VUS`, `COMP_DUAL_OC_36V`, `REG_POS_ADJ_1P5A`, `DAC_10B_MULT_R2R`, `BJT_NPN_PWR_60V_150W`, `CPU_16_32B_ASYNC_8MHZ`, `LOGIC_HEX_DFF_CLR_LS`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
+아래는 21차에 더한 부품이에요.
+
+| `kind` | 이름 | 꽂는 모양 | 열 | 핀 | 추가 칸 |
+|---|---|---|---|---|---|
+| `ctrim` | 트리머 커패시터 1~30pF (공기·유리) | row | 0,2 | 1 2 | `s:3` (값 차례 0~6) |
+| `cfeed` | 피드스루 커패시터 (관통형 EMI) | row | 0,2,4 | IN GND OUT | |
+| `indv` | 가변 동조 코일 (차폐 캔) | row | 0,1,2 | 1 S(캔) 2 | |
+| `xfmr` | 전원 변압기 (다중 2차) — 시뮬레이션 없음 | row | 0~7 | PRI1 PRI2 +15V COM −15V +5V +20V −10V | |
+| `xflb` | CRT 고압 변압기 (플라이백) — 시뮬레이션 없음 | row | 0~5 | DRV VIN HTR1 HTR2 HV GND | |
+| `xtal21` · `xtal10` | 수정 진동자 21.4MHz · 10MHz — 시뮬레이션 없음 | row | 0,2 | 1 2 | |
+| `dpin` · `dvar` · `dzref` | PIN 다이오드 · 버랙터 · 기준 제너 6.2V | row | 0,3 (`dzref` 0,4) | A K | |
+| `eprom` · `sram` | EPROM · 정적 RAM 32K×8 (DIP-28) — 시뮬레이션 없음 | dip | 0~13 | 바이트 폭 표준 배열(부품 정보 창) | |
+| `gpib` | IEEE-488 버스 컨트롤러 (DIP-40) — 시뮬레이션 없음 | dip | 0~19 | 부품 정보 창 | |
+| `coax` | RF 동축 커넥터 50Ω — 시뮬레이션 없음 | row | 0,1,2 | GND SIG GND | |
+| `rlyrf` | 동축 RF 릴레이 SPDT | row | 0,2,4,6,8 | A1 A2(코일) COM NC NO | `cv:24` (12·24) |
+| `edge` | 카드 엣지 커넥터 2×15 (3.96mm) — 시뮬레이션 없음 | dip | 0~14 | A1…A15 B15…B1 | |
+| `rpg` | 광학 로터리 인코더 (오픈 컬렉터 A·B) | row | 0,1,2,3 | VCC A B GND | `s:0` |
+| `kp44` | 키패드 매트릭스 4×4 | row | 0~7 | R1 R2 R3 R4 C1 C2 C3 C4 | `key:0` (0~15) |
+| `fuse` | 유리관 퓨즈 5×20mm | row | 0,4 | 1 2 | `blown:0` |
+| `ntc` | NTC 서미스터 10kΩ | row | 0,2 | 1 2 | `temp:25` (°C) |
+| `tco` | 열 차단 스위치 (평소 닫힘) | row | 0,3 | 1 2 | `hot:0` |
+| `fan` · `emif` | 냉각 팬 · EMI 라인 필터 — 시뮬레이션 없음 | row | 0,2 · 0~8 | L N · L·N·PE IN, L·N OUT | |
+
+커패시터 `dk`에 `mica`(실버 마이카)가 생겼어요. 문서 이름 중 이미 있는 부품과 같은 것(예: `RES_MF_1PCT_0P125W` → 금속 피막 1/8W 저항, `CAP_TANT_SOLID` → 탄탈 커패시터, `IND_RF_CHOKE` → 축형 인덕터, `RELAY_SIG_REED` → 리드 릴레이)은 그 부품으로 놓여요.
+
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
 
 ### B-5. 계측기·건전지 (보드 밖에 놓는 것)
@@ -1650,6 +1675,27 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 - 시뮬레이터는 이상적인 증폭기(이득 10만 배)에 출력 한계만 넣은 어림 계산이에요. 속도·오프셋·입력 전류는 SPICE로 확인하세요.
 
 **RF·IF·디스플레이 모듈 블록**(`batt` 스텝 감쇠기·`byto` YIG 발진기·`bytx` YIG 믹서·`bconv` 변환 체인·`bfilt` 필터 모음·`bif` IF 로그 증폭단·`bref` 10MHz 기준 발진기·`bcrt` 정전 편향 CRT)과 **16/32비트 마이크로프로세서**(`cpu64`, DIP-64 900mil)는 핀만 있는 블록이에요. 부품 고르기에서는 [아날로그 · 혼합신호 IC · 모듈]에 아날로그 IC / 디지털·혼합신호 IC / 모듈 블록으로 나눠 들어 있어요. 시뮬레이션은 하지 않고 회로도·PCB에서 연결과 자리를 잡는 데 써요.
+
+---
+
+## 4-4. 계측기용 수동·기구·보호 소자
+
+| 문서 이름 | 프로그램 부품 | 메모 |
+|---|---|---|
+| `RES_MF_1PCT_0P125W` · `RES_CF_5PCT_0P25W` · `RES_PWR_WW_5W` | 저항(금속 피막 ±1% · 탄소 피막 · 권선 5W) | 이미 있는 저항, 속성 창에서 재질·전력 고르기 |
+| `POT_TRIM_CERMET_MT` · `RES_NET_THINFILM_MATCH` | `trim3296` · `sipi` | 이미 있는 부품 |
+| `CAP_AL_ELEC_BULK` · `CAP_TANT_SOLID` · `CAP_CER_NP0_RF` · `CAP_CER_X7R` · `CAP_FILM_PS_PP` | 커패시터(알루미늄 전해·탄탈·C0G·X7R·필름) | 이미 있는 종류 |
+| `CAP_MICA_PREC` | 커패시터 종류 **실버 마이카** | 새 종류 — IF 필터·안정한 발진기 |
+| `CAP_TRIM_AIR_GLASS` · `CAP_FEEDTHROUGH_EMI` | `ctrim` · `cfeed` | 새 부품 |
+| `IND_RF_CHOKE` · `IND_FERRITE_BEAD` · `IND_VAR_SHIELDED` | `inda` · `bead` · **`indv`** | 가변 동조 코일만 새 부품 |
+| `XFMR_MAINS_HV_CRT` | **`xfmr`**(전원) · **`xflb`**(CRT 고압) | 시뮬레이션 없음 |
+| `XTAL_IF_RBW_21P4M` · `XTAL_OCXO_10M` | **`xtal21`** · **`xtal10`** | 시뮬레이션 없음 |
+| `DIODE_RF_PIN_VARACTOR_ZENER` | **`dpin`** · **`dvar`** · **`dzref`** | 직류로만 계산 |
+| `MEM_EPROM_SRAM_BUS` | **`eprom`** · **`sram`** · **`gpib`** | 시뮬레이션 없음 |
+| `CONN_RF_COAX_50OHM` · `CONN_EDGE_BACKPLANE` | **`coax`** · **`edge`** | 시뮬레이션 없음 |
+| `RELAY_RF_COAX_22G` · `RELAY_SIG_REED` | **`rlyrf`** · `reed` | 코일·접점 계산 |
+| `ENC_OPT_RPG` · `SW_KEYPAD_MATRIX` | **`rpg`** · **`kp44`** | 직교 2상 출력 · 가로/세로 스캔 |
+| `PROT_FUSE_FAN_THERMAL` | **`fuse`** · **`ntc`** · **`tco`** · `fan` · `emif` | 퓨즈 끊김·온도별 저항·열 차단 계산 |
 
 ---
 
@@ -2420,7 +2466,7 @@ segDrv('DRV-14SEG',false);segDrv('DRV-16SEG',true);
    종류마다: 핀 이름(pins), 꽂는 모양(lay: 'row' 누른 줄에서 오른쪽으로 dc 칸들 | 'dip' 가운데 홈을 걸쳐 cols 칸들, 번호는 IC처럼),
    지금 닫힌 접점(contacts → [[i,j]]), 안의 저항(res → [[i,j,옴]]), 누르기(tap: 좌우 위치 side −1~1), 그리기(draw).
    가변저항 분압은 아날로그 계산(커패시터와 같은 방식)으로 풀어 와이퍼 전압을 정한다 */
-const PXSUB=[['res','고정 저항 · 저항 어레이'],['pot','가변 저항 · 트리머'],['cap','커패시터'],['sw','스위치 · 인코더'],['dio','다이오드 · 브리지 정류기'],['rly','릴레이 · 솔레노이드'],['ind','코일 · 인덕터'],['tr','트랜지스터 · MOSFET · JFET']];
+const PXSUB=[['res','고정 저항 · 저항 어레이'],['pot','가변 저항 · 트리머'],['cap','커패시터'],['sw','스위치 · 인코더'],['dio','다이오드 · 브리지 정류기'],['rly','릴레이 · 솔레노이드'],['ind','코일 · 인덕터 · 변압기 · 수정 진동자'],['tr','트랜지스터 · MOSFET · JFET'],['emc','커넥터 · 보호 · 냉각 소자']];
 // 아날로그·혼합신호 IC와 모듈 블록은 따로 분류(부품 고르기의 [아날로그 · 혼합신호 IC · 모듈])
 const PXIC=[['ana','아날로그 IC (연산 증폭기 · 비교기 · 레귤레이터)'],['dig','디지털 · 혼합신호 IC (CPU · D/A 변환기)'],['blk','RF · IF · 디스플레이 모듈 블록 (시뮬레이션 없음)']];
 const PX={};
@@ -2559,7 +2605,7 @@ for(const [k,nm,P,T] of SELK){const pins=[...rng(P,i=>'COM'+(i+1)),...rng(P*T,i=
 //    순방향 전압 vf를 넘으면 (V − vf) ÷ rs만큼 흐르고, 제너는 거꾸로 vz를 넘으면 (V − vz) ÷ rz만큼 흐른다. vr 역전압 한계, imax 순방향 전류 한계(평균)
 const DIOM={sig:{vf:.6,rs:3.5,vr:100,imax:.2,nm:'신호용'},rect:{vf:.68,rs:.25,vr:1000,imax:1,nm:'정류용'},sch:{vf:.27,rs:.18,vr:40,imax:1,nm:'쇼트키'},
   zen:{vf:.7,rs:1,vz:5.1,rz:7,pmax:1,imax:.2,nm:'제너'},ge:{vf:.2,rs:30,vr:75,imax:.05,nm:'게르마늄'},uf:{vf:.72,rs:.5,vr:1000,imax:1,nm:'초고속 정류용'},ssch:{vf:.28,rs:5,vr:30,imax:.2,nm:'소신호 쇼트키'},br:{vf:.7,rs:.3,vr:1000,imax:1,nm:'브리지'},
-  be:{vf:.65,rs:25,vr:6,imax:.05,nm:'베이스-이미터'},be2:{vf:1.3,rs:40,vr:5,imax:.12,nm:'베이스-이미터 (달링턴)'},bep:{vf:.7,rs:2,vr:7,imax:7,nm:'베이스-이미터 (파워)'},
+  be:{vf:.65,rs:25,vr:6,imax:.05,nm:'베이스-이미터'},be2:{vf:1.3,rs:40,vr:5,imax:.12,nm:'베이스-이미터 (달링턴)'},pin:{vf:.75,rs:2,vr:100,imax:.1,nm:'PIN'},var:{vf:.7,rs:10,vr:30,imax:.02,nm:'버랙터'},zref:{vf:.7,rs:2,vz:6.2,rz:10,pmax:.4,imax:.05,nm:'기준 제너'},bep:{vf:.7,rs:2,vr:7,imax:7,nm:'베이스-이미터 (파워)'},
   sig80:{vf:.6,rs:2,vr:80,imax:.2,nm:'고속 스위칭'},ss70:{vf:.37,rs:42,vr:70,imax:.015,nm:'소신호 쇼트키'},rect400:{vf:.68,rs:.35,vr:400,imax:.75,nm:'정류용'}};
 const DIOD=' 다이오드는 애노드(A)에서 캐소드(K, 띠가 있는 쪽)로만 전류를 흘려요. 시뮬레이터는 순방향 전압을 넘으면 켜지는 꺾은선 모델로 계산해요(실제 곡선의 어림).';
 const dioAx=(body,band,len)=>(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-9,x=(a.x+b.x)/2,w=len||22;let s='';for(const p of ph)s+=leg(p,p.x,y);
@@ -2812,6 +2858,102 @@ pxDef({k:'indair',pp:7.62,sub:'ind',pre:'L',title:'공심 코일 (에나멜선 �
 pxDef({k:'bead',pp:7.62,sub:'ind',pre:'FB',title:'페라이트 비드 (잡음 막기)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({}),thru:1,ind:1,
   draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10,x=(a.x+b.x)/2;let s='';for(const p of ph)s+=leg(p,p.x,y);return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-11}" y="${y-6}" width="22" height="12" rx="3" fill="#3A3F47"/>`;},
   desc:'전선에 페라이트 구슬을 끼운 부품이에요. 직류와 낮은 주파수는 그대로 통과시키고(저항 거의 0), 수십 MHz 이상의 높은 주파수 잡음만 열로 바꿔 없애요(보통 100MHz에서 약 600Ω). IC 전원 핀 앞, USB·케이블 선에 달아요. 시뮬레이터는 직류로 계산해서 전선처럼 이어 줘요.'});
+// ── 21차 부품: 계측기 부품 명세(전체판)의 수동 소자·기구·보호 소자·메모리 — 이미 있는 부품은 NIDALIAS로 이름만 이어 줌
+const boxDraw=(lab,fill,h,col)=>(c,ph)=>{const B=bodyAbove(ph,5,h||14,fill);return B.s+`<text x="${B.x}" y="${B.y+2.5}" font-size="6.5" font-weight="700" fill="${col||'#E9ECEF'}" text-anchor="middle" font-family="var(--mono)">${typeof lab==='function'?lab(c):lab}</text>`;};
+const NOSIM=' 이 부품은 시뮬레이터가 계산하지 않아요(이어도 신호가 바뀌지 않아요). 회로도·PCB에서 연결과 자리를 잡는 데 써요.';
+// 커패시터: 공기·유리 피스톤 트리머(1~30pF), 피드스루(관통형)
+pxDef({k:'ctrim',sub:'cap',pre:'C',nid:'CAP_TRIM_AIR_GLASS',title:'트리머 커패시터 (공기·유리 피스톤, 1~30pF)',lay:'row',dc:[0,2],pins:['1 (고정판)','2 (회전자)'],init:()=>({s:3}),
+  tap:(c,side)=>{c.s=((c.s||0)+(side<0?-1:1)+7)%7;return true;},
+  draw:(c,ph)=>{const B=bodyAbove(ph,4,14,'#C9CED6');return B.s+`<circle cx="${B.x}" cy="${B.y}" r="5" fill="#8A9098"/><path d="M${B.x-3.5} ${B.y}H${B.x+3.5}" stroke="#2B2F35" stroke-width="1.6" transform="rotate(${(c.s||0)*25} ${B.x} ${B.y})"/><text x="${B.x+13}" y="${B.y+2.5}" font-size="6" font-weight="700" fill="#E9ECEF">${[1,2,5,10,15,20,30][c.s||0]}p</text>`;},
+  desc:'나사(회전자)를 돌려 정전 용량을 1~30pF 사이에서 아주 조금씩 바꾸는 커패시터예요. 유전체가 공기나 유리라 손실이 아주 작아서(Q가 높음) 수정 필터의 대칭 맞추기, IF·RF 공진 주파수 미세 조정에 써요. 금속 드라이버를 대면 그 자체로 용량이 바뀌니 절연 조정봉을 써요. 누를 때마다 다음 값(1·2·5·10·15·20·30pF)으로 돌아가요.'+NOSIM});
+pxDef({k:'cfeed',sub:'cap',pre:'C',nid:'CAP_FEEDTHROUGH_EMI',title:'피드스루 커패시터 (관통형 EMI 필터)',lay:'row',dc:[0,2,4],pins:['IN (바깥쪽)','GND (차폐 벽)','OUT (안쪽)'],init:()=>({}),
+  contacts:()=>[[0,2]],
+  draw:(c,ph)=>{const B=bodyAbove(ph,3,12,'#B8BDC4');return B.s+`<rect x="${B.x-3}" y="${B.y-10}" width="6" height="20" fill="#6A7078"/><text x="${B.x}" y="${B.y-12}" font-size="5.5" font-weight="700" fill="#9AA0A8" text-anchor="middle">⏚</text>`;},
+  desc:'차폐 상자(실드 캔) 벽에 끼우는 관통형 세라믹 커패시터예요. 가운데 도체로 직류 전원·느린 제어 신호는 그대로 통과시키고(IN↔OUT), 새어 나가려는 고주파는 벽(GND)으로 흘려 보내요. RF·IF 모듈의 전원선·제어선 입구마다 달아요. 시뮬레이터는 직류로 계산해서 IN과 OUT을 전선처럼 이어 줘요.'});
+// 코일·변압기·수정 진동자
+pxDef({k:'indv',sub:'ind',pre:'L',nid:'IND_VAR_SHIELDED',title:'가변 동조 코일 (차폐 캔, 코어 조정)',lay:'row',dc:[0,1,2],pins:['1 (코일)','S (차폐 캔)','2 (코일)'],init:()=>({}),
+  contacts:()=>[[0,2]],
+  draw:(c,ph)=>{const B=bodyAbove(ph,5,16,'#C9CED6');return B.s+`<circle cx="${B.x}" cy="${B.y}" r="5.5" fill="#3A3F47"/><path d="M${B.x-3} ${B.y}H${B.x+3}" stroke="#E9ECEF" stroke-width="1.4"/>`;},
+  desc:'알루미늄 캔 안에 코일이 있고, 가운데 페라이트(또는 분말철) 코어를 드라이버로 돌려 넣고 빼서 인덕턴스를 정밀하게 맞추는 코일이에요. 캔이 바깥 자기장을 막아 줘서 21.4MHz 같은 IF 동조 증폭기, LC 필터, 위상 검파기 공진단에 써요. 캔(S)은 GND에 이어요. 코어는 쉽게 깨지니 절연 조정봉으로 돌려요.'+INDD});
+pxDef({k:'xfmr',sub:'ind',pre:'T',nid:'XFMR_MAINS_MULTI',title:'전원 변압기 (다중 2차 권선, 적층 철심)',lay:'row',dc:rng(8,i=>i),pins:['PRI1 (1차, 교류 입력)','PRI2 (1차)','+15V 탭','COM (공통)','−15V 탭','+5V 탭','+20V 탭','−10V 탭'],init:()=>({}),blk:1,
+  draw:boxDraw('TRANS','#6A5A48',18),
+  desc:'상용 교류(220V/110V)를 1차 권선에 넣으면, 여러 2차 권선에서 낮은 교류 전압(±15V·+5V·+20V·−10V용)을 나눠 내놓는 철심 변압기예요. 각 2차 출력은 브리지 정류기 → 평활 커패시터 → 레귤레이터를 거쳐 직류 전원이 돼요. 1차 쪽은 감전 위험이 있어 퓨즈·라인 필터를 함께 달아요. (탭 배치는 이 프로그램이 정한 것이에요.)'+NOSIM});
+pxDef({k:'xflb',sub:'ind',pre:'T',nid:'XFMR_HV_CRT',title:'CRT 고압 변압기 (페라이트 플라이백)',lay:'row',dc:rng(6,i=>i),pins:['DRV (구동 트랜지스터 쪽)','VIN (전원)','HTR1 (히터 권선)','HTR2 (히터 권선)','HV (애노드 고압, 수 kV)','GND'],init:()=>({}),blk:1,
+  draw:boxDraw('HV','#2B2F35',18,'#FF8A65'),
+  desc:'페라이트 코어 변압기에 펄스로 전류를 끊었다 이었다 하면 2차 쪽에 아주 높은 전압이 생기는 원리(플라이백)로 브라운관 애노드에 수 kV~십수 kV를 만드는 변압기예요. 히터용 낮은 전압 권선도 함께 감겨 있어요. 전원을 끈 뒤에도 고압이 남아 아주 위험해요. (핀 배치는 이 프로그램이 정한 것이에요.)'+NOSIM});
+const xtalDraw=lab=>(c,ph)=>{const B=bodyAbove(ph,4,14,'#C9CED6');return B.s+`<rect x="${B.x-12}" y="${B.y-6}" width="24" height="12" rx="6" fill="#DCE0E5" stroke="#8A9098"/><text x="${B.x}" y="${B.y+2.2}" font-size="5.5" font-weight="700" fill="#30343A" text-anchor="middle" font-family="var(--mono)">${lab}</text>`;};
+pxDef({k:'xtal21',sub:'ind',pre:'Y',nid:'XTAL_IF_RBW_21P4M',title:'수정 진동자 21.4MHz (IF 분해능 필터용, 금속 캔)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({}),blk:1,draw:xtalDraw('21.4M'),
+  desc:'수정 조각이 21.4MHz에서만 아주 날카롭게 공진하는 부품이에요(Q가 수만~수십만). 여러 개를 묶어 21.4MHz IF에서 통과 폭이 10Hz~3kHz밖에 안 되는 좁은 분해능 필터(RBW)를 만들어, 가까이 붙은 두 신호를 나눠 봐요. 밀폐 금속 캔(HC-49 모양)이에요.'+NOSIM});
+pxDef({k:'xtal10',sub:'ind',pre:'Y',nid:'XTAL_OCXO_10M',title:'수정 진동자 10MHz (항온조 기준 발진용)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({}),blk:1,draw:xtalDraw('10M'),
+  desc:'10MHz 기준 발진기 안에 들어가는 수정 진동자예요. 온도를 일정하게 붙잡는 작은 오븐(항온조, OCXO) 안에서 동작시켜 주파수가 하루에 10억분의 1도 안 변하게 해요. 장비 전체의 마스터 클럭이 돼요.'+NOSIM});
+// 특수 다이오드: PIN·버랙터·정밀 제너(온도 보상)
+pxDef({k:'dpin',pp:7.62,sub:'dio',pre:'D',nid:'DIODE_RF_PIN',title:'PIN 다이오드 (RF·IF 가변 감쇠·스위칭)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'pin']],draw:dioAx('#E9ECEF','#2B6CD6',18),
+  desc:'P층과 N층 사이에 도핑하지 않은 진성(I) 층을 넣은 다이오드예요. 고주파에서는 정류하지 않고, 흘려 주는 직류 전류에 따라 저항처럼 동작해요(전류가 크면 수 Ω, 없으면 수 kΩ). 그래서 RF·IF 신호를 전류로 조금씩 줄이는 가변 감쇠기, 대역 바꾸기 스위치에 써요. 시뮬레이터는 직류에서 보통 다이오드처럼 계산해요.'+DIOD});
+pxDef({k:'dvar',pp:7.62,sub:'dio',pre:'D',nid:'DIODE_VARACTOR',title:'버랙터 다이오드 (가변 용량, VCO 동조)',lay:'row',dc:[0,3],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'var']],draw:dioAx('#4A5A6A','#E9ECEF',16),
+  desc:'거꾸로 건 전압이 클수록 접합의 정전 용량이 작아지는(수십 pF → 수 pF) 다이오드예요. LC 발진기의 커패시터 자리에 넣어 전압으로 주파수를 바꾸는 VCO, PLL 동조에 써요. 늘 역방향(캐소드에 +)으로 쓰고, 직류 차단 커패시터와 큰 저항으로 동조 전압을 넣어요. 시뮬레이터는 직류만 계산해서 용량 변화는 보여 주지 않아요.'+DIOD});
+pxDef({k:'dzref',pp:10.16,sub:'dio',pre:'ZD',nid:'DIODE_ZENER_REF',title:'정밀 기준 제너 다이오드 (6.2V, 온도 보상)',lay:'row',dc:[0,4],pins:['A (애노드)','K (캐소드)'],init:()=>({}),dio:[[0,1,'zref']],draw:dioAx('#C8556A','#1A1A1A',18),
+  desc:'제너 접합과 보통 다이오드를 한 몸에 넣어 온도에 따른 전압 변화를 서로 지우게 만든 기준용 제너예요(약 6.2V, 정해진 전류 7.5mA 안팎에서 가장 안정). 정밀 기준 전압원(DAC VREF, 교정 기준)에 써요. 저항으로 전류를 정해 주고, 가능하면 정전류로 구동해요.'+DIOD});
+// 메모리·버스 인터페이스(시뮬레이션 없음): JEDEC 바이트 폭 표준 핀 배치
+const P28M=w=>[w?'A14':'VPP (프로그램 전압)','A12','A7','A6','A5','A4','A3','A2','A1','A0','D0','D1','D2','GND','D3','D4','D5','D6','D7','~CE (칩 선택)','A10','~OE (출력 허용)','A11','A9','A8','A13',w?'~WE (쓰기)':'A14','VCC'];
+const memDraw=(lab,fill)=>(c,ph)=>{const B=dipBody(ph,fill||'#1E2125');return B.s+`<circle cx="${B.x0-2}" cy="${B.y}" r="2.4" fill="#3A3F47"/>${lab==='EPROM'?`<rect x="${B.x-30}" y="${B.y-5}" width="12" height="10" rx="2" fill="#6A5ACD" opacity=".7"/>`:''}<text x="${B.x+(lab==='EPROM'?8:0)}" y="${B.y+2.5}" font-size="7" font-weight="700" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${lab}</text>`;};
+pxDef({k:'eprom',sub:'dig',pre:'U',nid:'MEM_EPROM_32KX8',title:'EPROM 32K×8 (자외선 지움, DIP-28)',lay:'dip',cols:rng(14,i=>i),pins:P28M(false),init:()=>({}),blk:1,draw:memDraw('EPROM','#3A3530'),
+  desc:'전원이 꺼져도 내용이 남는 읽기 전용 메모리예요(32K×8비트). 장비의 프로그램(펌웨어)을 담아요. ~CE와 ~OE를 LOW로 하면 A0~A14 주소의 바이트가 D0~D7로 나와요. 쓸 때는 VPP에 높은 프로그램 전압을 걸어 전용 장치로 쓰고, 지울 때는 창으로 자외선을 쬐어요(창에 스티커를 붙여 두는 이유). 핀은 바이트 폭 메모리 표준 배열이에요.'+NOSIM});
+pxDef({k:'sram',sub:'dig',pre:'U',nid:'MEM_SRAM_32KX8',title:'정적 RAM 32K×8 (DIP-28)',lay:'dip',cols:rng(14,i=>i),pins:P28M(true),init:()=>({}),blk:1,draw:memDraw('SRAM'),
+  desc:'읽고 쓸 수 있는 정적 메모리예요(32K×8비트). 측정 트레이스와 교정 값을 담아요. ~CE LOW에서 ~WE LOW면 쓰기, ~OE LOW면 읽기. 전원이 꺼지면 지워지기 때문에 계측기는 작은 배터리로 VCC를 유지해 교정 값을 지켜요(배터리 백업). EPROM과 핀 배열이 거의 같아서 같은 자리에 바꿔 꽂을 수 있게 설계해요.'+NOSIM});
+pxDef({k:'gpib',sub:'dig',pre:'U',nid:'IF_GPIB_IEEE488',title:'IEEE-488 (GPIB) 버스 컨트롤러 (DIP-40)',lay:'dip',cols:rng(20,i=>i),init:()=>({}),blk:1,draw:memDraw('GPIB'),
+  pins:['D0','D1','D2','D3','D4','D5','D6','D7','RS0 (레지스터 선택)','RS1','RS2','~CS (칩 선택)','~RD (읽기)','~WR (쓰기)','INT (인터럽트)','CLK','~RESET','TE (송신 허용)','VCC','GND',
+    'DIO1 (버스 데이터)','DIO2','DIO3','DIO4','DIO5','DIO6','DIO7','DIO8','EOI (끝 표시)','DAV (데이터 유효)','NRFD (받을 준비 안 됨)','NDAC (받지 않음)','IFC (인터페이스 초기화)','SRQ (서비스 요청)','ATN (주의)','REN (원격 허용)','SC (시스템 컨트롤러)','NC','NC','GND'],
+  desc:'여러 계측기를 한 케이블(IEEE-488, GPIB)로 묶어 컴퓨터가 원격으로 조종하게 해 주는 버스 컨트롤러예요. 8비트 데이터선(DIO1~8)과 세 줄 핸드셰이크(DAV·NRFD·NDAC)로 가장 느린 장비 속도에 맞춰 한 바이트씩 주고받고, ATN·IFC·SRQ·REN·EOI로 버스를 관리해요. CPU 쪽은 D0~D7·RS0~2·~CS·~RD·~WR로 레지스터를 읽고 써요. 버스 쪽에는 보통 전용 트랜시버를 사이에 둬요. (핀 배치는 이 프로그램이 정한 것이에요.)'+NOSIM});
+// 기구·접속·보호 소자
+pxDef({k:'coax',sub:'emc',pre:'J',nid:'CONN_RF_COAX_50OHM',title:'RF 동축 커넥터 50Ω (SMA·BNC·N형, 기판용)',lay:'row',dc:[0,1,2],pins:['GND (외부 도체)','SIG (중심 도체)','GND (외부 도체)'],init:()=>({}),blk:1,
+  draw:(c,ph)=>{const B=bodyAbove(ph,4,14,'#D4A93A');return B.s+`<circle cx="${B.x}" cy="${B.y}" r="6" fill="#E9D8A6" stroke="#8A6A10"/><circle cx="${B.x}" cy="${B.y}" r="2" fill="#5A4205"/>`;},
+  desc:'고주파 신호를 50Ω 동축선으로 주고받는 커넥터예요. 가운데 도체가 신호, 바깥 원통이 GND(차폐)예요. 앞면 입력은 튼튼한 N형, 마이크로파 모듈 사이는 작은 SMA(22GHz 이상까지), 내부 IF는 SMB·SMC, 뒷면 입출력은 BNC를 주로 써요. 모듈 사이는 구부려 모양을 고정한 세미리지드 동축선으로 잇는데, 손실이 아주 작고 전자파가 새지 않아요. 기판에서는 SIG에서 이어지는 선을 50Ω 폭으로 그려요.'+NOSIM});
+pxDef({k:'rlyrf',pp:5.08,sub:'rly',pre:'K',nid:'RELAY_RF_COAX_22G',title:'동축 RF 릴레이 SPDT (50Ω, 22GHz까지)',lay:'row',dc:[0,2,4,6,8],pins:['A1 (코일)','A2 (코일)','COM (공통 포트)','NC (평소 연결 포트)','NO (켜면 연결 포트)'],init:()=>({cv:24}),coil:[0,1],cvs:[12,24],cw:1,
+  res:coilRes,contacts:(c,r)=>r&&r.on?[[2,4]]:[[2,3]],
+  draw:(c,ph,r)=>{const on=rlyOn(c,r),B=bodyAbove(ph,7,20,'#B8BDC4');return B.s+[-14,0,14].map(dx=>`<circle cx="${B.x+dx+10}" cy="${B.y}" r="4.5" fill="#E9D8A6" stroke="#8A6A10"/>`).join('')+rlyTag(B.x-24,B.y+2,c,on,'#30343A');},
+  desc:'고주파 신호 길을 바꾸는 기계식 동축 릴레이예요(1극 2투, 50Ω). 커넥터 세 개(COM·NC·NO)가 몸통에 달려 있고, 코일을 켜면 COM이 NC에서 NO로 넘어가요. 삽입 손실이 아주 작고 끊긴 쪽으로 새는 신호가 70dB 넘게 작아서(격리도) 저대역(2.5GHz 아래)·고대역(2~22GHz) 경로를 바꾸거나 스텝 감쇠기 칸을 넣고 빼는 데 써요. 코일 24V(또는 12V), 약 1W. 시뮬레이터는 직류 연결만 계산해요.'});
+pxDef({k:'edge',sub:'emc',pre:'J',nid:'CONN_EDGE_BACKPLANE',title:'카드 엣지 커넥터 (2×15핀, 3.96mm, 마더보드용)',lay:'dip',cols:rng(15,i=>i),dpp:3.96,rw:7.62,init:()=>({}),blk:1,
+  pins:rng(30,i=>i<15?'A'+(i+1):'B'+(30-i)),
+  draw:(c,ph)=>{const B=dipBody(ph,'#2B2F35',4);let s=B.s;for(const p of ph)s+=`<rect x="${p.x-1.6}" y="${p.y<B.y?B.y-8:B.y+3}" width="3.2" height="5" fill="#D4A93A"/>`;return s+`<text x="${B.x}" y="${B.y+2}" font-size="6.5" font-weight="700" fill="#9AA0A8" text-anchor="middle">EDGE 30</text>`;},
+  desc:'꽂는 기판(플러그인 카드)의 가장자리 금도금 단자(핑거)를 받아 주는 마더보드 쪽 커넥터예요(양면 2×15, 간격 3.96mm). 여러 기판 모듈을 세로로 꽂아 전원·디지털 버스·아날로그 제어선을 나눠 줘요. 알루미늄 가이드로 기판을 잡고 차폐해요. A줄과 B줄은 기판 앞면·뒷면 단자예요.'+NOSIM});
+pxDef({k:'rpg',sub:'sw',pre:'ENC',nid:'ENC_OPT_RPG',title:'광학 로터리 인코더 (RPG 손잡이, 2상 출력)',lay:'row',dc:[0,1,2,3],pins:['VCC','A (출력)','B (출력)','GND'],init:()=>({s:0}),
+  contacts:c=>{const p=((c.s||0)%4+4)%4,L_=[];if(p===0||p===3)L_.push([1,3]);if(p===0||p===1)L_.push([2,3]);return L_;},
+  tap:(c,side)=>{c.s=(c.s||0)+(side<0?-1:1);return true;},
+  draw:(c,ph)=>{const B=bodyAbove(ph,6,18,'#3A3F47');return B.s+knob(B.x,B.y,10,(c.s||0)*Math.PI/12,'#1E2125')+`<text x="${B.x-20}" y="${B.y+3}" font-size="7" fill="#fff">◀</text><text x="${B.x+15}" y="${B.y+3}" font-size="7" fill="#fff">▶</text>`;},
+  desc:'빛과 구멍 뚫린 원판으로 회전을 읽는 인코더예요. 접점이 없어 닳지 않고 튀는 신호(채터링)도 없어서, 계측기 앞면의 주파수·기준 레벨·마커를 돌려 맞추는 큰 손잡이(RPG)에 써요. 한 칸 돌 때마다 A·B 출력이 90° 어긋나게(직교 2상) 바뀌어 방향을 알려 줘요. 출력은 오픈 컬렉터라 A·B에서 VCC로 풀업 저항(4.7k~10kΩ)을 달아요. 몸통 왼쪽을 누르면 반시계, 오른쪽은 시계 방향 한 칸이에요. 시뮬레이터는 출력이 LOW일 때 GND에 이어지는 것으로 계산해요.'});
+const KPL=['1','2','3','A','4','5','6','B','7','8','9','C','*','0','#','D'];
+pxDef({k:'kp44',sub:'sw',pre:'SW',nid:'SW_KEYPAD_MATRIX',title:'키패드 매트릭스 4×4 (16키, 8핀)',lay:'row',dc:rng(8,i=>i),pins:['R1 (가로 1)','R2','R3','R4','C1 (세로 1)','C2','C3','C4'],init:()=>({key:0}),mom:2,
+  contacts:(c,r)=>{if(!(r&&r.pr))return[];const k=c.key||0;return[[k>>2,4+(k&3)]];},
+  tap:(c,side)=>{if(Math.abs(side)<.3)return false;c.key=((c.key||0)+(side<0?-1:1)+16)%16;return true;},
+  draw:(c,ph,r)=>{const B=bodyAbove(ph,3,30,'#2B2F35');let s=B.s;const x0=B.x-26,y0=B.y-14;for(let i=0;i<16;i++){const x=x0+(i&3)*14,y=y0+(i>>2)*7,on=i===(c.key||0);
+    s+=`<rect x="${x}" y="${y}" width="12" height="6" rx="1" fill="${on?(r&&r.pr?'#E5484D':'#E8B820'):'#5C6670'}"/><text x="${x+6}" y="${y+4.8}" font-size="4.6" font-weight="700" fill="#fff" text-anchor="middle">${KPL[i]}</text>`;}return s;},
+  desc:'키 16개를 가로 4줄(R1~R4)·세로 4줄(C1~C4)의 교차점에 놓아, 8개 핀만으로 16키를 읽는 키패드예요. 키를 누르면 그 키의 가로줄과 세로줄이 이어져요. 마이크로프로세서는 가로줄을 하나씩 LOW로 만들면서 세로줄(풀업 저항 달림)이 LOW가 되는지 보고 어느 키인지 알아내요(스캔). 몸통 왼쪽·오른쪽을 누르면 고를 키가 바뀌고(노란색), 가운데를 누르고 있는 동안 그 키가 눌려요(빨간색).'});
+pxDef({k:'fuse',pp:7.62,sub:'emc',pre:'F',nid:'PROT_FUSE_GLASS',title:'유리관 퓨즈 (5×20mm, 홀더 포함)',lay:'row',dc:[0,4],pins:['1','2'],init:()=>({blown:0}),
+  contacts:c=>c.blown?[]:[[0,1]],tap:c=>{c.blown=c.blown?0:1;return true;},
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10,x=(a.x+b.x)/2;let s='';for(const p of ph)s+=leg(p,p.x,y);
+    return s+`<rect x="${x-20}" y="${y-5}" width="40" height="10" rx="2" fill="#B8BDC4"/><rect x="${x-14}" y="${y-4}" width="28" height="8" fill="#E8F1F8" stroke="#9AA0A8"/>`+(c.blown?`<path d="M${x-14} ${y}H${x-3}M${x+3} ${y}H${x+14}" stroke="#555" stroke-width="1"/><circle cx="${x}" cy="${y}" r="2.5" fill="#6A5A48" opacity=".6"/>`:`<path d="M${x-14} ${y}H${x+14}" stroke="#555" stroke-width="1"/>`);},
+  desc:'정해진 전류보다 많이 흐르면 안의 가는 금속선이 녹아 끊어져 회로를 지키는 부품이에요. 유리관이라 끊어졌는지 눈으로 보여요. 전원 입력(교류 인렛)·변압기 1차 쪽에 달고, 갈 때는 꼭 같은 정격(전류·전압·속단/지연형)으로 바꿔요. 누르면 끊어짐↔새것으로 바뀌어요(실제로는 원인을 고친 뒤 갈아요).'});
+pxDef({k:'ntc',pp:5.08,sub:'emc',pre:'TH',nid:'PROT_THERMISTOR_NTC',title:'NTC 서미스터 (10kΩ @25°C, 온도 감지)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({temp:25}),
+  res:c=>[[0,1,Math.round(10000*Math.exp(3950*(1/(273.15+(c.temp??25))-1/298.15)))]],
+  tap:c=>{const T=[0,25,50,75,100],i=T.indexOf(c.temp??25);c.temp=T[(i+1)%T.length];return true;},
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-12,x=(a.x+b.x)/2;let s='';for(const p of ph)s+=leg(p,p.x,y+3);return s+`<circle cx="${x}" cy="${y}" r="7" fill="#2B2F35"/><text x="${x}" y="${y+2.3}" font-size="5.5" font-weight="700" fill="#E9ECEF" text-anchor="middle">${c.temp??25}°</text>`;},
+  desc:'온도가 오르면 저항이 줄어드는(NTC) 반도체 저항이에요(25°C에서 10kΩ, B값 3950). 고정 저항과 묶어 전압 분배기를 만들면 온도를 전압으로 읽을 수 있어서, 전원부·YIG 모듈의 과열 감시, 팬 속도 조절, 켤 때 돌입 전류 막기에 써요. 누를 때마다 주변 온도가 0→25→50→75→100°C로 바뀌고, 시뮬레이터가 그 온도의 저항으로 계산해요(50°C 약 3.6kΩ, 100°C 약 0.7kΩ).'});
+pxDef({k:'tco',pp:7.62,sub:'emc',pre:'S',nid:'PROT_THERMAL_CUTOFF',title:'열 차단 스위치 (바이메탈, 평소 닫힘)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({hot:0}),
+  contacts:c=>c.hot?[]:[[0,1]],tap:c=>{c.hot=c.hot?0:1;return true;},
+  draw:boxDraw(c=>c.hot?'열림 🔥':'닫힘','#8A9098',12),
+  desc:'정해진 온도(예: 70~90°C)를 넘으면 안의 바이메탈 판이 휘어 접점이 열리고, 식으면 다시 닫히는 스위치예요. 방열판에 붙여 두고 전원부·변압기가 너무 뜨거워지면 전원을 끊어요. 누르면 뜨거움(열림)↔식음(닫힘)으로 바뀌어요.'});
+pxDef({k:'fan',pp:5.08,sub:'emc',pre:'M',nid:'PROT_FAN_AC',title:'냉각 팬 (교류, 강제 공랭)',lay:'row',dc:[0,2],pins:['L (교류)','N (교류)'],init:()=>({}),blk:1,
+  draw:(c,ph)=>{const B=bodyAbove(ph,10,22,'#2B2F35');return B.s+`<circle cx="${B.x}" cy="${B.y}" r="9" fill="#3A3F47"/>`+[0,72,144,216,288].map(a=>`<ellipse cx="${B.x}" cy="${B.y-5}" rx="2.6" ry="4.5" fill="#9AA0A8" transform="rotate(${a} ${B.x} ${B.y})"/>`).join('');},
+  desc:'상용 교류로 도는 냉각 팬이에요. 큰 열이 나는 선형 전원부와 YIG 모듈에 바람을 불어 넣어 장비 안 온도를 일정하게 지켜요. 먼지 필터를 주기적으로 청소해야 과열을 막아요.'+NOSIM});
+pxDef({k:'emif',sub:'emc',pre:'FL',nid:'PROT_EMI_LINE_FILTER',title:'EMI 전원 라인 필터 (교류 인렛용)',lay:'row',dc:rng(5,i=>i*2),pins:['L IN (전원 쪽)','N IN','PE (보호 접지)','L OUT (장비 쪽)','N OUT'],init:()=>({}),blk:1,
+  draw:boxDraw('EMI FILTER','#B8BDC4',16,'#30343A'),
+  desc:'교류 전원선으로 들어오고 나가는 고주파 잡음을 막는 필터예요. 안에 공통 모드 초크(코일)와 X·Y 안전 커패시터가 들어 있어요. 후면 교류 인렛·퓨즈 홀더와 한 몸인 모듈이 많아요. PE(보호 접지)는 반드시 섀시에 이어요.'+NOSIM});
+// 이미 있는 부품에 문서 이름(중립 ID) 잇기: 목록 불러오기에서 이 이름을 적으면 그 부품으로
+const NIDALIAS={RES_MF_1PCT_0P125W:{t:'res',ohms:10000,pw:.125,mat:'metal',tol:1},RES_CF_5PCT_0P25W:{t:'res',ohms:10000,pw:.25,mat:'carbon'},RES_PWR_WW_5W:{t:'res',ohms:10,pw:5,mat:'wire'},
+  POT_TRIM_CERMET_MT:{t:'px',kind:'trim3296'},RES_NET_THINFILM_MATCH:{t:'px',kind:'sipi'},
+  CAP_AL_ELEC_BULK:{t:'cap',farad:1e-3,dk:'alu'},CAP_TANT_SOLID:{t:'cap',farad:1e-5,dk:'tant'},CAP_CER_NP0_RF:{t:'cap',farad:1e-10,dk:'c0g'},CAP_CER_X7R:{t:'cap',farad:1e-7,dk:'x7r'},CAP_FILM_PS_PP:{t:'cap',farad:1e-8,dk:'film'},CAP_MICA_PREC:{t:'cap',farad:1e-10,dk:'mica'},
+  IND_RF_CHOKE:{t:'px',kind:'inda'},IND_FERRITE_BEAD:{t:'px',kind:'bead'},RELAY_SIG_REED:{t:'px',kind:'reed'},
+  XFMR_MAINS_HV_CRT:{t:'px',kind:'xfmr'},DIODE_RF_PIN_VARACTOR_ZENER:{t:'px',kind:'dpin'},MEM_EPROM_SRAM_BUS:{t:'px',kind:'eprom'},PROT_FUSE_FAN_THERMAL:{t:'px',kind:'fuse'}};
 // 기본 부품의 '저항'·'커패시터'·'푸시 버튼'·'토글 스위치'도 이 분류에 함께 보이게(미리 고르기)
 const RESPW={0.125:['1/8W',10,3.6],0.25:['1/4W',16,4.5],0.5:['1/2W',20,5.5],1:['1W',26,7],2:['2W',32,8.5],5:['5W 시멘트',40,11]};
 const RESMAT={carbon:['탄소 피막','#D8C08E','#A98F5C',5,'범용(풀업·풀다운, LED 전류 제한)에 쓰는 값싼 저항이에요. 오차 ±5%(4색 띠).'],metal:['금속 피막','#7FA7D6','#4E77A8',1,'오차가 ±1% 이하로 작고 잡음·온도 변화가 적어 정밀 아날로그·오디오·계측기에 써요(5색 띠).'],
@@ -2826,6 +2968,7 @@ function bands5(o,tol){const five=tol<=2,nd=five?3:2,e=Math.floor(Math.log10(o))
   const mult=e+0,mc=mult>=0?BAND[mult]:mult===-1?'#C9A227':'#C0C0C0';return[...ds.map(x=>BAND[x]),mc,TOLC[tol]||'#C9A227'];}
 const CAPDK={c0g:['세라믹 C0G (1종)',0,50,'온도·전압에 따라 용량이 거의 안 변해요. 발진기·정밀 필터용(수 pF~10nF).'],x7r:['세라믹 X7R (2종, MLCC)',0,50,'작고 용량이 커요. IC 전원 핀 옆 100nF(104) 바이패스의 표준이에요. 걸린 직류 전압이 크면 용량이 줄어요.'],
   alu:['알루미늄 전해',1,16,'큰 용량(µF~mF). 극성이 있어 몸통의 띠(−) 쪽을 낮은 전압에. 정격 전압은 쓰는 전압의 1.5배 이상으로.'],alubp:['알루미늄 전해 무극성 (BP)',0,50,'극성이 없는 전해 커패시터예요. 오디오 신호 연결(교류)·스피커 분배 회로용.'],
+  mica:['실버 마이카 (운모)',0,500,'운모 판에 은을 입힌 커패시터예요(10pF~10nF). 손실이 아주 작고(Q가 높음) 온도·주파수가 바뀌어도 용량이 거의 그대로라 IF 대역 필터, 안정한 발진기 공진 회로에 써요. 내압도 높아요.'],
   tant:['탄탈',1,16,'작고 새는 전류가 적어요. 극성이 있고(+ 표시 쪽을 높은 전압에) 거꾸로 걸리거나 순간 과전압에 약해서, 정격 전압을 쓰는 전압의 2배 이상으로.'],film:['필름 (폴리에스터·폴리프로필렌)',0,100,'손실이 적고 높은 전압을 견디며, 속이 상해도 스스로 회복해요. 오디오 신호, 스너버, 공진 회로용.'],
   x2:['안전 규격 필름 X2',0,275,'교류 전원선 잡음 거르기 전용(275V 교류 인증). 선과 선 사이에는 X2, 선과 접지 사이에는 Y2를 써요. 전원선에는 인증품만!'],edlc:['슈퍼커패시터 (전기 이중층)',1,5.5,'0.1~100F의 아주 큰 용량이라 잠깐 배터리처럼 써요(시계 백업, 순간 정전 유지). 극성이 있고 정격 전압(2.7V/5.5V)이 낮아요.']};
 /* ── 값 고르기 창: 저항·커패시터·가변저항·저항 어레이를 누르면 그 아래로 스크롤되는 값 목록이 내려온다 ── */
@@ -3508,6 +3651,7 @@ function compSVG(c,now){
       if(dk==='alubp')s+=`<circle r="8.5" fill="#2E7D5B" stroke="#14462F"/><text y="2.5" font-size="6" font-weight="700" fill="#fff" text-anchor="middle" transform="rotate(${-ang})">BP</text>`;
       else if(dk==='tant')s+=`<ellipse rx="7" ry="8.5" fill="#E2B32E" stroke="#8A6A10"/><text x="-4" y="2.5" font-size="7" font-weight="700" fill="#5A4205" text-anchor="middle" transform="rotate(${-ang} -4 0)">+</text>`;
       else if(dk==='edlc')s+=`<circle r="9.5" fill="#2B2F35" stroke="#000"/><circle r="6" fill="none" stroke="#777"/><text x="-5.5" y="2.5" font-size="6.5" font-weight="700" fill="#fff" text-anchor="middle" transform="rotate(${-ang} -5.5 0)">+</text>`;
+      else if(dk==='mica')s+=`<rect x="-8" y="-5.5" width="16" height="11" rx="4" fill="#8A3B2E" stroke="#4A1E16"/><text y="2" font-size="4.8" font-weight="700" fill="#F2D9A0" text-anchor="middle" transform="rotate(${-ang})">MICA</text>`;
       else if(dk==='film')s+=`<rect x="-8" y="-5.5" width="16" height="11" rx="1.5" fill="#C83A3A" stroke="#7A1F1F"/><text y="2" font-size="4.8" font-weight="700" fill="#fff" text-anchor="middle" transform="rotate(${-ang})">MKP</text>`;
       else if(dk==='x2')s+=`<rect x="-9" y="-6" width="18" height="12" rx="1.5" fill="#F0C21A" stroke="#8A6A10"/><text y="2.2" font-size="6" font-weight="700" fill="#333" text-anchor="middle" transform="rotate(${-ang})">X2</text>`;}
     else if(c.t==='cap'){if(capPol(c)){
@@ -3979,7 +4123,7 @@ function propEditor(c){
       h+=`<div class="prop"><label>인덕턴스</label><div class="seg" id="pxH">${INDV.map(v=>`<button data-v="${v}" aria-pressed="${L_===v}">${henTx(v)}</button>`).join('')}</div></div>`
         +`<p class="desc">선 저항(DCR) 약 ${ohmTx(indDcr(c))} · 흘릴 수 있는 전류 약 ${indImax(c)}A (어림값)<br>교류 저항(리액턴스): 50Hz ${X(50)} · 1kHz ${X(1e3)} · 100kHz ${X(1e5)}</p>`;}
     else if(c.kind.startsWith('sip'))h+=`<div class="prop"><label>저항 값 (모두 같음)</label><div class="seg" id="pxV">${[220,330,470,1000,4700,10000,47000,100000].map(o=>`<button data-v="${o}" aria-pressed="${(c.ohms||10000)===o}">${ohmTx(o)}</button>`).join('')}</div></div>`;
-    if(d.tap&&!d.pot){const btns=c.kind.startsWith('dip')?(c.bits||[]).map((b,i,a)=>[(i/(a.length-1))*2-1,`${i+1}: ${b?'ON':'OFF'}`]):c.kind==='tog3'?[[-1,'왼쪽 (1번)'],[0,'가운데 (끊김)'],[1,'오른쪽 (3번)']]:c.kind==='enc'?[[-1,'◀ 반시계 한 칸'],[1,'시계 한 칸 ▶']]:/^(rbcd|rhex|sel)/.test(c.kind)?[[1,'다음 자리 ▶']]:[[1,'바꾸기']];
+    if(d.tap&&!d.pot){const btns=c.kind.startsWith('dip')?(c.bits||[]).map((b,i,a)=>[(i/(a.length-1))*2-1,`${i+1}: ${b?'ON':'OFF'}`]):c.kind==='tog3'?[[-1,'왼쪽 (1번)'],[0,'가운데 (끊김)'],[1,'오른쪽 (3번)']]:c.kind==='enc'||c.kind==='rpg'?[[-1,'◀ 반시계 한 칸'],[1,'시계 한 칸 ▶']]:c.kind==='kp44'?[[-1,'◀ 이전 키'],[1,'다음 키 ▶']]:c.kind==='ctrim'?[[-1,'◀ 작게'],[1,'크게 ▶']]:/^(rbcd|rhex|sel)/.test(c.kind)?[[1,'다음 자리 ▶']]:[[1,'바꾸기']];
       h+=`<div class="prop"><label>조작</label><div class="seg" id="pxS">${btns.map(([sd,n])=>`<button data-side="${sd}">${n}</button>`).join('')}</div></div>`;}
     const cs=d.contacts?d.contacts(c,rt(c)):[];h+=`<p class="desc">지금 이어진 접점: ${cs.length?cs.map(([i,j])=>d.pins[i]+'↔'+d.pins[j]).join(', '):'없음'}</p>`;return h;}
   if(c.t==='led')return`<div class="prop"><label>LED 색</label><div class="seg" id="pc">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-v="${k}" aria-pressed="${c.color===k}">${n}</button>`).join('')}</div></div>`
@@ -4168,7 +4312,7 @@ function pxIco(k){const d=PX[k],n=d.pins.length,ph=d.lay==='dip'?d.pins.map((_,i
   const xs=ph.map(p=>p.x),x0=Math.min(...xs)-14,x1=Math.max(...xs)+14,y0=d.lay==='dip'?-26:-12,y1=d.lay==='dip'?26:24;
   return`<svg width="24" height="18" viewBox="${x0} ${y0} ${x1-x0} ${y1-y0}" preserveAspectRatio="xMidYMid meet">${s}</svg>`;}
 const resIco=(pw,mat)=>{const P=RESPW[pw],M=RESMAT[mat],w=P[1]*1.1,h=P[2];return`<svg width="24" height="18" viewBox="-22 -9 44 18"><path d="M-22 0H22" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="${mat==='wire'&&pw>=2?1:h/2}" fill="${M[1]}" stroke="${M[2]}"/></svg>`;};
-const capIco=dk=>{const col={c0g:'#E3A33B',x7r:'#E8C85A',alu:'#1F3E8C',alubp:'#2E7D5B',tant:'#E2B32E',film:'#C83A3A',x2:'#F0C21A',edlc:'#2B2F35'}[dk];return`<svg width="24" height="18" viewBox="-12 -9 24 18">${/film|x2|x7r/.test(dk)?`<rect x="-8" y="-6" width="16" height="12" rx="1.5" fill="${col}"/>`:`<circle r="8" fill="${col}"/>`}</svg>`;};
+const capIco=dk=>{const col={c0g:'#E3A33B',x7r:'#E8C85A',alu:'#1F3E8C',alubp:'#2E7D5B',tant:'#E2B32E',film:'#C83A3A',x2:'#F0C21A',edlc:'#2B2F35',mica:'#8A3B2E'}[dk];return`<svg width="24" height="18" viewBox="-12 -9 24 18">${/film|x2|x7r|mica/.test(dk)?`<rect x="-8" y="-6" width="16" height="12" rx="1.5" fill="${col}"/>`:`<circle r="8" fill="${col}"/>`}</svg>`;};
 const PASPRE={res:[['res@0.125:carbon','저항 1/8W (탄소 피막)','작은 저항 · 다리 간격 3칸'],['res@0.25:carbon','저항 1/4W (탄소 피막, 표준)','범용 · 다리 간격 4칸'],['res@0.25:metal','저항 1/4W (금속 피막, ±1%)','정밀 · 5색 띠'],['res@0.5:carbon','저항 1/2W','다리 간격 5칸'],['res@1:oxide','저항 1W (산화 금속 피막)','중전력 · 다리 간격 6칸'],['res@2:oxide','저항 2W (산화 금속 피막)','다리 간격 8칸'],['res@5:wire','저항 5W (시멘트)','대전력 · 다리 간격 11칸']].map(([k,n,sm])=>{const [,pw,mat]=/^res@([\d.]+):(\w+)$/.exec(k);return{t:[k,n,sm,''],ico:resIco(+pw,mat)};}),
   cap:Object.entries(CAPDK).map(([k,[n,p,v,d]])=>({t:['cap@'+k,n+' 커패시터',(p?'극성 있음 · ':'')+d.split('.')[0],''],ico:capIco(k)})),
   sw:[{t:['btn','푸시 버튼 (2핀)','누르는 동안 연결',''],ico:ICO.btn},{t:['sw','토글 스위치 (2핀, 기본)','누를 때마다 켜짐/꺼짐',''],ico:ICO.sw}]};
@@ -5102,7 +5246,8 @@ const DIONUM=[[/^1N(914|4148|4448)/,'d4148'],[/^1N400[1-7]/,'d4007'],[/^UF400[1-
 function parseHenry(v){const m=String(v||'').replace(/\s/g,'').match(/^([\d.]+)([nuµm]?)H?$/i);if(!m)return null;const n=parseFloat(m[1])*({n:1e-9,u:1e-6,'µ':1e-6,m:1e-3}[(m[2]||'').toLowerCase()]??1e-6);return near(INDV,n);}
 function pxPart(ty,T,v){const V=v.toUpperCase().replace(/[\s_-]/g,'');
   if(PX[ty])return{t:'px',kind:ty};const kl=Object.keys(PX).find(k=>k.toUpperCase()===T);if(kl)return{t:'px',kind:kl};
-  {const nz=x=>x.toUpperCase().replace(/[\s_-]/g,''),kn=Object.keys(PX).find(k=>PX[k].nid&&(nz(PX[k].nid)===nz(T)||nz(PX[k].nid)===V));if(kn)return{t:'px',kind:kn};}
+  {const nz=x=>x.toUpperCase().replace(/[\s_-]/g,''),kn=Object.keys(PX).find(k=>PX[k].nid&&(nz(PX[k].nid)===nz(T)||nz(PX[k].nid)===V));if(kn)return{t:'px',kind:kn};
+    const ak=Object.keys(NIDALIAS).find(k=>nz(k)===nz(T)||nz(k)===V);if(ak){const o=Object.assign({},NIDALIAS[ak]);const rest=v.replace(new RegExp(ak,'i'),'').trim();if(o.t==='res'&&rest&&parseOhms(rest))o.ohms=parseOhms(rest);if(o.t==='cap'&&rest&&parseFarad(rest))o.farad=parseFarad(rest);return o;}}
   for(const [re,k] of DIONUM)if(re.test(T)||((!T||/^(D|BR|ZD)$|DIODE|다이오드|RECT|정류|ZENER|제너|SCHOTTKY|쇼트키|BRIDGE|브리지|SIGNAL|신호|^PART$|부품/.test(T))&&re.test(V)))return{t:'px',kind:k};
   for(const [re,k] of TRNUM)if(re.test(T)||re.test(V))return{t:'px',kind:k};
   if(/^TIP12[567]/.test(T)||/^TIP12[567]/.test(V))return null;   // PNP 달링턴은 아직 없음 → 모르는 부품으로 알린다
@@ -5356,7 +5501,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-26 · 계측기 부품 명세 반영';
+const APP_VER='2026-11-27 · 계측기 전체 부품(수동·기구·보호)';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}

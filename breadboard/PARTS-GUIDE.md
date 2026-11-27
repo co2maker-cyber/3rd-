@@ -157,6 +157,27 @@
 
 ---
 
+## 4-4. 계측기용 수동·기구·보호 소자
+
+| 문서 이름 | 프로그램 부품 | 메모 |
+|---|---|---|
+| `RES_MF_1PCT_0P125W` · `RES_CF_5PCT_0P25W` · `RES_PWR_WW_5W` | 저항(금속 피막 ±1% · 탄소 피막 · 권선 5W) | 이미 있는 저항, 속성 창에서 재질·전력 고르기 |
+| `POT_TRIM_CERMET_MT` · `RES_NET_THINFILM_MATCH` | `trim3296` · `sipi` | 이미 있는 부품 |
+| `CAP_AL_ELEC_BULK` · `CAP_TANT_SOLID` · `CAP_CER_NP0_RF` · `CAP_CER_X7R` · `CAP_FILM_PS_PP` | 커패시터(알루미늄 전해·탄탈·C0G·X7R·필름) | 이미 있는 종류 |
+| `CAP_MICA_PREC` | 커패시터 종류 **실버 마이카** | 새 종류 — IF 필터·안정한 발진기 |
+| `CAP_TRIM_AIR_GLASS` · `CAP_FEEDTHROUGH_EMI` | `ctrim` · `cfeed` | 새 부품 |
+| `IND_RF_CHOKE` · `IND_FERRITE_BEAD` · `IND_VAR_SHIELDED` | `inda` · `bead` · **`indv`** | 가변 동조 코일만 새 부품 |
+| `XFMR_MAINS_HV_CRT` | **`xfmr`**(전원) · **`xflb`**(CRT 고압) | 시뮬레이션 없음 |
+| `XTAL_IF_RBW_21P4M` · `XTAL_OCXO_10M` | **`xtal21`** · **`xtal10`** | 시뮬레이션 없음 |
+| `DIODE_RF_PIN_VARACTOR_ZENER` | **`dpin`** · **`dvar`** · **`dzref`** | 직류로만 계산 |
+| `MEM_EPROM_SRAM_BUS` | **`eprom`** · **`sram`** · **`gpib`** | 시뮬레이션 없음 |
+| `CONN_RF_COAX_50OHM` · `CONN_EDGE_BACKPLANE` | **`coax`** · **`edge`** | 시뮬레이션 없음 |
+| `RELAY_RF_COAX_22G` · `RELAY_SIG_REED` | **`rlyrf`** · `reed` | 코일·접점 계산 |
+| `ENC_OPT_RPG` · `SW_KEYPAD_MATRIX` | **`rpg`** · **`kp44`** | 직교 2상 출력 · 가로/세로 스캔 |
+| `PROT_FUSE_FAN_THERMAL` | **`fuse`** · **`ntc`** · **`tco`** · `fan` · `emif` | 퓨즈 끊김·온도별 저항·열 차단 계산 |
+
+---
+
 ## 5. 프로그램 ↔ SPICE로 맞춰 보기
 
 1. 프로그램에서 회로를 만들고 [속성]에서 다이오드 전류·릴레이 코일 전압을 봐요.

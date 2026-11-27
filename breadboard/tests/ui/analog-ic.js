@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const path=require('path');
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(900);
 await p.evaluate(()=>{const t=document.getElementById('tut');if(t&&!t.hidden&&typeof endTut==='function')endTut(true);});
 const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,msg:msg||''});
-  const NEW=['q3055','q2955','q2222m','q2907m','qp39','q18s','jfn','jfn92','d914','d5711','d4004','oa2j','oa4j','oa2n','oa2b','oa4','oa1p','cmp2','reg317','dac10','cpu64','batt','byto','bytx','bconv','bfilt','bif','bref','bcrt'];
+  const NEW=['q3055','q2955','q2222m','q2907m','qp39','q18s','jfn','jfn92','d914','d5711','d4004','oa2j','oa4j','oa2n','oa2b','oa4','oa1p','cmp2','reg317','dac10','cpu64','batt','byto','bytx','bconv','bfilt','bif','bref','bcrt','ctrim','cfeed','indv','xfmr','xflb','xtal21','xtal10','dpin','dvar','dzref','eprom','sram','gpib','coax','rlyrf','edge','rpg','kp44','fuse','ntc','tco','fan','emif'];
   const st=()=>{for(let i=0;i<6;i++)settle();};
   const load=()=>{setVM('bb');const ex=EXAMPLES.paana();S.power=true;loadComps(ex.comps,false,ex.boards);orthoWires();RT.clear();commit(true);st();};load();
   const px=k=>S.comps.find(c=>c.t==='px'&&c.kind===k),leds=()=>S.comps.filter(c=>c.t==='led').map(c=>(SIM.led.get(c.id)||{}).lit?1:0).join('');
@@ -26,7 +26,7 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
       if(d.ana&&!/지금:/.test(tx))bad.push(k+' 속성(지금)');if(d.blk&&!/시뮬레이션 없음|계산하지 않아요/.test(tx))bad.push(k+' 속성(블록)');if(d.tr&&!/지금:/.test(tx))bad.push(k+' 속성(트랜지스터)');
       if(d.nid&&!tx.includes(d.nid)&&(d.ana||d.blk))bad.push(k+' nid 표시');
       const s=d.draw(S.comps[0],pinHoles(S.comps[0]).map(id=>HOLES.get(id)),rt(S.comps[0]),false);if(!s||/NaN|undefined/.test(s))bad.push(k+' 그림');}catch(e){bad.push(k+' '+e.message);}}
-    T('새 부품 29종: 보드 그리기·속성 창',!bad.length,bad.join(' | ')); }
+    T('새 부품 56종: 보드 그리기·속성 창',!bad.length,bad.join(' | ')); }
   // ③ 전원 없는 연산 증폭기 → 경고, 속성 창 "전원 부족"
   { loadComps([{t:'px',kind:'oa2j',pins:pxHolesAt('oa2j',1,'c',5)}],false);RT.clear();S.power=true;st();sel={type:'comp',id:S.comps[0].id};renderInfo();
     T('전원 없는 연산 증폭기: 경고·속성 창',SIM.warns.some(w=>/전원이 안 들어와요/.test(w[1]))&&/전원 부족/.test($('info').textContent),''); }
@@ -43,7 +43,7 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
   { openParts();const n=q=>{$('partQ').value=q;$('partQ').dispatchEvent(new Event('input'));return document.querySelectorAll('#partGrid .pcard').length;};
     const r={op:n('연산 증폭기'),cmp:n('비교기'),yig:n('YIG'),cpu:n('마이크로프로세서'),to3:n('TO-3'),dac:n('D/A')};closeParts();
     const A=PTREE.find(x=>x.k==='aic'),sub=A?A.kids.map(x=>x.k+':'+x.items.length):[],pas=PTREE.find(x=>x.k==='pas').kids.map(x=>x.k);
-    T('부품 고르기: [아날로그 · 혼합신호 IC · 모듈] 분류 3개, 수동 소자에는 없음, 검색',sub.join()==='a-ana:8,a-dig:2,a-blk:8'&&!pas.some(k=>/ana|dig|blk/.test(k))&&SCHTREE.includes(A)&&r.op>=6&&r.cmp>=1&&r.yig>=2&&r.cpu>=1&&r.to3>=2&&r.dac>=1,sub.join(' ')+' '+JSON.stringify(r)); }
+    T('부품 고르기: [아날로그 · 혼합신호 IC · 모듈] 분류 3개, 수동 소자에는 없음, 검색',sub.join()==='a-ana:8,a-dig:5,a-blk:8'&&!pas.some(k=>/ana|dig|blk/.test(k))&&SCHTREE.includes(A)&&r.op>=6&&r.cmp>=1&&r.yig>=2&&r.cpu>=1&&r.to3>=2&&r.dac>=1,sub.join(' ')+' '+JSON.stringify(r)); }
   // ⑦ 목록 불러오기: 중립 이름(nid)으로 적은 부품
   { const txt='U1 OPAMP_DUAL_GP_SS\nU2 COMP_DUAL_OC_36V\nQ1 BJT_NPN_SW_40V_800MA\nR1 R 10k\nN1: U1.OUT1, R1.1\nN2: R1.2, U1.IN1−';
     const sp=parseSpec(txt),kinds=sp.parts.map(x=>x.kind||x.t).join(' ');T('목록: nid로 부품 알아봄',kinds==='oa2b cmp2 q2222m res',kinds+' '+sp.errors.join('|')); }

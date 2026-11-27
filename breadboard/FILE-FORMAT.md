@@ -382,6 +382,31 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_JFET_25VUS`, `COMP_DUAL_OC_36V`, `REG_POS_ADJ_1P5A`, `DAC_10B_MULT_R2R`, `BJT_NPN_PWR_60V_150W`, `CPU_16_32B_ASYNC_8MHZ`, `LOGIC_HEX_DFF_CLR_LS`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
+아래는 21차에 더한 부품이에요.
+
+| `kind` | 이름 | 꽂는 모양 | 열 | 핀 | 추가 칸 |
+|---|---|---|---|---|---|
+| `ctrim` | 트리머 커패시터 1~30pF (공기·유리) | row | 0,2 | 1 2 | `s:3` (값 차례 0~6) |
+| `cfeed` | 피드스루 커패시터 (관통형 EMI) | row | 0,2,4 | IN GND OUT | |
+| `indv` | 가변 동조 코일 (차폐 캔) | row | 0,1,2 | 1 S(캔) 2 | |
+| `xfmr` | 전원 변압기 (다중 2차) — 시뮬레이션 없음 | row | 0~7 | PRI1 PRI2 +15V COM −15V +5V +20V −10V | |
+| `xflb` | CRT 고압 변압기 (플라이백) — 시뮬레이션 없음 | row | 0~5 | DRV VIN HTR1 HTR2 HV GND | |
+| `xtal21` · `xtal10` | 수정 진동자 21.4MHz · 10MHz — 시뮬레이션 없음 | row | 0,2 | 1 2 | |
+| `dpin` · `dvar` · `dzref` | PIN 다이오드 · 버랙터 · 기준 제너 6.2V | row | 0,3 (`dzref` 0,4) | A K | |
+| `eprom` · `sram` | EPROM · 정적 RAM 32K×8 (DIP-28) — 시뮬레이션 없음 | dip | 0~13 | 바이트 폭 표준 배열(부품 정보 창) | |
+| `gpib` | IEEE-488 버스 컨트롤러 (DIP-40) — 시뮬레이션 없음 | dip | 0~19 | 부품 정보 창 | |
+| `coax` | RF 동축 커넥터 50Ω — 시뮬레이션 없음 | row | 0,1,2 | GND SIG GND | |
+| `rlyrf` | 동축 RF 릴레이 SPDT | row | 0,2,4,6,8 | A1 A2(코일) COM NC NO | `cv:24` (12·24) |
+| `edge` | 카드 엣지 커넥터 2×15 (3.96mm) — 시뮬레이션 없음 | dip | 0~14 | A1…A15 B15…B1 | |
+| `rpg` | 광학 로터리 인코더 (오픈 컬렉터 A·B) | row | 0,1,2,3 | VCC A B GND | `s:0` |
+| `kp44` | 키패드 매트릭스 4×4 | row | 0~7 | R1 R2 R3 R4 C1 C2 C3 C4 | `key:0` (0~15) |
+| `fuse` | 유리관 퓨즈 5×20mm | row | 0,4 | 1 2 | `blown:0` |
+| `ntc` | NTC 서미스터 10kΩ | row | 0,2 | 1 2 | `temp:25` (°C) |
+| `tco` | 열 차단 스위치 (평소 닫힘) | row | 0,3 | 1 2 | `hot:0` |
+| `fan` · `emif` | 냉각 팬 · EMI 라인 필터 — 시뮬레이션 없음 | row | 0,2 · 0~8 | L N · L·N·PE IN, L·N OUT | |
+
+커패시터 `dk`에 `mica`(실버 마이카)가 생겼어요. 문서 이름 중 이미 있는 부품과 같은 것(예: `RES_MF_1PCT_0P125W` → 금속 피막 1/8W 저항, `CAP_TANT_SOLID` → 탄탈 커패시터, `IND_RF_CHOKE` → 축형 인덕터, `RELAY_SIG_REED` → 리드 릴레이)은 그 부품으로 놓여요.
+
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
 
 ### B-5. 계측기·건전지 (보드 밖에 놓는 것)

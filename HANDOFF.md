@@ -4,7 +4,7 @@
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 7600줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정. 같은 저장소 `linux/`·`router/`·`windows/` 실습장, 루트 `index.html`
 
 ## 현황
-- main = 작업 브랜치 `ccr-957126bc-kqjtgb`(20차 반영, 전체 시험 통과 후). 아티팩트 v71. `APP_VER='2026-11-26 · 계측기 부품 명세 반영'`
+- main = 작업 브랜치 `ccr-957126bc-kqjtgb`(20차 반영, 전체 시험 통과 후). 아티팩트 v71. `APP_VER='2026-11-27 · 계측기 전체 부품(수동·기구·보호)'`
 ✓ ~15차: 오류 알림, PCB(자동 배선·DRC·거버 zip), 연결 체크, 순서 카드, 저작권 가이드, 서명 `AUTHOR_SIG`, 라이선스 키 `LIC_*`, 릴레이·코일, 다이오드 `DIOM`, SPICE `breadboard/spice/`, `PARTS-GUIDE.md`, 목록 배치 `pxPart`, PCB 범위 선택·지우개
 ✓ 16~18차: PCB 부품 놓기 `pcbPick`/`pcbPlaceAt`(회로도·보드에도), 장착 구멍 `PCB.xp`, `pcbToSch`, 층별 보기 `pview`/`#pLbar`, [층 쌓기] `#pStackB`, 트랜지스터 9종 PX `sub:'tr'`(`q3904`·`q2222`·`qbc547`·`q3906`·`qbc557`·`qtip`·`m7000`·`mnpow`·`mppow`), 예제 Ⓟ7 `pastr`
 ✓ 19차 검토 3회(사용자 "소자부터 검토 3번"): 1차 소자·시뮬·PCB, 2차 1차수정+화면 조작, 3차 2차수정+새 기능 — 모두 수정·시험 통과·main 반영
@@ -13,8 +13,9 @@
 ✓ 19차 층 수 무제한(`normNL` 1·짝수, `PCB_MAXL`=128, `LNAME`/`LSHORT`/`PCOL` Proxy `In\d+`, `pDefInner`, `pMinTh`, `#pNLn`), 자동 배선 층 자동 늘리기 `PCB.autoL`(`routeBest`·`pAddLayerPair`·`pTrimLayers`, 14초), 층 주 방향 dirP, 배치 최적화 `pcbOptimizePlace`(담금질 HPWL+넓이), [자동 설계] `#pAuto`, [배치 최적화] `#pOpt`
 ✓ 시뮬 구조(19차): 트랜지스터 스위치/아날로그 모드 `r.an`(이미터·소스 strong 아니면 VCCS beta·포화 0.2V / MOSFET gm·lin), 한 번에 서로 물리지 않은 것만 일괄 바꿈, 릴레이 `SIM.rr`(4)·전체 `SIM.rd`(24, 상한 28) 따로, `uf2`(트랜지스터 접점 뺀 연결)로 베이스 눌러 끄기, 직류 길 없는 미지 줄 volt 제외(떠 있음=null), 아날로그 줄 닿은 LED는 다이오드 `ledL`/`ledA`(색별 vf, 켜짐=전류 `rt(c).ai`>0.2mA)
 ✓ 실행 취소: `ssnap()`에 보드 `bb` → `sApply`가 보드 그대로 되돌림(+`pushHist`), `schAutoSync` 보드 바뀌면 PCB `phist` 비움, 자동 동기화는 실행 취소 단계 아님, `boardToSch`가 이름표·부품 차례 유지, `#clr` 되돌리면 `_pcb`·`_name` 복원
-✓ 시험 전부 통과(20차): tests/ui 26종, verify-parts 177/177, verify74 107/107, sig-check, guide-sync, spice-check
+✓ 시험 전부 통과(20차): tests/ui 26종, verify-parts 202/202, verify74 107/107, sig-check, guide-sync, spice-check
 ✓ 20차 부품(원본 명세 2·3차 제공 후 맞춤, 명세 ID 28개): 분류 `PXIC`(부품 고르기 최상위 [아날로그 · 혼합신호 IC · 모듈] `PTREE[6]` `aic`, 회로도 목록에도) = `ana` 아날로그 IC(`oa2j`·`oa4j`·`oa2n`·`oa1p` 외부 보상 TO-99·`cmp2`·`reg317` + 명세 밖 `oa2b`·`oa4` 단전원) / `dig`(`dac10` 10비트 래치 없음·`cpu64`) / `blk` 8종(`batt`·`byto`·`bytx`·`bconv`·`bfilt`·`bif`·`bref`·`bcrt`, `blk:1`). 개별 소자는 기존 분류 `tr`(`q3055` 10A 150W·`q2955`·`q2222m`·`q2907m` PNP 200mA·`qp39` PNP 80V TO-39·`q18s`·`jfn` TO-18·`jfn92` TO-92) / `dio`(`d914`·`d5711`·`d4004` 750mA). 이미 있던 것: 브리지 600V 1A → `brdg`에 nid만, 6채널 DFF → 74LS174에 `nid` + `partOf` CHIPS nid 인식. 모든 명세 ID = `nid`(verify-parts에서 27개 대조, 중복 nid 없음). 속성 `anaTx`(DAC 비트 수 `n`), 전원 없음 경고(핀 번호·이름), JFET 게이트 경고, 예제 Ⓟ8 `paana`·Ⓟ9 `pasa`(보드 3개: 튜닝 DAC 스윕 / RF 섹션 블록 / IF·표시 섹션 + 빔 켜기 NPN → CRT BLANK, 스윕 → CRT X+), 시험 `tests/ui/analog-ic.js`
+✓ 21차(11-27, 명세 4차 = 전체 부품판): 이미 있는 것은 `NIDALIAS`(문서 ID → 기존 res/cap/px, `pxPart`가 값도 읽음), 새 PX 26종 — `cap`: `ctrim`·`cfeed`, CAPDK `mica` / `ind`(라벨 '…변압기 · 수정 진동자'): `indv`·`xfmr`·`xflb`·`xtal21`·`xtal10` / `dio`: `dpin`·`dvar`·`dzref`(DIOM pin·var·zref) / `dig`: `eprom`·`sram`(JEDEC 28핀)·`gpib` / `rly`: `rlyrf` / `sw`: `rpg`(오픈 컬렉터 2상)·`kp44`(mom:2, key) / 새 분류 `emc` '커넥터 · 보호 · 냉각 소자': `coax`·`edge`(dpp 3.96)·`fuse`(blown)·`ntc`(temp, res B3950)·`tco`(hot)·`fan`·`emif`. 시뮬레이션 없는 것은 `blk:1`+`NOSIM` 문구
 ✓ 20차 아날로그 IC 계산 틀(`a77dda9`): `anaL`(settle, PX 필드 `ana:{oa:[{o,p,n}],cmp:[{o,p,n}],reg:{adj,out,in,vref,drop,ro},dac:{io1,io2,vref,rfb,vdd,gnd,bits,R},vcc,vee,gnd,A,ro,hd,vmin,ron}`), analogStep 도장(가짜 GND 줄 -1, `vccs` 정의 앞으로 옮김), 상태(oa lin/hi/lo, cmp 0/1, reg reg/drop), 가지치기, `r.ast` 기록. 회로도 시뮬(SIM_S)은 아날로그 계산 안 함(상태 '—')
 ✗ 미검증: 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(gerbonara 설치 권한 거절됨)
 

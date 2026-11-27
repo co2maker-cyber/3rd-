@@ -184,7 +184,7 @@ function inPage() {
     { const t = [[1e-4, [1, 0, 1]], [4.7e-5, [4, 7, 0]], [1e-6, [1, 0, -1]], [2.2e-3, [2, 2, 2]]], bad = t.filter(([L_, e]) => indBands(L_).join() !== [BANDC[e[0]], BANDC[e[1]], e[2] < 0 ? '#C9A227' : BANDC[e[2]]].join());
       rec('수동 소자', '인덕터 색띠 (µH)', !bad.length, bad.length ? bad.map(x => henTx(x[0])).join(' ') : '100µH 갈검갈 · 47µH 노보검 · 1µH 갈검금 · 2.2mH 빨빨빨'); }
     // 다이오드: 5V → 다이오드 → 1kΩ → GND 에서 캐소드 전압(= 5 − 순방향 전압), 거꾸로 꽂으면 전류 없음(캐소드 쪽이 5V 그대로)
-    for (const [k, lo, hi] of [['d4148', .55, .75], ['d4007', .55, .78], ['d5819', .15, .38], ['dge', .12, .45], ['dz51', .55, .78], ['duf', .6, .85], ['dbat', .25, .45], ['d914', .55, .75], ['d5711', .4, .7], ['d4004', .55, .78]]) {
+    for (const [k, lo, hi] of [['d4148', .55, .75], ['d4007', .55, .78], ['d5819', .15, .38], ['dge', .12, .45], ['dz51', .55, .78], ['duf', .6, .85], ['dbat', .25, .45], ['d914', .55, .75], ['d5711', .4, .7], ['d4004', .55, .78], ['dpin', .7, .85], ['dvar', .65, .8], ['dzref', .6, .8]]) {
       const e = 3 + PX[k].dc[1];
       build([{ t: 'wire', pins: ['a3', 'tp3'] }, { t: 'px', kind: k, pins: ['c3', 'c' + e] }, { t: 'res', pins: ['d' + e, 'd' + (e + 4)], ohms: 1000 }, { t: 'wire', pins: ['a' + (e + 4), 'tn' + (e + 4)] }]);
       const vf = 5 - vH('e' + e);
@@ -227,6 +227,38 @@ function inPage() {
       const a = run(1), b = run(0);
       rec('수동 소자', `${jk} · ${PX[jk].title}`, a.on && !b.on && a.v > 4.5 && b.v < .3 && PX[jk].pins.map(p => p[0]).join('') === 'DSG' && PX[jk].tr.vth < 0,
         `핀 DSG · 게이트=소스(0V) 켜짐, 드레인 ${a.v != null ? a.v.toFixed(2) : '?'}V · 게이트 −5V 꺼짐, 드레인 ${b.v != null ? b.v.toFixed(2) : '?'}V · 문턱 ${PX[jk].tr.vth}V`); }
+    // ── 21차: 수동·기구·보호 소자
+    { // 기준 제너: 12V → 330Ω → 캐소드, 1kΩ 부하 → 6.2V 근처
+      build([{ t: 'psu', k: 1, x: 20, y: 440, v: 12 }, { t: 'wire', pins: ['@1:0', 'a3'] }, { t: 'wire', pins: ['@1:1', 'a20'] }, { t: 'res', pins: ['b3', 'b9'], ohms: 330 }, { t: 'px', kind: 'dzref', pins: ['c20', 'c24'] }, { t: 'wire', pins: ['d24', 'd9'] }, { t: 'res', pins: ['e9', 'e20'], ohms: 1000 }]);
+      const v = vH('e9'); rec('수동 소자', '기준 제너 정전압 (12V → 330Ω → 6.2V)', v > 6.1 && v < 6.45, `출력 ${v.toFixed(2)}V`); }
+    // 이어 주는 부품(피드스루 C·가변 코일·퓨즈·열 차단 스위치): 1번에 HIGH → 반대쪽 HIGH(풀다운 10k), 끊으면 LOW
+    for (const [k, a, b, brk] of [['cfeed', 0, 2], ['indv', 0, 2], ['fuse', 0, 1, 'blown'], ['tco', 0, 1, 'hot']]) {
+      const d = PX[k], col = i => 5 + d.dc[i];
+      build([{ t: 'px', kind: k, pins: d.dc.map(x => 'c' + (5 + x)) }, { t: 'wire', pins: ['a' + col(a), 'tp' + col(a)] }, { t: 'res', pins: ['d' + col(b), 'g' + col(b)], ohms: 10000 }, { t: 'wire', pins: ['j' + col(b), 'bn' + col(b)] }]);
+      const on = lvH('e' + col(b)); let off = null; if (brk) { S.comps[0][brk] = 1; settle(); off = lvH('e' + col(b)); }
+      rec('수동 소자', `${k} · ${d.title}`, on === Hh && (!brk || off === L) && d.nid, `${d.pins[a].split(' ')[0]} HIGH → ${d.pins[b].split(' ')[0]} ${LVK[on]}${brk ? ` · ${brk === 'blown' ? '끊어지면' : '뜨거우면'} ${LVK[off]}` : ''}`); }
+    { // NTC: 5V → NTC → 노드 → 10k → GND. 25°C면 2.5V, 50°C(약 3.6kΩ)면 약 3.68V
+      const v = T => { build([{ t: 'px', kind: 'ntc', pins: ['c5', 'c7'], temp: T }, { t: 'wire', pins: ['a5', 'tp5'] }, { t: 'res', pins: ['d7', 'g7'], ohms: 10000 }, { t: 'wire', pins: ['j7', 'bn7'] }]); return vH('e7'); };
+      const a = v(25), b = v(50), e50 = 5 * 10000 / (10000 + 10000 * Math.exp(3950 * (1 / 323.15 - 1 / 298.15)));
+      rec('수동 소자', `ntc · ${PX.ntc.title}`, near(a, 2.5, .01) && near(b, e50, .01), `25°C ${a.toFixed(3)}V(기대 2.5) · 50°C ${b.toFixed(3)}V(기대 ${e50.toFixed(3)})`); }
+    { // 트리머 C: 누를 때마다 값이 바뀜, 직류로는 끊김
+      const c = { kind: 'ctrim', s: 3 }; PX.ctrim.tap(c, 1); rec('수동 소자', `ctrim · ${PX.ctrim.title}`, c.s === 4 && !PX.ctrim.contacts && PX.ctrim.nid, '10pF → 15pF, 직류 끊김'); }
+    { // 광학 인코더: A·B 풀업, 한 칸씩 돌리면 (A,B) = LL → HL → HH → LH (직교 2상)
+      build([{ t: 'px', kind: 'rpg', pins: ['c13', 'c14', 'c15', 'c16'] }, { t: 'wire', pins: ['a13', 'tp13'] }, { t: 'wire', pins: ['a16', 'tn16'] }, { t: 'res', pins: ['b14', 'tp14'], ohms: 10000 }, { t: 'res', pins: ['b15', 'tp15'], ohms: 10000 }]);
+      const seq = []; for (let i = 0; i < 4; i++) { seq.push(LVK[lvH('e14')] + LVK[lvH('e15')]); PX.rpg.tap(S.comps[0], 1); settle(); }
+      rec('수동 소자', `rpg · ${PX.rpg.title}`, seq.join() === 'LL,HL,HH,LH', seq.join(' → ')); }
+    { // 키패드: R2를 GND로, C1·C2 풀업. 키 '6'(R2·C3)을 누르면 C3만 LOW
+      const run = (key, pr) => { build([{ t: 'px', kind: 'kp44', pins: rng(8, i => 'c' + (13 + i)), key }, { t: 'wire', pins: ['a14', 'tn14'] }, ...[17, 18, 19].map(x => ({ t: 'res', pins: ['b' + x, 'tp' + (x % 6 ? x : x + 3)], ohms: 10000 }))]);
+        if (pr) { rt(S.comps[0]).pr = 1; settle(); } return [17, 18, 19].map(x => LVK[lvH('e' + x)]).join(''); };
+      const a = run(6, 0), b = run(6, 1), c = run(2, 1);
+      rec('수동 소자', `kp44 · ${PX.kp44.title}`, a === 'HHH' && b === 'HHL' && c === 'HHH' && PX.kp44.pins.length === 8, `안 누름 C1~C3 ${a} · '6'(R2·C3) 누름 ${b} · '3'(R1) 누름 ${c}`); }
+    { // 동축 RF 릴레이: 12V 코일, COM = 12V, NO → 1k → GND
+      const v = on => { build([{ t: 'psu', k: 1, x: 20, y: 440, v: 12 }, { t: 'px', kind: 'rlyrf', pins: ['c5', 'c7', 'c9', 'c11', 'c13'], cv: 12 }, { t: 'wire', pins: ['@1:0', 'a9'] }, { t: 'wire', pins: ['@1:1', 'tn3'] }, { t: 'wire', pins: ['a5', on ? 'b9' : 'tn5'] }, { t: 'wire', pins: ['a7', 'tn7'] }, { t: 'res', pins: ['d13', 'd17'], ohms: 1000 }, { t: 'wire', pins: ['a17', 'tn17'] }]); settle(); return vH('e13'); };
+      const a = v(1), b = v(0); rec('수동 소자', `rlyrf · ${PX.rlyrf.title}`, a > 11.9 && (b == null || b < .1), `코일 12V → NO ${a != null ? a.toFixed(2) : '?'}V · 코일 끔 → NO ${b != null ? b.toFixed(2) : '떠 있음'}`); }
+    { // 이미 있는 부품에 이은 문서 이름
+      const bad = Object.entries(NIDALIAS).filter(([n, o]) => { const p = pxPart('', n, n); return !p || p.t !== o.t || (o.kind && (p.kind !== o.kind || !PX[o.kind])) || (o.dk && !CAPDK[o.dk]) || (o.mat && !RESMAT[o.mat]); }).map(([n]) => n);
+      const r = pxPart('', 'RES_MF_1PCT_0P125W', 'RES_MF_1PCT_0P125W 4.7k');
+      rec('수동 소자', `문서 이름 → 이미 있는 부품 (${Object.keys(NIDALIAS).length}개)`, !bad.length && r.ohms === 4700 && r.mat === 'metal', bad.length ? '틀림: ' + bad.join(' ') : '저항·커패시터·트리머·비드·리드 릴레이 등 · 값도 읽음(4.7k)'); }
     // 브리지 정류기: 명세의 600V 1A 4핀 브리지는 이미 있는 brdg와 같은 부품 → 중립 이름만 달림
     rec('수동 소자', '브리지 정류기 중립 이름 (BRIDGE_RECT_600V_1A → brdg)', PX.brdg.nid === 'BRIDGE_RECT_600V_1A' && (pxPart('', 'BRIDGE_RECT_600V_1A', 'BRIDGE_RECT_600V_1A') || {}).kind === 'brdg', PX.brdg.title);
   }
