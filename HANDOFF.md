@@ -1,55 +1,39 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-26, 20차 완료)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 22차)
 
 ## 목표
-- `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 7600줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정. 같은 저장소 `linux/`·`router/`·`windows/` 실습장, 루트 `index.html`
+- `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 7900줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
 
 ## 현황
-- main = 작업 브랜치 `ccr-957126bc-kqjtgb`(20차 반영, 전체 시험 통과 후). 아티팩트 v71(11-27 덮어씀, 최신). `APP_VER='2026-11-27 · 계측기 예제 프로젝트 Ⓟ10'`
-✓ ~15차: 오류 알림, PCB(자동 배선·DRC·거버 zip), 연결 체크, 순서 카드, 저작권 가이드, 서명 `AUTHOR_SIG`, 라이선스 키 `LIC_*`, 릴레이·코일, 다이오드 `DIOM`, SPICE `breadboard/spice/`, `PARTS-GUIDE.md`, 목록 배치 `pxPart`, PCB 범위 선택·지우개
-✓ 16~18차: PCB 부품 놓기 `pcbPick`/`pcbPlaceAt`(회로도·보드에도), 장착 구멍 `PCB.xp`, `pcbToSch`, 층별 보기 `pview`/`#pLbar`, [층 쌓기] `#pStackB`, 트랜지스터 9종 PX `sub:'tr'`(`q3904`·`q2222`·`qbc547`·`q3906`·`qbc557`·`qtip`·`m7000`·`mnpow`·`mppow`), 예제 Ⓟ7 `pastr`
-✓ 19차 검토 3회(사용자 "소자부터 검토 3번"): 1차 소자·시뮬·PCB, 2차 1차수정+화면 조작, 3차 2차수정+새 기능 — 모두 수정·시험 통과·main 반영
-✓ 19차 PCB 표준 기능 1단계(사용자 명세 .md, 원문 미보관): 넷 이름표 `lbl`(`isSchSym`·`lblName`, GND/VCC 이름표=전원 기호 줄), ERC `schERC`/`#ercDlg`, 번호 정리 `schAnnotate`, 동박 채우기 `PCB.pour[L]`(`pourRaster` 0.25mm, 거버 `pourCu` Mixed), 정렬 `pAlign`, 둥근 모서리 `PCB.rc`(`inRRect`/`boardPoly`, 판·채움 `cornerClears`), 선 저항·허용 전류 `trR`/`trImax`, 묶음 BOM `pcbBOMRows`(lk·tol·mat·pw·dk 구분), 조립도 `pcbAssemblySVG`
-✓ 19차 [거버 받기] `#gbrDlg`(`pcbExport`→`gbrDownload`, 막히면 파일별 [보기] `showFallback(fn,data,true)`). 버그 고침: 막힌 화면에서 성공 알림이 실패 알림 덮어쓰던 것
-✓ 19차 층 수 무제한(`normNL` 1·짝수, `PCB_MAXL`=128, `LNAME`/`LSHORT`/`PCOL` Proxy `In\d+`, `pDefInner`, `pMinTh`, `#pNLn`), 자동 배선 층 자동 늘리기 `PCB.autoL`(`routeBest`·`pAddLayerPair`·`pTrimLayers`, 14초), 층 주 방향 dirP, 배치 최적화 `pcbOptimizePlace`(담금질 HPWL+넓이), [자동 설계] `#pAuto`, [배치 최적화] `#pOpt`
-✓ 시뮬 구조(19차): 트랜지스터 스위치/아날로그 모드 `r.an`(이미터·소스 strong 아니면 VCCS beta·포화 0.2V / MOSFET gm·lin), 한 번에 서로 물리지 않은 것만 일괄 바꿈, 릴레이 `SIM.rr`(4)·전체 `SIM.rd`(24, 상한 28) 따로, `uf2`(트랜지스터 접점 뺀 연결)로 베이스 눌러 끄기, 직류 길 없는 미지 줄 volt 제외(떠 있음=null), 아날로그 줄 닿은 LED는 다이오드 `ledL`/`ledA`(색별 vf, 켜짐=전류 `rt(c).ai`>0.2mA)
-✓ 실행 취소: `ssnap()`에 보드 `bb` → `sApply`가 보드 그대로 되돌림(+`pushHist`), `schAutoSync` 보드 바뀌면 PCB `phist` 비움, 자동 동기화는 실행 취소 단계 아님, `boardToSch`가 이름표·부품 차례 유지, `#clr` 되돌리면 `_pcb`·`_name` 복원
-✓ 시험 전부 통과(20차): tests/ui 26종, verify-parts 202/202, verify74 107/107, sig-check, guide-sync, spice-check
-✓ 20차 부품(원본 명세 2·3차 제공 후 맞춤, 명세 ID 28개): 분류 `PXIC`(부품 고르기 최상위 [아날로그 · 혼합신호 IC · 모듈] `PTREE[6]` `aic`, 회로도 목록에도) = `ana` 아날로그 IC(`oa2j`·`oa4j`·`oa2n`·`oa1p` 외부 보상 TO-99·`cmp2`·`reg317` + 명세 밖 `oa2b`·`oa4` 단전원) / `dig`(`dac10` 10비트 래치 없음·`cpu64`) / `blk` 8종(`batt`·`byto`·`bytx`·`bconv`·`bfilt`·`bif`·`bref`·`bcrt`, `blk:1`). 개별 소자는 기존 분류 `tr`(`q3055` 10A 150W·`q2955`·`q2222m`·`q2907m` PNP 200mA·`qp39` PNP 80V TO-39·`q18s`·`jfn` TO-18·`jfn92` TO-92) / `dio`(`d914`·`d5711`·`d4004` 750mA). 이미 있던 것: 브리지 600V 1A → `brdg`에 nid만, 6채널 DFF → 74LS174에 `nid` + `partOf` CHIPS nid 인식. 모든 명세 ID = `nid`(verify-parts에서 27개 대조, 중복 nid 없음). 속성 `anaTx`(DAC 비트 수 `n`), 전원 없음 경고(핀 번호·이름), JFET 게이트 경고, 예제 Ⓟ8 `paana`·Ⓟ9 `pasa`(보드 3개: 튜닝 DAC 스윕 / RF 섹션 블록 / IF·표시 섹션 + 빔 켜기 NPN → CRT BLANK, 스윕 → CRT X+), 시험 `tests/ui/analog-ic.js`
-✓ 22차(11-27, 「CAD 예제 프로젝트 설계 명세서」): 예제 Ⓟ10 `pasys` 보드 6장(01 RF·02 YIG 전류 드라이버 20V·03 IF·04a MPU+74LS174 래치·04b DAC+적분기·05 전원/보호/CRT), 서플라이 5V·20V, 레귤레이터 15V가 보드 3·5와 보드 6 아래 레일. 시뮬 고침 3: ① analogStep `vK` 전원 전압이 없으면 `SIM.volt`(지난 settle) ② 상태 바꾸기 `chg` — 처음 3번은 한꺼번에, 그 뒤 하나씩(dIt<60), 연산 증폭기 상태 `r.ast`에서 이어 시작 ③ DAC 비트가 약한/아날로그 줄이면 전압 ≥2.4V로 판단. 감지 저항 10Ω·적분 C 100nF·기준 +6.2V는 문서값과 다름(COPYRIGHT 8절 기록)
-✓ 21차(11-27, 명세 4차 = 전체 부품판): 이미 있는 것은 `NIDALIAS`(문서 ID → 기존 res/cap/px, `pxPart`가 값도 읽음), 새 PX 26종 — `cap`: `ctrim`·`cfeed`, CAPDK `mica` / `ind`(라벨 '…변압기 · 수정 진동자'): `indv`·`xfmr`·`xflb`·`xtal21`·`xtal10` / `dio`: `dpin`·`dvar`·`dzref`(DIOM pin·var·zref) / `dig`: `eprom`·`sram`(JEDEC 28핀)·`gpib` / `rly`: `rlyrf` / `sw`: `rpg`(오픈 컬렉터 2상)·`kp44`(mom:2, key) / 새 분류 `emc` '커넥터 · 보호 · 냉각 소자': `coax`·`edge`(dpp 3.96)·`fuse`(blown)·`ntc`(temp, res B3950)·`tco`(hot)·`fan`·`emif`. 시뮬레이션 없는 것은 `blk:1`+`NOSIM` 문구
-✓ 20차 아날로그 IC 계산 틀(`a77dda9`): `anaL`(settle, PX 필드 `ana:{oa:[{o,p,n}],cmp:[{o,p,n}],reg:{adj,out,in,vref,drop,ro},dac:{io1,io2,vref,rfb,vdd,gnd,bits,R},vcc,vee,gnd,A,ro,hd,vmin,ron}`), analogStep 도장(가짜 GND 줄 -1, `vccs` 정의 앞으로 옮김), 상태(oa lin/hi/lo, cmp 0/1, reg reg/drop), 가지치기, `r.ast` 기록. 회로도 시뮬(SIM_S)은 아날로그 계산 안 함(상태 '—')
-✗ 미검증: 실제 아이폰·윈도우 크롬 저장, 거버 외부 뷰어(gerbonara 설치 권한 거절됨)
+- 작업 브랜치 `ccr-957126bc-kqjtgb` = `0846cf4`(예제 목록 정리). main = `d1df684`(21차까지) → **22차(Ⓟ10·시뮬 고침·목록 정리) main 미반영**. 아티팩트 v73 = `0846cf4`와 같음. `APP_VER='2026-11-27 · 계측기 예제 프로젝트 Ⓟ10'`
+△ 전체 시험(백그라운드, 로그 /tmp/claude-0/-home-user-3rd-/0e796133-b619-5612-af72-c86b90ba9a5e/scratchpad/full4.log) — 20/26개까지 모두 PASS, sweep-examples 이후 미확인. 새 세션에서는 다시 돌리기
+✓ 20차: 계측기 부품 명세 → 아날로그 IC(`oa2j`·`oa4j`·`oa2n`·`oa2b`·`oa4`·`oa1p` TO-99·`cmp2`·`reg317`), 디지털·혼합(`dac10`·`cpu64`·`eprom`·`sram`·`gpib`), 블록 8(`batt`·`byto`·`bytx`·`bconv`·`bfilt`·`bif`·`bref`·`bcrt`, `blk:1`), BJT(`q3055`·`q2955` TO-3·`q2222m`·`q2907m`·`q18s` TO-18·`qp39` TO-39), JFET(`jfn` TO-18·`jfn92`), 다이오드(`d914`·`d5711`·`d4004`), 74LS174. 모든 부품 `nid`(문서 ID) → `pxPart`가 알아들음
+✓ 21차: 전체 부품판 → 이미 있는 것은 `NIDALIAS`(res·cap·trim3296·sipi·inda·bead·reed 등, 값도 읽음), 새 26종(CAPDK `mica`, `ctrim`·`cfeed`·`indv`·`xfmr`·`xflb`·`xtal21`·`xtal10`·`dpin`·`dvar`·`dzref`·`rlyrf`·`rpg`·`kp44`·새 분류 `emc`: `coax`·`edge`·`fuse`·`ntc`·`tco`·`fan`·`emif`)
+✓ 분류: `PXSUB`(수동·스위치 쪽, `emc` 추가) / `PXIC` = `ana`·`dig`·`blk` → 부품 고르기 최상위 [아날로그 · 혼합신호 IC · 모듈] `PTREE[6]` `aic`, SCHTREE에도
+✓ 예제: Ⓟ8 `paana`(비교기·증폭기), Ⓟ9 `pasa`(보드 3장 계측기 구조), Ⓟ10 `pasys`(설계 명세서 시트 01~05 → 보드 6장, 5V·20V 서플라이, reg317 15V가 보드 3·5와 보드 6 아래 레일). 예제 목록 맨 아래 optgroup "새로 추가 · 아날로그 IC · 계측기 예제"에 Ⓟ8~10
+✓ 시뮬 고침(22차, analogStep): `vK` 전원 없으면 `SIM.volt`(지난 settle) / 상태 변경 `chg` 모아 처음 3번 일괄·그 뒤 하나씩(`dIt<60`) — op-amp+달링턴 되먹임이 hi→lin→lo 맴돌던 것 수렴 / op-amp 상태 `r.ast`에서 이어 시작 / DAC 비트가 약한·아날로그 줄이면 전압 ≥2.4V
+✓ 시험: verify-parts 202/202, analog-ic PASS(Ⓟ8·9·10 포함), verify74 107/107, sig-check·guide-sync·spice-check PASS(21차 기준 전체 통과)
 
 ## 결정사항
-- 저작권(COPYRIGHT.md 14절): 외부 자료는 사실·수치·핀 번호만, 문장·표 복사 금지, 상표·회사 전용 번호 대신 기능 이름 — 20차 부품은 문서의 중립 ID(`OPAMP_DUAL_JFET_25VUS` 등)를 `nid`로, 앱에 "HP" 표기 금지
-- 20차 부품 범위: 74LS174(6채널 D FF, 핀 1 ~CLR·2 1Q·3 1D·4 2D·5 2Q·6 3D·7 3Q·8 GND·9 CLK·10 4Q·11 4D·12 5Q·13 5D·14 6D·15 6Q·16 VCC) CHIPS 시뮬 / 연산증폭기 4·비교기·레귤레이터·DAC = `ana` 아날로그 / BJT 5(TO-3·TO-18·TO-39)·JFET(depletion = nmos vth≈-2.5)·다이오드 3·브리지 600V = 기존 tr/dio / CPU DIP-64·RF·IF·CRT 블록 8 = 블랙박스(핀만, 시뮬 없음)
-- 인덕터 직류 단락, 지우개 부품 안 지움, 손가락 1개=화면 이동, CAD 안 AI 호출 금지, showSaveFilePicker 안 씀, PCB 격자 1.27mm
-- 층 자동 늘리기: 새 층은 뒷면 위에 붙임 — 기존 In 이름 유지
-- 트랜지스터는 스위치+아날로그 혼합 — 전면 아날로그(LED 포함)는 디지털 예제 다수 영향
+- 이미 있는 부품은 새로 안 만들고 문서 ID만 잇기 — 사용자 지시("이미 있는 부품은 추가하지 말고 분류해서")
+- 앱에 "HP"·계측기 이름·회사 형번 금지, 문서 참조 등가 번호 안 씀 — COPYRIGHT 14절. 핀 모르는 블록·변압기·GPIB 등은 "이 프로그램이 정한 것" 명시
+- Ⓟ10 문서와 다른 값: 감지 저항 10Ω(문서 1Ω), 적분 C 100nF(10nF), DAC 기준 +6.2V 제너(−10V) — 서플라이 음전압 없음·보기 좋은 값. COPYRIGHT 8절 기록
+- 시험 통과 즉시 main 반영 + 아티팩트 publish, 묻지 않음 — 사용자 11-27 재지시, CLAUDE.md에 추가함
 
 ## 이슈/주의
-- 전원(psu)은 0V 이상만 → 연산 증폭기는 단전원(VEE=GND)·가상 접지로 시험. 음전원 없음
-- TO-3 발자국 치수는 어림(다리 ±5.46, 장착 구멍 ±15.09 같은 줄)
-- 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **업데이트마다 아티팩트 링크 무조건**, main 반영 시 깃허브 페이지 주소. 요청 짧고 모호 → 스크린샷·어디서 안 되는지 물어봄
-- CLAUDE.md: 시험→커밋→`git push -u origin ccr-957126bc-kqjtgb`→`git push origin HEAD:main`(fast-forward만). 커밋 끝 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
-- 새 대화에서 아티팩트 publish 거절되면: 현재판 = 저장소 전 판인지 diff 확인 → 사용자에게 덮어쓰기 물어 `force:true`
-- 코드 수정 = Python 문자열 치환(개수 assert). 변수 이름 겹침 주의(`oldW` 사례로 스크립트 전체 멈춤)
-- 시험 예제: 레일 열 6의 배수 구멍 없음, `psu` 놓으면 레일 자동 5V 꺼짐, `EXAMPLES.nand()`는 배열(`e.comps||e`)
-- `ic-examples` 동시 실행 시 가끔 FAIL(단독 PASS), `sweep-lists` 끝 `sch bad4`는 정상
-- 백그라운드 시험은 Bash `run_in_background`로(`&`는 알림 없음)
-- PX 부품 추가 시 verify-parts.js가 `Object.keys(PX)` 전부 확인 → 새 kind마다 rec 필요, CHIPS 추가 시 verify74.js REF 필요(`add([...],{pins,vcc,gnd,outs,test})`)
-- 다이오드 시험 기대: 9mA에서 게르마늄 > 쇼트키 가능(LED 아날로그 포함 후) — 실제 특성
-- 남은 알려진 문제: 예제·파일 불러오기 실행 취소 시 회로도 전용 기호 안 돌아옴, 동박 채움 0.025mm² 조각, 큰 보드 pour pcalc 느림(500mm 약 580ms)
-
-## 사용자 지시 기록 (COPYRIGHT.md 10절 근거)
-- ~11-25: 시뮬레이터 방향, AI 호출 금지, 부품 220종, 자동 main, 오류 알림, PCB, 업데이트마다 링크, 깃허브 페이지
-- 11-26: 연결 체크·초기화, 순서 카드, md 내려받기, 저작권 가이드, 라우터 일반화, 서명, 라이선스 키, 로컬 버전, 릴레이·코일, 조사 문서 반영(2회), "왜 추가가 안될까?", PCB 드래그·지우개, PCB 부품 배치·층 쌓기·거버, 트랜지스터, 층 쌓기 버튼, 층별 보기, 검토 3번, PCB 표준 기능 명세, 거버 다운, 층 자동 늘리기·무한·효율 배치·배선, HP 8566B 기반 부품 명세 추가(20차 완료), 명세 다시 주며 "이미 있는 부품은 추가하지 말고 분류해서", 상세판(3차) "추가해" → `jfn92`·설명 보강·Ⓟ9 3보드
+- 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **답마다 아티팩트 링크**, main 반영 시 깃허브 페이지 주소
+- psu(서플라이)는 0V 이상만 → 연산 증폭기는 단전원·가상 접지. psu 하나라도 놓으면 보드 자동 5V 레일 꺼짐
+- ledKit 예제: 한 열 빈 구멍 3~4개뿐 → 연결 많은 줄은 `K.at(b,top,col)` 빈 열을 이음점으로. `K.add(w(...))`로 레일 체인. 레일 열 6의 배수 구멍 없음. 같은 구멍 전선 둘 불가
+- 코드 수정 = Python 치환(개수 assert). 한 줄짜리 코드 중간에 `//` 주석 넣으면 뒤가 주석 처리됨(22차에 한 번 터짐)
+- pcb-examples 못 이음 수는 실행마다 다름(ldec 등), 오류 0이면 통과. sweep-lists `sch bad2~4`는 정상
+- Bash 명령에 `$SP` 같은 변수+heredoc 섞으면 안전 검사에 막힘 → 경로 직접 쓰기
 
 ## 다음 할 일
-- 사용자 다음 요청 대기. 후보: 음전원(−V 서플라이) 지원, 회로도 시뮬에 아날로그 IC, SPICE 라이브러리에 새 부품 모델, TO-3 발자국 실제 치수 확인
+1. `cd /home/user/3rd-/breadboard && for f in tests/ui/*.js; do node $f | tail -1; done; node tests/verify-parts.js | tail -1; node tests/verify74.js | tail -1` (백그라운드 `run_in_background`)
+2. 전부 통과 → `git fetch origin main && git push origin HEAD:main` (fast-forward) → 아티팩트 publish(url 아래, file_path `breadboard/index.html`) → 링크 2개 전달
+3. 이후 사용자 요청 대기. 후보: 음전원 서플라이, 회로도 시뮬(SIM_S)에 아날로그 IC, TO-3 발자국 실제 치수
 
 ## 참조
-- 파일: `/home/user/3rd-/breadboard/index.html` · `COPYRIGHT.md` · `FILE-FORMAT.md` · `PARTS-GUIDE.md` · `spice/` · `tools/fit-diode.py` / `/home/user/3rd-/CLAUDE.md`
-- 시험: `cd /home/user/3rd-/breadboard && for f in tests/ui/*.js; do node $f | tail -1; done` · `node tests/verify-parts.js` · `verify74.js` · `sig-check.js` · `guide-sync.js --fix` · `spice-check.js`
-- 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ
-- 깃허브 페이지: https://co2maker-cyber.github.io/3rd-/breadboard/
+- 파일: /home/user/3rd-/breadboard/index.html · COPYRIGHT.md · FILE-FORMAT.md · PARTS-GUIDE.md(안내서 사본은 `node tests/guide-sync.js --fix`) · /home/user/3rd-/CLAUDE.md
+- 시험: tests/ui/analog-ic.js(20~22차 부품·예제), tests/verify-parts.js(아날로그 IC 묶음·명세 ID 대조)
+- 커밋 끝: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
+- 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ · 깃허브 페이지: https://co2maker-cyber.github.io/3rd-/breadboard/
