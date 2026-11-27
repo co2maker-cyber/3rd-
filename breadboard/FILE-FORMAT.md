@@ -381,17 +381,6 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `dac10` | 10비트 곱셈형 DAC (DIP-16) | dip | 0~7 | IOUT1 IOUT2 GND BIT1(MSB)…BIT10(LSB) VDD VREF RFB | |
 | `batt` `byto` `bytx` `bconv` `bfilt` `bif` `bref` `bcrt` | RF·IF·디스플레이 모듈 블록(스텝 감쇠기·YIG 발진기·YIG 믹서·변환 체인·필터 모음·IF 로그 증폭단·기준 발진기·정전 편향 CRT) — 시뮬레이션 없음 | row | 0~(핀 수−1) | 부품 정보 창의 핀 이름 | |
 | `cpu64` | 16/32비트 마이크로프로세서 (DIP-64, 900mil) — 시뮬레이션 없음 | dip | 0~31 | D4 D3 D2 D1 D0 ~AS … (부품 정보 창) | |
-| `uno` | 마이컴 보드 · 표준형 (5V, 디지털 14 · 아날로그 6, USB) — **코드 실행** | dip | 0~12 | D0…D12, D13 GND AREF A0…A5 VIN GND 5V 3V3 | `code`, `usb`, `bp` |
-| `nano` | 마이컴 보드 · 소형 (5V, 30핀 DIP) — **코드 실행** | dip | 0~14 | D1 D0 RESET GND D2…D12, D13 3V3 AREF A0…A7 5V RESET GND VIN | `code`, `usb`, `bp` |
-| `pro` | 마이컴 보드 · 프로 미니형 (5V, 24핀, USB 없음) — **코드 실행** | dip | 0~11 | D1 D0 RESET GND D2…D9, D10…D13 A0…A3 VCC RESET GND RAW | `code`, `bp` |
-| `mega` | 마이컴 보드 · 대형 (5V, 디지털 54 · 아날로그 16, USB) — **코드 실행** | dip | 0~37 | D0…D37, D38…D53 A0…A15 5V 3V3 GND GND VIN AREF | `code`, `usb`, `bp` |
-| `wifi` | 마이컴 보드 · 와이파이형 (3.3V, 32비트, 30핀) — **코드 실행** | dip | 0~14 | EN GPIO36 39 34 35 32 33 25 26 27 14 12 13 GND VIN, 3V3 GND GPIO15 2 4 16 17 5 18 19 21 3 1 22 23 | `code`, `usb`, `bp` |
-
-**마이컴 보드**(`uno` `nano` `pro` `mega` `wifi`)의 추가 칸:
-- `code`: 보드에 올린 C 코드(문자열, 줄바꿈은 `\n`). `setup()`과 `loop()`가 꼭 있어야 해요. 빼면 내장 LED 깜박이기 코드가 들어가요.
-- `usb`: `false`면 USB를 뺀 것 — 5V(VCC)·3V3 핀에 전원을 주거나 VIN(RAW)에 7V 이상을 넣어야 돌아요. 빼면 USB 꽂음(`pro`는 늘 USB 없음).
-- `bp`: 중단점 줄 번호 목록(예: `[12, 15]`). 디버거가 이 줄 앞에서 멈춰요.
-- 핀 번호: `D7` 핀은 코드에서 `7`, 아날로그 `A0`은 `A0`(표준형·소형·프로 미니형 14, 대형 54). 와이파이형은 GPIO 번호를 그대로 써요(`LED_BUILTIN` = 2).
 
 부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_JFET_25VUS`, `COMP_DUAL_OC_36V`, `REG_POS_ADJ_1P5A`, `DAC_10B_MULT_R2R`, `BJT_NPN_PWR_60V_150W`, `CPU_16_32B_ASYNC_8MHZ`, `LOGIC_HEX_DFF_CLR_LS`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 

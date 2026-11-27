@@ -1,11 +1,12 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 23차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 24차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 8800줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
 
 ## 현황
+- **24차: 사용자 요청 "마이컴 전부 없애" → 마이컴 보드 5종·해석기 `MCUC`·편집기·디버거·예제 Ⓜ1·Ⓜ2·`tests/ui/mcu.js` 모두 삭제.** 아래 23차 ①~④·⑧ 마이컴 항목은 지난 기록(git 이력 `f39ac27`에 남음). 남은 것: 스펙트럼 분석기(Ⓟ11은 함수 발생기 구형파·사인파 2대로 바꿈), 보드 돌리기. 시험 `tests/ui/spa-rot.js`
 - 22차까지 main 반영 끝(`412ff85`). 23차(마이컴 보드·편집기·디버거·스펙트럼 분석기·보드 돌리기) = 이 메모와 같은 커밋 → main·아티팩트 반영
-- `APP_VER='2026-11-27 · 마이컴 보드 코딩·디버깅 · 스펙트럼 분석기 · 보드 돌리기'`
+- `APP_VER='2026-11-27 · 스펙트럼 분석기 · 보드 돌리기'`
 ✓ 23차 ① 마이컴 보드 5종(px `sub:'mcu'`, DIP 홈 걸치기): `uno` 표준형 26핀·`nano` 소형 30핀·`pro` 프로 미니형 24핀(USB 없음)·`mega` 대형 76핀·`wifi` 와이파이형 30핀(3.3V, int 32비트, ADC 12비트). 설정 `MCUB`, 핀표 `mcuMap`. 부품 고르기 최상위 `PTREE[7]` `mcu`(SCHTREE에도)
 ✓ ② 코드 해석기 `MCUC`(맨 앞 별도 `<script>`): lex→prep(#define 값·함수)→parse→annotate(자료형·칸 번호)→제너레이터 실행. 문장마다 yield → 중단점·한 줄씩. 내장 `BI`(pinMode~pulseIn·map·random…)·`SER`(Serial)·`STRM`(String). 포인터·클래스·#include 라이브러리 없음
 ✓ ③ 시뮬 연결: settle의 resolve에서 `mcuDrive`(출력·USB 5V/3V3·GND, 그다음 풀업), 칩 반복 고리에서 `mcuPw`(전원)→`r.mpw`. 20ms 시계에서 `mcuTick`(시각까지 실행, 예산 60000문장, digitalRead 때 출력 바뀌었으면 settle). PWM·tone은 평균 전압(srcV)
