@@ -16,7 +16,7 @@ const r=await p.evaluate(()=>{const R={},B=[{id:1,type:'full',x:0,y:0}],run=cs=>
   run([]);setTool('ic:74HC04');place(null,{x:300,y:200});R.toolAfter=tool;R.n1=S.comps.length;
   setTool('res');const h1=HOLES.get('a30'),h2=HOLES.get('a34');place(h1);place(h2);R.toolAfterRes=tool;R.nRes=S.comps.filter(c=>c.t==='res').length;
   // 보드 2장 묶음
-  addBoardPair();const G=S.boards.filter(x=>x.grp!=null);R.pair=G.length;const x0=G.map(o=>o.x);moveBoard(G[0],G[0].x+40,G[0].y+20);R.moved=G.map((o,i)=>o.x-x0[i]);
+  addBoardPair();const G=S.boards.filter(x=>x.grp!=null);R.pair=G.length;R.stack=G[0].x===G[1].x&&G[1].y-G[0].y>=400&&!boardsOverlap(G[1],G[1].id);const x0=G.map(o=>o.x);moveBoard(G[0],G[0].x+40,G[0].y+20);R.moved=G.map((o,i)=>o.x-x0[i]);
   R.pairHoles=HOLES.has(pref(G[1].id)+'a63');save();R.saveGrp=store.get('circuit').boards.filter(x=>x.grp!=null).length;
   // 신호 보기에서도 고른 색
   run([{t:'wire',pins:['tp5','a5'],color:'#2F6FDB'}]);sigMode=true;render();const wc=S.comps[0];const st=()=>[...document.querySelectorAll(`#gC g[data-id="${wc.id}"] [stroke]`)].map(e=>e.getAttribute('stroke'));
@@ -27,7 +27,7 @@ T('LED 220Ω: 켜짐 · 약 13.6mA',r.l220.lit&&Math.abs(r.l220.i-.0136)<.0015,J
 T('IC 핀 번호·기능 늘 표시',/\b14\b/.test(r.icTxt)&&/VCC/.test(r.icTxt)&&/GND/.test(r.icTxt)&&/1A/.test(r.icTxt),r.icTxt.slice(0,80));
 T('전선 호버: IC 핀 번호와 기능',/74HC00 14번 VCC/.test(r.tip),r.tip);T('전선 호버: 신호 줄',/74HC00 \d+번/.test(r.tip2),r.tip2);
 T('IC 한 개 놓으면 선택 도구로',r.toolAfter==='select'&&r.n1===1,r.toolAfter);T('저항도 한 개 놓으면 선택 도구로',r.toolAfterRes==='select'&&r.nRes===1,r.toolAfterRes);
-T('풀 보드 2장 묶음: 함께 움직임',r.pair===2&&r.moved.every(d=>d===40)&&r.pairHoles&&r.saveGrp===2,JSON.stringify([r.pair,r.moved,r.pairHoles,r.saveGrp]));
+T('풀 보드 2장 묶음: 위아래로 놓이고 함께 움직임',r.stack&&r.pair===2&&r.moved.every(d=>d===40)&&r.pairHoles&&r.saveGrp===2,JSON.stringify([r.pair,r.moved,r.pairHoles,r.saveGrp]));
 T('신호 보기에서도 고른 선 색 + 신호 줄',r.sig[0]&&r.sig[1],JSON.stringify(r.sig));
 // 경고 카드: 작성 중에는 안 뜨고, 왼쪽 아래
 const al=await p.evaluate(()=>{loadComps([],true,[{id:1,type:'full',x:0,y:0}]);closeAlerts();setTool('wire');WSEEN.clear();S.comps.push({t:'wire',id:900,pins:['tp3','tn3']});commit(true);notifyWarns();const n1=document.querySelectorAll('#alerts .alert').length;

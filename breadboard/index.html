@@ -132,6 +132,10 @@ rect.ssel{stroke-width:2;stroke-opacity:.8;stroke-dasharray:5 3;fill:#1F8FFF;fil
 #valPop{position:fixed;z-index:60;width:250px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
 #valPop .vh{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px}#valPop .vh span{flex:1}#valPop .vh button{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px}
 #valPop .vt{display:flex;gap:4px;padding:6px 8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}#valPop .vt button{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);border-radius:12px;background:none;color:var(--fg);cursor:pointer}#valPop .vt button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#valPop .ip{padding:2px 10px 10px;max-height:min(62vh,480px);overflow-y:auto;overscroll-behavior:contain}#valPop .ipf{margin-top:8px}#valPop .ipf>label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:600}
+#valPop .ipr{display:flex;align-items:center;gap:6px}#valPop .ipr input{flex:1;min-width:0;font-family:var(--mono);font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--sunk,transparent);color:var(--fg)}#valPop .ipr b{font-size:12px;color:var(--muted)}
+#valPop .ipf .vt{border:0;padding:4px 0 0}#valPop .ipf .vt button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}#valPop .ipa{width:100%;margin-top:10px;padding:6px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--fg);cursor:pointer;font-size:12.5px}
+#bb [data-ied]{cursor:pointer}#bb [data-ied]:hover{fill:rgba(255,255,255,.06)}
 #valPop .vx{padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px}#valPop .vx input{width:100%}
 #valPop .vl{max-height:min(46vh,320px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px 6px 8px}#valPop .vd{font-size:10.5px;color:var(--muted);margin:6px 4px 2px}#valPop .vg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 #valPop .vg button{font-family:var(--mono);font-size:12.5px;padding:7px 2px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--fg);cursor:pointer}#valPop .vg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
@@ -560,7 +564,7 @@ body.planon .cbar{display:none}
       <select class="ex" id="addBoard" aria-label="브레드보드 추가" title="브레드보드를 하나 더 놓아요">
         <option value="">＋ 브레드보드 추가…</option>
         <option value="full">풀 사이즈 830홀 (63열)</option>
-        <option value="full2">풀 사이즈 830홀 2장 묶음 (126열, 함께 움직임)</option>
+        <option value="full2">풀 사이즈 830홀 2장 묶음 (위아래로, 함께 움직임)</option>
         <option value="std">표준 50열 (약 670홀)</option>
         <option value="half">하프 400홀 (30열)</option>
         <option value="mini">미니 170홀 (17열, 레일 없음)</option>
@@ -3087,6 +3091,42 @@ function valSpec(o){if(o.t==='res')return{title:'저항 값',fmt:ohmTx,key:'ohms
   if(o.t==='px'&&o.kind.startsWith('sip'))return{title:'저항 값 (어레이 전체)',fmt:ohmTx,key:'ohms',skey:'ser',sers:['E6','E12','E24'],ser:o.ser||'E12',list:RVAL};
   return null;}
 function closeValPop(){const e=$('valPop');if(e)e.remove();}
+/* ── 계측기 표시 창을 누르면 열리는 값 바꾸기 창 (파워 서플라이·건전지·함수 발생기·오실로스코프·멀티미터·스펙트럼 분석기) ──
+   칸: num(숫자 입력 + 자주 쓰는 값), tog(켜짐/꺼짐), seg(고르기), btn(동작). 바꾸면 바로 반영(실행 취소 가능)하고 창은 열린 채로 */
+function instSpec(c,key){const [t,a,b]=key.split(':'),N=(l,get,set,min,max,step,u,pre)=>({k:'num',l,get,set,min,max,step,u,pre}),TG=(l,get,set,on='켜짐',off='꺼짐')=>({k:'tog',l,get,set,on,off});
+  if(t==='psu'){const i=+a,q=instCh(c,i);return{title:`파워 서플라이 CH${i+1}`,f:[N('전압',()=>+q.v,v=>{q.v=v;},-PSU_MAX,PSU_MAX,.1,'V',[3.3,5,9,12,24,-5,-12]),TG('출력',()=>q.on!==false,v=>{q.on=v;})]};}
+  if(t==='bat')return{title:'건전지',f:[N('전압',()=>+c.v,v=>{c.v=v;},.1,48,.1,'V',BAT_V)]};
+  if(t==='fg'){const i=+a,q=instCh(c,i);return{title:`함수 발생기 CH${i+1}`,f:[TG('출력',()=>q.on!==false,v=>{q.on=v;}),{k:'seg',l:'파형',opts:Object.entries(WAVES),get:()=>q.wave,set:v=>{q.wave=v;}},
+    N('주파수',()=>num(q.hz,1),v=>{q.hz=v;},.1,10,.1,'Hz',FG_HZ),N('크기 Vpp',()=>num(q.vpp,5),v=>{q.vpp=v;},0,20,.1,'V',FG_VPP),N('가장 낮은 전압 · 오프셋',()=>num(q.off,0),v=>{q.off=v;},-10,10,.1,'V',[0,-2.5,-5]),
+    N('위상',()=>num(q.ph,0),v=>{q.ph=v;},0,360,1,'°',[0,90,120,180,240,270]),N('듀티비 (구형파)',()=>num(q.duty,50),v=>{q.duty=v;},5,95,1,'%',[25,50,75])]};}
+  if(t==='osc'){if(a==='t')return{title:'오실로스코프',f:[N('시간 / 칸',()=>+c.tdiv,v=>{c.tdiv=v;},.01,5,.01,'초',OSC_T),{k:'seg',l:'화면',opts:[[true,'4분할'],[false,'겹침']],get:()=>c.split!==false,set:v=>{c.split=v;}},TG('실행',()=>c.run!==false,v=>{c.run=v;},'실행','정지'),{k:'btn',l:'화면 지우기',act:()=>{rt(c).buf=[];}}]};
+    const k=+a,n=k+1,vk=k?'vdiv'+n:'vdiv';return{title:`오실로스코프 CH${n}`,f:[TG('표시',()=>c['on'+n]!==false,v=>{c['on'+n]=v;}),N('전압 / 칸',()=>oscVd(c,k),v=>{c[vk]=v;},.1,100,.1,'V',OSC_V),
+      N('위상 이동 (+ 는 왼쪽 = 앞섬)',()=>num(c['ph'+n],0),v=>{c['ph'+n]=v;},-360,360,1,'°',[0,90,120,180,-90,-120]),...(c.split===false?[N('0V 자리 (위에서 칸)',()=>num(c['pos'+n],OSC_POS[k]),v=>{c['pos'+n]=v;},0,8,.25,'칸',[1.75,3.75,5.75,7.75])]:[])]};}
+  if(t==='dmm'){if(a==='m')return{direct:()=>{c.mode=b;}};return{title:'멀티미터 · '+((rt(c).rd||{}).t||''),f:[{k:'seg',l:'측정 모드',opts:Object.entries(DMM_MODES),get:()=>c.mode||'v',set:v=>{c.mode=v;}},...(rt(c).fuse?[{k:'btn',l:'퓨즈 갈기',act:()=>{delete rt(c).fuse;}}]:[])]};}
+  if(t==='spa'){const hz=v=>v>=1000?v/1000+'k':v+'';return{title:'스펙트럼 분석기',f:[N('가운데 주파수 (CENTER)',()=>num(c.cf,1000),v=>{c.cf=v;},0,100000,.01,'Hz'),{k:'seg',l:'스팬 (화면 폭)',opts:[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000].map(v=>[v,hz(v)+'Hz']),get:()=>num(c.span,2000),set:v=>{c.span=v;}},
+    {k:'seg',l:'기준 레벨 (dBm)',opts:[30,20,10,0,-10,-20,-30,-40].map(v=>[v,(v>0?'+':'')+v]),get:()=>num(c.ref,20),set:v=>{c.ref=v;}},TG('스윕',()=>c.run!==false,v=>{c.run=v;},'실행','정지'),{k:'btn',l:'신호 찾아 맞추기',act:()=>spaAuto(c)}]};}
+  return null;}
+function openInstPop(c,key,sx,sy){closeValPop();const sp0=instSpec(c,key);if(!sp0)return;const id=c.id;
+  if(sp0.direct){pushHist();sp0.direct();commit(true);return;}   // 멀티미터 모드 단추처럼 누르면 바로 바뀌는 것
+  const el=document.createElement('div');el.id='valPop';el.style.width='270px';
+  const apply=f=>{const cc=compById(id);if(!cc)return closeValPop();pushHist();f();commit(true);draw();};
+  const draw=()=>{const cc=compById(id);if(!cc)return closeValPop();const sp=instSpec(cc,key),fx=v=>+(+v).toFixed(4);let h=`<div class="vh"><span>${esc(sp.title)}</span><button aria-label="닫기" data-x>×</button></div><div class="ip">`;
+    sp.f.forEach((f,i)=>{if(f.k==='btn'){h+=`<button class="ipa" data-i="${i}" data-act>${esc(f.l)}</button>`;return;}h+=`<div class="ipf"><label>${esc(f.l)}</label>`;
+      if(f.k==='num')h+=`<div class="ipr"><input type="number" data-i="${i}" min="${f.min}" max="${f.max}" step="${f.step}" value="${fx(f.get())}" aria-label="${esc(f.l)}"><b>${f.u}</b></div>`+(f.pre?`<div class="vt">${f.pre.map(v=>`<button data-i="${i}" data-p="${v}" aria-pressed="${fx(f.get())===v}">${v}${f.u==='초'?'s':f.u}</button>`).join('')}</div>`:'');
+      else if(f.k==='tog')h+=`<div class="vt"><button data-i="${i}" data-b="1" aria-pressed="${!!f.get()}">${f.on}</button><button data-i="${i}" data-b="0" aria-pressed="${!f.get()}">${f.off}</button></div>`;
+      else h+=`<div class="vt">${f.opts.map(([v,t],j)=>`<button data-i="${i}" data-o="${j}" aria-pressed="${f.get()===v}">${esc(String(t))}</button>`).join('')}</div>`;h+='</div>';});
+    el.innerHTML=h+'</div>';el.querySelector('[data-x]').onclick=closeValPop;
+    el.querySelectorAll('[data-p]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(()=>f.set(+bt.dataset.p));});
+    el.querySelectorAll('[data-b]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(()=>f.set(bt.dataset.b==='1'));});
+    el.querySelectorAll('[data-o]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(()=>f.set(f.opts[+bt.dataset.o][0]));});
+    el.querySelectorAll('[data-act]').forEach(bt=>bt.onclick=()=>{const f=sp.f[+bt.dataset.i];apply(f.act);});
+    el.querySelectorAll('input[data-i]').forEach(inp=>{const f=sp.f[+inp.dataset.i],go=()=>{let v=+inp.value;if(inp.value===''||!Number.isFinite(v)){inp.value=fx(f.get());return;}
+        const dec=(String(f.step).split('.')[1]||'').length;v=Math.max(f.min,Math.min(f.max,+(Math.round(v/f.step)*f.step).toFixed(dec)));if(v===fx(f.get())){inp.value=v;return;}apply(()=>f.set(v));
+        const ni=el.querySelector(`input[data-i="${inp.dataset.i}"]`);if(ni){ni.focus();ni.select();}};
+      inp.onchange=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};});};
+  document.body.appendChild(el);draw();
+  const W=270,Hh=el.offsetHeight||300;let x=Math.max(8,Math.min(innerWidth-W-8,sx-W/2)),y=sy+14;if(y+Hh>innerHeight-8)y=Math.max(8,sy-Hh-14);el.style.left=x+'px';el.style.top=y+'px';
+  const fi=el.querySelector('input[data-i]');if(fi&&(typeof lastPtrType==='undefined'||lastPtrType==='mouse')){fi.focus();fi.select();}}
 // o: 부품(보드 c 또는 회로도 p), (sx,sy): 화면에서 부품 아래 가운데, apply(바꿀 값들 객체) → 저장
 function openValPop(o,sx,sy,apply){closeValPop();const sp=valSpec(o);if(!sp)return;let ser=sp.ser;const el=document.createElement('div');el.id='valPop';
   const cur=()=>o[sp.key];
@@ -4086,6 +4126,7 @@ function instSVG(c,ph,isSel,one){if(ARDX[c.t])return ardExtSVG(c,isSel);const id
   s+=`<rect x="${x+3}" y="${y+5}" width="${w}" height="${h}" rx="8" fill="#000" opacity=".25"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#2A2E35" stroke="#0E1013" stroke-width="1.2"/>
     <rect x="${x+1.5}" y="${y+1.5}" width="${w-3}" height="26" rx="6.5" fill="#363B44"/>
     <text x="${x+(c.t==='osc'?w-58:w/2)}" y="${y+19}" font-size="10.5" font-weight="700" fill="#DDE1E7" text-anchor="middle" pointer-events="none">${TNAME[c.t]}</text>`;
+  const IED=(ix,iy,iw,ih,k,tt='누르면 값을 바꿔요')=>`<rect data-ied="${k}" x="${x+ix}" y="${y+iy}" width="${iw}" height="${ih}" rx="4" fill="transparent"><title>${tt}</title></rect>`;
   const T=(tx,ty,t,sz,col,anc='middle',fam='var(--mono)')=>`<text x="${x+tx}" y="${y+ty}" font-size="${sz}" font-weight="700" fill="${col}" text-anchor="${anc}" font-family="${fam}">${t}</text>`;
   if(c.t==='psu')for(const q of psuChs(c)){const ry=34+q.i*38,live=on&&q.on,vt=(Math.round(q.v*100)/100).toFixed(Math.round(q.v*10)===q.v*10?1:2);
     s+=`<rect x="${x+30}" y="${y+ry}" width="${w-60}" height="34" rx="4" fill="#07140D" stroke="#000"/>`+T(37,ry+12,'CH'+(q.i+1),8,live?'#9FE8BD':'#8A9099','start','var(--sans)')
@@ -4095,7 +4136,7 @@ function instSVG(c,ph,isSel,one){if(ARDX[c.t])return ardExtSVG(c,isSel);const id
     s+=`<rect x="${x+30}" y="${y+ry}" width="${w-60}" height="34" rx="4" fill="#0B1322" stroke="#000"/><path d="${wv}" transform="translate(${x+36} ${y+ry+11}) scale(.8)" fill="none" stroke="${live?'#FFB648':'#5C4A2A'}" stroke-width="2" stroke-linejoin="round"/>`
       +T(70,ry+12,'CH'+(ch.i+1)+(live?'':' OFF'),8,live?'#FFD08A':'#8A9099','start','var(--sans)')+T(70,ry+27,WAVES[q.wave]||'',7.5,live?'#AEB4BD':'#5D6068','start','var(--sans)')
       +T(w-36,ry+14,num(q.hz,1)+' Hz',11,live?'#FFD08A':'#6B5A3C','end')+T(w-36,ry+28,num(q.vpp,5)+'Vpp '+(lo?(lo>0?'+':'')+lo+'V ':'')+'φ'+num(q.ph,0)+'°',7.5,live?'#C9A56A':'#5C4A2A','end');}
-  if(c.t==='spa')s+=spaSVG(c);
+  if(c.t==='spa')s+=spaSVG(c)+IED(36,30,w-40,h-34,'spa');
   if(c.t==='dmm'){const rd=rt(c).rd||{},m=c.mode||'v',bad=rd.t==='FUSE'||rd.t==='OL',parts=String(rd.t||'---').split(' ');
     s+=`<rect x="${x+10}" y="${y+34}" width="${w-20}" height="54" rx="4" fill="#B8C4A8" stroke="#000"/>`+T(w-18,71,parts[0],24,bad?'#8B1E1E':'#16200F','end')+T(w-18,84,parts[1]||'',9,'#2F3A26','end','var(--sans)')+T(16,46,{v:'DC V',a:'DC A',o:'Ω'}[m],8,'#2F3A26','start','var(--sans)')
       +[['v','V⎓'],['a','A⎓'],['o','Ω']].map(([k,t],i)=>`<rect x="${x+12+i*43}" y="${y+98}" width="39" height="20" rx="10" fill="${k===m?'#F2C230':'#3A3F47'}"/>`+T(31.5+i*43,112,t,10,k===m?'#1A1C1F':'#AEB4BD')).join('')
@@ -4117,6 +4158,12 @@ function instSVG(c,ph,isSel,one){if(ARDX[c.t])return ardExtSVG(c,isSel);const id
     s+=`<rect x="${x+12}" y="${y+32}" width="${w-24}" height="32" rx="${nine?4:8}" fill="${nine?'#1F2937':'#B45309'}" stroke="#000"/><rect x="${x+12}" y="${y+32}" width="${nine?26:18}" height="32" rx="${nine?4:8}" fill="${nine?'#C2410C':'#1F2937'}"/>`
       +T(w/2+8,54,(+c.v)+' V',17,'#FFF7E6');
     if(!nine)for(let i=1;i<n;i++)s+=`<path d="M${x+12+(w-24)*i/n} ${y+33}v30" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>`;}
+  // 표시 창: 누르면 그 자리에서 값을 바꾸는 창이 열린다(data-ied)
+  if(c.t==='psu')for(let i=0;i<3;i++)s+=IED(30,34+i*38,w-60,34,'psu:'+i,`CH${i+1} 전압·출력 바꾸기`);
+  if(c.t==='fg')for(let i=0;i<3;i++)s+=IED(30,34+i*38,w-60,34,'fg:'+i,`CH${i+1} 파형·주파수·크기·위상 바꾸기`);
+  if(c.t==='bat')s+=IED(12,32,w-24,32,'bat','전압 바꾸기');
+  if(c.t==='osc'){s+=IED(12,34,200,160,'osc:t','시간/칸·화면 바꾸기')+IED(214,36,w-218,28,'osc:t','시간/칸·화면 바꾸기')+IED(214,140,w-218,36,'osc:t','시간/칸·화면 바꾸기');for(let k=0;k<4;k++)s+=IED(214,68+k*12,w-218,12,'osc:'+k,`CH${k+1} 전압/칸·위상 바꾸기`)+IED(8,198+k*12,w-16,12,'osc:'+k,`CH${k+1} 전압/칸·위상 바꾸기`);}
+  if(c.t==='dmm'){s+=IED(10,34,w-20,54,'dmm','측정 모드 바꾸기')+IED(w/2-22,126,44,44,'dmm','측정 모드 바꾸기');['v','a','o'].forEach((k,i)=>{s+=IED(12+i*43,98,39,20,'dmm:m:'+k,DMM_MODES[k]+'로 바꾸기');});}
   // 단자: 여기서 구멍까지 끌어서 전선을 잇는다
   J.forEach(([jx,jy,col,nm,left,nolab],k)=>{const j={x:x+jx,y:y+jy};
     s+=`<circle cx="${j.x}" cy="${j.y}" r="8" fill="#15171A" stroke="${col}" stroke-width="2.6" style="cursor:crosshair"><title>${nm} 단자 · 여기서 구멍까지 끌면 전선이 이어져요</title></circle><circle cx="${j.x}" cy="${j.y}" r="3" fill="${col}" pointer-events="none"/>
@@ -4854,7 +4901,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>IC 핀·전선 정보</b>: 브레드보드의 IC 몸통에 핀 번호와 기능(VCC 빨강·GND 파랑)이 늘 보여요. 전선에 마우스를 대면 그 전선의 전압과 이어진 IC 핀 번호·기능이 떠요. 부품은 한 번에 하나씩 놓이고, 놓으면 선택 도구로 돌아가요(전선은 이어서 그릴 수 있어요). 경고 카드는 작성하는 동안에는 뜨지 않고, 왼쪽 아래 구석에 작게 떠요.</li>
 <li><b>부품의 실제 특성</b>: 저항은 색띠 허용 오차 안에서 부품마다 실제 값이 조금씩 달라요(꽂은 자리마다 늘 같음). 소비 전력이 정격(1/4W 등)을 넘으면 '뜨거움', 2배를 넘으면 '탐'으로 끊어져요. 커패시터는 유전체별 오차, ESR(내부 저항), 누설 전류, X7R의 전압에 따른 용량 감소가 계산에 들어가고, 정격 전압의 1.3배를 넘으면 고장(단락), 전해·탄탈을 거꾸로 꽂으면 크게 새요. [속성]에 실제 값·전류·전력·저장 에너지가 나오고, 탄·고장 난 부품은 [새 부품으로 바꾸기]로 되살려요.</li>
 <li><b>저항 계산</b>: 저항은 옴의 법칙으로 계산해요 — 전압 나누기 가운데 전압, LED에 흐르는 전류(밝기)가 저항 값대로 달라져요. 큰 저항(수 MΩ)을 단 LED는 꺼져요.</li>
-<li><b>보드 2장 묶음</b>: [브레드보드 추가] → [풀 사이즈 830홀 2장 묶음]을 고르면 풀 보드 두 장이 나란히 붙어 126열이 되고, 끌면 함께 움직여요. 이름표 메뉴의 [묶음 풀기]로 따로 움직일 수 있어요.</li>
+<li><b>보드 2장 묶음</b>: [브레드보드 추가] → [풀 사이즈 830홀 2장 묶음]을 고르면 풀 보드 두 장이 위아래로 놓이고, 끌면 함께 움직여요. 이름표 메뉴의 [묶음 풀기]로 따로 움직일 수 있어요.</li>
 <li><b>부품 검색</b>: [부품 고르기] 창 위 칸에 번호를 쳐요. 74 뒤의 계열 글자는 빼고 쳐도 돼요(7490 → 74LS90, 4511 → CD4511). 맞는 것이 맨 앞에 나오고, <kbd>Enter</kbd>를 누르면 첫 부품이 바로 빈자리에 놓여요(저항·LED처럼 다리를 직접 찍는 부품은 그 도구가 골라져요).</li>
 <li><b>회로도에서 지우기</b>: 기호나 선을 마우스 오른쪽 단추로 누르면 [삭제]·[90° 돌리기] 메뉴가 떠요. 회로도의 IC는 VCC·GND·NC까지 모든 핀이 보여요(전원 핀을 잇지 않아도 전원이 들어간 것으로 계산해요).</li>
 <li><b>부품 고르기 창</b>: 도구 막대의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
@@ -5190,7 +5237,7 @@ svg.addEventListener('pointerdown',e=>{lastPtrType=e.pointerType||'mouse';
       if(c.t==='px'){const d=PX[c.kind],sd=pxSide(c,p);if(d.mom===1||(d.mom===2&&Math.abs(sd)<.3)){rt(c).pr=sd<0?-1:1;settle();render();}}
       if(!(SEL.has(c.id)&&SEL.size>1))sel={type:'comp',id:c.id};
       syncSel();const ids=[...SEL];
-      if(INST.has(c.t)){drag={kind:'inst',id:c.id,sx:p.x,sy:p.y,ox:c.x,oy:c.y,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();render();renderInfo();return;}
+      if(INST.has(c.t)){const ie=e.target.closest&&e.target.closest('[data-ied]');drag={kind:'inst',id:c.id,sx:p.x,sy:p.y,ox:c.x,oy:c.y,moved:false,ied:ie&&tool==='select'?ie.dataset.ied:null,cx:e.clientX,cy:e.clientY};svg.setPointerCapture(e.pointerId);e.preventDefault();render();renderInfo();return;}
       drag={kind:'move',side:c.t==='px'?pxSide(c,p):0,id:c.id,ids,origs:new Map(ids.map(i=>[i,JSON.parse(JSON.stringify(compById(i)))])),start:gridAt(p),moved:false};
       svg.setPointerCapture(e.pointerId);e.preventDefault();render();renderInfo();return;}}
   const mouse=e.pointerType==='mouse'||e.pointerType==='pen';
@@ -5303,8 +5350,8 @@ function nudge(dr,dc){const ids=[...SEL].filter(id=>compById(id));if(!ids.length
 /* 보드 묶음(B.grp 같은 번호): 끌면 함께 움직인다 */
 const boardGroup=B=>B.grp!=null?S.boards.filter(o=>o.grp===B.grp):[B];
 function addBoardPair(){const bb=allBox(),minX=Math.min(...S.boards.map(b=>b.x)),y=Math.round((bb.y1+70-4)/10)*10,id1=Math.max(0,...S.boards.map(b=>b.id))+1,id2=id1+1,w=bW('full');
-  pushHist();S.boards.push({id:id1,type:'full',x:minX,y,grp:id1},{id:id2,type:'full',x:minX+w-6,y,grp:id1});buildHoles();renderBoards();commit(true);fitView();
-  toast(`풀 사이즈 보드 2장을 묶어 놓았어요 (보드 ${id1}·${id2}, 126열) · 끌면 함께 움직여요 · 이름표 메뉴에서 묶음을 풀 수 있어요`);}
+  pushHist();S.boards.push({id:id1,type:'full',x:minX,y,grp:id1},{id:id2,type:'full',x:minX,y:y+420,grp:id1});buildHoles();renderBoards();commit(true);fitView();
+  toast(`풀 사이즈 보드 2장을 위아래로 묶어 놓았어요 (보드 ${id1} 위 · ${id2} 아래) · 끌면 함께 움직여요 · 이름표 메뉴에서 묶음을 풀 수 있어요`);}
 function boardsOverlap(B,skip){const a=boardBox(B),sk=skip instanceof Set?skip:new Set([skip]);return S.boards.some(o=>{if(sk.has(o.id))return false;const b=boardBox(o);return a.x0<b.x1+2&&b.x0<a.x1+2&&a.y0-28<b.y1+2&&b.y0-28<a.y1+2;});}
 function addBoard(type,where){const id=Math.max(0,...S.boards.map(b=>b.id))+1,t=BTYPES[type];const bb=allBox();
   let B;if(where==='right'){B={id,type,x:Math.round((bb.x1+60)/10)*10,y:S.boards[0].y};}
@@ -5696,6 +5743,7 @@ function handleDbl(e){if(tool!=='select')return false;const p=svgPt(e);
   pushHist();ownPts(c).splice(best,0,{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5});sel={type:'comp',id:c.id};commit(true);
   toast('꺾는 점을 만들었어요 · 흰 네모를 끌어 모양을 바꿔요');return true;}
 function endDrag(){if(!drag)return;
+  if(drag.kind==='inst'&&!drag.moved&&drag.ied){const d=drag,c=compById(d.id);drag=null;if(c){render();renderInfo();openInstPop(c,d.ied,d.cx,d.cy);}return;}   // 계측기 표시 창을 눌렀다 뗌: 값 바꾸는 창
   if(drag.kind==='board'){const d=drag;drag=null;if(!d.moved){if(d.menu)openBoardMenu(d.id,d.cx,d.cy);else if(tool==='select'){sel=null;render();renderInfo();}return;}commit(true);return;}
   const c=compById(drag.id);
   if(drag.kind==='mid'){drag=null;return;}
@@ -6184,7 +6232,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 멀티미터(전압·전류·저항) · 속성 창 부품 설명은 맨 밑';
+const APP_VER='2026-11-27 · 계측기 표시 창을 누르면 값 바꾸기 · 풀 보드 2장 위아래 묶음';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
