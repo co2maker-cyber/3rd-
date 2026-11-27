@@ -19,6 +19,15 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
     const sw=S.comps.find(c=>c.t==='sw'),gl=()=>!!(SIM.led.get(S.comps.filter(c=>c.t==='led')[1].id)||{}).lit,g0=gl();sw.on=false;st();const g1=gl();
     T('예제 Ⓟ9: DAC 스윕 전압·빔 켜기·블록 연결 (보드 3개)',ex.boards.length===3&&g0&&!g1&&Math.abs(v0-2.4375)<.02&&l0&&c0&&c0.code===640&&Math.abs(v1-1.5)<.01&&!l1&&S.comps.filter(c=>c.t==='px'&&PX[c.kind].blk).length===8&&!SIM.warns.filter(w=>w[0]!=='info').length,
       `코드 ${c0&&c0.code} → ${v0.toFixed(3)}V(LED ${l0}) · 0 → ${v1.toFixed(3)}V(LED ${l1})`); }
+  // ①-3 예제 Ⓟ10(시트 6장): 15V 레귤레이터, DAC 코드 512 → 6.2V 기준 × 1.5, YIG 전류 드라이버(감지 전압 = DAC 전압), 스윕 램프 상승·리셋, 래치 → 대역 릴레이
+  { setVM('bb');const ex=EXAMPLES.pasys();S.power=true;loadComps(ex.comps,false,ex.boards);orthoWires();RT.clear();commit(true);st();
+    const P_=(k,n=0)=>S.comps.filter(c=>c.kind===k)[n],vp=(c,i)=>SIM.vOf(SIM.netOf[HOLES.get(pinHoles(c)[i]).i]);
+    const reg=vp(P_('reg317'),1),ref=vp(P_('dzref'),1),dac=vp(P_('oa2j'),0),isn=vp(P_('q3055'),1),code=(rt(P_('dac10')).ast||[])[0].code;
+    const r0=vp(P_('oa2j'),6);for(let i=0;i<20;i++){simBase+=.05;settle();}const r1=vp(P_('oa2j'),6);const sw=S.comps.find(c=>c.t==='sw');sw.on=true;st();const r2=vp(P_('oa2j'),6);sw.on=false;
+    const btn=S.comps.find(c=>c.t==='btn');rt(btn).pressed=true;st();rt(btn).pressed=false;st();const rly=!!rt(P_('rlyrf')).on;
+    P_('dip4',1).bits=[1,1,0,0];st();const dac2=vp(P_('oa2j'),0),isn2=vp(P_('q3055'),1);
+    T('예제 Ⓟ10: 전원·DAC·YIG 전류·스윕·래치',ex.boards.length===6&&Math.abs(reg-15)<.05&&code===512&&Math.abs(dac-ref*1.5)<.02&&Math.abs(isn-dac)<.01&&r1>r0+.3&&Math.abs(r2-ref)<.05&&rly&&Math.abs(dac2-ref*1.75)<.02&&Math.abs(isn2-dac2)<.01&&!SIM.warns.filter(w=>w[0]!=='info').length,
+      `15V ${reg.toFixed(3)} · 기준 ${ref.toFixed(3)} · 코드 ${code} → ${dac.toFixed(3)}V, 감지 ${isn.toFixed(3)}V · 램프 ${r0.toFixed(2)}→${r1.toFixed(2)}, 리셋 ${r2.toFixed(2)} · 릴레이 ${rly} · 코드 768 → ${dac2.toFixed(3)}/${isn2.toFixed(3)} · 경고 ${SIM.warns.map(w=>w[1].slice(0,30)).join('|')}`); }
   // ② 새 부품마다 보드에 놓고 그리기·속성 창
   { const bad=[];for(const k of NEW){try{const d=PX[k];if(!d){bad.push(k+' 없음');continue;}const ids=pxHolesAt(k,1,'c',5);if(!ids){bad.push(k+' 자리');continue;}
       loadComps([{t:'px',kind:k,pins:ids}],false);RT.clear();S.power=true;st();render();

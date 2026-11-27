@@ -3,7 +3,7 @@
   브레드보드 CAD — breadboard/index.html
   Copyright (c) 2026 co2maker-cyber. All rights reserved.
 
-  1. 라이선스: 코드·화면 구성·예제 회로 38종·안내서(FILE-FORMAT.md)의 저작권은 저작자에게 있습니다.
+  1. 라이선스: 코드·화면 구성·예제 회로 42종·안내서(FILE-FORMAT.md)의 저작권은 저작자에게 있습니다.
      저작자의 사전 서면 동의 없이 복제·수정·재배포·상업적 이용을 금합니다.
      (오픈소스로 공개하기로 하면 이 항목을 MIT 등으로 바꾸고 LICENSE 파일을 둡니다.)
   2. 상표: 74LS00·74HC00·NE555·CD4511 등 부품 번호와 핀 배열은 교육·설계 호환성 안내를 위한
@@ -587,6 +587,7 @@ body.planon .cbar{display:none}
         <option value="pastr">Ⓟ7 트랜지스터·MOSFET: NPN·PNP 스위치·MOSFET·달링턴·릴레이 구동</option>
         <option value="paana">Ⓟ8 연산 증폭기·비교기: 가변저항 전압을 2배로 키우기 · 2.5V 넘으면 LED 켜기</option>
         <option value="pasa">Ⓟ9 계측기 구조: 튜닝 DAC 스윕 · RF 섹션(YIG 발진기·믹서·변환) · IF·표시 섹션(로그 증폭·CRT)</option>
+        <option value="pasys">Ⓟ10 계측기 예제 프로젝트: 시트 01~05를 보드 6장에 — RF 입력·YIG 전류 드라이버·IF 검파·MPU·튜닝 DAC·스윕·15V 전원·CRT 구동</option>
         </optgroup>
         <optgroup label="논리 IC 모음 (74LS·74HC 비교)">
         <option value="lg2">ⓘ1 2입력 게이트 9종 + 단독 NAND·NOR·XNOR (스위치 A·B)</option>
@@ -3160,10 +3161,10 @@ function settle(){
   const res=[...S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
   // 다이오드: {c, a 애노드 줄, k 캐소드 줄, m 특성, st 상태(1 순방향, −1 제너 역방향, 0 끊김), i 전류}
   // 아날로그 IC: 연산 증폭기(이상 증폭기+출력 한계), 오픈컬렉터 비교기, 가변 레귤레이터, 곱셈형 R-2R DAC
-  const anaL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ana){const A_=PX[c.kind].ana,hs=ph.get(c.id),n=k=>netOf[hs[k]],r=rt(c);r.ast=[];
-    for(const u of A_.oa||[])anaL.push({c,r,k:'oa',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),vee:n(A_.vee),M:A_,st:'lin'});
-    for(const u of A_.cmp||[])anaL.push({c,r,k:'cmp',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),g:n(A_.gnd),M:A_,st:0});
-    if(A_.reg)anaL.push({c,r,k:'reg',o:n(A_.reg.out),adj:n(A_.reg.adj),vin:n(A_.reg.in),M:A_,st:'reg'});
+  const anaL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ana){const A_=PX[c.kind].ana,hs=ph.get(c.id),n=k=>netOf[hs[k]],r=rt(c),pv=r.ast||[];r.ast=[];let q_=0;const ps=(d)=>{const x=pv[q_++];return x&&x.st!=='off'&&x.st!=null?x.st:d;};   // 지난번 상태에서 시작(빨리 수렴)
+    for(const u of A_.oa||[])anaL.push({c,r,k:'oa',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),vee:n(A_.vee),M:A_,st:ps('lin')});
+    for(const u of A_.cmp||[])anaL.push({c,r,k:'cmp',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),g:n(A_.gnd),M:A_,st:ps(0)});
+    if(A_.reg)anaL.push({c,r,k:'reg',o:n(A_.reg.out),adj:n(A_.reg.adj),vin:n(A_.reg.in),M:A_,st:ps('reg')});
     if(A_.dac){const D_=A_.dac;anaL.push({c,r,k:'dac',io1:n(D_.io1),io2:n(D_.io2),vref:n(D_.vref),rfb:n(D_.rfb),vdd:n(D_.vdd),g:n(D_.gnd),bits:D_.bits.map(n),cs:D_.cs!=null?n(D_.cs):null,wr:D_.wr!=null?n(D_.wr):null,M:A_});}}
   const dioL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].dio){const hs=ph.get(c.id),r=rt(c);r.di=[];PX[c.kind].dio.forEach(([i,j,m],q)=>{const d={c,a:netOf[hs[i]],k:netOf[hs[j]],m:DIOM[m],st:0,i:0};r.di[q]=d;dioL.push(d);});}
   // 트랜지스터: {r, T, bj, pol(+1 NPN·N, −1 PNP·P), b 베이스·게이트 줄, cN 컬렉터·드레인 줄, e 이미터·소스 줄, d 베이스-이미터 다이오드, st 아날로그 상태}
@@ -3249,14 +3250,14 @@ function settle(){
       const vccs=(f,t,cp,cn,gm,off)=>{for(const [x,sg] of [[f,1],[t,-1]]){const xi=ix.get(x);if(xi===undefined)continue;
           for(const [y,k] of [[cp,gm],[cn,-gm]]){const yi=ix.get(y);if(yi!==undefined)A[xi][yi]+=sg*k;else A[xi][N_]-=sg*k*(known.get(y)||0);}A[xi][N_]+=sg*off;}};
       for(const d of ledA){if(d.st===1){const G=1/d.m.rs;stamp(d.a,d.k,G,G*d.m.vf);}else stamp(d.a,d.k,1e-9,0);}
-      const vK=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):null;
+      const vK=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):SIM.volt&&SIM.volt.has(n)?SIM.volt.get(n):null;   // 아직 풀지 않은 줄(레귤레이터 출력 레일 등)은 지난번 전압으로
       for(const a of anaL){const M=a.M;
         if(a.k==='oa'){const vc=vK(a.vcc),ve=vK(a.vee);a.on=vc!=null&&ve!=null&&vc-ve>=(M.vmin||5);if(!a.on||!ix.has(a.o))continue;const G=1/M.ro;
           if(a.st==='hi')stamp(a.o,-1,G,G*(vc-M.hd));else if(a.st==='lo')stamp(a.o,-1,G,G*(ve+(M.hdl??M.hd)));else{stamp(a.o,-1,G,0);vccs(null,a.o,a.p,a.m,G*M.A,0);}}
         else if(a.k==='cmp'){const vc=vK(a.vcc),vg=vK(a.g);a.on=vc!=null&&vg!=null&&vc-vg>=2;if(a.on&&a.st===1)stamp(a.o,a.g,1/M.ron,0);}
         else if(a.k==='reg'){const vi=vK(a.vin);a.on=vi!=null&&vi>=3;if(!a.on||!ix.has(a.o))continue;const G=1/M.reg.ro;stamp(a.o,-1,G,0);
           if(a.st==='drop')vccs(null,a.o,a.vin,-1,G,G*M.reg.drop);else vccs(null,a.o,a.adj,-1,G,-G*M.reg.vref);}
-        else{const vd=vK(a.vdd),vg=vK(a.g);a.on=vd!=null&&vg!=null&&vd-vg>=4.5;if(!a.on)continue;const R=M.dac.R;let D_=0;a.bits.forEach((n,i)=>{const v=lvl.get(n);if(v===Hh)D_|=1<<(a.bits.length-1-i);});if(a.cs!=null&&!(lvl.get(a.cs)===L&&lvl.get(a.wr)===L))D_=a.r.dcode||0;else a.r.dcode=D_;a.code=D_;const full=1<<a.bits.length;
+        else{const vd=vK(a.vdd),vg=vK(a.g);a.on=vd!=null&&vg!=null&&vd-vg>=4.5;if(!a.on)continue;const R=M.dac.R;let D_=0;a.bits.forEach((n,i)=>{const v=lvl.get(n),va=v===undefined||weak.has(n)?vK(n):null;if(va!=null?va>=2.4:v===Hh)D_|=1<<(a.bits.length-1-i);});if(a.cs!=null&&!(lvl.get(a.cs)===L&&lvl.get(a.wr)===L))D_=a.r.dcode||0;else a.r.dcode=D_;a.code=D_;const full=1<<a.bits.length;
           stamp(a.vref,a.io1,Math.max(1e-12,D_/full/R),0);stamp(a.vref,a.io2,Math.max(1e-12,(full-D_)/full/R),0);stamp(a.rfb,a.io1,1/R,0);}}
       for(const t of trA){const {T}=t,[hi,lo]=t.pol>0?[t.cN,t.e]:[t.e,t.cN];if(t.cN===t.e)continue;
         if(t.bj){const m=t.d&&t.d.m;if(t.st==='sat')stamp(hi,lo,1,.2);else if(t.d&&t.d.st===1){const gm=T.beta/m.rs;if(t.pol>0)vccs(t.cN,t.e,t.b,t.e,gm,gm*m.vf);else vccs(t.e,t.cN,t.e,t.b,gm,gm*m.vf);}}
@@ -3264,22 +3265,24 @@ function settle(){
       for(let i=0;i<N_;i++){let p=i;for(let r=i+1;r<N_;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
         const d=A[i][i]||1e-12;for(let r=0;r<N_;r++){if(r===i)continue;const f=A[r][i]/d;if(f)for(let k=i;k<=N_;k++)A[r][k]-=f*A[i][k];}}
       V=new Map();U.forEach((n,i)=>V.set(n,A[i][N_]/(A[i][i]||1e-12)));
-      dCh=false;for(const d of dioL){const va=V.has(d.a)?V.get(d.a):known.get(d.a),vk=V.has(d.k)?V.get(d.k):known.get(d.k);if(va==null||vk==null)continue;const v=va-vk,m=d.m,e=1e-6;
-        const st=v>m.vf+(d.st===1?-e:e)?1:m.vz&&-v>m.vz+(d.st===-1?-e:e)?-1:0;if(st!==d.st){d.st=st;dCh=true;}
+      // 바뀔 상태를 모아 두었다가: 처음 세 번은 한꺼번에, 그 뒤로는 하나씩만 바꾼다(되먹임 고리에서 모두가 동시에 뒤집혀 맴도는 것을 막음)
+      dCh=false;const chg=[];for(const d of dioL){const va=V.has(d.a)?V.get(d.a):known.get(d.a),vk=V.has(d.k)?V.get(d.k):known.get(d.k);if(va==null||vk==null)continue;const v=va-vk,m=d.m,e=1e-6;
+        const st=v>m.vf+(d.st===1?-e:e)?1:m.vz&&-v>m.vz+(d.st===-1?-e:e)?-1:0;if(st!==d.st)chg.push(()=>{d.st=st;});
         d.i=st===1?(v-m.vf)/m.rs:st===-1?(v+m.vz)/m.rz:0;}
       for(const a of anaL){if(!a.on)continue;const M=a.M,vv2=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):0;let st=a.st;
         if(a.k==='oa'){const vc=vv2(a.vcc),ve=vv2(a.vee),tgt=M.A*(vv2(a.p)-vv2(a.m)),vo=vv2(a.o);
           if(st==='lin')st=vo>vc-M.hd+1e-6?'hi':vo<ve+(M.hdl??M.hd)-1e-6?'lo':'lin';else if(st==='hi'){if(tgt<vc-M.hd-1e-6)st='lin';}else if(tgt>ve+(M.hdl??M.hd)+1e-6)st='lin';}
         else if(a.k==='cmp')st=vv2(a.p)<vv2(a.m)?1:0;
         else if(a.k==='reg'){const tgt=vv2(a.adj)+M.reg.vref,vi=vv2(a.vin);st=vi-tgt<M.reg.drop?'drop':'reg';}
-        if(st!==a.st){a.st=st;dCh=true;}}
-      for(const d of ledA){const va=V.has(d.a)?V.get(d.a):known.get(d.a),vk=V.has(d.k)?V.get(d.k):known.get(d.k);if(va==null||vk==null)continue;const v=va-vk,st=v>d.m.vf+(d.st===1?-1e-6:1e-6)?1:0;if(st!==d.st){d.st=st;dCh=true;}d.i=st?(v-d.m.vf)/d.m.rs:0;}
+        if(st!==a.st)chg.push(()=>{a.st=st;});}
+      for(const d of ledA){const va=V.has(d.a)?V.get(d.a):known.get(d.a),vk=V.has(d.k)?V.get(d.k):known.get(d.k);if(va==null||vk==null)continue;const v=va-vk,st=v>d.m.vf+(d.st===1?-1e-6:1e-6)?1:0;if(st!==d.st)chg.push(()=>{d.st=st;});d.i=st?(v-d.m.vf)/d.m.rs:0;}
       {const vv=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):0;
         for(const t of trA){if(t.cN===t.e)continue;const {T}=t,vce=t.pol*(vv(t.cN)-vv(t.e));let st=t.st;
           if(t.bj){const on=t.d&&t.d.st===1;if(!on)st=0;else if(st!=='sat'){if(vce<.2-1e-6)st='sat';else st='act';}else{const isat=vce-.2,ib=t.d.i;if(isat>T.beta*ib+1e-9||isat<-1e-6)st='act';}}
           else{const x=t.pol*(vv(t.b)-vv(t.e))-T.vth;if(x<=0)st=0;else if(st==='lin'){if(vce/T.ron>T.gm*x+1e-9||vce<-1e-6)st='on';}else if(vce<T.gm*x*T.ron-1e-9)st='lin';else st='on';}
-          if(st!==t.st){t.st=st;dCh=true;}}}
-      }while(dCh&&++dIt<30);
+          if(st!==t.st)chg.push(()=>{t.st=st;});}}
+      if(chg.length){dCh=true;if(dIt<3)chg.forEach(f=>f());else chg[dIt%chg.length]();}
+      }while(dCh&&++dIt<60);
       const vn=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):null;
       for(const a of anaL)a.r.ast=[];for(const a of anaL)a.r.ast.push({k:a.k,st:a.on?a.st:'off',code:a.code,n:a.bits?a.bits.length:0});
       for(const t of trA){t.r.on=!!t.st;if(t.bj)t.r.ib=t.d&&t.d.st===1?t.d.i:0;else{const g=vn(t.b),sv=vn(t.e);t.r.vgs=g!=null&&sv!=null?g-sv:null;}
@@ -5501,7 +5504,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 계측기 전체 부품(수동·기구·보호)';
+const APP_VER='2026-11-27 · 계측기 예제 프로젝트 Ⓟ10';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -6028,6 +6031,65 @@ Object.assign(EXAMPLES,{
     K.link(C(3),I(0));K.link(I(2),V(6));K.link(A(0),V(4));                          // 변환 체인 → IF, 비디오 → Y+, 스윕 → X+
     const s_=K.sw(K.at(3,false,32),true),Q=K.px('q18s',3,'h',36);K.link(s_,Q(1),4700);K.gnd(Q(0));
     const b=K.led(3,42,{color:'green'});K.vcc(b.a,330);K.link(b.k,Q(2));K.link(Q(2),V(10));   // 켜면 BLANK가 LOW → 빔 켜짐(초록 LED)
+    return K.fin();},
+  // Ⓟ10 계측기 예제 프로젝트(시트별 보드 6장): 계측기 예제 설계 명세의 시트 구조·넷을 브레드보드로 옮김
+  //   보드 1 = 01 RF 프론트엔드(동축 입력 → 감쇠기 → 대역 릴레이 → 변환 체인/YIG 믹서 → 필터, 앞면 RPG)
+  //   보드 2 = 02 YIG 전류 드라이버(+20V: 오차 증폭기 → NPN → TO-3 패스 → 감지 저항, I = V(DAC) ÷ R) · YIG 발진기 · 기준 발진기
+  //   보드 3 = 03 21.4MHz IF(수정 → 동조 코일 → 로그 증폭단 → 쇼트키 검파 → JFET VBW 스위치 → 비디오 버퍼, PWR_P15V)
+  //   보드 4 = 04 제어(MPU · 6채널 래치 ← DIP·클럭 버튼 → 대역·감쇠 제어)   보드 5 = 04 튜닝 DAC·스윕 적분기(PWR_P15V, 6.2V 정밀 기준)
+  //   보드 6 = 05 전원·보호·CRT(브리지 → 평활 → 가변 레귤레이터 15V → 보드 3·5 레일, 과전압 비교기 LED, X·Y 버퍼 → 고내압 PNP → CRT)
+  //   레일: 보드 1·4·6 위 = 5V(서플라이 1), 보드 2 = 20V(서플라이 2), 보드 3·5 와 보드 6 아래 = 레귤레이터 출력 15V. GND는 모두 하나
+  pasys:()=>{const K=ledKit(6),P=b=>b===1?'':b+':';
+    K.add({t:'psu',k:1,v:5,on:true,x:20,y:2780});K.add({t:'psu',k:2,v:20,on:true,x:260,y:2780});
+    K.add(w('@1:0','tp1',RED));K.add(w('@1:1','tn1',BLK));K.add(w('@2:0','2:tp1',RED));K.add(w('@2:1','2:tn4',BLK));
+    for(let b=1;b<=6;b++){K.add(w(P(b)+'tn2',P(b)+'bn2',BLK));if(b<6)K.add(w(P(b)+'tn3',P(b+1)+'tn1',BLK));}
+    K.add(w('tp2','bp2',RED));K.add(w('tp3','4:tp1',RED));K.add(w('4:tp2','4:bp2',RED));K.add(w('4:tp3','6:tp1',RED));K.add(w('2:tp2','2:bp2',RED));
+    K.add(w('6:bp3','3:tp1',ORG));K.add(w('3:tp2','3:bp2',ORG));K.add(w('6:bp4','5:tp1',ORG));K.add(w('5:tp2','5:bp2',ORG));
+    // ── 보드 1: 01 RF 프론트엔드
+    const J=K.px('coax',1,'c',2),T=K.px('batt',1,'c',7),KR=K.px('rlyrf',1,'c',16,{cv:24}),C=K.px('bconv',1,'c',28),X=K.px('bytx',1,'c',36);
+    const F=K.px('bfilt',1,'h',2),QB=K.px('q18s',1,'h',16),DF=K.px('d914',1,'h',22),RP=K.px('rpg',1,'h',30);
+    K.gnd(J(0));K.gnd(J(2));K.link(J(1),T(0));K.gnd(T(6));K.vcc(T(5));K.link(T(1),KR(2));                  // RF_IN_50OHM, RF_ATTEN_OUT → K101 COM
+    K.link(KR(3),C(0));K.link(KR(4),X(0));K.gnd(C(5));K.vcc(C(4));K.gnd(X(5));K.link(C(3),F(0));K.link(X(2),F(0));K.gnd(F(8));   // 저대역 NC / 고대역 NO → IF 합침
+    K.add(w(K.hole(KR(0)),'2:tp3',RED));K.link(KR(1),QB(2));K.gnd(QB(0));K.link(DF(0),KR(1),0,ORG);K.link(DF(1),KR(0),0,ORG);   // 코일 24V급을 +20V로, NPN이 끌어내림 + 역전압 다이오드
+    K.vcc(RP(0));K.gnd(RP(3));K.vcc(RP(1),10000);K.vcc(RP(2),10000);                                                            // 앞면 RPG(오픈 컬렉터 + 풀업)
+    // ── 보드 2: 02 YIG 전류 드라이버 (+20V)
+    const U=K.px('oa1p',2,null,3),Q1=K.px('q2222m',2,'c',10),Q2=K.px('q3055',2,'c',15),DY=K.px('d4004',2,'h',20),Y=K.px('byto',2,'c',26),RF=K.px('bref',2,'h',30);
+    K.add({t:'cap',pins:[K.hole(U(7)),K.hole(U(5))],farad:3e-11,dk:'c0g'});                               // C201 30pF 위상 보상(COMP–OUT)
+    K.vcc(U(6));K.gnd(U(3));K.link(U(5),Q1(1));K.vcc(Q1(2));K.link(Q1(0),Q2(0));K.link(Q2(1),U(1));       // OUT → Q201 B, Q201 E → Q202 B, Q202 E = YTO_ISENSE → IN−
+    K.add({t:'res',pins:[K.hole(U(1)),K.rail(2,'bn',4)],ohms:10,pw:5,mat:'wire'});                       // R201 감지 저항(시뮬레이션 보기 좋게 10Ω)
+    const CN=K.at(2,false,26);K.add({t:'res',pins:[K.rail(2,'bp',26),K.hole(CN)],ohms:5,pw:5,mat:'wire'});                       // YIG 메인 코일 대신 5Ω(직류 저항)
+    K.link(Q2(2),CN);K.link(DY(0),CN);K.vcc(DY(1));K.vcc(Y(2));K.vcc(Y(9));K.link(Y(8),CN);K.gnd(Y(1));K.vcc(RF(2));K.gnd(RF(3));   // 플라이백 다이오드, YTO +20V·TUNE±, 기준 발진기
+    K.link(Y(0),C(1));K.link(Y(0),X(1));K.link(RF(0),C(2));                                               // LO1_YTO_RF → 변환 체인·YIG 믹서, REF_10MHZ → 변환 체인
+    // ── 보드 3: 03 21.4MHz IF·로그 증폭·검파 (PWR_P15V)
+    const XT=K.px('xtal21',3,'c',2),LV=K.px('indv',3,'c',6),I=K.px('bif',3,'c',11),DS=K.px('d5711',3,'c',22),JV=K.px('jfn',3,'c',28),UV=K.px('oa2n',3,null,34);
+    K.link(F(1),XT(0));K.link(XT(1),LV(0));K.gnd(LV(1));K.link(LV(2),I(0));K.vcc(I(6));K.gnd(I(7));K.gnd(I(8));   // IF_21P4M_OUT → 수정 → 동조 코일 → 로그 증폭단
+    const DT=K.at(3,false,25);K.link(I(2),DS(0));K.link(DS(1),DT);K.gnd(DT,10000);K.add({t:'cap',pins:[K.hole(DT),K.rail(3,'bn',25)],farad:1e-10,dk:'c0g'});   // 쇼트키 포락선 검파, R301·C301
+    K.link(JV(0),DT);K.add({t:'cap',pins:[K.hole(JV(1)),K.rail(3,'tn',29)],farad:1e-9,dk:'film'});K.gnd(JV(2),1000000);   // VBW 스위치(게이트 0V = 켜짐)
+    K.link(JV(0),UV(2));K.link(UV(0),UV(1));K.vcc(UV(7));K.gnd(UV(3));K.gnd(UV(4));K.link(UV(6),UV(5));                   // 비디오 버퍼(OUT1 = VIDEO_TO_DISP)
+    // ── 보드 4: 04 MPU · 6채널 래치(대역·감쇠 제어)
+    const CP=K.px('cpu64',4,null,2),LT=K.chip('74LS174',35,4),SD=K.px('dip4',4,null,44,{bits:[1,0,1,0]});
+    K.vcc(CP(13));K.vcc(CP(48));K.gnd(CP(15));K.gnd(CP(52));K.vcc(LT('VCC'));K.gnd(LT('GND'));K.vcc(LT('~CLR'));K.gnd(LT('5D'));K.gnd(LT('6D'));
+    for(let i=0;i<4;i++){K.vcc(SD(7-i));K.link(SD(i),LT((i+1)+'D'));K.gnd(LT((i+1)+'D'),10000);K.link(CP(4-i),LT((i+1)+'D'));}   // DIP 1~4 → 1D~4D (MPU 데이터 버스 D0~D3도 같은 줄)
+    const ck=K.btn(K.at(4,false,49));K.link(ck,LT('CLK'));K.gnd(LT('CLK'),10000);                         // 누르면 래치(클럭 상승 에지)
+    K.link(LT('1Q'),QB(1),4700);K.link(LT('2Q'),T(2));K.link(LT('3Q'),T(3));K.link(LT('4Q'),T(4));       // BAND_SEL_HI → 릴레이 NPN, ATTEN_CTRL → 감쇠기
+    K.link(RP(1),CP(24));K.link(RP(2),CP(23));                                                             // RPG A·B → MPU 인터럽트 입력
+    // ── 보드 5: 04 튜닝 DAC·스윕 적분기 (PWR_P15V)
+    const DA=K.px('dac10',5,null,2),UA=K.px('oa2j',5,null,12),ZR=K.px('dzref',5,'h',18),SB=K.px('dip4',5,null,26,{bits:[1,0,0,0]}),JR=K.px('jfn',5,'c',33);
+    K.vcc(DA(13));K.gnd(DA(2));K.gnd(DA(14));for(let i=7;i<=12;i++)K.gnd(DA(i));K.vcc(ZR(1),1000);K.gnd(ZR(0));   // VDD 15V, VREF = 0V, 6.2V 기준 제너(1kΩ)
+    K.link(ZR(1),DA(1));K.link(DA(1),UA(2));K.link(DA(0),UA(1));K.link(DA(15),UA(0));                           // IOUT2·IN1+ = 6.2V, IOUT1 → IN1−, RFB → OUT1 = DAC_YTO_V
+    for(let i=0;i<4;i++){K.vcc(SB(7-i));K.link(SB(i),DA(3+i));K.gnd(DA(3+i),10000);}                             // DIP 1~4 → BIT1~BIT4
+    K.vcc(UA(7));K.gnd(UA(3));K.link(UA(2),UA(4));K.gnd(UA(5),10000000);K.add({t:'cap',pins:[K.hole(UA(5)),K.hole(UA(6))],farad:1e-7,dk:'film'});   // 적분기: 10MΩ·100nF 필름
+    K.link(JR(0),UA(6));K.link(JR(1),UA(5));K.gnd(JR(2),1000000);const rs=K.sw(K.at(5,true,38),false);K.link(rs,JR(2),100000);   // Q401 리셋: 스위치 켜면 방전(리트레이스)
+    K.link(UA(0),U(2));                                                                                     // DAC_YTO_V → 보드 2 오차 증폭기 IN+
+    // ── 보드 6: 05 전원·보호·CRT 구동
+    const BR=K.px('brdg',6,null,2),RG=K.px('reg317',6,'c',8),CM=K.px('cmp2',6,null,13),UX=K.px('oa4j',6,null,24),QX=K.px('qp39',6,'h',33),QY=K.px('qp39',6,'h',38),CR=K.px('bcrt',6,'c',37);
+    K.add(w(K.hole(BR(1)),'2:bp3',RED));K.gnd(BR(3));K.gnd(BR(2));K.add({t:'cap',pins:[K.hole(BR(0)),K.rail(6,'bn',3)],farad:1e-3,dk:'alu',vr:35});   // 20V → 브리지 → 1000µF
+    K.link(BR(0),RG(2));K.link(RG(1),RG(0),240);K.gnd(RG(0),2640);K.add(w(K.hole(RG(1)),'6:bp1',ORG));          // 1.25 × (1 + 2640/240) = 15V → 아래 레일(PWR_P15V)
+    K.vcc(CM(7));K.gnd(CM(3));K.gnd(CM(2));K.gnd(CM(1));K.vcc(CM(4),10000);K.gnd(CM(4),40000);K.add({t:'res',pins:[K.hole(CM(5)),K.rail(6,'bp',16)],ohms:30000});K.gnd(CM(5),10000);   // 기준 4V vs 15V ÷ 4
+    K.vcc(CM(6),10000);const fl=K.led(6,19,{color:'red'});K.vcc(fl.a,330);K.link(fl.k,CM(6));             // PSU_FAULT_N(과전압이면 LOW → 빨간 LED)
+    K.vcc(UX(3));K.gnd(UX(10));K.link(UA(6),UX(2));K.link(UX(0),UX(1));K.link(UV(0),UX(4));K.link(UX(6),UX(5));K.gnd(UX(9));K.link(UX(7),UX(8));K.gnd(UX(11));K.link(UX(13),UX(12));   // SWEEP_RAMP_X·VIDEO 버퍼
+    K.vcc(QX(0));K.link(UX(0),QX(1),10000);K.gnd(QX(2),10000);K.vcc(QY(0));K.link(UX(6),QY(1),10000);K.gnd(QY(2),10000);   // 고내압 PNP 편향 구동
+    K.link(QX(2),CR(4));K.link(QY(2),CR(6));K.gnd(CR(11));K.gnd(CR(10));
     return K.fin();},
 });
 
