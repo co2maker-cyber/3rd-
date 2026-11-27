@@ -4663,6 +4663,8 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>아두이노 호환 보드</b>: [부품 고르기] → [아두이노 호환 보드]. Nano·MKR 폼팩터는 브레드보드 가운데 홈을 걸쳐 꽂히고(Nano 600mil은 c·h줄, MKR 800mil은 b·i줄), UNO·Mega 폼팩터는 실제 크기로 보드 밖에 놓여요 — 헤더 단자에서 구멍까지 끌면 점퍼선이 생겨요. USB(기본 꽂음)나 VIN으로 켜지면 5V·3V3 핀에서 전원이 나와요. 3.3V 보드 핀에 5V가 걸리면 빨간 경고가 떠요. 예제 ⓐ1.</li>
 <li><b>스펙트럼 분석기</b>: [계측기·전원]에서 놓고 RF IN 단자를 재고 싶은 구멍에 이어요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 예제 Ⓟ11.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
+<li><b>부품 검색</b>: [부품 고르기] 창 위 칸에 번호를 쳐요. 74 뒤의 계열 글자는 빼고 쳐도 돼요(7490 → 74LS90, 4511 → CD4511). 맞는 것이 맨 앞에 나오고, <kbd>Enter</kbd>를 누르면 첫 부품이 바로 빈자리에 놓여요(저항·LED처럼 다리를 직접 찍는 부품은 그 도구가 골라져요).</li>
+<li><b>회로도에서 지우기</b>: 기호나 선을 마우스 오른쪽 단추로 누르면 [삭제]·[90° 돌리기] 메뉴가 떠요. 회로도의 IC는 VCC·GND·NC까지 모든 핀이 보여요(전원 핀을 잇지 않아도 전원이 들어간 것으로 계산해요).</li>
 <li><b>부품 고르기 창</b>: 도구 막대의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
 <li><b>계측기·전원</b>: [부품 고르기]의 [계측기·전원]에서 <b>파워 서플라이·건전지·함수 발생기·오실로스코프</b>를 고르고 놓을 자리를 누르면 그곳에 놓여요. 그다음 몸통의 <b>단자(동그라미)에서 구멍까지 끌면</b> 전선이 이어져요. 몸통은 끌어서 옮기고, 전압·파형·시간 눈금은 계측기를 누른 뒤 [속성]에서 바꿔요. 파워 서플라이나 건전지를 놓으면 보드의 자동 전원은 꺼지고, 그 전원이 전선으로 이어진 레일에만 전원이 들어가요.</li>
 <li>단축키: <kbd>V</kbd> 선택 <kbd>W</kbd> 전선 <kbd>R</kbd> 저항 <kbd>L</kbd> LED <kbd>B</kbd> 버튼 <kbd>S</kbd> 스위치 <kbd>C</kbd> 클럭 <kbd>E</kbd> 지우개 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 실행 취소/다시 실행</li>
@@ -4783,7 +4785,10 @@ let pnav=[];
 function pnode(path){let list=curTree(),node=null;for(const k of path){node=list.find(n=>n.k===k);if(!node)return null;list=node.kids||[];}return node;}
 const pcount=n=>n.items?n.items.length:n.kids.reduce((a,c)=>a+pcount(c),0);
 function pleaves(list,trail){return list.flatMap(n=>n.items?[{label:[...trail,n.label].join(' › '),items:n.items}]:pleaves(n.kids,[...trail,n.label]));}
-function renderParts(){const q=$('partQ').value.trim().toLowerCase();let node=pnode(pnav);if(pnav.length&&!node){pnav=[];node=null;}
+// 검색 낱말 맞추기: 74 뒤 계열 글자(LS·HC·HCT·ALS …)와 띄어쓰기·하이픈을 빼고 비교한다(7490 → 74LS90·74HC90)
+const pqNorm=x=>String(x).toLowerCase().replace(/[\s\-_·]/g,'').replace(/74(?:als|ahct|ahc|hct|act|ls|hc|as|ac|lv|f|s|c)(?=\d)/g,'74');
+let PFIRST=null;
+function renderParts(){const q=$('partQ').value.trim().toLowerCase();PFIRST=null;let node=pnode(pnav);if(pnav.length&&!node){pnav=[];node=null;}
   // 지금 위치: ‹  부품 › IC › 카운터
   const trail=pnav.map((k,i)=>pnode(pnav.slice(0,i+1)).label);
   $('partCats').innerHTML=q?`<b>검색: “${esc(q)}”</b>`:(pnav.length?'<button class="pback" data-up title="한 단계 나가기" aria-label="뒤로">‹</button>':'')+
@@ -4795,18 +4800,30 @@ function renderParts(){const q=$('partQ').value.trim().toLowerCase();let node=pn
   let h;
   // 영어로 찾아도 나오게: 수동 소자 분류별 영어 낱말
   const PXKW={res:'resistor array',pot:'potentiometer pot trimmer',cap:'capacitor',sw:'switch button encoder',dio:'diode rectifier bridge zener schottky',rly:'relay ssr solenoid reed',ind:'inductor coil choke bead',tr:'transistor bjt npn pnp mosfet fet darlington'};
-  if(q){const hit=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]+' '+(/^px:/.test(it.t[0])&&PX[it.t[0].slice(3)]?PXKW[PX[it.t[0].slice(3)].sub]||'':/^cap/.test(it.t[0])?'capacitor':/^res/.test(it.t[0])?'resistor':'')).toLowerCase().includes(q);
-    h=pleaves(curTree(),[]).map(g=>({...g,items:g.items.filter(hit)})).filter(g=>g.items.length).map(g=>`<h4>${esc(g.label)}</h4>`+g.items.map(card).join('')).join('');}
+  if(q){const hay=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]+' '+(/^px:/.test(it.t[0])&&PX[it.t[0].slice(3)]?PXKW[PX[it.t[0].slice(3)].sub]||'':/^cap/.test(it.t[0])?'capacitor':/^res/.test(it.t[0])?'resistor':'')).toLowerCase();
+    const qn=pqNorm(q),sc=it=>{const nm=pqNorm(it.t[1]),id=pqNorm(it.t[0].replace(/^(ic|gate|px):/,''));return nm===qn||id===qn?0:nm.startsWith(qn)||id.startsWith(qn)?1:pqNorm(hay(it)).includes(qn)?2:hay(it).includes(q)?3:9;};
+    const gs=pleaves(curTree(),[]).map(g=>{const its=g.items.map(it=>({it,s:sc(it)})).filter(x=>x.s<9).sort((a,b)=>a.s-b.s);return{...g,its,best:its.length?its[0].s:9};}).filter(g=>g.its.length).sort((a,b)=>a.best-b.best);
+    PFIRST=gs.length?gs[0].its[0].it.t[0]:null;
+    h=gs.map(g=>`<h4>${esc(g.label)}</h4>`+g.its.map(x=>card(x.it)).join('')).join('');
+    if(PFIRST)h=`<p class="desc" style="grid-column:1/-1;margin:0">Enter를 누르면 첫 부품(<b>${esc(gs[0].its[0].it.t[1])}</b>)을 바로 놓아요</p>`+h;}
   else h=node&&node.items?node.items.map(card).join(''):(node?node.kids:curTree()).map(fold).join('');
   $('partGrid').innerHTML=h||'<p class="desc" style="grid-column:1/-1">찾는 부품이 없어요. 이름 일부(예: 47, AND, 카운터)로 검색해 보세요.</p>';
   $('partGrid').scrollTop=0;$('partGrid').classList.toggle('folds',!q&&!(node&&node.items));
   $('partGrid').querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{pnav=[...pnav,b.dataset.pf];renderParts();});
   $('partGrid').querySelectorAll('[data-pt]').forEach(b=>{const t=b.dataset.pt,pick=()=>{closeParts();if(VM==='pcb'){pcbPick(t);return;}if(VM==='sch'){schPick(t);return;}setTool(t);const tab=CATALOG.find(x=>x.items.some(it=>it.t[0]===t));if(tab){rtab=tab.k;store.set('rtab',rtab);$('search').value='';renderRibbon();}};
     b.onclick=()=>{pick();if(VM==='pcb')return;toast(VM==='sch'?'회로도에서 놓을 곳을 누르세요':`${toolName()} · 보드에서 놓을 자리를 누르세요`);};
-    b.ondblclick=()=>{if(VM==='pcb'){closeParts();if(pcbPick(t)){const {w,h}=pcbSize();pcbPlaceAt({x:pv.x+w/2/pv.s,y:pv.y+h/2/pv.s});}return;}if(VM==='sch'){closeParts();const {w,h}=schSize();schAddPart(t,sv.x+w/2/sv.s,sv.y+h/2/sv.s);stool=null;schHint();return;}pick();if(/^(ic:|gate:)/.test(t)||t==='seg7'||INST.has(t)){const r=svg.getBoundingClientRect();place(null,{x:view.x+r.width/2/view.s,y:view.y+r.height/2/view.s});}};});}
+    b.ondblclick=()=>{if(VM==='pcb'){closeParts();if(pcbPick(t)){const {w,h}=pcbSize();pcbPlaceAt({x:pv.x+w/2/pv.s,y:pv.y+h/2/pv.s});}return;}if(VM==='sch'){closeParts();const {w,h}=schSize();schAddPart(t,sv.x+w/2/sv.s,sv.y+h/2/sv.s);stool=null;schHint();return;}pick();
+      if(/^(ic:|gate:)/.test(t)||t==='seg7'||INST.has(t)){const n0=S.comps.length,r=svg.getBoundingClientRect();place(null,{x:view.x+r.width/2/view.s,y:view.y+r.height/2/view.s});if(S.comps.length>n0){setTool('select');toast(`${compName(S.comps[S.comps.length-1])}를 놓았어요 (${LBL.get(S.comps[S.comps.length-1].id)||''})`);}}
+      else if(t.startsWith('px:'))autoPx(t.slice(3));
+      else toast(`${toolName()} · 다리를 꽂을 구멍을 차례로 누르세요`);};});}
+/* px 부품을 보드의 첫 빈자리에 자동으로 꽂는다(검색 Enter·두 번 누르기) */
+function autoPx(k){const d=PX[k],rows=d.lay==='dip'?['e']:['b','g','c','h','a','f','d','i'];
+  for(const B of S.boards){const N_=BTYPES[B.type].cols;for(const r of rows)for(let c=1;c<=N_;c++){const h=holeAt(ROWS.indexOf(r),c,B.id);if(h&&pxHoles(k,h)){place(h);setTool('select');toast(`${d.title}를 놓았어요 — 보드 ${B.id} ${r}${c}`);return true;}}}
+  toast('겹치지 않게 놓을 빈자리가 없어요 · 브레드보드를 추가해 보세요');return false;}
 function openParts(){closeMenu();$('partDlg').hidden=false;$('partQ').value='';renderParts();if(matchMedia('(pointer:fine)').matches)$('partQ').focus();}
 function closeParts(){$('partDlg').hidden=true;}
 $('partOpen').onclick=openParts;$('partX').onclick=closeParts;$('partQ').addEventListener('input',renderParts);
+$('partQ').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();if(!PFIRST){toast('찾는 부품이 없어요');return;}const b=[...$('partGrid').querySelectorAll('[data-pt]')].find(x=>x.dataset.pt===PFIRST);if(b)b.ondblclick();});
 $('partDlg').addEventListener('pointerdown',e=>{if(e.target===$('partDlg'))closeParts();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('partDlg').hidden){e.stopImmediatePropagation();closeParts();}},true);
 document.querySelectorAll('.toolbar [data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
@@ -5949,7 +5966,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 트랜지스터 11종 추가 · 아두이노 호환 보드 그림 개선';
+const APP_VER='2026-11-27 · 부품 검색 Enter 배치 · 회로도 우클릭 삭제 · 회로도 모든 핀';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -6565,7 +6582,7 @@ Object.assign(EXAMPLES,{
 /* ═════════════════ 회로도 ═════════════════
    브레드보드와 따로, 기호를 놓고 핀끼리 선으로 이어 회로를 설계한다.
    - 부품 종류와 값은 브레드보드와 같다(IC·게이트·저항·LED·스위치·버튼·클럭·커패시터·7세그먼트) + 전원 기호(VCC·GND)
-   - IC의 전원 핀(VCC·GND)은 회로도에서 감춘다(늘 전원이 들어간 것으로 본다). 브레드보드로 보낼 때 자동으로 레일에 잇는다
+   - IC의 모든 핀(VCC·GND·NC 포함)을 보여 준다. 전원 핀을 잇지 않아도 전원이 들어간 것으로 보고, 브레드보드로 보낼 때 자동으로 레일에 잇는다
    - 회로도에서도 바로 동작을 계산한다(스위치를 누르면 LED가 켜짐). NE555·커패시터의 아날로그 동작은 브레드보드에서만 계산한다
    - [브레드보드로 보내기]: 회로도 → 부품·연결 목록 → 파일 배치(autoLayout)로 브레드보드에 꽂는다
    - [브레드보드에서 가져오기]: 브레드보드에 꽂힌 회로를 읽어 회로도를 자동으로 그린다 */
@@ -6658,7 +6675,7 @@ function symOf(p){const pins=[];let w=40,h=20,body='';const lit=SIM_S.led.get(p.
     for(const [k,dp] of Object.entries(S7))s+=`<path d="${dp}" style="stroke:${on[k]?'#FF3B30':'color-mix(in srgb,var(--sink) 18%,transparent)'};stroke-width:5;stroke-linecap:round"/>`;
     s+=`<circle cx="30" cy="-4" r="2.6" style="fill:${on.dp?'#FF3B30':'color-mix(in srgb,var(--sink) 18%,transparent)'};stroke:none"/><text x="10" y="22" class="sv">${p.ca?'공통 애노드':'공통 캐소드'}</text>`;body=s;}
   return{pins,w,h,body};}
-const i_ok=(d,o)=>o.n!==d.vcc&&o.n!==d.gnd&&o.n!=='NC';
+const i_ok=(d,o)=>true;   // 회로도에서도 모든 핀(VCC·GND·NC 포함)을 보여 준다 — 전원 핀을 잇지 않아도 시뮬레이션은 전원이 들어간 것으로 본다
 /* 회전(0·90·180·270) */
 const rot=(x,y,r)=>r===90?[-y,x]:r===180?[-x,-y]:r===270?[y,-x]:[x,y];
 function pinPos(p,k){const q=symOf(p).pins.find(o=>o.k===k);if(!q)return null;const [x,y]=rot(q.x,q.y,p.rot||0),[dx,dy]=rot(q.dx,q.dy,p.rot||0);return{x:p.x+x,y:p.y+y,dx,dy};}
@@ -6918,7 +6935,7 @@ function renderSfbar(){const fb=$('sfbar');if(!ssel||sdrag){fb.hidden=true;retur
 function schTarget(e){const t=e.target;const pin=t.closest&&t.closest('[data-pin]');if(pin){const [p,k]=pin.dataset.pin.split(':').map(Number);return{type:'pin',p,k};}
   const w=t.closest&&t.closest('[data-sw]');if(w)return{type:'wire',id:+w.dataset.sw};const sp=t.closest&&t.closest('[data-sp]');if(sp)return{type:'part',id:+sp.dataset.sp};return{type:'none'};}
 function pinNear(pt,r){let best=null,bd=r;for(const p of SCH.parts)for(const q of symOf(p).pins){const P=pinPos(p,q.k),d=Math.hypot(P.x-pt.x,P.y-pt.y);if(d<bd){bd=d;best={p:p.id,k:q.k};}}return best;}
-function schDown(e){const g=schSvg();g.setPointerCapture(e.pointerId);sptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+function schDown(e){if(e.button===2)return;const g=schSvg();g.setPointerCapture(e.pointerId);sptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(sptrs.size===2){const [a,b]=[...sptrs.values()];span={pinch:true,d:Math.hypot(a.x-b.x,a.y-b.y),s:sv.s};sdrag=null;return;}
   const pt=schPt(e);slast=pt;let tg=schTarget(e);
   // 핀은 작아서, 핀 근처를 누르면 핀을 누른 것으로 본다(손가락은 더 넓게)
@@ -7100,7 +7117,8 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   // 핀 → 줄(net)
   const groups=new Map(),addTo=(net,item)=>{if(!groups.has(net))groups.set(net,[]);groups.get(net).push(item);};
   for(const c of comps){const p=map.get(c.id),hs=pinHoles(c),d=c.t==='ic'?CHIPS[c.chip]:null;
-    hs.forEach((id,k)=>{if(d&&(d.pins[k]===d.vcc||d.pins[k]===d.gnd||d.pins[k]==='NC'))return;if(c.t==='seg7'&&k===7)return;const i=hix(id);if(i<0)return;addTo(netOf[i],{p,k});});}
+    hs.forEach((id,k)=>{if(d&&d.pins[k]==='NC')return;   // 전원 핀도 회로도에 이어 그린다(레일 → VCC·GND 기호)
+if(c.t==='seg7'&&k===7)return;const i=hix(id);if(i<0)return;addTo(netOf[i],{p,k});});}
   let nw=0;
   for(const [net,list] of groups){const pw=plus.has(net)?'vcc':minus.has(net)?'gnd':null;
     if(pw){for(const it of list){const P=pinPos(it.p,it.k);const s=Object.assign({id:nid++,rot:0},{t:pw});
@@ -7123,6 +7141,11 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
 (function wireSch(){const g=schSvg();
   g.addEventListener('pointerdown',schDown);g.addEventListener('pointermove',schMove);g.addEventListener('pointerup',schUp);g.addEventListener('pointercancel',e=>{sptrs.delete(e.pointerId);sdrag=null;span=null;});
   g.addEventListener('wheel',e=>{e.preventDefault();const r=g.getBoundingClientRect();schZoom(e.deltaY<0?1.15:1/1.15,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+  // 우클릭: 그 부품·선을 고르고 메뉴(삭제·돌리기)
+  g.addEventListener('contextmenu',e=>{e.preventDefault();let tg=schTarget(e);if(tg.type!=='part'&&tg.type!=='wire'&&tg.type!=='pin'){const n=pinNear(schPt(e),10/Math.max(.6,sv.s));if(n)tg={type:'pin',p:n.p};}
+    if(tg.type==='pin')tg={type:'part',id:tg.p};if(tg.type!=='part'&&tg.type!=='wire'){if(stool||spend){stool=null;spend=null;schHint();renderSch();}return;}
+    ssel={type:tg.type,id:tg.id};renderSch();const p=tg.type==='part'?spart(tg.id):null,nm=p?(schLabels().get(p.id)||'부품'):'선';
+    openMenu(e.clientX,e.clientY,[...(p?[{label:'90° 돌리기',k:'R',fn:schRotSel}]:[]),{label:`${nm} 삭제`,k:'Del',del:true,fn:schDelSel}]);});
   document.querySelectorAll('.vmode [data-vm]').forEach(b=>b.onclick=()=>setVM(b.dataset.vm));
   $('sParts').onclick=openParts;$('sRot').onclick=schRotSel;$('sDel').onclick=schDelSel;$('sUndo').onclick=sUndo;$('sRedo').onclick=sRedo;
   $('sPwr').onclick=()=>{SCH.power=!SCH.power;$('sPwr').setAttribute('aria-pressed',SCH.power);$('sPwrTx').textContent=SCH.power?'전원 ON':'전원 OFF';if(!SCH.power)SRT.clear();renderSch();};
