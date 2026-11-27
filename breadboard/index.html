@@ -3491,6 +3491,10 @@ function settle(){
   const ledL=S.comps.filter(c=>c.t==='led').map(c=>{const hs=ph.get(c.id);rt(c).ai=null;return{c,a:netOf[hs[0]],k:netOf[hs[1]],m:{vf:LEDVF[c.color]||2,rs:15},st:0,i:0};});
   const ards=S.comps.filter(isArd),ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
   // 클럭 발생기(또는 함수 발생기 출력)가 물린 줄: 그 줄에 + 레일이 있으면 자동 5V를 넣지 않고 클럭 배선으로 쓴다
+  // 아날로그 소자(커패시터·저항 어레이·다이오드·트랜지스터·아날로그 IC)가 닿은 줄: 논리값도 전압으로 정한다
+  const anaNets=new Set();for(const c of S.comps)if(c.t==='cap'){const hs=ph.get(c.id);anaNets.add(netOf[hs[0]]);anaNets.add(netOf[hs[1]]);}
+  for(const [a,b] of pxR){anaNets.add(a);anaNets.add(b);}for(const d of dioL){anaNets.add(d.a);anaNets.add(d.k);}for(const t of trL){anaNets.add(t.b);anaNets.add(t.cN);anaNets.add(t.e);}
+  for(const a of anaL)for(const k of ['o','p','m','adj','vin','io1','io2','vref','rfb'])if(a[k]!=null)anaNets.add(a[k]);
   const clkNets=new Set([...clks,...fgs].map(c=>netOf[ph.get(c.id)[0]]));
   let lvl,weak,strong=new Map(),volt=new Map(),srcV=new Map(); // srcV: 서플라이·함수 발생기가 직접 정하는 줄의 전압
   const combine=m=>(m&1)&&(m&2)?SH:(m&4)?X:(m&2)?Hh:L;
@@ -3518,7 +3522,7 @@ function settle(){
       for(const d of dioL)for(const [u,v,s0] of [[d.a,d.k,Hh],[d.k,d.a,L]]){
         if(u===v||lvl.get(u)!==s0)continue;if(lvl.has(v)&&!weak.has(v))continue;
         const pv=wm.get(v)||0,nm=pv|(1<<s0);if(nm!==pv){wm.set(v,nm);ch=true;lvl.set(v,combine(nm)===SH?X:combine(nm));weak.add(v);}}}
-    for(const [net,v] of volt)if(!strong.has(net)){lvl.set(net,v>=2.5?Hh:L);weak.add(net);}
+    for(const [net,v] of volt)if(!strong.has(net)){const o=lvl.get(net);if(!anaNets.has(net)&&o!==X&&o!==SH)continue;lvl.set(net,v>=2.5?Hh:L);weak.add(net);}   // 저항만 거친 줄은 논리값이 분명하면 그대로(전압은 SIM.volt에), 커패시터·다이오드·트랜지스터·아날로그 IC 줄과 정해지지 않은 줄(전압 나누기)만 전압으로
   }
   const vOf=net=>{if(volt.has(net))return volt.get(net);if(srcV.has(net))return srcV.get(net);const v=lvl.get(net);return v===Hh?5:v===L?0:null;};
   /* 아날로그(RC) 계산: 커패시터가 닿은 줄들의 전압을 후진 오일러로 적분. 555의 비교기·방전 트랜지스터도 여기서 갱신 */
@@ -3640,7 +3644,7 @@ function settle(){
       r.out=out;r.pw=pw;}
     if(!changed){stable=true;break;}
   }
-  if(dioL.length&&stepChips.length){analogStep();}
+  if((dioL.length||S.comps.some(c=>c.t==='res'))&&stepChips.length){analogStep();}   // 칩 출력이 바뀌었으면 전압도 다시
   resolve();
   SIM.netOf=netOf;SIM.lvl=lvl;SIM.weak=weak;SIM.unstable=SLOW.on?false:!stable;SIM.ph=ph;SIM.volt=volt;SIM.vOf=vOf;
   // 슬로우 모드: 아직 더 퍼져 나갈 신호가 있으면 pending (계산을 건너뛴 때도 입력이 바뀌었을 수 있으니 한 번 더)
