@@ -4,7 +4,7 @@
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 7600줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능 추가·수정. 같은 저장소 `linux/`·`router/`·`windows/` 실습장, 루트 `index.html`
 
 ## 현황
-- main = 작업 브랜치 `ccr-957126bc-kqjtgb`(20차 반영, 전체 시험 통과 후). 아티팩트 v71. `APP_VER='2026-11-27 · 계측기 전체 부품(수동·기구·보호)'`
+- main = 작업 브랜치 `ccr-957126bc-kqjtgb`(20차 반영, 전체 시험 통과 후). 아티팩트 v71(11-27 덮어씀, 최신). `APP_VER='2026-11-27 · 계측기 전체 부품(수동·기구·보호)'`
 ✓ ~15차: 오류 알림, PCB(자동 배선·DRC·거버 zip), 연결 체크, 순서 카드, 저작권 가이드, 서명 `AUTHOR_SIG`, 라이선스 키 `LIC_*`, 릴레이·코일, 다이오드 `DIOM`, SPICE `breadboard/spice/`, `PARTS-GUIDE.md`, 목록 배치 `pxPart`, PCB 범위 선택·지우개
 ✓ 16~18차: PCB 부품 놓기 `pcbPick`/`pcbPlaceAt`(회로도·보드에도), 장착 구멍 `PCB.xp`, `pcbToSch`, 층별 보기 `pview`/`#pLbar`, [층 쌓기] `#pStackB`, 트랜지스터 9종 PX `sub:'tr'`(`q3904`·`q2222`·`qbc547`·`q3906`·`qbc557`·`qtip`·`m7000`·`mnpow`·`mppow`), 예제 Ⓟ7 `pastr`
 ✓ 19차 검토 3회(사용자 "소자부터 검토 3번"): 1차 소자·시뮬·PCB, 2차 1차수정+화면 조작, 3차 2차수정+새 기능 — 모두 수정·시험 통과·main 반영
