@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const path=require('path');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(900);
 await p.evaluate(()=>{const t=document.getElementById('tut');if(t&&!t.hidden&&typeof endTut==='function')endTut(true);});
-const keys=await p.evaluate(()=>Object.keys(EXAMPLES));let bad=0;
+const keys=await p.evaluate(()=>Object.keys(EXAMPLES).filter(k=>!BIG_EX.has(k)));let bad=0;
 for(const k of keys){const r=await p.evaluate(k=>{const ex=EXAMPLES[k]();loadComps(Array.isArray(ex)?ex:ex.comps,false,Array.isArray(ex)?null:ex.boards);orthoWires();commit(true);
     const L=planSteps(),pc=new Map(),wc=new Map();let cont=true;
     for(const st of L){if(st.kind==='part')pc.set(st.c.id,(pc.get(st.c.id)||0)+1);else{let cur=st.st;for(const h of st.hops){wc.set(h.w.id,(wc.get(h.w.id)||0)+1);if(stripOf(h.from)!==cur)cont=false;cur=stripOf(h.to);}

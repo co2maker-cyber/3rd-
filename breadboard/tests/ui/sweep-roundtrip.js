@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file://'+require('path').join(__dirname,'../../index.html')+'');await p.waitForTimeout(900);
-const keys=await p.evaluate(()=>Object.keys(EXAMPLES));let bad=0;
+const keys=await p.evaluate(()=>Object.keys(EXAMPLES).filter(k=>!BIG_EX.has(k)));let bad=0;
 for(const k of keys){const e0=errs.length;await p.evaluate(k=>{$('ex').value=k;$('ex').onchange();},k);await p.waitForTimeout(500);
   const r=await p.evaluate(()=>{const sig=()=>{settle();const net=new Map();for(const c of S.comps){if(c.t==='wire')continue;pinHoles(c).forEach((h,i)=>{const H=HOLES.get(h);if(!H)return;const n=SIM.netOf[H.i];if(!net.has(n))net.set(n,[]);net.get(n).push((c.chip||c.kind||c.t)+'@'+h+'#'+i);});}return [...net.values()].map(a=>a.sort().join(',')).sort().join('|');};
     setVM('sch');setVM('bb');

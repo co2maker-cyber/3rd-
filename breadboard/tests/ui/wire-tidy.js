@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file://'+require('path').join(__dirname,'../../index.html'));await p.waitForTimeout(800);
-const keys=await p.evaluate(()=>Object.keys(EXAMPLES));const rows=[];let bad=0;
+const keys=await p.evaluate(()=>Object.keys(EXAMPLES).filter(k=>!BIG_EX.has(k)));const rows=[];let bad=0;
 for(const k of keys){const r=await p.evaluate(k=>{
   const ex=EXAMPLES[k]();S.power=true;loadComps(Array.isArray(ex)?ex:ex.comps,false,Array.isArray(ex)?null:ex.boards);orthoWires();commit(true);
   const check=()=>{const W=S.comps.filter(c=>c.t==='wire'),segs=[];let diag=0,body=0;

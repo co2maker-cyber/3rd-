@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file://'+require('path').join(__dirname,'../../index.html'));await p.waitForTimeout(800);
-const keys=await p.evaluate(()=>Object.keys(EXAMPLES));let bad=0;
+const keys=await p.evaluate(()=>Object.keys(EXAMPLES).filter(k=>!BIG_EX.has(k)));let bad=0;
 for(const k of keys){await p.evaluate(k=>{const ex=EXAMPLES[k]();S.power=true;loadComps(Array.isArray(ex)?ex:ex.comps,false,Array.isArray(ex)?null:ex.boards);orthoWires();commit(true);setVM('sch');},k);await p.waitForTimeout(150);
   const r=await p.evaluate(k=>{const t0=performance.now();const spec=schToSpec();schToBoard();const ms=Math.round(performance.now()-t0);
     S.comps.forEach(c=>{if(c.t==='sw')c.on=false;if(c.t==='px'&&c.bits)c.bits=c.bits.map(()=>0);if(c.t==='px'&&c.s!=null)c.s=0;});settle();

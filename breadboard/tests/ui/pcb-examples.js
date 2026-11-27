@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const path=require('path');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(900);
 await p.evaluate(()=>{const t=document.getElementById('tut');if(t&&!t.hidden&&typeof endTut==='function')endTut(true);});
-const keys=await p.evaluate(()=>Object.keys(EXAMPLES));let bad=0,left=0,tot=0;const V=process.argv.includes('-v');
+const keys=await p.evaluate(()=>Object.keys(EXAMPLES).filter(k=>!BIG_EX.has(k)));let bad=0,left=0,tot=0;const V=process.argv.includes('-v');
 for(const k of keys){const r=await p.evaluate(async k=>{setVM('bb');const ex=EXAMPLES[k]();loadComps(Array.isArray(ex)?ex:ex.comps,false,Array.isArray(ex)?null:ex.boards);orthoWires();commit(true);
     setVM('pcb');const C0=pcalc(),r0=C0.rats.length,t0=performance.now();if(r0)pcbAutoRoute();const ms=Math.round(performance.now()-t0);const C=pcalc(),E=pcbDRC().filter(e=>e.k==='bad');
     return{fps:C.fps.length,r0,left:C.rats.length,ms,bad:E.map(e=>e.t),w:PCB.w,h:PCB.h,vias:PCB.vias.length};},k);

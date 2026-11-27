@@ -1,4 +1,4 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 35차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 36차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 9400줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
@@ -11,6 +11,7 @@
 ✓ 32차 멀티미터 `dmm`(단자 COM·VΩ·A, `mode` v·a·o, 션트 0.1Ω `dmmSh`, 10A `rt.fuse`, 저항은 수동 소자망 `gsolve`, OL). 속성 창 부품 설명 맨 밑(`.pdesc`)
 ✓ 33·34차 계측기 표시 창(`data-ied`) 누르면 앞판 `openInstPop`(.ipanel: 채널 키 `IPCH`, LCD 줄, 노브·±·미세/크게, 빠른 값, 하드 키, 스크롤 없음, 키보드 숫자·Enter·↑↓·Tab·Esc). 숫자 키패드는 터치 화면만(`ipTouch`). 속성 [앞판 열기]. 풀 보드 2장 묶음 `addBoardPair` 위아래(y+420)
 ✓ 35차 센서·출력 장치 29종(`px` sub `sen`·`out`, PTREE `sio` 맨 뒤 push): 센서 sldr sntc sfsr slm35 sjoy shall smq2 smic ssoil susr spir sir stilt sreed sdht sbme smpu sbh17 / 출력 doled doledv dlcd16 dlcd16i dtft abuz pbuz asrv adcm dneo8 arel. 엔진 `vsL`(PX.vs 전압원+R, anaNets), `PX.upd`(true면 다시 계산), `PX.res(c,r)`, `sxPower`(pwr [+,−,최소,최대,절대] → r.ok r.fail r.rev), `PX.diag`(ctx.ard 핀 역할 `i2cRole` `spiRole`), 화면 `dispLines`(src demo·text·sense, sense=같은 보드 센서 `read`), `PX.tick` 다시 그리기, 속성 `senProps`·`senBind`(`sld` 슬라이더 — `sl`은 기존 트랜지스터 라벨이라 피함), 소리 `SND` 기본 꺼짐. 예제 sx1~sx4(가로등·서보 테스터·온도계 LCD·거리계 OLED)
+✓ 36차 예제 ⓩ `zall`(`allPartsEx`): PTREE 모든 칸(399종) 놓고 핀마다 P·G 전선/R± 저항(`rolesOf`), 레일 구멍 할당 `takeRail`, 몸통 큰 모듈 `BODY` 표(실측), 키 큰 모듈은 아래 줄+위 칸 비움, 계측기·ARDX는 왼쪽 줄 전용 보드, 3.3V(CH3)·12V(CH2) 데이지 체인. 보드 58장·5154개. `noRoute:true`면 orthoWires 건너뜀. `BIG_N=3000` 넘으면 setVM 회로도·PCB 막음, 시험들은 `BIG_EX` 제외. 아날로그 풀이: 미지 노드를 덩어리(union-find)로 나눠 블록별 소거(`OF`·`LN`·`BK`·`solveB`), 덩어리 나누기는 단계마다 캐시(`TP`, 555 방전 상태가 키), `known0` 미리 계산 → 22초→0.1초. 시험 tests/ui/all-parts.js
 
 ## 결정사항
 - 회사 전용 형번(초음파·OLED·LCD·TFT 컨트롤러·RGB LED·센서·서보)은 부품 이름에 안 씀 — COPYRIGHT 2·5절, 8절 기록. 검색 낱말(PXKW)에만
@@ -35,6 +36,6 @@
 
 ## 참조
 - 파일: /home/user/3rd-/breadboard/index.html · COPYRIGHT.md · FILE-FORMAT.md · PARTS-GUIDE.md · /home/user/3rd-/CLAUDE.md · /home/user/3rd-/HANDOFF.md
-- 시험: `cd breadboard && for f in tests/ui/*.js; do node $f | tail -1; done; node tests/verify-parts.js | tail -1; node tests/verify74.js | tail -1; node tests/guide-sync.js | tail -1` — 새 시험 tests/ui/coil.js inst3.js dmm.js inst-pop.js sensor-disp.js
+- 시험(all-parts 포함 약 15분): `cd breadboard && for f in tests/ui/*.js; do node $f | tail -1; done; node tests/verify-parts.js | tail -1; node tests/verify74.js | tail -1; node tests/guide-sync.js | tail -1` — 새 시험 tests/ui/coil.js inst3.js dmm.js inst-pop.js sensor-disp.js
 - 커밋 끝: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01Y4YTP48vpTM29RzzpT3A5Y`
 - 아티팩트: https://claude.ai/artifact/MESkx63X1tB2CcvhD3hqSJ · 깃허브 페이지: https://co2maker-cyber.github.io/3rd-/breadboard/
