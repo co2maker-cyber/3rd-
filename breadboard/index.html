@@ -3474,7 +3474,7 @@ function settle(){
       if(c.t==='wire'||(c.t==='sw'&&c.on)||(c.t==='btn'&&rt(c).pressed))u.u(hs[0],hs[1]);else if(c.t==='px'){const d=PX[c.kind];if(d.tr)continue;if(d.contacts)for(const [i,j] of d.contacts(c,rt(c)))u.u(hs[i],hs[j]);if(d.thru)u.u(hs[0],hs[1]);}}return UF2=u;};
   // 가변저항·저항 어레이 안의 저항들: [줄 a, 줄 b, 옴]
   const pxR=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].res){const hs=ph.get(c.id);for(const [i,j,o] of PX[c.kind].res(c))pxR.push([netOf[hs[i]],netOf[hs[j]],o]);}
-  const res=[...S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
+  const res=[...S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
   // 다이오드: {c, a 애노드 줄, k 캐소드 줄, m 특성, st 상태(1 순방향, −1 제너 역방향, 0 끊김), i 전류}
   // 아날로그 IC: 연산 증폭기(이상 증폭기+출력 한계), 오픈컬렉터 비교기, 가변 레귤레이터, 곱셈형 R-2R DAC
   const anaL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ana){const A_=PX[c.kind].ana,hs=ph.get(c.id),n=k=>netOf[hs[k]],r=rt(c),pv=r.ast||[];r.ast=[];let q_=0;const ps=(d)=>{const x=pv[q_++];return x&&x.st!=='off'&&x.st!=null?x.st:d;};   // 지난번 상태에서 시작(빨리 수렴)
@@ -3535,10 +3535,11 @@ function settle(){
     if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny)||!S.power){for(const c of caps)rt(c).v=0;for(const d of dioL){d.st=0;d.i=0;}return;}
     const t555=ics.filter(c=>c.t==='ic'&&CHIPS[c.chip].is555&&rt(c).pw&&rt(c).st);
     const pn=(c,k)=>netOf[ph.get(c.id)[CHIPS[c.chip].idx[k]]];
-    const Rl=S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/c.ohms]);
+    const Rl=S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/resEff(c)]);   // 저항: 오차를 반영한 실제 값, 탄 것은 빠짐
+    for(const c of caps){const a=netOf[ph.get(c.id)[0]],b=netOf[ph.get(c.id)[1]];if(a!==b)Rl.push([a,b,1/capLeak(c)]);}   // 커패시터 누설(고장·거꾸로면 크게)
     for(const c of t555)Rl.push([pn(c,'VCC'),pn(c,'CTRL'),1/5000],[pn(c,'CTRL'),pn(c,'GND'),1/10000]);
     for(const [a,b,o] of pxR)Rl.push([a,b,1/o]);
-    const Cl=caps.map(c=>({r:rt(c),a:netOf[ph.get(c.id)[0]],b:netOf[ph.get(c.id)[1]],C:c.farad}));
+    const Cl=caps.map(c=>({r:rt(c),a:netOf[ph.get(c.id)[0]],b:netOf[ph.get(c.id)[1]],C:capEff(c),esr:capEsr(c)}));   // 실제 용량(오차·직류 바이어스)과 ESR
     const disch=new Map();for(const c of t555)disch.set(pn(c,'DISCH'),c);
     const adj=new Map(),link=(a,b)=>{if(!adj.has(a))adj.set(a,[]);adj.get(a).push(b);};
     const trA=trL.filter(t=>t.r.an);
@@ -3565,7 +3566,7 @@ function settle(){
         if(ia!==undefined){A[ia][ia]+=G;if(ib!==undefined)A[ia][ib]-=G;else A[ia][N_]+=G*vb;A[ia][N_]+=I;}
         if(ib!==undefined){A[ib][ib]+=G;if(ia!==undefined)A[ib][ia]-=G;else A[ib][N_]+=G*va;A[ib][N_]-=I;}};
       for(const [a,b,G] of Rl)if(a!==b&&(ix.has(a)||ix.has(b)))stamp(a,b,G,0);
-      for(const e of Cl){if(e.a===e.b){e.r.v=0;continue;}const G=e.C/h;stamp(e.a,e.b,G,G*(e.r.v||0));}
+      for(const e of Cl){if(e.a===e.b){e.r.v=0;continue;}const G=1/(h/e.C+e.esr);stamp(e.a,e.b,G,G*(e.r.v||0));}   // 커패시터 + 직렬 ESR
       for(const d of dioL){if(d.a===d.k||!(ix.has(d.a)||ix.has(d.k)))continue;const m=d.m;
         if(d.st===1){const G=1/m.rs;stamp(d.a,d.k,G,G*m.vf);}else if(d.st===-1){const G=1/m.rz;stamp(d.a,d.k,G,-G*m.vz);}else stamp(d.a,d.k,1e-9,0);}
       // 전압 제어 전류원: f 줄에서 t 줄로 gm×(V(cp)−V(cn)) − off 가 흐른다
@@ -3609,7 +3610,7 @@ function settle(){
       for(const a of anaL)a.r.ast=[];for(const a of anaL)a.r.ast.push({k:a.k,st:a.on?a.st:'off',code:a.code,n:a.bits?a.bits.length:0});
       for(const t of trA){t.r.on=!!t.st;if(t.bj)t.r.ib=t.d&&t.d.st===1?t.d.i:0;else{const g=vn(t.b),sv=vn(t.e);t.r.vgs=g!=null&&sv!=null?g-sv:null;}
         const vc=vn(t.cN),ve=vn(t.e);t.r.vce=vc!=null&&ve!=null?t.pol*(vc-ve):null;t.r.sat=t.st==='sat'||t.st==='lin';}
-      for(const e of Cl){const a=vn(e.a),b=vn(e.b);if(a!=null&&b!=null)e.r.v=a-b;}
+      for(const e of Cl){const a=vn(e.a),b=vn(e.b);if(a!=null&&b!=null){const v0=e.r.v||0,i=(a-b-v0)/(h/e.C+e.esr);e.r.v=v0+i*h/e.C;e.r.ic=i;}}
       for(const c of t555){const d=CHIPS[c.chip],hs=ph.get(c.id);const va=k=>{const n=netOf[hs[d.idx[k]]];const x=vn(n);return x!=null?x:vOf(n);};
         const g=k=>{const v=lvl.get(netOf[hs[d.idx[k]]]);return v===L||v===Hh?v:Hh;};d.eval(g,rt(c).st,va);}
     }
@@ -3652,6 +3653,7 @@ function settle(){
   findFlows(ph,netOf,lvl,ics,psus,clks,fgs,stepChips);
   // 결과 해석
   const W_=[];const lvAt=i=>{const v=lvl.get(netOf[i]);return v===undefined?Z:v;};
+  partStress(W_,vOf,netOf,ph);
   ardWarns(W_,vOf,netOf,ph);
   SIM.led=new Map();SIM.seg=new Map();SIM.disp=new Map();
   const shortNets=new Set();for(const [net,v] of lvl)if(v===SH&&!weak.has(net))shortNets.add(net);
@@ -4380,7 +4382,11 @@ function renderOverlay(){
 function rotBoardOf(c){if(c.t==='wire'||INST.has(c.t))return null;let B=null;for(const id of pinHoles(c)){const h=HOLES.get(id);if(!h||h.b==null)return null;const b=boardById(h.b);if(!b||!b.rot)return null;if(B&&B!==b)return null;B=b;}return B;}
 function inLocal(c,fn){const B=rotBoardOf(c);if(!B)return[fn(),null];const hs=pinHoles(c).map(id=>HOLES.get(id)),sv=hs.map(h=>[h.x,h.y]);for(const h of hs){h.x=h.lx;h.y=h.ly;}
   try{return[fn(),B];}finally{hs.forEach((h,i)=>{h.x=sv[i][0];h.y=sv[i][1];});}}
-function compSVGr(c,now){const [s,B]=inLocal(c,()=>compSVG(c,now));if(!B)return s;const C=bCtr(B);return`<g transform="rotate(${B.rot} ${C.x} ${C.y})">${s}</g>`;}
+function compSVGr(c,now){const [s0,B]=inLocal(c,()=>compSVG(c,now));const C=B?bCtr(B):null,s=B?`<g transform="rotate(${B.rot} ${C.x} ${C.y})">${s0}</g>`:s0;return s+partMark(c);}
+// 탄 저항·고장 난 커패시터·거꾸로 꽂힌 전해: 부품 가운데에 표시
+function partMark(c){if(c.t!=='res'&&c.t!=='cap')return'';const r=rt(c),t=c.t==='res'?(r.burnt?'탐':(r.p||0)>resPw(c)?'뜨거움':''):(r.fail?'고장':r.rev?'거꾸로':'');if(!t)return'';
+  const hs=pinHoles(c).map(id=>HOLES.get(id)).filter(Boolean);if(hs.length<2)return'';const x=(hs[0].x+hs[1].x)/2,y=(hs[0].y+hs[1].y)/2,bad=t!=='뜨거움';
+  return`<g pointer-events="none">${bad?`<circle cx="${x}" cy="${y}" r="9" fill="#2A1A14" opacity=".75"/><path d="M${x-4} ${y-4}l8 8M${x+4} ${y-4}l-8 8" stroke="#FF5146" stroke-width="2"/>`:`<circle cx="${x}" cy="${y}" r="11" fill="#FF8A00" opacity=".35" filter="url(#glow)"/>`}<text x="${x}" y="${y-12}" font-size="8" font-weight="800" fill="${bad?'#FF5146':'#E07B00'}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" font-family="var(--sans)">${t}</text></g>`;}
 function bodyRect(c){const [r,B]=inLocal(c,()=>bodyRect0(c));if(!B||!r)return r;const a=rotXY(B,r.x0,r.y0),b=rotXY(B,r.x1,r.y1);
   return{x0:Math.min(a.x,b.x),y0:Math.min(a.y,b.y),x1:Math.max(a.x,b.x),y1:Math.max(a.y,b.y),seg:r.seg?pinHoles(c).map(id=>HOLES.get(id)):null};}
 function bodyRect0(c){if(c.t==='wire'||INST.has(c.t))return null;const ph=pinHoles(c).map(h=>HOLES.get(h));if(!ph.length||ph.some(h=>!h))return null;
@@ -4532,10 +4538,46 @@ function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}<
     +P('CH2 0V 자리 (위에서 0 ~ 7칸)',numIn('pos2',num(c.pos2,6.75),0,7,0.25,'칸')+segBtns('pos2',[3.25,3.5,5.25,6.75],num(c.pos2,6.75),v=>v))
     +P('CH1 표시',segBtns('on1',[1,0],c.on1===false?0:1,on))+P('CH2 표시',segBtns('on2',[1,0],c.on2===false?0:1,on))
     +P('화면',segBtns('run',[1,0],c.run===false?0:1,v=>v?'실행':'정지')+' <button class="btn" id="oscClr" style="margin-top:6px">화면 지우기</button>');}
+/* ── 부품의 실제 특성(시뮬레이션에 반영) ──
+   저항: 오차(색띠 허용 오차 안에서 부품마다 정해짐), 소비 전력 P = V²/R — 정격을 넘으면 뜨겁고 2배를 넘으면 타서 끊어진다
+   커패시터: 오차(유전체별), X7R 직류 전압에 따른 용량 감소, ESR(직렬 내부 저항), 누설 전류(병렬 저항),
+             정격 전압 1.3배를 넘으면 고장(단락), 전해·탄탈을 거꾸로 걸면 크게 샌다. 부품을 [새 부품으로 바꾸기] 하면 되살아난다 */
+const partSeed=c=>{let h=2166136261;const k=(c.pins||[]).join('|')+'|'+c.t;for(let i=0;i<k.length;i++)h=Math.imul(h^k.charCodeAt(i),16777619);return((h>>>0)%20001)/10000-1;};   // -1 ~ 1, 꽂은 자리로 늘 같다
+const resTol=c=>(c.tol||RESMAT[c.mat||'carbon'][3])/100;
+const resEff=c=>{const r=rt(c);if(r.burnt)return 1e12;return c.ohms*(1+resTol(c)*.6*partSeed(c));};
+const resPw=c=>+(c.pw||.25);
+const CAPTOL={c0g:.05,x7r:.1,alu:.2,alubp:.2,tant:.1,film:.05,x2:.1,edlc:.2,mica:.01};
+const capDk=c=>c.dk||(c.farad>=1e-6?'alu':'x7r');
+const capVr=c=>+(c.vr||CAPDK[capDk(c)][2]);
+const capEff=c=>{const r=rt(c),dk=capDk(c);let C=c.farad*(1+(CAPTOL[dk]||.1)*.6*partSeed(c));if(dk==='x7r')C*=1-.5*Math.min(1,Math.abs(r.v||0)/capVr(c));return C;};
+const capEsr=c=>{const dk=capDk(c),uF=c.farad*1e6;return dk==='alu'||dk==='alubp'?Math.max(.03,1.5/Math.sqrt(uF+1)):dk==='tant'?Math.max(.1,3/Math.sqrt(uF+1)):dk==='edlc'?Math.max(.03,.5/Math.sqrt(c.farad)):dk==='film'||dk==='x2'?.05:.01;};
+const capLeak=c=>{const r=rt(c),dk=capDk(c),uF=c.farad*1e6;if(r.fail)return 2;if(r.rev)return 500;
+  return dk==='alu'||dk==='alubp'?Math.max(1e5,1e8/Math.max(uF,1e-6)):dk==='tant'?Math.max(1e6,1e9/Math.max(uF,1e-6)):dk==='edlc'?Math.max(1e3,2e5/c.farad):1e10;};
+const fmtA=i=>{const a=Math.abs(i);return a>=1?a.toFixed(2)+'A':a>=1e-3?(a*1e3).toFixed(a>=.1?0:1)+'mA':a>=1e-6?(a*1e6).toFixed(1)+'µA':(a*1e9).toFixed(1)+'nA';};
+const fmtW=w=>w>=1?w.toFixed(2)+'W':w>=1e-3?(w*1e3).toFixed(1)+'mW':(w*1e6).toFixed(1)+'µW';
+// 한 번 계산한 뒤: 저항 전력·커패시터 전압으로 상태(뜨거움·탐·고장·거꾸로) 정하고 경고
+function partStress(W_,vOf,netOf,ph){let changed=false;
+  for(const c of S.comps){if(c.t!=='res'&&c.t!=='cap')continue;const hs=ph.get(c.id);if(!hs)continue;const r=rt(c),va=vOf(netOf[hs[0]]),vb=vOf(netOf[hs[1]]),nm=LBL.get(c.id)||'';
+    if(c.t==='res'){if(va==null||vb==null){r.p=0;r.i=0;continue;}const R=resEff(c),V=va-vb;r.i=r.burnt?0:V/R;r.p=r.burnt?0:V*V/R;const pr=resPw(c);
+      if(r.burnt)W_.push(['bad',`${nm} 저항이 타서 끊어졌어요(정격 ${RESPW[pr]?RESPW[pr][0]:pr+'W'}보다 훨씬 큰 전력). [속성]에서 [새 부품으로 바꾸기]를 누르고, 저항 값을 키우거나 정격 전력이 큰 저항으로 바꿔요.`,c.id]);
+      else if(r.p>pr*2){r.burnt=true;changed=true;}
+      else if(r.p>pr)W_.push(['warn',`${nm} 저항이 ${fmtW(r.p)}를 써서 정격 ${fmtW(pr)}을 넘어 뜨거워요 — 정격이 더 큰 저항(${fmtW(pr*2)} 이상)을 쓰거나 값을 키워요.`,c.id]);}
+    else{const V=r.v!=null?r.v:(va!=null&&vb!=null?va-vb:0),vr=capVr(c),pol=!!CAPDK[capDk(c)][1];r.vc=V;
+      if(r.fail)W_.push(['bad',`${nm} 커패시터가 정격 전압(${vr}V)을 넘어 고장 나 단락됐어요. [속성]에서 [새 부품으로 바꾸기]를 누르고 정격 전압이 더 높은 것으로 바꿔요.`,c.id]);
+      else if(Math.abs(V)>vr*1.3){r.fail=true;changed=true;}
+      else if(Math.abs(V)>vr)W_.push(['warn',`${nm} 커패시터에 ${Math.abs(V).toFixed(1)}V가 걸려 정격 ${vr}V를 넘었어요 — 더 오르면 고장 나요.`,c.id]);
+      const rev=pol&&V<-1;if(rev!==!!r.rev){r.rev=rev;changed=true;}
+      if(rev)W_.push(['bad',`${nm} 극성 커패시터가 거꾸로 꽂혔어요(− 극이 ${(-V).toFixed(1)}V 높아요). 크게 새고 뜨거워져 터질 수 있어요 — 방향을 바꿔 꽂아요.`,c.id]);}}
+  if(changed&&!partStress.busy){partStress.busy=true;setTimeout(()=>{partStress.busy=false;settle();if(typeof render==='function')render();if(typeof renderInfo==='function')renderInfo();},0);}}
+function partLive(c){const r=rt(c);let h='';
+  if(c.t==='res'){const R=resEff(c);h=`실제 값 <b>${ohmTx(+R.toPrecision(4))}</b> (표시 ${ohmTx(c.ohms)}, 오차 ±${(resTol(c)*100).toFixed(0)}% 안) · 전류 <b>${fmtA(r.i||0)}</b> · 전력 <b>${fmtW(r.p||0)}</b> / 정격 ${fmtW(resPw(c))}`+(r.burnt?' · <b style="color:var(--bad)">탐(끊어짐)</b>':(r.p||0)>resPw(c)?' · <b style="color:var(--warn)">뜨거움</b>':'');}
+  else if(c.t==='cap'){const C=capEff(c),V=r.vc??r.v??0;h=`실제 용량 <b>${capTx(+C.toPrecision(3))}</b> (표시 ${capTx(c.farad)}, 오차 ±${((CAPTOL[capDk(c)]||.1)*100).toFixed(0)}%${capDk(c)==='x7r'?', 걸린 전압만큼 줄어듦':''}) · 전압 <b>${V.toFixed(2)}V</b> / 정격 ${capVr(c)}V · ESR ${ohmTx(+capEsr(c).toPrecision(2))} · 누설 ${fmtA(Math.abs(V)/capLeak(c))} · 저장 에너지 ${fmtW(.5*C*V*V).replace('W','J')}`
+    +(r.fail?' · <b style="color:var(--bad)">고장(단락)</b>':r.rev?' · <b style="color:var(--bad)">거꾸로 꽂힘</b>':Math.abs(V)>capVr(c)?' · <b style="color:var(--warn)">정격 초과</b>':'');}
+  if(!h)return'';return`<div class="prop"><label>계산 결과 (실제 특성)</label><p class="desc" style="margin:0">${h}</p>${r.burnt||r.fail?'<button class="btn" id="partNew" style="margin-top:6px">새 부품으로 바꾸기</button>':''}</div>`;}
 function propEditor(c){
   if(INST.has(c.t))return instProps(c);
   if(c.t==='wire')return`<div class="prop"><label>전선 색</label><div class="sw" id="pc">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-v="${col}" aria-pressed="${c.color===col}" aria-label="색"></button>`).join('')}</div></div>`;
-  if(c.t==='res'){const M=c.mat||'carbon';return`<div class="prop"><label>저항 값</label><div class="seg" id="pc">${OHMS.map(o=>`<button data-v="${o}" aria-pressed="${c.ohms===o}">${ohmTx(o)}</button>`).join('')}</div></div>`
+  if(c.t==='res'){const M=c.mat||'carbon';return partLive(c)+`<div class="prop"><label>저항 값</label><div class="seg" id="pc">${OHMS.map(o=>`<button data-v="${o}" aria-pressed="${c.ohms===o}">${ohmTx(o)}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>값 직접 입력 → 표준 계열 값에 맞춤</label><div style="display:flex;gap:6px"><input class="btn" id="rIn" value="${ohmTx(c.ohms).replace('Ω','')}" style="width:90px"><select class="btn" id="rSer">${Object.keys(ESER).map(k=>`<option${(c.ser||'E24')===k?' selected':''}>${k}</option>`).join('')}</select></div></div>`
     +`<div class="prop"><label>정격 전력</label><div class="seg" id="rPw">${Object.entries(RESPW).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${(c.pw||.25)==+k}">${n}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>재질</label><div class="seg" id="rMat">${Object.entries(RESMAT).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${M===k}">${n}</button>`).join('')}</div></div><p class="desc">${RESMAT[M][4]}</p>`
@@ -4569,7 +4611,7 @@ function propEditor(c){
     +`<div class="prop"><label>모양</label><select class="btn" id="pcPk">${Object.entries(LEDPK).map(([k,n])=>`<option value="${k}"${(c.pk||'r5')===k?' selected':''}>${n}</option>`).join('')}</select></div>`
     +`<div class="prop"><label>렌즈</label><div class="seg" id="pcLn">${Object.entries(LEDLN).map(([k,[n,t]])=>`<button data-v="${k}" aria-pressed="${(c.ln||'diff')===k}" title="${t}">${n}</button>`).join('')}</div></div><p class="desc">${LEDLN[c.ln||'diff'][1]}</p>`;
   if(c.t==='cap'){const dk=c.dk||(c.farad>=1e-6?'alu':'x7r'),FL=dk==='edlc'?[0.1,0.47,1,10]:[1e-11,1e-10,1e-9,...FARADS,1e-3],vr=c.vr||CAPDK[dk][2];
-    return`<div class="prop"><label>용량</label><div class="seg" id="pc">${FL.map(f=>`<button data-v="${f}" aria-pressed="${c.farad===f}">${capTx(f)}</button>`).join('')}</div></div>`
+    return partLive(c)+`<div class="prop"><label>용량</label><div class="seg" id="pc">${FL.map(f=>`<button data-v="${f}" aria-pressed="${c.farad===f}">${capTx(f)}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>종류 (유전체)</label><select class="btn" id="cDk">${Object.entries(CAPDK).map(([k,[n,p]])=>`<option value="${k}"${k===dk?' selected':''}>${n}${p?' · 극성 있음':''}</option>`).join('')}</select></div><p class="desc">${CAPDK[dk][3]}</p>`
     +`<div class="prop"><label>정격 전압</label><select class="btn" id="cVr">${[2.7,5.5,6.3,10,16,25,35,50,63,100,250,275,400,450].map(v=>`<option value="${v}"${v===vr?' selected':''}>${v}V</option>`).join('')}</select></div>`;}
   if(c.t==='led3')return`<div class="prop"><label>종류</label><div class="seg" id="pc"><button data-v="cc" aria-pressed="${!c.ca}">공통 캐소드</button><button data-v="ca" aria-pressed="${!!c.ca}">공통 애노드</button></div></div>`;
@@ -4597,6 +4639,7 @@ function bindProps(c){
    const pcc=$('pcLc');if(pcc)pcc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.lc=b.dataset.v;commit(true);});
    const pcp=$('pcPat');if(pcp)pcp.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.pat=b.dataset.v;commit(true);});}
   {const q=id=>$(id),btns=(id,fn)=>{const e=q(id);if(e)e.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();fn(b.dataset);commit(true);});};
+   {const pn=q('partNew');if(pn)pn.onclick=()=>{const r=rt(c);delete r.burnt;delete r.fail;delete r.rev;r.v=0;settle();render();renderInfo();toast('새 부품으로 바꿨어요');};}
    if(c.t==='res'){const ri=q('rIn'),rs=q('rSer');if(ri)ri.onchange=()=>{const v=parseOhm(ri.value);if(!v){toast('값을 알아볼 수 없어요(예: 4.7k, 330, 2M2)');return;}pushHist();c.ohms=snapE(v,c.ser||'E24');toast(`${ohmTx(+v.toPrecision(3))} → ${c.ser||'E24'} 표준값 ${ohmTx(c.ohms)}`);commit(true);};
      if(rs)rs.onchange=()=>{pushHist();c.ser=rs.value;c.ohms=snapE(c.ohms,c.ser);commit(true);};
      btns('rPw',d=>{c.pw=+d.v;if(c.pw===.25)delete c.pw;});btns('rMat',d=>{c.mat=d.v;delete c.tol;if(d.v==='carbon')delete c.mat;});btns('rTol',d=>{c.tol=+d.v;});}
@@ -4674,6 +4717,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>스펙트럼 분석기</b>: [계측기·전원]에서 놓고 RF IN 단자를 재고 싶은 구멍에 이어요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 예제 Ⓟ11.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
 <li><b>IC 핀·전선 정보</b>: 브레드보드의 IC 몸통에 핀 번호와 기능(VCC 빨강·GND 파랑)이 늘 보여요. 전선에 마우스를 대면 그 전선의 전압과 이어진 IC 핀 번호·기능이 떠요. 부품은 한 번에 하나씩 놓이고, 놓으면 선택 도구로 돌아가요(전선은 이어서 그릴 수 있어요). 경고 카드는 작성하는 동안에는 뜨지 않고, 왼쪽 아래 구석에 작게 떠요.</li>
+<li><b>부품의 실제 특성</b>: 저항은 색띠 허용 오차 안에서 부품마다 실제 값이 조금씩 달라요(꽂은 자리마다 늘 같음). 소비 전력이 정격(1/4W 등)을 넘으면 '뜨거움', 2배를 넘으면 '탐'으로 끊어져요. 커패시터는 유전체별 오차, ESR(내부 저항), 누설 전류, X7R의 전압에 따른 용량 감소가 계산에 들어가고, 정격 전압의 1.3배를 넘으면 고장(단락), 전해·탄탈을 거꾸로 꽂으면 크게 새요. [속성]에 실제 값·전류·전력·저장 에너지가 나오고, 탄·고장 난 부품은 [새 부품으로 바꾸기]로 되살려요.</li>
 <li><b>저항 계산</b>: 저항은 옴의 법칙으로 계산해요 — 전압 나누기 가운데 전압, LED에 흐르는 전류(밝기)가 저항 값대로 달라져요. 큰 저항(수 MΩ)을 단 LED는 꺼져요.</li>
 <li><b>보드 2장 묶음</b>: [브레드보드 추가] → [풀 사이즈 830홀 2장 묶음]을 고르면 풀 보드 두 장이 나란히 붙어 126열이 되고, 끌면 함께 움직여요. 이름표 메뉴의 [묶음 풀기]로 따로 움직일 수 있어요.</li>
 <li><b>부품 검색</b>: [부품 고르기] 창 위 칸에 번호를 쳐요. 74 뒤의 계열 글자는 빼고 쳐도 돼요(7490 → 74LS90, 4511 → CD4511). 맞는 것이 맨 앞에 나오고, <kbd>Enter</kbd>를 누르면 첫 부품이 바로 빈자리에 놓여요(저항·LED처럼 다리를 직접 찍는 부품은 그 도구가 골라져요).</li>
@@ -5996,7 +6040,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · IC 핀 표시 · 전선 정보 · 저항 옴의 법칙 · 보드 2장 묶음';
+const APP_VER='2026-11-27 · 저항·커패시터 실제 특성(오차·전력·ESR·누설·정격 전압·극성)';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}

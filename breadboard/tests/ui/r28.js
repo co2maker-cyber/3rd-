@@ -22,8 +22,8 @@ const r=await p.evaluate(()=>{const R={},B=[{id:1,type:'full',x:0,y:0}],run=cs=>
   run([{t:'wire',pins:['tp5','a5'],color:'#2F6FDB'}]);sigMode=true;render();const wc=S.comps[0];const st=()=>[...document.querySelectorAll(`#gC g[data-id="${wc.id}"] [stroke]`)].map(e=>e.getAttribute('stroke'));
   const s0=st();SEL.clear();SEL.add(wc.id);sel={type:'comp',id:wc.id};recolorSel('#E57A1F');const s1=st();sigMode=false;render();R.sig=[s0.includes('#2F6FDB'),s1.includes('#E57A1F')&&s1.includes(LVCOL[Hh])];
   return R;});
-T('전압 나누기 1k·9k → 4.5V',Math.abs(r.div-4.5)<.01,r.div);T('전압 나누기 10k·10k → 2.5V',Math.abs(r.div2-2.5)<.01,r.div2);
-T('LED 220Ω: 켜짐 · 약 13.6mA',r.l220.lit&&Math.abs(r.l220.i-.0136)<.001,JSON.stringify(r.l220));T('LED 10kΩ: 어둡게 켜짐(밝기 낮음)',r.l10k.lit&&r.l10k.br<.5,JSON.stringify(r.l10k));T('LED 10MΩ: 꺼짐',!r.l10M.lit,JSON.stringify(r.l10M));
+T('전압 나누기 1k·9k → 4.5V (오차 안)',Math.abs(r.div-4.5)<.06,r.div);T('전압 나누기 10k·10k → 2.5V (오차 안)',Math.abs(r.div2-2.5)<.08,r.div2);
+T('LED 220Ω: 켜짐 · 약 13.6mA',r.l220.lit&&Math.abs(r.l220.i-.0136)<.0015,JSON.stringify(r.l220));T('LED 10kΩ: 어둡게 켜짐(밝기 낮음)',r.l10k.lit&&r.l10k.br<.5,JSON.stringify(r.l10k));T('LED 10MΩ: 꺼짐',!r.l10M.lit,JSON.stringify(r.l10M));
 T('IC 핀 번호·기능 늘 표시',/\b14\b/.test(r.icTxt)&&/VCC/.test(r.icTxt)&&/GND/.test(r.icTxt)&&/1A/.test(r.icTxt),r.icTxt.slice(0,80));
 T('전선 호버: IC 핀 번호와 기능',/74HC00 14번 VCC/.test(r.tip),r.tip);T('전선 호버: 신호 줄',/74HC00 \d+번/.test(r.tip2),r.tip2);
 T('IC 한 개 놓으면 선택 도구로',r.toolAfter==='select'&&r.n1===1,r.toolAfter);T('저항도 한 개 놓으면 선택 도구로',r.toolAfterRes==='select'&&r.nRes===1,r.toolAfterRes);
