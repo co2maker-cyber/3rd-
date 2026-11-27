@@ -43,6 +43,10 @@ const built2=path.join(tmp,'local-admin.html');await dl.saveAs(built2);chk('발�
 // 다른 열쇠로 서명한 키를 넣은 로컬 버전은 잠김
 {const src=fs.readFileSync(path.join(__dirname,'../../index.html'),'utf8').replace('const LIC_EMBED=null;','const LIC_EMBED='+JSON.stringify(sign(Other,{to:'가짜',dom:['file'],exp:null}))+';');const f3=path.join(tmp,'fake.html');fs.writeFileSync(f3,src);
   const q=await ctx.newPage();await q.goto('file://'+f3);await q.evaluate(()=>localStorage.clear());await q.reload();await q.waitForTimeout(1200);chk('가짜 키를 넣은 로컬 버전은 잠김',await q.evaluate(()=>!$('licGate').hidden));await q.close();}
+// 내 컴퓨터 실행(파일·localhost)은 키 없이
+chk('내 컴퓨터 판정: file · localhost · 127.0.0.1 · ::1 은 키 없이, 다른 사이트는 키',await p.evaluate(()=>licLocal('','file:')&&licLocal('localhost','http:')&&licLocal('127.0.0.1','http:')&&licLocal('[::1]','http:')&&!licLocal('example.com','https:')&&!licLocal('localhost.example.com','https:')));
+{const c2=await b.newContext();const q=await c2.newPage();await q.goto(url);await q.waitForTimeout(1200);
+  chk('파일로 열면 키 창 없이 바로 씀',await q.evaluate(()=>$('licGate').hidden&&LIC.mode==='local'&&helpHTML().includes('내 컴퓨터에서 실행 중')));await c2.close();}
 // 공식 주소 판정
 chk('공식 주소 목록',await p.evaluate(()=>LIC_OFFICIAL.includes('co2maker-cyber.github.io')));
 chk('페이지 오류 없음 '+errs.join('|'),!errs.length);fs.rmSync(tmp,{recursive:true,force:true});

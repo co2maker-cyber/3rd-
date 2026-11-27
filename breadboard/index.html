@@ -6755,7 +6755,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 예제 ⓩ 모든 부품 한자리에(약 400칸 · 핀 모두 연결) · 큰 회로 아날로그 계산 빠르게';
+const APP_VER='2026-11-27 · 내 컴퓨터(파일·localhost)에서 키 없이 실행 · 예제 ⓩ 모든 부품 한자리에';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -9127,7 +9127,7 @@ function pcbLoadIf(o){if(o&&typeof o==='object'&&Array.isArray(o.fps)&&LOADMAP.s
   pcbLoad(o&&typeof o==='object'?o:null);phist.length=0;pfut.length=0;psel=null;proute=null;pcbEnter.fitted=false;pcbSave();if(VM==='pcb')pcbEnter();}
 
 /* ───────── 라이선스 키 ─────────
-   공식 주소(깃허브 페이지·Claude 미리보기)에서는 키 없이 쓴다. 그 밖(복사한 파일 file://, 다른 사이트)에서는
+   공식 주소(깃허브 페이지·Claude 미리보기)와 내 컴퓨터(파일로 열기 file://·localhost, 2026-11-27 사용자 지시)에서는 키 없이 쓴다. 그 밖(다른 사이트)에서는
    저작자가 비밀 열쇠로 서명한 라이선스 키가 있어야 쓴다. 프로그램에는 공개 열쇠만 들어 있어 키를 위조할 수 없다(ECDSA P-256).
    키 = 'BBCAD1.' + base64url(JSON 내용) + '.' + base64url(서명 64바이트)
    내용 = {v:1, id:'L-…', to:'받는 사람', dom:['example.com','.example.com'(하위 도메인 포함),'file'(내 컴퓨터 파일),'*'], exp:'YYYY-MM-DD'|null, ed:'BBCAD', iat:'YYYY-MM-DD'}
@@ -9138,7 +9138,10 @@ const LIC_REVOKED=new Set([]);   // 취소한 키의 id
 /* 개인용 로컬 버전: 발급 도구가 아래 줄에 받는 사람의 키를 넣어 파일을 만든다(그 파일은 키 창 없이 열림). 이 줄 모양을 바꾸지 마세요 */
 const LIC_EMBED=null;
 const b64u={dec:s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}};
+/* 내 컴퓨터에서 실행: 파일을 바로 열었거나(file://) 내 컴퓨터의 작은 웹 서버(localhost·127.0.0.1·::1)로 연 것 */
+function licLocal(h=location.hostname,pr=location.protocol){return pr==='file:'||/^(localhost|127(\.\d{1,3}){3}|\[?::1\]?|0\.0\.0\.0)$/i.test(h||'')||/\.localhost$/i.test(h||'');}
 function licOfficial(){const h=location.hostname;if(LIC_OFFICIAL.includes(h))return true;
+  if(licLocal()&&!window.__licForceGate)return true;   // 시험은 __licForceGate로 키 창을 강제로 띄워 키 검사를 따로 본다
   // Claude 미리보기(아티팩트) 안: 주소, 바깥 틀 주소(ancestorOrigins·referrer), 미리보기 실행기(window.claude)로 판단
   const cl=/(^|\.)claude\.ai$|(^|\.)claudeusercontent\.com$|(^|\.)anthropic\.com$|(^|\.)claude\.site$/;if(cl.test(h))return true;
   const anc=[...(location.ancestorOrigins||[])];try{if(document.referrer)anc.push(document.referrer);}catch(_){}
@@ -9163,7 +9166,7 @@ async function licVerify(key){key=String(key||'').trim().replace(/\s+/g,'');cons
   return{ok:true,info};}
 let LIC={mode:'?',info:null};
 async function licCheck(){if(LIC_EMBED){const r=await licVerify(LIC_EMBED);if(r.ok){LIC={mode:'key',info:r.info,local:true};return;}}
-  if(licOfficial()){LIC={mode:'official',info:null};return;}
+  if(licOfficial()){LIC={mode:licLocal()?'local':'official',info:null};return;}
   const saved=store.get('license',null);if(saved){const r=await licVerify(saved);if(r.ok){LIC={mode:'key',info:r.info};return;}$('licErr').textContent='저장된 키를 쓸 수 없어요: '+r.why;}
   LIC={mode:'locked',info:null};$('licHost').textContent='지금 위치: '+(licHere()==='file'?'내 컴퓨터 파일':licHere());$('licGate').hidden=false;setTimeout(()=>$('licIn').focus(),50);}
 $('licGo').onclick=async()=>{const k=$('licIn').value;const r=await licVerify(k);if(!r.ok){$('licErr').textContent=r.why;return;}
@@ -9171,7 +9174,7 @@ $('licGo').onclick=async()=>{const k=$('licIn').value;const r=await licVerify(k)
   toast(`라이선스 확인: ${r.info.to||''}님${r.info.exp?` · ${r.info.exp}까지`:''} — 고마워요`);if(typeof renderInfo==='function')renderInfo();};
 // 키 창이 떠 있는 동안 다른 단축키가 안 먹게
 document.addEventListener('keydown',e=>{if(!$('licGate').hidden&&!e.target.closest('#licGate')){e.stopImmediatePropagation();e.preventDefault();}},true);
-const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':''}라이선스: ${esc(LIC.info.to||'')}${LIC.info.exp?` · ${esc(LIC.info.exp)}까지`:''} (${esc(LIC.info.id||'')}).`:LIC.mode==='official'?' 공식 주소에서 실행 중.':'';
+const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':''}라이선스: ${esc(LIC.info.to||'')}${LIC.info.exp?` · ${esc(LIC.info.exp)}까지`:''} (${esc(LIC.info.id||'')}).`:LIC.mode==='official'?' 공식 주소에서 실행 중.':LIC.mode==='local'?' 내 컴퓨터에서 실행 중(키 없이).':'';
 
 /* ───────── 시작 ───────── */
 (function start(){
