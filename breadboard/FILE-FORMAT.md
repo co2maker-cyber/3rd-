@@ -381,6 +381,9 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `dac10` | 10비트 곱셈형 DAC (DIP-16) | dip | 0~7 | IOUT1 IOUT2 GND BIT1(MSB)…BIT10(LSB) VDD VREF RFB | |
 | `batt` `byto` `bytx` `bconv` `bfilt` `bif` `bref` `bcrt` | RF·IF·디스플레이 모듈 블록(스텝 감쇠기·YIG 발진기·YIG 믹서·변환 체인·필터 모음·IF 로그 증폭단·기준 발진기·정전 편향 CRT) — 시뮬레이션 없음 | row | 0~(핀 수−1) | 부품 정보 창의 핀 이름 | |
 | `cpu64` | 16/32비트 마이크로프로세서 (DIP-64, 900mil) — 시뮬레이션 없음 | dip | 0~31 | D4 D3 D2 D1 D0 ~AS … (부품 정보 창) | |
+| `ano` `anoevery` `anor4` | 아두이노 호환 · Nano 폼팩터 5V (2×15, 600mil) — **c·h줄**에 꽂힘 | dip | 0~14 | 1 D13 · 2 3V3 · 3 AREF · 4~11 A0~A7 · 12 5V · 13 RESET · 14 GND · 15 VIN · 16 D1 · 17 D0 · 18 RESET · 19 GND · 20~30 D2~D12 | `usb` |
+| `ano33iot` `ano33ble` `anorp` `anoesp` | 아두이노 호환 · Nano 폼팩터 3.3V — **c·h줄**, 12번 핀은 VUSB | dip | 0~14 | (위와 같음, 12 VUSB) | `usb` |
+| `amkr` | 아두이노 호환 · MKR 폼팩터 3.3V (2×14, 800mil) — **b·i줄**에 꽂힘 | dip | 0~13 | 1 AREF · 2~8 A0~A6 · 9~22 D0~D14 · 23 RESET · 24 GND · 25 VCC(3.3V) · 26 VIN · 27 5V (28핀) | `usb` |
 
 부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_JFET_25VUS`, `COMP_DUAL_OC_36V`, `REG_POS_ADJ_1P5A`, `DAC_10B_MULT_R2R`, `BJT_NPN_PWR_60V_150W`, `CPU_16_32B_ASYNC_8MHZ`, `LOGIC_HEX_DFF_CLR_LS`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
@@ -425,9 +428,11 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `bat` | 건전지 | `v`(1.5 3 4.5 6 9) | + | − |
 | `fg` | 함수 발생기 | `wave`(`sq` `sin` `tri` `saw`), `hz`, `vpp`, `off`, `duty`(%) | OUT | GND |
 | `osc` | 오실로스코프 | `tdiv`, `vdiv`, `vdiv2`, `run` | CH1 | CH2 |
+| `auno3` `aunor4m` `aunor4w` `aleo` | 아두이노 호환 · UNO 폼팩터(보드 밖, 68.6 × 53.4mm) | `usb`(1 꽂음, 0 뺌) | 헤더 32개 | 단자 순서: 위 왼쪽 SCL SDA AREF GND D13~D8, 위 오른쪽 D7~D0, 아래 NC IOREF RESET 3.3V 5V GND GND VIN, A0~A5 |
+| `amega` `adue` `agiga` | 아두이노 호환 · Mega 폼팩터(보드 밖, 101.5 × 53.3mm) | `usb` | 헤더 84개 | UNO 32개 + D14~D21 + A8~A15(또는 A8~A11 DAC0 DAC1 CANRX CANTX) + 2×18(5V 5V, D22 D23 … D52 D53, GND GND) |
 | `spa` | 스펙트럼 분석기 | `cf`(가운데 Hz), `span`(Hz), `ref`(dBm), `dbd`(dB/칸), `rbw`·`vbw`(Hz, 0 = 자동), `att`(dB, −1 = 자동), `swt`(초, 0 = 자동), `hold`(1 = 최대값 유지), `cal`(1 = 내부 교정 신호), `run` | RF IN | — |
 
-- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 170×92, bat 130×74, fg 180×92, osc 250×200, spa 310×250.
+- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 170×92, bat 130×74, fg 180×92, osc 250×200, spa 310×250, UNO 폼팩터 540×420, Mega 폼팩터 799×420. 아두이노 호환 보드의 단자 이름은 부품 정보 창에 나와요.
 - `k`: 계측기마다 다른 번호(1, 2, 3 …). 단자 구멍 이름은 **`@k:번호`** 예요(`@1:0` = 1번 계측기의 + 단자).
 - 5V가 아닌 전압은 자동 5V 레일과 섞이지 않게 **레일 말고 보드 줄(a~j)** 로 이어 쓰세요.
 - 단자에는 전선을 여러 가닥 이어도 돼요. 단자는 **전선으로만** 보드와 이어요.
@@ -468,7 +473,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 불러오기는 문제 있는 부품을 **조용히 빼고** 나머지만 꽂아요. 부품 수가 모자라면 아래를 보세요.
 
-- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa`)
+- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa` `auno3` `aunor4m` `aunor4w` `aleo` `amega` `adue` `agiga`)
 - [ ] `ic`의 `chip`이 부록 표에 없다 / `gate`의 `kind`가 7가지가 아니다 / `px`의 `kind`가 표에 없다
 - [ ] 구멍 이름이 없다 — 레일 6의 배수 열, 보드 열 수를 넘음, `mini` 보드의 레일, 없는 보드 번호
 - [ ] 두 부품이 같은 구멍을 쓴다 (전선도 부품이에요)

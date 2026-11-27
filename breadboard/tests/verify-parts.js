@@ -339,7 +339,25 @@ function inPage() {
       const dup = Object.values(PX).map(d => d.nid).filter(Boolean).filter((n, i, a) => a.indexOf(n) !== i);
       rec('아날로그 IC', '명세 부품 ID 28개 → 부품 (중복 없음)', !bad.length && ls && !dup.length, bad.length || dup.length ? '틀림: ' + bad.concat(dup).join(' ') : `PX ${Object.keys(DOC).length}개 + 74LS174 · 중복 nid 없음`); }
     // 다 확인했는지
-    const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
+    // ⑪ 아두이노 호환 보드(브레드보드 직결형): 문서의 핀 번호(사실)·꽂는 줄(600mil c·h, 800mil b·i)·USB 전원
+    {
+      const NANO = { 1: 'D13', 2: '3V3', 4: 'A0', 11: 'A7', 13: 'RESET', 14: 'GND', 15: 'VIN', 16: 'D1', 17: 'D0', 19: 'GND', 20: 'D2', 30: 'D12' };
+      for (const k of Object.keys(PX).filter(k => PX[k].ard)) {
+        const d = PX[k], mkr = d.ard.form === 'mkr', want = mkr ? { 1: 'AREF', 2: 'A0', 9: 'D0', 24: 'RESET', 25: 'GND', 26: 'VCC', 27: 'VIN', 28: '5V' } : NANO;
+        const bad = Object.entries(want).filter(([i, nm]) => d.pins[i - 1].split(' ')[0] !== nm).map(([i]) => i);
+        const p12 = mkr ? '' : d.pins[11].split(' ')[0], p12ok = mkr || (d.ard.v === 5 ? p12 === '5V' : p12 === 'VUSB');
+        const pins = pxHolesAt(k, 1, null, 3), rowsOk = pins && pins[0][0] === (mkr ? 'i' : 'h') && pins[pins.length - 1][0] === (mkr ? 'b' : 'c');
+        build([{ t: 'px', kind: k, pins }]);
+        const c = S.comps[0], i3 = d.pins.findIndex(n => /^(3V3|VCC)/.test(n)), v3 = vH(c.pins[i3]);
+        const ok = d.pins.length === (mkr ? 28 : 30) && !bad.length && p12ok && rowsOk && Math.abs(v3 - 3.3) < .01 && rt(c).apw;
+        rec('아두이노 호환', `${k} · ${d.title}`, ok, `핀 ${d.pins.length}개 · ${mkr ? 'b·i줄 800mil' : 'c·h줄 600mil'}${bad.length ? ' · 핀 번호 틀림 ' + bad.join(',') : ''}${p12ok ? '' : ' · 12번 ' + p12} · 3V3 ${v3}V`);
+      }
+      // 점퍼 연결형: 헤더 자리(D7–D8 4.064mm, 위·아래 48.26mm)
+      const u = ARDX.auno3.hdr, at = nm => u.find(h => h[2].split(' ')[0] === nm);
+      rec('아두이노 호환', 'auno3 헤더 · D7–D8 4.064mm, 위·아래 48.26mm, 32단자', Math.abs(at('D7')[0] - at('D8')[0] - 4.064) < 1e-6 && Math.abs(at('D0')[1] - at('A0')[1] - 48.26) < 1e-6 && u.length === 32, `${u.length}단자`);
+      rec('아두이노 호환', 'amega 헤더 · 2×18(5V·D22~D53·GND), 확장 A8~A15', ARDX.amega.hdr.length === 32 + 16 + 36 && ARDX.amega.hdr.some(h => h[2] === 'D53') && ARDX.amega.hdr.some(h => h[2] === 'A15'), `${ARDX.amega.hdr.length}단자`);
+    }
+    const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC' || r.grp === '아두이노 호환').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }
 
   /* ───── ③ LED 표시기: 칸마다 애노드·캐소드·색·위치 ───── */

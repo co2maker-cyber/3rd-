@@ -605,6 +605,9 @@ body.planon .cbar{display:none}
         <option value="pasa">Ⓟ9 계측기 구조: 튜닝 DAC 스윕 · RF 섹션(YIG 발진기·믹서·변환) · IF·표시 섹션(로그 증폭·CRT)</option>
         <option value="pasys">Ⓟ10 계측기 예제 프로젝트: 시트 01~05를 보드 6장에 — RF 입력·YIG 전류 드라이버·IF 검파·MPU·튜닝 DAC·스윕·15V 전원·CRT 구동</option>
         </optgroup>
+        <optgroup label="새로 추가 · 아두이노 호환 보드">
+        <option value="ard1">ⓐ1 아두이노 호환 보드: 소형 5V·3.3V 보드는 브레드보드에 꽂고, UNO 폼팩터는 밖에 두고 점퍼선으로 — 전원 핀으로 LED 켜기</option>
+        </optgroup>
         <optgroup label="새로 추가 · 스펙트럼 분석기">
         <option value="pspec">Ⓟ11 스펙트럼 분석기: 함수 발생기 구형파(홀수 고조파)와 사인파(선 하나) 비교</option>
         </optgroup>
@@ -1222,6 +1225,9 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `dac10` | 10비트 곱셈형 DAC (DIP-16) | dip | 0~7 | IOUT1 IOUT2 GND BIT1(MSB)…BIT10(LSB) VDD VREF RFB | |
 | `batt` `byto` `bytx` `bconv` `bfilt` `bif` `bref` `bcrt` | RF·IF·디스플레이 모듈 블록(스텝 감쇠기·YIG 발진기·YIG 믹서·변환 체인·필터 모음·IF 로그 증폭단·기준 발진기·정전 편향 CRT) — 시뮬레이션 없음 | row | 0~(핀 수−1) | 부품 정보 창의 핀 이름 | |
 | `cpu64` | 16/32비트 마이크로프로세서 (DIP-64, 900mil) — 시뮬레이션 없음 | dip | 0~31 | D4 D3 D2 D1 D0 ~AS … (부품 정보 창) | |
+| `ano` `anoevery` `anor4` | 아두이노 호환 · Nano 폼팩터 5V (2×15, 600mil) — **c·h줄**에 꽂힘 | dip | 0~14 | 1 D13 · 2 3V3 · 3 AREF · 4~11 A0~A7 · 12 5V · 13 RESET · 14 GND · 15 VIN · 16 D1 · 17 D0 · 18 RESET · 19 GND · 20~30 D2~D12 | `usb` |
+| `ano33iot` `ano33ble` `anorp` `anoesp` | 아두이노 호환 · Nano 폼팩터 3.3V — **c·h줄**, 12번 핀은 VUSB | dip | 0~14 | (위와 같음, 12 VUSB) | `usb` |
+| `amkr` | 아두이노 호환 · MKR 폼팩터 3.3V (2×14, 800mil) — **b·i줄**에 꽂힘 | dip | 0~13 | 1 AREF · 2~8 A0~A6 · 9~22 D0~D14 · 23 RESET · 24 GND · 25 VCC(3.3V) · 26 VIN · 27 5V (28핀) | `usb` |
 
 부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_JFET_25VUS`, `COMP_DUAL_OC_36V`, `REG_POS_ADJ_1P5A`, `DAC_10B_MULT_R2R`, `BJT_NPN_PWR_60V_150W`, `CPU_16_32B_ASYNC_8MHZ`, `LOGIC_HEX_DFF_CLR_LS`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
@@ -1266,9 +1272,11 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `bat` | 건전지 | `v`(1.5 3 4.5 6 9) | + | − |
 | `fg` | 함수 발생기 | `wave`(`sq` `sin` `tri` `saw`), `hz`, `vpp`, `off`, `duty`(%) | OUT | GND |
 | `osc` | 오실로스코프 | `tdiv`, `vdiv`, `vdiv2`, `run` | CH1 | CH2 |
+| `auno3` `aunor4m` `aunor4w` `aleo` | 아두이노 호환 · UNO 폼팩터(보드 밖, 68.6 × 53.4mm) | `usb`(1 꽂음, 0 뺌) | 헤더 32개 | 단자 순서: 위 왼쪽 SCL SDA AREF GND D13~D8, 위 오른쪽 D7~D0, 아래 NC IOREF RESET 3.3V 5V GND GND VIN, A0~A5 |
+| `amega` `adue` `agiga` | 아두이노 호환 · Mega 폼팩터(보드 밖, 101.5 × 53.3mm) | `usb` | 헤더 84개 | UNO 32개 + D14~D21 + A8~A15(또는 A8~A11 DAC0 DAC1 CANRX CANTX) + 2×18(5V 5V, D22 D23 … D52 D53, GND GND) |
 | `spa` | 스펙트럼 분석기 | `cf`(가운데 Hz), `span`(Hz), `ref`(dBm), `dbd`(dB/칸), `rbw`·`vbw`(Hz, 0 = 자동), `att`(dB, −1 = 자동), `swt`(초, 0 = 자동), `hold`(1 = 최대값 유지), `cal`(1 = 내부 교정 신호), `run` | RF IN | — |
 
-- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 170×92, bat 130×74, fg 180×92, osc 250×200, spa 310×250.
+- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 170×92, bat 130×74, fg 180×92, osc 250×200, spa 310×250, UNO 폼팩터 540×420, Mega 폼팩터 799×420. 아두이노 호환 보드의 단자 이름은 부품 정보 창에 나와요.
 - `k`: 계측기마다 다른 번호(1, 2, 3 …). 단자 구멍 이름은 **`@k:번호`** 예요(`@1:0` = 1번 계측기의 + 단자).
 - 5V가 아닌 전압은 자동 5V 레일과 섞이지 않게 **레일 말고 보드 줄(a~j)** 로 이어 쓰세요.
 - 단자에는 전선을 여러 가닥 이어도 돼요. 단자는 **전선으로만** 보드와 이어요.
@@ -1309,7 +1317,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 불러오기는 문제 있는 부품을 **조용히 빼고** 나머지만 꽂아요. 부품 수가 모자라면 아래를 보세요.
 
-- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa`)
+- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa` `auno3` `aunor4m` `aunor4w` `aleo` `amega` `adue` `agiga`)
 - [ ] `ic`의 `chip`이 부록 표에 없다 / `gate`의 `kind`가 7가지가 아니다 / `px`의 `kind`가 표에 없다
 - [ ] 구멍 이름이 없다 — 레일 6의 배수 열, 보드 열 수를 넘음, `mini` 보드의 레일, 없는 보드 번호
 - [ ] 두 부품이 같은 구멍을 쓴다 (전선도 부품이에요)
@@ -1687,6 +1695,19 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 
 ---
 
+## 4-3-1. 아두이노 호환 보드 고르기
+
+| 폼팩터 | 꽂는 법 | 줄 간격 | 입출력 | 이 프로그램의 부품 |
+|---|---|---|---|---|
+| Nano (2×15) | 브레드보드에 바로 — c·h줄, 양쪽에 두 줄씩 남음 | 600mil (15.24mm) | 5V 또는 3.3V | `ano` `anoevery` `anor4` (5V), `ano33iot` `ano33ble` `anorp` `anoesp` (3.3V) |
+| MKR (2×14) | 브레드보드에 바로 — b·i줄, 양쪽에 한 줄씩만 남음 | 800mil (20.32mm) | 3.3V | `amkr` |
+| UNO | 보드 밖에 두고 점퍼선 (암 헤더) | D7–D8 사이 4.064mm | 5V | `auno3` `aunor4m` `aunor4w` `aleo` |
+| Mega | 보드 밖에 두고 점퍼선 (암 헤더 + 2×18) | UNO와 같고 확장 | 5V 또는 3.3V | `amega` `adue` `agiga` |
+
+- **3.3V 보드의 입출력 핀은 5V를 견디지 못해요.** 5V 부품과 이을 때는 전압 나누기 저항이나 레벨 변환기를 거쳐요(이 프로그램은 3.6V가 넘으면 빨간 경고를 띄워요).
+- 핀 하나에 흘릴 수 있는 전류가 보드마다 달라요: 8비트 보드 20mA(모두 합쳐 200mA), 32비트 48MHz 5V 보드 8mA, 3.3V 32비트 보드 7~15mA. LED 저항은 넉넉히(1kΩ 안팎).
+- VIN 정격을 넘기면 전압 조정기가 뜨거워져요. 정격(예: 7~12V)은 부품 정보 창에 있어요.
+
 ## 4-4. 계측기용 수동·기구·보호 소자
 
 | 문서 이름 | 프로그램 부품 | 메모 |
@@ -1783,7 +1804,7 @@ function syncTerms(){const want=[];
     termSig=sig;
     if(S.comps&&S.comps.some(c=>!INST.has(c.t)&&c.pins&&c.pins.some(id=>isTerm(id)&&!HOLES.has(id))))S.comps=S.comps.filter(c=>INST.has(c.t)||!c.pins||c.pins.every(id=>!isTerm(id)||HOLES.has(id)));}
   else for(const [id,x,y] of want){const h=HOLES.get(id);h.x=x;h.y=y;}}
-function termAt(p,rad=12){for(let i=HL.length-1;i>=nBoardHoles;i--){const h=HL[i];if(Math.hypot(h.x-p.x,h.y-p.y)<rad)return h;}return null;}
+function termAt(p,rad=12){let best=null,bd=rad;for(let i=HL.length-1;i>=nBoardHoles;i--){const h=HL[i],d=Math.hypot(h.x-p.x,h.y-p.y);if(d<bd){bd=d;best=h;}}return best;}   // 가장 가까운 단자(헤더처럼 촘촘해도)
 const termOwner=id=>S.comps.find(c=>INST.has(c.t)&&c.pins.includes(id));
 const termColor=id=>{if(!isTerm(id))return null;const c=termOwner(id);return c?JWIRE[c.t][c.pins.indexOf(id)]:null;};
 const holeAt=(ri,c,b=1)=>ri>=0&&ri<ROWS.length?HOLES.get(pref(b)+ROWS[ri]+c):undefined;
@@ -2490,7 +2511,7 @@ const TAPER={B:['B 커브 (선형)',x=>x],A:['A 커브 (대수, 오디오 볼륨
 const potF=c=>TAPER[c.taper||'B'][1](Math.max(0,Math.min(1,c.pos??.5)));
 const potRes=(c,a,w,b)=>{const R=c.ohms||10000,f=potF(c);return[[a,w,Math.max(1,R*f)],[w,b,Math.max(1,R*(1-f))]];};
 function pxHolesAt(kind,b,r,c0){const d=PX[kind];let ids;
-  if(d.lay==='dip'){const cs=d.cols,n=cs.length*2;ids=[];for(let i=0;i<n;i++)ids.push(i<cs.length?pref(b)+'f'+(c0+cs[i]):pref(b)+'e'+(c0+cs[n-1-i]));}
+  if(d.lay==='dip'){const cs=d.cols,n=cs.length*2,[rT,rB]=d.rows||['e','f'];ids=[];for(let i=0;i<n;i++)ids.push(i<cs.length?pref(b)+rB+(c0+cs[i]):pref(b)+rT+(c0+cs[n-1-i]));}
   else ids=d.dc.map(k=>pref(b)+r+(c0+k));
   return ids.every(id=>HOLES.has(id))?ids:null;}
 function pxHoles(kind,h){if(!h||!onBd(h))return null;const ids=pxHolesAt(kind,h.b,h.r,h.c);if(!ids)return null;const o=occ();if(ids.some(id=>o.has(id)))return null;
@@ -3110,6 +3131,177 @@ const newKey=()=>Math.max(0,...S.comps.filter(c=>INST.has(c.t)).map(c=>+c.k||0))
 const WAVES={sq:'구형파',sin:'사인파',tri:'삼각파',saw:'톱니파'};
 const num=(v,d)=>Number.isFinite(+v)&&v!==null&&v!==''?+v:d; // 값이 없으면 기본값
 const instRect=c=>({x0:c.x,y0:c.y,x1:c.x+ISZ[c.t][0],y1:c.y+ISZ[c.t][1]});
+/* ═════════════════ 아두이노 호환 보드 (사용자 제공 「보드 데이터시트·CAD 레퍼런스」의 치수·핀맵·전기 값 — 사실 정보만) ═════════════════
+   ① 브레드보드 직결형(Nano 폼팩터 2×15·600mil → c·h줄, MKR 폼팩터 2×14·800mil → b·i줄): t:'px', 가운데 홈을 걸쳐 꽂는다
+   ② 점퍼 연결형(UNO·Mega 폼팩터): 계측기처럼 보드 밖에 두고(t: 'auno3' …), 실제 치수(mm) 자리의 헤더 단자에서 전선을 끈다
+   - 전원: USB(기본 꽂음)나 VIN(정격 범위)으로 켜지면 5V·3V3(VCC·IOREF) 핀이 전원을 낸다. GND 핀은 늘 접지
+   - 점검: VIN 정격 초과·부족, 3.3V 보드 입출력 핀에 3.6V 넘는 전압(5V 못 견딤)
+   - 이름은 폼팩터 + 특징으로(공식 상표·로고 안 씀, COPYRIGHT 2절·8절) */
+const AMM=20/2.54;   // 1mm = 7.874 화면 점(구멍 간격 2.54mm = 20)
+const ARDSPEC={
+  ano:{form:'nano',nm:'5V · 8비트 16MHz',v:5,vin:[7,12],usb:'mini',col:'#1A6C9A',chip:'8비트 MCU 16MHz',mA:20,tot:200,p12:'5V',p3:'AREF',pwm:[3,5,6,9,10,11],adc:10},
+  anoevery:{form:'nano',nm:'5V · 8비트 20MHz',v:5,vin:[7,21],usb:'micro',col:'#13797A',chip:'8비트 MCU 20MHz',p12:'5V',p3:'AREF',pwm:[3,5,6,9,10],adc:10},
+  anor4:{form:'nano',nm:'5V · 32비트 48MHz',v:5,vin:[6,21],usb:'c',col:'#16707E',chip:'32비트 MCU 48MHz',mA:8,tot:60,p12:'5V',p3:'AREF',pwm:[3,5,6,9,10,11],adc:14},
+  ano33iot:{form:'nano',nm:'3.3V · 32비트 48MHz + Wi-Fi',v:3.3,vin:[4.5,21],usb:'micro',col:'#13797A',chip:'32비트 48MHz',rad:'Wi-Fi·BLE',mA:7,tot:65,p12:'VUSB',p3:'AREF',pwm:[3,5,6,9],adc:12},
+  ano33ble:{form:'nano',nm:'3.3V · 32비트 64MHz + BLE',v:3.3,vin:[4.5,21],usb:'micro',col:'#13797A',chip:'32비트 64MHz',rad:'BLE',mA:15,tot:100,p12:'VUSB',p3:'AREF',pwm:[3,5,6,9],adc:12},
+  anorp:{form:'nano',nm:'3.3V · 듀얼코어 133MHz + Wi-Fi',v:3.3,vin:[5,21],usb:'micro',col:'#13797A',chip:'듀얼코어 133MHz',rad:'Wi-Fi·BLE',p12:'VUSB',p3:'AREF',pwm:[3,5,6,9],adc:12},
+  anoesp:{form:'nano',nm:'3.3V · 240MHz + Wi-Fi·BLE',v:3.3,vin:[6,21],usb:'c',col:'#16707E',chip:'듀얼코어 240MHz',rad:'Wi-Fi·BLE',mA:40,tot:200,p12:'VUSB',p3:'AREF/B0',pwm:[3,5,6,9],adc:12},
+  amkr:{form:'mkr',nm:'3.3V · 32비트 48MHz',v:3.3,vin:[5,5.5],usb:'micro',col:'#13797A',chip:'32비트 48MHz',rad:'무선',mA:7,tot:65,pwm:[2,3,4,5,6,7],adc:12},
+  auno3:{form:'uno',nm:'5V · 8비트 16MHz (R3형)',v:5,vin:[7,12],usb:'b',col:'#0F6E8C',chip:'8비트 MCU · DIP-28',mA:20,tot:200,W:68.6,H:53.4,pwm:[3,5,6,9,10,11],adc:10},
+  aunor4m:{form:'uno',nm:'5V · 32비트 48MHz (R4형)',v:5,vin:[6,24],usb:'c',col:'#0F6E8C',chip:'32비트 MCU 48MHz',mA:8,tot:60,W:68.85,H:53.34,pwm:[3,5,6,9,10,11],adc:14},
+  aunor4w:{form:'uno',nm:'5V · 32비트 48MHz + Wi-Fi · LED 매트릭스 (R4형)',v:5,vin:[6,24],usb:'c',col:'#0F6E8C',chip:'32비트 MCU 48MHz',rad:'Wi-Fi·BLE',matrix:1,mA:8,tot:60,W:68.85,H:53.34,pwm:[3,5,6,9,10,11],adc:14},
+  aleo:{form:'uno',nm:'5V · 8비트 16MHz USB 내장형',v:5,vin:[7,12],usb:'micro',col:'#0F6E8C',chip:'8비트 MCU (USB 내장)',mA:20,tot:200,W:68.6,H:53.3,pwm:[3,5,6,9,10,11,13],adc:10},
+  amega:{form:'mega',nm:'5V · 8비트 16MHz (디지털 54 · 아날로그 16)',v:5,vin:[7,12],usb:'b',col:'#0F6E8C',chip:'8비트 MCU 256KB',mA:20,tot:200,W:101.52,H:53.3,pwm:[2,3,4,5,6,7,8,9,10,11,12,13,44,45,46],adc:10,ext:'A'},
+  adue:{form:'mega',nm:'3.3V · 32비트 84MHz (디지털 54 · 아날로그 12)',v:3.3,vin:[7,12],usb:'micro',col:'#0F6E8C',chip:'32비트 MCU 84MHz',W:101.52,H:53.3,pwm:[2,3,4,5,6,7,8,9,10,11,12,13],adc:12,ext:'DAC'},
+  agiga:{form:'mega',nm:'3.3V · 듀얼코어 480MHz + Wi-Fi (디지털 76 · 아날로그 12)',v:3.3,vin:[6,24],usb:'c',col:'#0F6E8C',chip:'듀얼코어 480/240MHz',rad:'Wi-Fi·BLE',W:101,H:53,pwm:[2,3,4,5,6,7,8,9,10,11,12,13],adc:16,ext:'DAC'}};
+const ARDFORM={nano:'Nano 폼팩터 호환',mkr:'MKR 폼팩터 호환',uno:'UNO 폼팩터 호환',mega:'Mega 폼팩터 호환'};
+const USBN={mini:'미니 USB',micro:'마이크로 USB',c:'USB-C',b:'USB-B'};
+const ardTitle=(k,D)=>`${ARDFORM[D.form]} 보드 · ${D.nm} (${USBN[D.usb]})`;
+// 핀 이름에 PWM 표시
+const ardPin=(D,w)=>{const m=/^D(\d+)$/.exec(w);return m&&D.pwm.includes(+m[1])?w+' (PWM)':w;};
+// Nano 폼팩터 핀(문서 3.1절 표): 1~15 = J1 위→아래, 16~30 = J2 아래→위(16 TX1 … 30 D12). 1·30번 쪽 끝에 USB
+const nanoPins=D=>['D13 (LED·SCK)','3V3',D.p3,'A0','A1','A2','A3','A4 (SDA)','A5 (SCL)','A6','A7',D.p12,'RESET','GND','VIN','D1 (TX)','D0 (RX)','RESET','GND',...rng(11,i=>ardPin(D,'D'+(i+2)))];
+// MKR 폼팩터 핀(2×14, 800mil): 문서에 핀맵이 없어 공개된 MKR 핀 이름 순서로 이 프로그램이 정리. 1번(AREF)·28번(5V) 쪽 끝에 USB
+const mkrPins=D=>['AREF','A0 (DAC0)','A1','A2','A3','A4','A5','A6','D0','D1',...[2,3,4,5,6,7].map(i=>ardPin(D,'D'+i)),'D8 (MOSI)','D9 (SCK)','D10 (MISO)','D11 (SDA)','D12 (SCL)','D13 (RX)','D14 (TX)','RESET','GND','VCC (3.3V 출력)','VIN','5V'];
+// 점퍼 연결형 헤더(문서 3.2·3.4절, 좌하단 원점 mm): UNO 공통 + Mega 확장
+function ardHeaders(k,D){const L=[],P=(x,y,nm)=>L.push([x,y,nm]);
+  ['SCL','SDA','AREF','GND','D13','D12','D11','D10','D9','D8'].forEach((n,i)=>P(18.796+i*2.54,50.8,n));        // 위 왼쪽 10핀(D8 = 41.656)
+  rng(8,i=>P(45.72+i*2.54,50.8,'D'+(7-i)));                                                                     // 위 오른쪽 8핀: D8–D7 사이 4.064mm(0.16인치)
+  ['NC','IOREF','RESET','3.3V','5V','GND','GND','VIN'].forEach((n,i)=>P(27.94+i*2.54,2.54,n));                   // 아래 왼쪽 전원 8핀
+  rng(6,i=>P(50.8+i*2.54,2.54,'A'+i));                                                                           // 아래 오른쪽 아날로그 6핀
+  if(D.form==='mega'){rng(8,i=>P(68.58+i*2.54,50.8,'D'+(14+i)));
+    (D.ext==='A'?rng(8,i=>'A'+(8+i)):['A8','A9','A10','A11','DAC0','DAC1','CANRX','CANTX']).forEach((n,i)=>P(68.58+i*2.54,2.54,n));
+    for(let r=0;r<18;r++){const y=50.8-r*2.54;if(r===0){P(93.98,y,'5V');P(96.52,y,'5V');}else if(r===17){P(93.98,y,'GND');P(96.52,y,'GND');}else{P(93.98,y,'D'+(22+(r-1)*2));P(96.52,y,'D'+(23+(r-1)*2));}}}
+  return L.map(([x,y,nm])=>[x,y,ardPin(D,nm)]);}
+const ARDX={};   // 점퍼 연결형 보드(계측기처럼 보드 밖): t → {k, D, hdr, desc}
+const isArd=c=>!!c&&((c.t==='px'&&PX[c.kind]&&PX[c.kind].ard)||!!ARDX[c.t]);
+const ardSpec=c=>c.t==='px'?PX[c.kind].ard:ARDX[c.t].D;
+const ardNames=c=>c.t==='px'?PX[c.kind].pins:ARDX[c.t].hdr.map(h=>h[2]);
+const ARDCOM='USB를 꽂으면(기본) 5V·3V3 핀에서 전원이 나와 브레드보드 레일에 이을 수 있어요. [속성]에서 USB를 빼면 VIN에 정격 전압을 넣어야 켜져요. 이 프로그램은 보드의 전원과 핀 연결만 다뤄요(코드는 돌리지 않아요).';
+const ardDesc=(D,extra)=>`${ARDFORM[D.form]} 보드예요. 입출력 ${D.v}V, VIN ${D.vin[0]}~${D.vin[1]}V, ${USBN[D.usb]}, ADC ${D.adc}비트${D.rad?', 무선 '+D.rad:''}.${D.mA?` 핀 하나에 ${D.mA}mA까지${D.tot?`(모두 합쳐 ${D.tot}mA)`:''} 흘려요${D.mA<=8?' — 다른 보드보다 낮으니 LED도 저항을 크게(1kΩ 안팎) 달아요':''}.`:''}${D.v<4?' <b>입출력이 3.3V 전용이라 5V 신호를 바로 넣으면 망가져요</b>(넣으면 점검에 빨간 경고가 떠요). 전압 나누기 저항이나 레벨 변환기를 써요.':''} ${extra} ${ARDCOM} 공식 제품이 아니라 같은 치수·핀 배치의 호환 보드로 그렸어요(로고 없음).`;
+/* ── 그림 도우미(금속·칩 질감, 헤더, LED 등) */
+const MGDEFS=`<linearGradient id="mgSheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
+  <linearGradient id="mgMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2F4F6"/><stop offset=".5" stop-color="#C3C9D0"/><stop offset="1" stop-color="#8B939C"/></linearGradient>
+  <linearGradient id="mgMetalH" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9AA2AB"/><stop offset=".35" stop-color="#EEF1F4"/><stop offset="1" stop-color="#A3ABB4"/></linearGradient>
+  <linearGradient id="mgChip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34383D"/><stop offset="1" stop-color="#121416"/></linearGradient>
+  <linearGradient id="mgHdr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A3E44"/><stop offset=".25" stop-color="#1D2024"/><stop offset="1" stop-color="#0B0C0E"/></linearGradient>
+  <linearGradient id="mgGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBE6A0"/><stop offset=".5" stop-color="#D9B44A"/><stop offset="1" stop-color="#9C7A1E"/></linearGradient>
+  <radialGradient id="mgLens" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".4" stop-color="#fff" stop-opacity=".15"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
+const MG={
+  hole:(x,y)=>`<circle cx="${x}" cy="${y}" r="5" fill="url(#mgGold)"/><circle cx="${x}" cy="${y}" r="3" fill="#2A2418"/><circle cx="${x-.8}" cy="${y-.8}" r="1.1" fill="#4A4232"/>`,
+  via:(x,y)=>`<circle cx="${x}" cy="${y}" r="1.3" fill="none" stroke="#000" stroke-opacity=".28" stroke-width=".9"/>`,
+  outline:(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1" fill="none" stroke="#F2F5F8" stroke-opacity=".7" stroke-width=".55"/>`,
+  ref:(x,y,t,anc='middle')=>`<text x="${x}" y="${y}" font-size="3" fill="#F2F5F8" fill-opacity=".75" text-anchor="${anc}" font-family="var(--mono)" pointer-events="none">${t}</text>`,
+  usbB:(x,y)=>`<rect x="${x+1}" y="${y-14}" width="41" height="31" rx="1.5" fill="#000" opacity=".3"/><rect x="${x}" y="${y-15}" width="40" height="30" rx="1.5" fill="url(#mgMetal)" stroke="#5E656D" stroke-width=".8"/>
+    <path d="M${x+2} ${y-12}h36M${x+2} ${y+12}h36" stroke="#fff" stroke-opacity=".5" stroke-width=".7"/><rect x="${x+1}" y="${y-10}" width="9" height="20" fill="#AEB5BD" stroke="#7C848C" stroke-width=".5"/>
+    <rect x="${x+4}" y="${y-8}" width="24" height="16" rx="1.5" fill="#15171A"/><rect x="${x+8}" y="${y-3.5}" width="16" height="7" rx="1" fill="#E6E9EC"/><path d="M${x+10} ${y-1.5}h12M${x+10} ${y+1.5}h12" stroke="#C9A24A" stroke-width=".9"/>`,
+  usbMicro:(x,y,w=15,h=12)=>`<rect x="${x}" y="${y-h/2}" width="${w}" height="${h}" rx="1.5" fill="url(#mgMetalH)" stroke="#5E656D" stroke-width=".7"/><rect x="${x+w-4}" y="${y-h/2+2.2}" width="3.6" height="${h-4.4}" rx="1" fill="#15171A"/><rect x="${x+w-3.2}" y="${y-1.2}" width="1.6" height="2.4" fill="#C9A24A"/><path d="M${x+1.5} ${y-h/2}v-1.6M${x+1.5} ${y+h/2}v1.6M${x+w-6} ${y-h/2}v-1.6M${x+w-6} ${y+h/2}v1.6" stroke="#9AA2AB" stroke-width="1.4"/>`,
+  jack:(x,y)=>`<rect x="${x+1}" y="${y-11}" width="37" height="25" rx="2" fill="#000" opacity=".3"/><rect x="${x}" y="${y-12}" width="36" height="24" rx="2" fill="url(#mgChip)" stroke="#000" stroke-width=".7"/><path d="M${x+14} ${y-12}v24M${x+24} ${y-12}v24" stroke="#000" stroke-opacity=".5" stroke-width=".7"/>
+    <rect x="${x-1}" y="${y-8}" width="6" height="16" rx="1" fill="#2C2F33"/><circle cx="${x+9}" cy="${y}" r="5.6" fill="#060708" stroke="#3A3E44" stroke-width=".8"/><circle cx="${x+9}" cy="${y}" r="1.7" fill="url(#mgMetal)"/>`,
+  btn:(x,y,s=11,lab,cap)=>`<rect x="${x-s/2+.6}" y="${y-s/2+.8}" width="${s}" height="${s}" rx="1" fill="#000" opacity=".3"/><rect x="${x-s/2}" y="${y-s/2}" width="${s}" height="${s}" rx="1" fill="url(#mgMetal)" stroke="#5E656D" stroke-width=".6"/>
+    <path d="M${x-s/2-1.2} ${y-s/2+1.6}h1.2M${x-s/2-1.2} ${y+s/2-1.6}h1.2M${x+s/2} ${y-s/2+1.6}h1.2M${x+s/2} ${y+s/2-1.6}h1.2" stroke="#B8BEC6" stroke-width="1"/>
+    <circle cx="${x}" cy="${y}" r="${s*.3}" fill="${cap||'#B03232'}" stroke="#000" stroke-opacity=".45" stroke-width=".5"/><circle cx="${x-s*.08}" cy="${y-s*.08}" r="${s*.12}" fill="#fff" opacity=".35"/>${lab?`<text x="${x}" y="${y+s/2+4.6}" font-size="3.6" fill="#F2F5F8" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${lab}</text>`:''}`,
+  xtal:(x,y,w=15,h=6,f='16.000')=>`<rect x="${x-w/2+.5}" y="${y-h/2+.7}" width="${w}" height="${h}" rx="${h/2}" fill="#000" opacity=".3"/><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="url(#mgMetal)" stroke="#6E757D" stroke-width=".6"/><text x="${x}" y="${y+1.3}" font-size="3.2" fill="#4A5058" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${f}</text>`,
+  ecap:(x,y,r=5.5)=>`<circle cx="${x+.6}" cy="${y+.8}" r="${r}" fill="#000" opacity=".3"/><circle cx="${x}" cy="${y}" r="${r}" fill="url(#mgMetal)" stroke="#6E757D" stroke-width=".6"/><path d="M${x-r*.6} ${y}h${r*1.2}M${x} ${y-r*.6}v${r*1.2}" stroke="#7E868F" stroke-width=".7"/><path d="M${x-r*.95} ${y+r*.3}A${r} ${r} 0 0 1 ${x-r*.3} ${y-r*.95}" fill="none" stroke="#1F2A36" stroke-width="1.6"/>`,
+  smd:(x,y,w=4.2,h=2.2,body='#1D1F22',v)=>`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" fill="${body}"/><rect x="${x-w/2}" y="${y-h/2}" width="${w*.22}" height="${h}" fill="#D6DADF"/><rect x="${x+w/2-w*.22}" y="${y-h/2}" width="${w*.22}" height="${h}" fill="#D6DADF"/>${v?`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".25"/>`:''}`,
+  capS:(x,y,w=4.2,h=2.2)=>MG.smd(x,y,w,h,'#B08A5A',1),
+  reg:(x,y)=>`<rect x="${x-6.5}" y="${y-8}" width="13" height="4" fill="url(#mgMetal)"/><rect x="${x-6.5}" y="${y-4.5}" width="13" height="9" rx=".6" fill="url(#mgChip)"/><path d="M${x-4} ${y+4.5}v2.6M${x} ${y+4.5}v2.6M${x+4} ${y+4.5}v2.6" stroke="#B8BEC6" stroke-width="1.4"/>`,
+  qfp:(x,y,s,lab,rot=45)=>{let l='';const n=Math.max(5,Math.round(s/2.1));for(let i=0;i<n;i++){const t=-s/2+1.6+i*(s-3.2)/(n-1);l+=`M${t} ${-s/2-2.4}v2.4M${t} ${s/2}v2.4M${-s/2-2.4} ${t}h2.4M${s/2} ${t}h2.4`;}
+    return`<g transform="translate(${x} ${y}) rotate(${rot})"><rect x="${-s/2+.8}" y="${-s/2+.8}" width="${s}" height="${s}" fill="#000" opacity=".3"/><path d="${l}" stroke="#C4CAD1" stroke-width=".75"/><rect x="${-s/2}" y="${-s/2}" width="${s}" height="${s}" rx=".5" fill="url(#mgChip)"/><circle cx="${-s/2+2.4}" cy="${-s/2+2.4}" r="1" fill="#0A0B0C" stroke="#3A3E44" stroke-width=".3"/></g>${lab?`<text x="${x}" y="${y+1.4}" font-size="3.4" font-weight="700" fill="#8E98A3" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${lab}</text>`:''}`;},
+  dip28:(x,y,w,h)=>{let l='';const n=14;for(let i=0;i<n;i++){const t=x-w/2+3.5+i*(w-7)/(n-1);l+=`M${t} ${y-h/2-3.4}v3.4M${t} ${y+h/2}v3.4`;}
+    return`<rect x="${x-w/2-3}" y="${y-h/2-5}" width="${w+6}" height="${h+10}" rx="1" fill="#1A1C1F"/><path d="${l}" stroke="url(#mgMetal)" stroke-width="2"/><rect x="${x-w/2+1}" y="${y-h/2+1}" width="${w}" height="${h}" rx="1" fill="#000" opacity=".35"/><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="1" fill="url(#mgChip)"/>
+      <path d="M${x-w/2} ${y-3}a3 3 0 0 1 0 6" fill="#0B0C0E"/><circle cx="${x-w/2+6}" cy="${y+h/2-3}" r="1.1" fill="#0B0C0E"/><text x="${x}" y="${y+1.8}" font-size="4.6" font-weight="700" fill="#8E98A3" text-anchor="middle" font-family="var(--mono)" pointer-events="none">8비트 MCU · 32KB · DIP-28</text>`;},
+  icsp:(x,y)=>{let s=MG.outline(x-9.5,y-12.5,19,25)+`<rect x="${x-8}" y="${y-11}" width="16" height="22" fill="url(#mgHdr)"/>`;for(let i=0;i<3;i++)for(let j=0;j<2;j++)s+=`<rect x="${x-5+j*7-1.7}" y="${y-7+i*7-1.7}" width="3.4" height="3.4" fill="url(#mgGold)"/>`;return s+MG.ref(x,y+16,'ICSP');},
+  led:(x,y,on,col,lab,left)=>`<rect x="${x-3.4}" y="${y-2.2}" width="6.8" height="4.4" rx=".6" fill="#E6E2D6"/>${on?`<circle cx="${x}" cy="${y}" r="6" fill="${col}" opacity=".45" filter="url(#glow)"/>`:''}<rect x="${x-2.4}" y="${y-1.8}" width="4.8" height="3.6" rx=".8" fill="${on?col:'#5A584E'}"/><rect x="${x-2.4}" y="${y-1.8}" width="4.8" height="3.6" rx=".8" fill="url(#mgLens)"/><text x="${left?x-5:x+5}" y="${y+1.5}" font-size="3.8" fill="#F2F5F8" font-family="var(--mono)"${left?' text-anchor="end"':''} pointer-events="none">${lab}</text>`,
+  silk:(x,y,t,sz=5,anc='middle',wt=700)=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="${wt}" fill="#F2F5F8" fill-opacity=".9" text-anchor="${anc}" font-family="var(--mono)" pointer-events="none">${t}</text>`,
+  // 헤더: 암(소켓, 표준형·대형) 또는 수(핀, 브레드보드에 꽂는 보드)
+  header:(x0,x1,y,fem)=>fem?`<rect x="${x0-6.5}" y="${y-6.5}" width="${x1-x0+13}" height="13" rx=".8" fill="url(#mgHdr)" stroke="#000" stroke-width=".5"/>`:`<rect x="${x0-6}" y="${y-5}" width="${x1-x0+12}" height="10" fill="url(#mgHdr)"/>`,
+  pin:(x,y,fem)=>fem?`<rect x="${x-2.6}" y="${y-2.6}" width="5.2" height="5.2" fill="#050506"/><rect x="${x-1.4}" y="${y-1.4}" width="2.8" height="2.8" fill="url(#mgGold)" opacity=".85"/>`:`<rect x="${x-2.7}" y="${y-2.7}" width="5.4" height="5.4" fill="url(#mgGold)"/><rect x="${x-1.1}" y="${y-1.1}" width="2.2" height="2.2" fill="#8A6E22" opacity=".6"/>`};
+// 기판 배선(작은 무늬): 씨앗 값으로 늘 같은 모양
+function mgTraces(L,T,W,H,seed,col){let s='',r=seed||7;const rnd=()=>{r=(r*1103515245+12345)&0x7fffffff;return r/0x7fffffff;};
+  for(let i=0;i<Math.round(W*H/1800);i++){const x=L+8+rnd()*(W-16),y=T+8+rnd()*(H-16),dx=(rnd()<.5?-1:1)*(10+rnd()*30),dy=(rnd()<.5?-1:1)*(4+rnd()*12);
+    s+=`<path d="M${x.toFixed(1)} ${y.toFixed(1)}h${dx.toFixed(1)}l${(Math.sign(dx)*Math.abs(dy)).toFixed(1)} ${dy.toFixed(1)}h${(dx*.5).toFixed(1)}" fill="none" stroke="${col}" stroke-width=".9" stroke-linejoin="round"/>`+MG.via(x,y);}
+  return s;}
+const MG2={
+  usbC:(x,y,w=14,h=9)=>`<rect x="${x}" y="${y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="url(#mgMetalH)" stroke="#5E656D" stroke-width=".7"/><rect x="${x+w-5}" y="${y-h/2+2}" width="4" height="${h-4}" rx="1.4" fill="#15171A"/><rect x="${x+w-4.2}" y="${y-.7}" width="2.4" height="1.4" fill="#C9A24A"/>`,
+  usbMini:(x,y,w=15,h=13)=>`<rect x="${x}" y="${y-h/2}" width="${w}" height="${h}" rx="1.2" fill="url(#mgMetal)" stroke="#5E656D" stroke-width=".7"/><rect x="${x+w-5}" y="${y-h/2+2.5}" width="4.5" height="${h-5}" fill="#15171A"/><path d="M${x+2} ${y-h/2+2}h${w-8}M${x+2} ${y+h/2-2}h${w-8}" stroke="#fff" stroke-opacity=".45" stroke-width=".6"/>`,
+  can:(x,y,w,h,t1,t2)=>`<rect x="${x+1}" y="${y+1.2}" width="${w}" height="${h}" rx="1.5" fill="#000" opacity=".35"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="url(#mgMetal)" stroke="#5E656D" stroke-width=".7"/><rect x="${x+2.5}" y="${y+2.5}" width="${w-5}" height="${h-5}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".6"/>`
+    +`<text x="${x+w/2}" y="${y+h/2-1}" font-size="${Math.min(5,w/9)}" font-weight="700" fill="#3A4048" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${t1||''}</text><text x="${x+w/2}" y="${y+h/2+5}" font-size="${Math.min(3.6,w/12)}" fill="#3A4048" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${t2||''}</text>`,
+  usb:(t,x,y,dir)=>t==='b'?MG.usbB(x,y):t==='c'?MG2.usbC(x,y,15,9):t==='mini'?MG2.usbMini(x,y,16,13):MG.usbMicro(x,y,15,11)};
+/* ① 직결형 그림: 핀 줄 위(c·b줄)와 아래(h·i줄) 사이를 덮고, 1번 핀 쪽(왼쪽) 끝에 USB */
+const ardDipDraw=D=>(c,ph,r)=>{const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),yT=Math.min(...ys),yB=Math.max(...ys),pw=!!(r&&r.apw),mkr=D.form==='mkr';
+  const L=x0-(mkr?96:44),R=x1+(mkr?110:20),T=yT-11,B=yB+11,W=R-L,H=B-T,cy=(yT+yB)/2,ix=(x0+x1)/2;let s='';
+  s+=`<rect x="${L+3}" y="${T+4}" width="${W}" height="${H}" rx="3" fill="#000" opacity=".28"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="3" fill="${D.col}"/>`+mgTraces(L,T,W,H,W+H,'rgba(255,255,255,.07)')
+    +`<rect x="${L}" y="${T}" width="${W}" height="${H}" rx="3" fill="url(#mgSheen)"/><rect x="${L}" y="${T}" width="${W}" height="${H}" rx="3" fill="none" stroke="#06080A"/>`;
+  s+=MG2.usb(D.usb,L-6,cy)+MG.btn(L+(mkr?40:30),cy+(mkr?-30:0),9,'RST');
+  if(mkr){s+=MG2.can(L+22,cy-14,58,36,D.rad,'모듈')+`<rect x="${R-46}" y="${cy-12}" width="20" height="13" rx="1.5" fill="#E8E2D6" stroke="#8A8270"/><text x="${R-36}" y="${cy+9}" font-size="3.4" fill="#F2F5F8" text-anchor="middle" font-family="var(--mono)">BATT</text>`+MG.qfp(R-70,cy+10,14,'',45)+MG.xtal(R-90,cy-20,10,4,'32.768');}
+  else{s+=MG.qfp(ix-6,cy,D.chip.includes('8비트')?15:17,'',45)+MG.xtal(ix-34,cy,11,4.5)+MG.reg(ix+28,cy+12);if(D.rad)s+=MG2.can(ix+18,cy-24,48,26,D.rad,'모듈');}
+  for(let i=0;i<4;i++)s+=MG.smd(ix+(mkr?-20:-50)+i*6,cy+(mkr?24:20),3.4,1.8)+MG.capS(ix+(mkr?10:-50)+i*6,cy+(mkr?-28:-22),3.4,1.8);
+  s+=MG.led(L+(mkr?40:30),cy+(mkr?24:-20),pw,'#3BE36B','ON')+MG.led(L+(mkr?40:30),cy+(mkr?32:20),false,'#FFB224','L');
+  // 수 헤더(아래로 꽂히는 핀): 몸통 위에 금 핀만 보인다
+  for(const p of ph)s+=`<circle cx="${p.x}" cy="${p.y}" r="3.6" fill="#0E0F11"/><circle cx="${p.x}" cy="${p.y}" r="2.6" fill="url(#mgGold)"/>`;
+  const pins=PX[c.kind].pins,n=pins.length,h2=n/2;
+  ph.forEach((p,i)=>{const w=pins[i].split(' ')[0],m=/^D(\d+)$/.exec(w);s+=`<text x="${p.x}" y="${p.y+(i<h2?-6.5:10)}" font-size="4.2" fill="#F2F5F8" stroke="#0A0C10" stroke-width=".8" paint-order="stroke" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${(m&&D.pwm.includes(+m[1])?'~':'')+w}</text>`;});
+  s+=MG.silk(R-4,T+6,ARDFORM[D.form].replace(' 호환',''),4.2,'end')+MG.silk(R-4,B-3,D.nm,3.6,'end',400);
+  s+=`<rect x="${L}" y="${T-12}" width="44" height="10" rx="3" fill="#0E1013" opacity=".85"/><circle cx="${L+6}" cy="${T-7}" r="2" fill="${pw?'#3BE36B':'#6B7280'}"/><text x="${L+25}" y="${T-4.5}" font-size="6" font-weight="700" fill="${pw?'#3BE36B':'#AEB4BD'}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${pw?'전원 켜짐':'전원 없음'}</text>`;
+  return s;};
+for(const [k,D] of Object.entries(ARDSPEC)){if(D.form!=='nano'&&D.form!=='mkr')continue;const mkr=D.form==='mkr';
+  pxDef({k,sub:'ard',pre:'U',title:ardTitle(k,D),lay:'dip',cols:rng(mkr?14:15,i=>i),rows:mkr?['b','i']:['c','h'],rw:mkr?20.32:15.24,pins:mkr?mkrPins(D):nanoPins(D),ard:D,init:()=>({}),draw:ardDipDraw(D),
+    desc:ardDesc(D,mkr?'2×14핀, 줄 간격 800mil(20.32mm) — 브레드보드의 b줄과 i줄에 꽂혀서 양쪽에 a·j줄 한 줄씩만 남아요(배선 공간이 좁아요). 61.5 × 25mm. 1번(AREF)·28번(5V) 쪽 끝에 USB가 있어요. 핀 이름 순서는 공개된 MKR 핀맵을 이 프로그램이 정리한 것이에요.':`2×15핀, 줄 간격 600mil(15.24mm) — 브레드보드의 c줄과 h줄에 꽂혀서 양쪽에 두 줄씩 남아요. 45 × 18mm. 1번 핀(D13)과 30번 핀(D12)이 있는 끝에 ${USBN[D.usb]}가 있어요.${D.p12==='VUSB'?' 12번 핀은 VUSB(납땜 점퍼를 이어야 USB 5V가 나와요 — 기본은 끊김)예요.':''}`),
+    props:c=>ardProps(c),bind:c=>ardBind(c)});}
+/* ② 점퍼 연결형: 계측기처럼 등록(크기·단자·기본값·전선 색·이름) */
+const ARDJC=nm=>/^GND/.test(nm)?'#24282D':/^(5V|VIN)/.test(nm)?'#D93A3A':/^(3\.3V|IOREF)/.test(nm)?'#E57A1F':/^(A\d|DAC)/.test(nm)?'#2F6FDB':'#E8B820';
+for(const [k,D] of Object.entries(ARDSPEC)){if(D.form!=='uno'&&D.form!=='mega')continue;const hdr=ardHeaders(k,D);
+  ARDX[k]={k,D,hdr,desc:ardDesc(D,`${D.W} × ${D.H}mm. 브레드보드에 꽂지 않고 옆에 두고 점퍼선으로 이어요(위쪽 암 헤더의 단자에서 구멍까지 끌면 전선이 생겨요). 위·아래 헤더 사이 48.26mm, 그리고 D7과 D8 사이가 표준 5.08mm가 아니라 4.064mm(0.16인치)인 것까지 실제 자리대로 놓았어요.${D.form==='mega'?' 오른쪽 끝 2×18 헤더는 위 2핀 5V, 아래 2핀 GND, 가운데 D22~D53이에요.':''}${k==='agiga'?' 이 보드의 추가 헤더(D54 이후·카메라·오디오 등)는 그리지 않았어요.':''}`)};
+  INST.add(k);ISZ[k]=[Math.round(D.W*AMM),Math.round(D.H*AMM)];IJACK[k]=hdr.map(([x,y,nm])=>[+(x*AMM).toFixed(2),+((D.H-y)*AMM).toFixed(2),ARDJC(nm),nm.split(' ')[0]]);
+  IDEF[k]=()=>({usb:1});JWIRE[k]=hdr.map(h=>ARDJC(h[2]));TNAME[k]=ardTitle(k,D);PREFIX[k]='U';}
+function ardExtSVG(c,isSel){const A=ARDX[c.t],D=A.D,K=AMM,X=mm=>c.x+mm*K,Y=mm=>c.y+(D.H-mm)*K,[w,h]=ISZ[c.t],pw=!!rt(c).apw,mega=D.form==='mega';let s=`<g class="c" data-id="${c.id}">`;
+  if(isSel)s+=`<rect x="${c.x-6}" y="${c.y-6}" width="${w+12}" height="${h+12}" rx="10" fill="none" stroke="#1F8FFF" stroke-width="2.5" stroke-opacity=".8"/>`;
+  const Wm=D.W,o=`M${X(0)} ${Y(0)}H${X(Wm-2.6)}L${X(Wm)} ${Y(2.6)}V${Y(D.H-15)}L${X(Wm-2.6)} ${Y(D.H-12.4)}V${Y(D.H-2)}L${X(Wm-4.6)} ${Y(D.H)}H${X(0)}Z`;
+  s+=`<path d="${o}" transform="translate(4 5)" fill="#000" opacity=".3"/><path d="${o}" fill="${D.col}"/>`+mgTraces(c.x,c.y,w,h,w,'rgba(255,255,255,.07)')+`<path d="${o}" fill="url(#mgSheen)"/><path d="${o}" fill="none" stroke="#06080A" stroke-width="1.2"/>`;
+  const Z=(mx,my,f,g)=>`<g transform="translate(${X(mx).toFixed(1)} ${Y(my).toFixed(1)}) scale(${f})">${g}</g>`;   // 부품을 실제 크기 비율로 키워 그리기
+  for(const [hx,hy] of [[13.97,2.54],[15.24,50.8],[66.04,7.62],[66.04,35.56],...(mega?[[90.17,50.8],[96.52,2.54]]:[])])s+=Z(hx,hy,2.5,MG.hole(0,0));
+  // 왼쪽 끝: USB(위)·DC 잭(아래)
+  s+=D.usb==='b'?Z(-6.3,38.1,3.1,MG.usbB(0,0)):D.usb==='c'?Z(-1.5,38.1,4,MG2.usbC(0,0,14,9)):Z(-1.2,38.1,3.2,MG.usbMicro(0,0,15,11));
+  s+=Z(-1.8,7.6,3,MG.jack(0,0))+Z(9,49,2.8,MG.btn(0,0,11))+MG.silk(X(12.2),Y(48.3),'RESET',5,'start');
+  s+=Z(20,31,2.2,MG.led(0,0,pw,'#3BE36B','ON',true))+Z(20,28,2.2,MG.led(0,0,false,'#FFB224','L',true))+Z(24.5,31,2.2,MG.led(0,0,false,'#FFD84A','TX'))+Z(24.5,28,2.2,MG.led(0,0,false,'#FFD84A','RX'));
+  s+=Z(9.5,14,2.6,MG.ecap(0,0))+Z(14.5,14,2.6,MG.ecap(0,0))+Z(11,21,2.8,MG.reg(0,0))+Z(64.5,27,2.6,MG.icsp(0,0))+(D.chip.includes('8비트')?Z(30,33,3.2,MG.xtal(0,0,15,6)):'');
+  if(c.t==='auno3')s+=Z(48,21,3,MG.dip28(0,0,92,20));else s+=Z(mega?50:D.matrix?31:46,D.matrix?20:24,3,MG.qfp(0,0,mega?28:22,'',45));
+  if(D.rad)s+=mega?Z(70,40,3,MG2.can(0,0,48,28,D.rad,'모듈')):Z(21,46.5,3,MG2.can(0,0,34,26,D.rad,'모듈'));
+  if(D.matrix){let m='';for(let r=0;r<8;r++)for(let q=0;q<12;q++)m+=`<rect x="${X(37+q*1.9)-5.5}" y="${Y(42-r*1.9)-5.5}" width="11" height="11" rx="2" fill="${pw&&(r*3+q)%7===0?'#FF4D4D':'#5A2B2B'}"/>`;s+=`<rect x="${X(35.6)}" y="${Y(43.6)}" width="${24*K}" height="${16.2*K}" rx="3" fill="#E9E3D2"/>`+m+MG.silk(X(47.5),Y(26),'12 × 8 LED',6);}
+  for(let i=0;i<6;i++)s+=Z(26+i*2.6,9,2.6,MG.smd(0,0))+Z(26+i*2.6,12.5,2.6,MG.capS(0,0));
+  // 암 헤더 띠(위 2개·아래 2개, Mega는 확장·2×18)
+  const strips=[[18.796,41.656,50.8],[45.72,63.5,50.8],[27.94,45.72,2.54],[50.8,63.5,2.54]];if(mega)strips.push([68.58,86.36,50.8],[68.58,86.36,2.54]);
+  for(const [a,b,yy] of strips)s+=`<rect x="${X(a)-9}" y="${Y(yy)-9}" width="${(b-a)*K+18}" height="18" rx="1" fill="url(#mgHdr)" stroke="#000" stroke-width=".5"/>`;
+  if(mega)s+=`<rect x="${X(93.98)-9}" y="${Y(50.8)-9}" width="${2.54*K+18}" height="${17*2.54*K+18}" rx="1" fill="url(#mgHdr)" stroke="#000" stroke-width=".5"/>`;
+  // 단자(소켓) + 이름: 위 헤더는 아래쪽에, 아래 헤더는 위쪽에, 2×18은 바깥쪽에
+  IJACK[c.t].forEach(([jx,jy,col,nm],i)=>{const x=c.x+jx,y=c.y+jy,hy=A.hdr[i][1],side=A.hdr[i][0]>90;
+    s+=`<rect x="${x-5}" y="${y-5}" width="10" height="10" fill="#050506" style="cursor:crosshair"><title>${esc(A.hdr[i][2])} · 여기서 구멍까지 끌면 전선이 이어져요</title></rect><rect x="${x-2.6}" y="${y-2.6}" width="5.2" height="5.2" fill="url(#mgGold)" opacity=".9" pointer-events="none"/>`;
+    const lab=(/\(PWM\)/.test(A.hdr[i][2])?'~':'')+nm.replace(/^D(?=\d)/,'');
+    s+=side?`<text x="${A.hdr[i][0]<95?x-9:x+9}" y="${y+2}" font-size="5" fill="#F2F5F8" text-anchor="${A.hdr[i][0]<95?'end':'start'}" font-family="var(--mono)" pointer-events="none">${lab}</text>`
+      :`<text x="${x}" y="${hy>20?y+11:y-11}" font-size="6.4" font-weight="700" fill="#F2F5F8" stroke="#0A0C10" stroke-width=".8" paint-order="stroke" text-anchor="${hy>20?'end':'start'}" font-family="var(--mono)" pointer-events="none" transform="rotate(-90 ${x} ${hy>20?y+11:y-11})" dominant-baseline="middle">${lab}</text>`;});
+  s+=MG.silk(X(mega?52:44),Y(14),ARDFORM[D.form].replace(' 호환',''),9)+MG.silk(X(mega?52:44),Y(10.5),D.nm,5,'middle',400)+MG.silk(X(mega?52:44),Y(6.5),D.v+'V I/O · VIN '+D.vin[0]+'~'+D.vin[1]+'V',4.4,'middle',400);
+  s+=MG.silk(X(30),Y(45.6),'DIGITAL (PWM ~)',4.4)+MG.silk(X(36),Y(7.8),'POWER',4.4)+MG.silk(X(57),Y(7.8),'ANALOG IN',4.4);
+  s+=`<rect x="${c.x+w-70}" y="${c.y-14}" width="70" height="12" rx="3" fill="#0E1013" opacity=".85"/><circle cx="${c.x+w-63}" cy="${c.y-8}" r="2.2" fill="${pw?'#3BE36B':'#6B7280'}"/><text x="${c.x+w-32}" y="${c.y-4.5}" font-size="7" font-weight="700" fill="${pw?'#3BE36B':'#AEB4BD'}" text-anchor="middle" font-family="var(--sans)" pointer-events="none">${pw?'전원 켜짐':'전원 없음'}</text>`;
+  return s+'</g>';}
+/* 전기: resolve에서 부른다 — USB·VIN으로 켜지면 5V·3V3·IOREF 핀이 전원을 내고, GND 핀은 늘 접지 */
+function ardDrive(c,hs,netOf,add,srcV){const D=ardSpec(c),N=ardNames(c),r=rt(c),usb=c.usb!==0&&c.usb!==false;let vin=0;
+  N.forEach((nm,k)=>{if(/^VIN/.test(nm)){const v=srcV.get(netOf[hs[k]]);if(v>vin)vin=v;}});
+  const pw=usb||(vin>=D.vin[0]&&vin<=D.vin[1]+.5);r.apw=pw;r.vin=vin;
+  N.forEach((nm,k)=>{const n=netOf[hs[k]],w=nm.split(' ')[0];
+    if(w==='GND')add(n,L);else if(!pw)return;else if(w==='5V'){add(n,Hh);srcV.set(n,5);}else if(w==='3V3'||w==='3.3V'||w==='VCC'){add(n,Hh);srcV.set(n,3.3);}else if(w==='IOREF'){add(n,Hh);srcV.set(n,D.v);}});}
+const ardIO=nm=>/^(D\d|A\d|DAC|CAN|SDA|SCL|AREF)/.test(nm);
+function ardWarns(W_,vOf,netOf,ph){for(const c of S.comps){if(!isArd(c))continue;const D=ardSpec(c),N=ardNames(c),hs=ph.get(c.id),r=rt(c),nm=LBL.get(c.id)||'보드';if(!hs)continue;
+    if(r.vin>D.vin[1]+.5)W_.push(['bad',`${nm} VIN에 ${r.vin.toFixed(1)}V가 걸렸어요 — 이 보드의 VIN은 ${D.vin[0]}~${D.vin[1]}V예요. 전압 조정기가 뜨거워지거나 망가질 수 있어요.`]);
+    else if((c.usb===0||c.usb===false)&&!r.apw)W_.push(['warn',`${nm}에 전원이 없어요 — USB를 빼 두었으니 VIN에 ${D.vin[0]}~${D.vin[1]}V를 넣어요${r.vin>.5?` (지금 ${r.vin.toFixed(1)}V)`:''}.`]);
+    if(D.v<4)for(let k=0;k<N.length;k++){if(!ardIO(N[k]))continue;const v=vOf(netOf[hs[k]]);if(v!=null&&v>3.6){W_.push(['bad',`${nm} ${N[k].split(' ')[0]} 핀에 ${v.toFixed(1)}V가 걸렸어요 — 3.3V 전용 핀이라 5V를 견디지 못해요(망가질 수 있어요). 전압 나누기 저항(예: 1kΩ·2kΩ)이나 레벨 변환기를 거쳐요.`]);break;}}}}
+// [속성]: 상태·USB
+function ardState(c){const D=ardSpec(c),r=rt(c);return!S.power?'전원 꺼짐(위 전원 단추)':r.apw?`<b style="color:var(--ok)">전원 켜짐</b> — ${c.usb===0||c.usb===false?'VIN '+(r.vin||0).toFixed(1)+'V':'USB'} · 5V·3V3 핀에서 전원이 나와요`:`<b style="color:var(--warn)">전원 없음</b> — USB를 꽂거나 VIN에 ${D.vin[0]}~${D.vin[1]}V를 넣어요`;}
+function ardProps(c){const D=ardSpec(c);return`<div class="prop"><label>상태</label><p class="desc" style="margin:0">${ardState(c)}</p></div><div class="prop"><label>USB 전원</label><div class="seg" id="ardUsb"><button data-v="1" aria-pressed="${c.usb!==0&&c.usb!==false}">USB 꽂음</button><button data-v="0" aria-pressed="${c.usb===0||c.usb===false}">빼기 (VIN으로 전원)</button></div></div>`
+  +`<p class="desc">입출력 ${D.v}V · VIN ${D.vin[0]}~${D.vin[1]}V · ADC ${D.adc}비트${D.mA?' · 핀당 '+D.mA+'mA':''}</p>`;}
+function ardBind(c){const u=document.getElementById('ardUsb');if(u)u.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();if(b.dataset.v==='1')delete c.usb;else c.usb=0;commit(true);});}
+// 부품 고르기 아이콘(점퍼 연결형)
+const ardIco=k=>{const D=ARDSPEC[k];return`<svg width="26" height="18" viewBox="0 0 26 18"><path d="M1 2h${D.form==='mega'?22:20}l2 2v12H1z" fill="${D.col}"/><rect x="5" y="2.5" width="16" height="2" fill="#16181C"/><rect x="5" y="13.5" width="16" height="2" fill="#16181C"/><rect x="0" y="6" width="5" height="4" fill="#C3C9D0"/><rect x="9" y="7" width="8" height="4" fill="#15171A"/></svg>`;};
 /* 함수 발생기의 지금 출력 전압(0 ~ Vpp) */
 function fgVolt(c,now){const ph=(now*num(c.hz,1))%1,A=num(c.vpp,5),lo=num(c.off,0),du=Math.min(.95,Math.max(.05,num(c.duty,50)/100));
   return lo+(c.wave==='sin'?A/2*(1+Math.sin(2*Math.PI*ph)):c.wave==='tri'?A*(ph<.5?ph*2:2-ph*2):c.wave==='saw'?A*ph:ph<du?A:0);}
@@ -3132,7 +3324,7 @@ function pinHoles(c){
   if(c.t==='ic'||c.t==='seg7'){const n=c.t==='ic'?CHIPS[c.chip].pins.length:10,h=n/2,a=[];
     const pf=pref(c.b||1);for(let k=0;k<n;k++)a.push(k<h?pf+'f'+(c.col+k):pf+'e'+(c.col+n-1-k));return a;}
   return c.pins;}
-const pinNames=c=>c.t==='px'?PX[c.kind].pins:c.t==='led3'?(c.ca?['빨강 캐소드(R)','공통 애노드(A)','초록 캐소드(G)']:['빨강 애노드(R)','공통 캐소드(K)','초록 애노드(G)']):c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:c.t==='psu'||c.t==='bat'?['+ 단자','− 단자(GND)']:c.t==='fg'?['출력(OUT)','GND']:c.t==='osc'?['CH1 단자','CH2 단자']:c.t==='spa'?['RF IN 단자']:['1','2'];
+const pinNames=c=>c.t==='px'?PX[c.kind].pins:c.t==='led3'?(c.ca?['빨강 캐소드(R)','공통 애노드(A)','초록 캐소드(G)']:['빨강 애노드(R)','공통 캐소드(K)','초록 애노드(G)']):c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:c.t==='psu'||c.t==='bat'?['+ 단자','− 단자(GND)']:c.t==='fg'?['출력(OUT)','GND']:c.t==='osc'?['CH1 단자','CH2 단자']:c.t==='spa'?['RF IN 단자']:ARDX[c.t]?ARDX[c.t].hdr.map(h=>h[2]+' 단자'):['1','2'];
 /* 구멍 → 꽂힌 부품. 계측기 단자에는 전선을 여러 가닥 물릴 수 있어서 차지한 것으로 치지 않는다 */
 function occ(except){const m=new Map();for(const c of S.comps){if(c.id===except)continue;for(const h of pinHoles(c))if(!isTerm(h))m.set(h,c.id);}return m;}
 function labels(){const cnt={},m=new Map();for(const c of S.comps){const p=c.t==='px'?PX[c.kind].pre:c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].disp?'DS':PREFIX[c.t];cnt[p]=(cnt[p]||0)+1;m.set(c.id,p+cnt[p]);}return m;}
@@ -3186,7 +3378,7 @@ function settle(){
   // LED: 아날로그로 푸는 줄(트랜지스터·커패시터·다이오드 쪽)에 닿으면 다이오드처럼(색마다 켜지는 전압) 함께 푼다. 아니면 지금처럼 논리 값으로
   const LEDVF={red:1.8,orange:2,yellow:2,green:2.1,blue:2.9,white:2.9};
   const ledL=S.comps.filter(c=>c.t==='led').map(c=>{const hs=ph.get(c.id);rt(c).ai=null;return{c,a:netOf[hs[0]],k:netOf[hs[1]],m:{vf:LEDVF[c.color]||2,rs:15},st:0,i:0};});
-  const ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
+  const ards=S.comps.filter(isArd),ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
   // 클럭 발생기(또는 함수 발생기 출력)가 물린 줄: 그 줄에 + 레일이 있으면 자동 5V를 넣지 않고 클럭 배선으로 쓴다
   const clkNets=new Set([...clks,...fgs].map(c=>netOf[ph.get(c.id)[0]]));
   let lvl,weak,strong=new Map(),volt=new Map(),srcV=new Map(); // srcV: 서플라이·함수 발생기가 직접 정하는 줄의 전압
@@ -3202,6 +3394,7 @@ function settle(){
       for(const c of clks)add(netOf[ph.get(c.id)[0]],clkVal(c,now));}
     for(const c of ics){const o=rt(c).out;if(!o)continue;const hs=ph.get(c.id);
       for(let k=0;k<o.length;k++)if(o[k]!==Z)add(netOf[hs[k]],o[k]);}
+    if(S.power)for(const c of ards)ardDrive(c,ph.get(c.id),netOf,add,srcV);   // 아두이노 호환 보드: USB·VIN → 5V·3V3 핀, GND
     lvl=new Map();for(const [net,mk] of m)lvl.set(net,combine(mk));strong=new Map(lvl);
     weak=new Set();const wm=new Map();let ch=true,guard=0;
     while(ch&&guard++<60){ch=false;
@@ -3343,6 +3536,7 @@ function settle(){
   findFlows(ph,netOf,lvl,ics,psus,clks,fgs,stepChips);
   // 결과 해석
   const W_=[];const lvAt=i=>{const v=lvl.get(netOf[i]);return v===undefined?Z:v;};
+  ardWarns(W_,vOf,netOf,ph);
   SIM.led=new Map();SIM.seg=new Map();SIM.disp=new Map();
   const shortNets=new Set();for(const [net,v] of lvl)if(v===SH&&!weak.has(net))shortNets.add(net);
   if(S.power){
@@ -3527,7 +3721,7 @@ const levelOfHole=id=>{if(!SIM.netOf)return Z;const net=SIM.netOf[HOLES.get(id).
 const svg=document.getElementById('bb');
 
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-const DEFS=`<defs><filter id="glow" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="4"/></filter>
+const DEFS=`<defs>${MGDEFS}<filter id="glow" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="4"/></filter>
   <linearGradient id="icg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34383E"/><stop offset="1" stop-color="#1D2024"/></linearGradient>
   <pattern id="gmin" width="20" height="20" patternUnits="userSpaceOnUse" x="${X0}" y="${ROWY.a}"><path d="M20 0H0V20" fill="none" class="gmin"/></pattern>
   <pattern id="gmaj" width="100" height="100" patternUnits="userSpaceOnUse" x="${X0}" y="${ROWY.a}"><rect width="100" height="100" fill="url(#gmin)"/><path d="M100 0H0V100" fill="none" class="gmaj"/></pattern></defs>
@@ -3687,7 +3881,7 @@ function spaAuto(c){const nowT=simNow(),src=spaSrc(c);if(!src){toast('RF IN 단�
   let f=bi*S_.df;for(let k=1;k<bi;k++)if(S_.P[k]>bv*.05&&(bi/k)%1<.05){f=k*S_.df;break;}
   const L=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];const sp=L.find(x=>x>=f*10)||50000;c.span=sp;c.cf=sp/2;
   toast(`가장 센 신호 약 ${spaHz(f)} — 0 ~ ${spaHz(sp)}를 보이게 맞췄어요`);}
-function instSVG(c,ph,isSel,one){const id=c.id,[w,h]=ISZ[c.t],x=c.x,y=c.y,J=IJACK[c.t],on=S.power;let s=`<g class="c" data-id="${id}">`;
+function instSVG(c,ph,isSel,one){if(ARDX[c.t])return ardExtSVG(c,isSel);const id=c.id,[w,h]=ISZ[c.t],x=c.x,y=c.y,J=IJACK[c.t],on=S.power;let s=`<g class="c" data-id="${id}">`;
   if(isSel)s+=`<rect x="${x-4}" y="${y-4}" width="${w+8}" height="${h+8}" rx="11" fill="none" stroke="#1F8FFF" stroke-width="2.5" stroke-opacity=".8"/>`;
   s+=`<rect x="${x+3}" y="${y+5}" width="${w}" height="${h}" rx="8" fill="#000" opacity=".25"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#2A2E35" stroke="#0E1013" stroke-width="1.2"/>
     <rect x="${x+1.5}" y="${y+1.5}" width="${w-3}" height="26" rx="6.5" fill="#363B44"/>
@@ -4076,7 +4270,7 @@ function bodyRect0(c){if(c.t==='wire'||INST.has(c.t))return null;const ph=pinHol
   if(c.t==='clk'){const a=ph[0];return{x0:a.x-20,x1:a.x+20,y0:a.y-34,y1:a.y+4};}
   if(c.t==='led3'){const a=ph[0],b=ph[2];return{x0:a.x-4,x1:b.x+4,y0:a.y-25,y1:a.y+4};}
   if(c.t==='px'){const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),d=PX[c.kind];
-    return d.lay==='dip'?{x0:x0-10,x1:x1+10,y0:y0+3,y1:y1-3}:{x0:x0-8,x1:x1+8,y0:y0-(d.pot?26:24),y1:y0+3};}
+    return d.lay==='dip'?(d.ard?{x0:x0-(d.ard.form==='mkr'?102:50),x1:x1+(d.ard.form==='mkr'?110:20),y0:y0-11,y1:y1+11}:{x0:x0-10,x1:x1+10,y0:y0+3,y1:y1-3}):{x0:x0-8,x1:x1+8,y0:y0-(d.pot?26:24),y1:y0+3};}
   // 저항·LED처럼 다리 둘인 부품은 비스듬히 놓일 수 있어서, 두 다리를 잇는 선분(seg)으로 따로 검사한다
   const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y);return{x0:Math.min(...xs)-7,x1:Math.max(...xs)+7,y0:Math.min(...ys)-7,y1:Math.max(...ys)+7,seg:ph.length===2?ph:null};}
 const rectHit=(a,b)=>a.x0<b.x1-1&&b.x0<a.x1-1&&a.y0<b.y1-1&&b.y0<a.y1-1;
@@ -4187,11 +4381,12 @@ function partDesc(c){return{
   fg:'구형파·사인파·삼각파·톱니파를 내보내요. 주파수, 크기(Vpp), 가장 낮은 전압(오프셋), 구형파의 듀티비를 [속성]에서 숫자로 바꿀 수 있어요. OUT 단자에서 신호를 넣을 구멍까지, GND 단자에서 − 레일까지 전선을 끌어 이으세요. 2.5V를 넘으면 디지털 회로는 HIGH로 읽어요.',
   spa:'신호를 주파수별로 나눠 각 주파수 성분의 세기(dBm, 50Ω 기준)를 그려 줘요. 스윕 동조형 분석기처럼 입력 감쇠기 → 믹서(국부 발진기가 시작~끝 주파수를 훑음) → IF 분해능 필터(RBW) → 로그 증폭·검파 → 비디오 필터(VBW) 순서로 계산하고, 화면은 스윕 시간 동안 왼쪽에서 오른쪽으로 그려져요. Ⓟ10 예제에서 보드 6장(감쇠기·국부 발진기·변환 체인·IF 로그 증폭·스윕 발생기·CRT)으로 나눠 놓았던 일을 한 대에 모아 실제로 동작하게 만든 계측기예요. RF IN 단자를 재고 싶은 구멍에 이어요. 함수 발생기·클럭 출력에 바로 이으면 그 파형을 정밀하게 분석하고(구형파의 홀수 고조파가 보여요), 다른 줄은 20ms마다 잰 전압으로 25Hz까지 분석해요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 노란 마름모가 가장 센 점(피크 마커)이에요. 입력이 너무 세면(믹서에 −10dBm 넘게 들어가면) 꼭대기가 눌려요 — 기준 레벨을 올리면 감쇠기가 자동으로 커져요.',
   osc:'두 곳의 전압이 시간에 따라 어떻게 바뀌는지 그려 줘요. 시간/칸, 채널별 전압/칸과 0V 자리, 채널 표시 여부를 [속성]에서 바꿀 수 있어요. CH1·CH2 단자에서 보고 싶은 구멍까지 전선을 끌어 이으세요. 전압은 회로의 GND(−)를 기준으로 재요. 화면 왼쪽의 짧은 눈금이 각 채널의 0V 자리예요.',
-  seg7:c.ca?'공통 애노드 7세그먼트예요. COM(3·8번 핀)을 + 에 연결하고, a~g 핀이 LOW면 해당 획이 켜져요. 74LS47·46 과 짝이에요.':'공통 캐소드 7세그먼트예요. COM(3·8번 핀)을 − 에 연결하고, a~g 핀이 HIGH면 해당 획이 켜져요. CD4511 과 짝이에요.'}[c.t];}
+  seg7:c.ca?'공통 애노드 7세그먼트예요. COM(3·8번 핀)을 + 에 연결하고, a~g 핀이 LOW면 해당 획이 켜져요. 74LS47·46 과 짝이에요.':'공통 캐소드 7세그먼트예요. COM(3·8번 핀)을 − 에 연결하고, a~g 핀이 HIGH면 해당 획이 켜져요. CD4511 과 짝이에요.'}[c.t]??(ARDX[c.t]?ARDX[c.t].desc.replace(/<\/?b>/g,''):'');}
 const segBtns=(f,list,cur,tx)=>`<div class="seg" data-f="${f}">${list.map(v=>`<button data-v="${v}" aria-pressed="${cur===v}">${tx(v)}</button>`).join('')}</div>`;
 /* 숫자를 직접 적는 칸. 값은 min~max로 맞춰진다 */
 const numIn=(f,val,min,max,step,unit)=>`<span class="numin"><input type="number" data-n="${f}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${f}"><b>${unit}</b></span>`;
 function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`,on=v=>v?'켜짐':'꺼짐';
+  if(ARDX[c.t])return`<div class="prop"><label>상태</label><p class="desc" style="margin:0">${ardState(c)}</p></div>`+P('USB 전원',segBtns('usb',[1,0],c.usb===0?0:1,v=>v?'USB 꽂음':'빼기 (VIN으로 전원)'))+`<p class="desc">${ARDX[c.t].hdr.length}개 단자 · 단자에서 구멍까지 끌면 점퍼선이 생겨요</p>`;
   if(c.t==='psu')return P('전압 (0 ~ '+PSU_MAX+'V)',`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">${numIn('v',+c.v,0,PSU_MAX,0.1,'V')}<input type="range" id="psuR" min="0" max="${PSU_MAX}" step="0.5" value="${+c.v}" aria-label="전압 조절" style="flex:1;min-width:60px"></div>`+segBtns('v',PSU_V,+c.v,v=>v+'V'))
     +P('출력',segBtns('on',[1,0],c.on===false?0:1,on));
   if(c.t==='bat')return P('전압 (0.1 ~ 48V)',numIn('v',+c.v,0.1,48,0.1,'V')+segBtns('v',BAT_V,+c.v,v=>v+'V')+`<p class="desc" style="margin:6px 0 0">${BAT_V.includes(+c.v)?batName(+c.v):'직접 정한 전압의 건전지 묶음'}</p>`);
@@ -4225,7 +4420,7 @@ function propEditor(c){
     +`<div class="prop"><label>정격 전력</label><div class="seg" id="rPw">${Object.entries(RESPW).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${(c.pw||.25)==+k}">${n}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>재질</label><div class="seg" id="rMat">${Object.entries(RESMAT).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${M===k}">${n}</button>`).join('')}</div></div><p class="desc">${RESMAT[M][4]}</p>`
     +`<div class="prop"><label>허용 오차 (색띠 ${(c.tol||RESMAT[M][3])<=2?5:4}개)</label><div class="seg" id="rTol">${[0.1,1,2,5,10].map(t=>`<button data-v="${t}" aria-pressed="${(c.tol||RESMAT[M][3])===t}">±${t}%</button>`).join('')}</div></div>`;}
-  if(c.t==='px'){const d=PX[c.kind];let h='';
+  if(c.t==='px'){const d=PX[c.kind];let h='';if(d.props)return d.props(c);
     if(d.pot){h+=`<div class="prop"><label>저항 값</label><div class="seg" id="pxV">${POTV.map(o=>`<button data-v="${o}" aria-pressed="${(c.ohms||10000)===o}">${ohmTx(o)}</button>`).join('')}</div></div>`
       +`<div class="prop"><label>변화 곡선</label><div class="seg" id="pxT">${Object.entries(TAPER).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${(c.taper||'B')===k}">${n}</button>`).join('')}</div></div>`
       +`<div class="prop"><label>돌린 정도 ${Math.round((c.pos??.5)*100)}% → 1번 쪽 저항 ${ohmTx(Math.round((c.ohms||10000)*potF(c)))} (${Math.round(potF(c)*100)}%)</label><input type="range" id="pxP" min="0" max="100" value="${Math.round((c.pos??.5)*100)}" style="width:100%"></div>`;}
@@ -4287,7 +4482,7 @@ function bindProps(c){
      btns('rPw',d=>{c.pw=+d.v;if(c.pw===.25)delete c.pw;});btns('rMat',d=>{c.mat=d.v;delete c.tol;if(d.v==='carbon')delete c.mat;});btns('rTol',d=>{c.tol=+d.v;});}
    if(c.t==='cap'){const dk=q('cDk'),vr=q('cVr');if(dk)dk.onchange=()=>{pushHist();c.dk=dk.value;delete c.vr;if(c.dk==='edlc'&&c.farad<.01)c.farad=1;if(c.dk!=='edlc'&&c.farad>=.01)c.farad=1e-4;commit(true);};
      if(vr)vr.onchange=()=>{pushHist();c.vr=+vr.value;commit(true);};}
-   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});
+   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});if(d.bind)d.bind(c);
      const pp=q('pxP');if(pp){pp.oninput=()=>{c.pos=+pp.value/100;settle();render();};pp.onchange=()=>{pushHist();c.pos=+pp.value/100;commit(true);};}}}
   const pc2=$('pc2');if(pc2&&c.t==='led')pc2.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;if(v==='std')delete c.lk;else c.lk=v;opt.lk=v;store.set('opt',opt);commit(true);});
   if(!pc)return;
@@ -4355,6 +4550,7 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>여러 개</b>: 보드 밖 빈 곳을 끌어 범위 선택, <kbd>Shift</kbd>+클릭으로 더하기, <kbd>Ctrl</kbd>+<kbd>A</kbd> 모두 선택. 방향키로 한 칸씩 옮기고 <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd>로 복사·붙여넣기·복제해요.</li>
 <li>도구 막대의 <b>[점검]</b>은 회로에서 찾은 문제를, <b>[객체]</b>는 보드에 있는 부품 목록을 창으로 보여 줘요. [파일 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
 <li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드는 가장자리나 가운데 홈을 끌거나, [보드 이동] 도구(M)로 아무 데나 끌면 꽂힌 부품과 함께 옮겨져요. 이름표를 누르면 종류 바꾸기·<b>90° 돌리기</b>(세로로 세우기)·삭제 메뉴가 떠요. 끌 때 5px씩 움직이고, Alt를 누른 채 끌면 1px씩 자유롭게 놓여요. 보드끼리 딱 붙여 놓을 수 있고, 전선으로 이어도 돼요.</li>
+<li><b>아두이노 호환 보드</b>: [부품 고르기] → [아두이노 호환 보드]. Nano·MKR 폼팩터는 브레드보드 가운데 홈을 걸쳐 꽂히고(Nano 600mil은 c·h줄, MKR 800mil은 b·i줄), UNO·Mega 폼팩터는 실제 크기로 보드 밖에 놓여요 — 헤더 단자에서 구멍까지 끌면 점퍼선이 생겨요. USB(기본 꽂음)나 VIN으로 켜지면 5V·3V3 핀에서 전원이 나와요. 3.3V 보드 핀에 5V가 걸리면 빨간 경고가 떠요. 예제 ⓐ1.</li>
 <li><b>스펙트럼 분석기</b>: [계측기·전원]에서 놓고 RF IN 단자를 재고 싶은 구멍에 이어요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 예제 Ⓟ11.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
 <li><b>부품 고르기 창</b>: 도구 막대의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
@@ -4460,6 +4656,11 @@ const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','w
     {k:'aic',label:'아날로그 · 혼합신호 IC · 모듈',sub:'연산 증폭기 · 비교기 · 레귤레이터 · D/A 변환기 · CPU · RF/IF/CRT 블록',ico:pxIco('oa2j'),kids:PXIC.map(([k,label])=>{
       const items=Object.values(PX).filter(d=>d.sub===k).map(d=>({t:['px:'+d.k,d.title,d.pins.length+'핀'+(d.lay==='dip'?' · 홈 걸치기':' · 한 줄'),''],ico:pxIco(d.k)}));
       return{k:'a-'+k,label,items,ico:items[0].ico,sub:items.slice(0,3).map(it=>it.t[1]).join(' · ')+(items.length>3?' …':'')};})}];})();
+{const dip=Object.values(PX).filter(d=>d.sub==='ard').map(d=>({t:['px:'+d.k,d.title,d.pins.length+'핀 · 브레드보드에 꽂음',''],ico:pxIco(d.k)})),
+   ext=Object.keys(ARDX).map(k=>({t:[k,TNAME[k],ARDX[k].hdr.length+'단자 · 보드 밖에 두고 점퍼선',''],ico:ardIco(k)}));
+  PTREE.push({k:'ard',label:'아두이노 호환 보드',sub:'Nano·MKR 폼팩터는 브레드보드에 꽂고, UNO·Mega 폼팩터는 밖에 두고 점퍼선으로',ico:dip[0].ico,kids:[
+    {k:'ard-dip',label:'브레드보드에 꽂는 보드 (Nano 2×15 · MKR 2×14)',items:dip,ico:dip[0].ico,sub:dip.slice(0,2).map(it=>it.t[1]).join(' · ')+' …'},
+    {k:'ard-ext',label:'보드 밖에 두는 보드 (UNO · Mega 폼팩터, 점퍼선 연결)',items:ext,ico:ext[0].ico,sub:ext.slice(0,2).map(it=>it.t[1]).join(' · ')+' …'}]});}
 const SCHTREE=[PTREE[0],PTREE[4],PTREE[5],{k:'pwr',label:'전원 기호',sub:'VCC(+5V) · GND(접지) — 회로도에서 전원을 나타내요',items:[
     {t:['vcc','VCC','전원 + 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 17V6M5 6h14" stroke="#E5484D" stroke-width="2" fill="none"/></svg>'},
     {t:['lbl','넷 이름표','같은 이름끼리 선 없이 이어져요',''],ico:'<svg width="26" height="18" viewBox="0 0 26 18"><path d="M1 9h4l4-6h15v12H9l-4-6" stroke="#3E63DD" stroke-width="1.8" fill="none"/></svg>'},
@@ -4542,7 +4743,7 @@ function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선
   spa:'<b>스펙트럼 분석기</b> · 놓을 자리를 누르세요 · 그다음 RF IN 단자에서 재고 싶은 구멍까지 끌어 전선을 이으세요',
   clk:'<b>클럭</b> · 출력 핀을 꽂을 구멍을 누르세요',seg7:'<b>7세그먼트</b> · 놓을 곳 근처를 누르세요 · 가운데 홈에, 겹치지 않는 빈자리로 자동으로 놓여요'};
   if(tool.startsWith('gate:')){$('hint').innerHTML=`<b>${tool.slice(5)} 게이트</b> · 놓을 줄을 누르세요. 다리는 같은 줄의 서로 다른 열(입력 왼쪽, 출력 오른쪽)에 꽂혀요 · 겹치면 가까운 빈자리로 옮겨 놓아요`;return;}
-  $('hint').innerHTML=tool.startsWith('ic:')?`<b>${tool.slice(3)}</b> · 놓을 곳 근처를 누르세요 · 가운데 홈에, 겹치지 않는 빈자리로 자동으로 놓여요 (1번 핀이 왼쪽 아래)`:H_[tool==='select'&&pending?'wire':tool];}
+  $('hint').innerHTML=tool.startsWith('ic:')?`<b>${tool.slice(3)}</b> · 놓을 곳 근처를 누르세요 · 가운데 홈에, 겹치지 않는 빈자리로 자동으로 놓여요 (1번 핀이 왼쪽 아래)`:(H_[tool==='select'&&pending?'wire':tool]||(ARDX[tool]?`<b>${TNAME[tool]}</b> · 보드 밖 놓을 자리를 누르세요 · 그다음 헤더 단자에서 브레드보드 구멍까지 끌어 점퍼선을 이으세요`:''));}
 
 /* ───────── 편집 ───────── */
 const snap=()=>JSON.stringify({comps:S.comps,power:S.power,nextId:S.nextId,boards:S.boards});
@@ -5638,7 +5839,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 스펙트럼 분석기 · 보드 돌리기';
+const APP_VER='2026-11-27 · 아두이노 호환 보드 15종 · 스펙트럼 분석기 · 보드 돌리기';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -5730,6 +5931,8 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('fbDlg'
 const w=(a,b,color='#D93A3A')=>({t:'wire',pins:[a,b],color});
 const R=(a,b,ohms=330)=>({t:'res',pins:[a,b],ohms});
 const RED='#D93A3A',BLK='#24282D',BLU='#2F6FDB',GRN='#2E9E5B',YEL='#E8B820',ORG='#E57A1F',PUR='#8B5CD6';
+/* 예제용: 아직 만들지 않은 보드 목록 B에서 px 구멍 이름을 계산(직결형 보드는 rows로 꽂는 줄이 다르다) */
+const pxHolesAtB=(kind,b,c0,B)=>{const d=PX[kind],cs=d.cols,n=cs.length*2,[rT,rB]=d.rows||['e','f'];return rng(n,i=>i<cs.length?pref(b)+rB+(c0+cs[i]):pref(b)+rT+(c0+cs[n-1-i]));};
 const EXAMPLES={
   gates:()=>[
     {t:'sw',pins:['tp3','a3'],on:false},w('e3','f3',YEL),R('j3','bn3',10000),
@@ -6225,6 +6428,17 @@ Object.assign(EXAMPLES,{
     K.vcc(QX(0));K.link(UX(0),QX(1),10000);K.gnd(QX(2),10000);K.vcc(QY(0));K.link(UX(6),QY(1),10000);K.gnd(QY(2),10000);   // 고내압 PNP 편향 구동
     K.link(QX(2),CR(4));K.link(QY(2),CR(6));K.gnd(CR(11));K.gnd(CR(10));
     return K.fin();},
+  // ⓐ1 아두이노 호환 보드: 소형(Nano 폼팩터 5V)은 c·h줄에 꽂아 5V·GND로 레일에 전원, 3.3V 보드는 3V3 핀으로 LED, UNO 폼팩터는 밖에 두고 점퍼선
+  ard1:()=>{const B=[{id:1,type:'full',x:0,y:0}],H=(k,c0,nm)=>{const ids=pxHolesAtB(k,1,c0,B);return[ids,ids[PX[k].pins.indexOf(nm)]];};
+    const [n5,v5]=H('ano',3,'5V'),g5=n5[PX.ano.pins.indexOf('GND')],[n3,v33]=H('ano33ble',36,'3V3'),g3=n3[PX.ano33ble.pins.indexOf('GND')];
+    const col=h=>+h.replace(/^\D+/,''),out=(h,r)=>(h[0]==='h'?'j':'a')+col(h),rail=(h,pos)=>(h[0]==='h'?(pos?'bp':'bn'):(pos?'tp':'tn'))+(col(h)%6?col(h):col(h)+1);
+    const comps=[{t:'px',kind:'ano',pins:n5},{t:'px',kind:'ano33ble',pins:n3},
+      {t:'wire',pins:[out(v5),rail(v5,1)],color:'#D93A3A'},{t:'wire',pins:[out(g5),rail(g5,0)],color:'#24282D'},
+      {t:'res',pins:['bp25','i25'],ohms:330},{t:'led',pins:['j27','bn27'],color:'red'},{t:'wire',pins:['g25','g27']},
+      {t:'wire',pins:[out(v33),'a28'],color:'#E57A1F'},{t:'res',pins:['c28','c31'],ohms:220},{t:'led',pins:['d31','tn31'],color:'green'},
+      {t:'auno3',k:5,x:20,y:470},{t:'wire',pins:['@5:'+ARDX.auno3.hdr.findIndex(h=>h[2]==='3.3V'),'j57'],color:'#E57A1F'},{t:'res',pins:['g57','g60'],ohms:220},{t:'led',pins:['h60','bn59'],color:'yellow'},
+      {t:'wire',pins:['@5:'+ARDX.auno3.hdr.findIndex(h=>h[2]==='GND'),'bn62'],color:'#24282D'}];
+    return{comps,boards:B};},
   // Ⓟ11 스펙트럼 분석기 한 대로 재기: 함수 발생기 구형파 2Hz → SA1(홀수 고조파) / 사인파 3Hz → SA2(선 하나)
   pspec:()=>{const K=ledKit(1);const L1=K.led(1,20,{color:'yellow'});K.gnd(L1.k);const L2=K.led(1,36,{color:'green'});K.gnd(L2.k);
     const out=K.fin(),cs=out.comps;
