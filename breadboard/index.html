@@ -492,6 +492,32 @@ body.planon .cbar{display:none}
 .cross{stroke:var(--cross);stroke-width:.8;stroke-dasharray:6 4;opacity:.55;vector-effect:non-scaling-stroke}
 .selbox{fill:none;stroke:#1F8FFF;stroke-width:1.6;stroke-dasharray:4 3}
 @keyframes bl{50%{opacity:.25}}.blink{animation:bl .6s steps(2) infinite}
+/* 마이컴 코드 편집기·디버거 창 */
+.mcuwin{position:fixed;z-index:40;right:12px;top:96px;width:min(760px,calc(100vw - 24px));height:min(560px,calc(100dvh - 120px));min-width:300px;min-height:200px;resize:both;overflow:hidden;display:flex;flex-direction:column;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.4);font-size:12.5px}
+.mcuwin.min{height:auto!important;resize:none}.mcuwin.min>*:not(.mwh){display:none}
+.mwh{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;background:var(--chrome);border-bottom:1px solid var(--line);cursor:move;touch-action:none;user-select:none}.mwh b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mwh .sp{flex:1}
+.mwx{border:0;background:none;color:var(--fg);font-size:15px;min-width:30px;min-height:28px;cursor:pointer;border-radius:5px}.mwx:hover{background:var(--sunk)}
+.mwbar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line)}.mwbar .btn{padding:3px 8px;min-height:28px;white-space:nowrap}.mwbar .btn:disabled{opacity:.4;cursor:default}.mwbar select.btn{max-width:210px}
+.mwsep{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
+.mwst{padding:4px 10px;font-size:12px;border-bottom:1px solid var(--line);min-height:24px;line-height:1.5}.mwst.bad{background:color-mix(in srgb,var(--bad) 14%,transparent)}.mwst.warn{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.mwwarn{color:var(--warn);font-weight:600}.mwchg{color:var(--accent)}
+.mwbody{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(200px,1fr)}
+.mwcode{display:flex;min-width:0;min-height:0;border-right:1px solid var(--line);background:var(--surface)}
+.mwgut{flex:none;width:46px;overflow:hidden;padding:6px 0;font:12.5px/17px var(--mono);color:var(--muted);text-align:right;user-select:none;background:var(--sunk);border-right:1px solid var(--line)}
+.mwgut div{padding-right:6px;cursor:pointer;height:17px;position:relative}.mwgut div:hover{color:var(--fg)}
+.mwgut div.bp::before{content:"";position:absolute;left:4px;top:4px;width:9px;height:9px;border-radius:50%;background:#E5484D}
+.mwgut div.cur{color:#F5A524;font-weight:700}.mwgut div.er{color:var(--bad);font-weight:700}
+.mwed{position:relative;flex:1;min-width:0;overflow:hidden}
+.mwhl{position:absolute;left:0;right:-2000px;top:0;pointer-events:none}.mwhl div{position:absolute;left:0;right:0}.mwhl .c{background:rgba(245,165,36,.25)}.mwhl .e{background:rgba(229,72,77,.22)}.mwhl .b{background:rgba(229,72,77,.08)}
+.mwed textarea{position:absolute;inset:0;width:100%;height:100%;resize:none;border:0;outline:none;background:transparent;color:var(--fg);font:12.5px/17px var(--mono);padding:6px 8px;white-space:pre;overflow:auto;tab-size:2}
+.mwside{display:flex;flex-direction:column;min-width:0;min-height:0}
+.mwtabs{display:flex;border-bottom:1px solid var(--line);background:var(--chrome)}.mwtabs button{flex:1;border:0;background:none;padding:6px 4px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}.mwtabs button[aria-selected="true"]{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent);background:var(--panel)}
+.mwpane{flex:1;min-height:0;overflow:auto;padding:6px 8px;display:flex;flex-direction:column}.mwpane h4{margin:6px 0 3px;font-size:11.5px;color:var(--muted)}
+.mwvt{width:100%;border-collapse:collapse;font-size:12px}.mwvt td,.mwvt th{padding:2px 4px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}.mwvt td{font-family:var(--mono)}.mwvt .v{color:var(--accent);word-break:break-all}.mwvt .t{color:var(--muted);font-size:11px}
+.mwstk{margin:4px 0;padding-left:18px}.mwstk li{margin:3px 0}.mwstk li.top b{color:#F5A524}
+.mwser{flex:1;margin:0;min-height:80px;overflow:auto;background:#0C0F12;color:#CFE8D6;border-radius:6px;padding:6px 8px;font:12px/1.45 var(--mono);white-space:pre-wrap;word-break:break-all}
+.mwsin{display:flex;gap:4px;margin-top:6px}.mwsin input{flex:1;min-width:0;font:12.5px var(--mono);padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--fg)}.mwsin .btn{padding:3px 8px}
+@media (max-width:640px){.mcuwin{left:0!important;right:0!important;top:auto!important;bottom:0;width:100vw;height:70dvh;border-radius:12px 12px 0 0;resize:none}.mwbody{grid-template-columns:1fr;grid-template-rows:minmax(0,1.3fr) minmax(0,1fr)}.mwcode{border-right:0;border-bottom:1px solid var(--line)}}
 </style>
 </head>
 <body>
@@ -604,6 +630,11 @@ body.planon .cbar{display:none}
         <option value="paana">Ⓟ8 연산 증폭기·비교기: 가변저항 전압을 2배로 키우기 · 2.5V 넘으면 LED 켜기</option>
         <option value="pasa">Ⓟ9 계측기 구조: 튜닝 DAC 스윕 · RF 섹션(YIG 발진기·믹서·변환) · IF·표시 섹션(로그 증폭·CRT)</option>
         <option value="pasys">Ⓟ10 계측기 예제 프로젝트: 시트 01~05를 보드 6장에 — RF 입력·YIG 전류 드라이버·IF 검파·MPU·튜닝 DAC·스윕·15V 전원·CRT 구동</option>
+        </optgroup>
+        <optgroup label="새로 추가 · 마이컴 보드 · 스펙트럼 분석기">
+        <option value="mbasic">Ⓜ1 마이컴 보드 기초 (소형): 버튼으로 LED 켜고 끄기 · 가변저항으로 밝기(PWM) · 시리얼 모니터</option>
+        <option value="mlight">Ⓜ2 신호등 (표준형): 함수로 LED 3개 — 디버거로 한 줄씩 따라가기</option>
+        <option value="pspec">Ⓟ11 스펙트럼 분석기 한 대: 마이컴 음계(tone)와 함수 발생기 구형파의 고조파 보기</option>
         </optgroup>
       </select>
     </div>
@@ -1012,6 +1043,8 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 - `id` 1번 보드가 꼭 있어야 해요. 여러 장이면 `y`를 450씩 늘려 아래로 놓으면 겹치지 않아요.
 - `x`, `y`는 화면 위치(점 단위). 구멍 사이 간격이 20이에요.
+- `rot`(선택): 보드를 시계 방향으로 돌린 각도 `90` `180` `270`(빼면 0). 꽂힌 부품도 함께 돌아요. 구멍 이름은 돌려도 그대로예요.
+  예: `{"id": 2, "type": "half", "x": 700, "y": 0, "rot": 90}` — 세로로 세운 하프 보드
 
 ### B-3. 구멍 이름
 
@@ -1217,6 +1250,17 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `dac10` | 10비트 곱셈형 DAC (DIP-16) | dip | 0~7 | IOUT1 IOUT2 GND BIT1(MSB)…BIT10(LSB) VDD VREF RFB | |
 | `batt` `byto` `bytx` `bconv` `bfilt` `bif` `bref` `bcrt` | RF·IF·디스플레이 모듈 블록(스텝 감쇠기·YIG 발진기·YIG 믹서·변환 체인·필터 모음·IF 로그 증폭단·기준 발진기·정전 편향 CRT) — 시뮬레이션 없음 | row | 0~(핀 수−1) | 부품 정보 창의 핀 이름 | |
 | `cpu64` | 16/32비트 마이크로프로세서 (DIP-64, 900mil) — 시뮬레이션 없음 | dip | 0~31 | D4 D3 D2 D1 D0 ~AS … (부품 정보 창) | |
+| `uno` | 마이컴 보드 · 표준형 (5V, 디지털 14 · 아날로그 6, USB) — **코드 실행** | dip | 0~12 | D0…D12, D13 GND AREF A0…A5 VIN GND 5V 3V3 | `code`, `usb`, `bp` |
+| `nano` | 마이컴 보드 · 소형 (5V, 30핀 DIP) — **코드 실행** | dip | 0~14 | D1 D0 RESET GND D2…D12, D13 3V3 AREF A0…A7 5V RESET GND VIN | `code`, `usb`, `bp` |
+| `pro` | 마이컴 보드 · 프로 미니형 (5V, 24핀, USB 없음) — **코드 실행** | dip | 0~11 | D1 D0 RESET GND D2…D9, D10…D13 A0…A3 VCC RESET GND RAW | `code`, `bp` |
+| `mega` | 마이컴 보드 · 대형 (5V, 디지털 54 · 아날로그 16, USB) — **코드 실행** | dip | 0~37 | D0…D37, D38…D53 A0…A15 5V 3V3 GND GND VIN AREF | `code`, `usb`, `bp` |
+| `wifi` | 마이컴 보드 · 와이파이형 (3.3V, 32비트, 30핀) — **코드 실행** | dip | 0~14 | EN GPIO36 39 34 35 32 33 25 26 27 14 12 13 GND VIN, GPIO23 22 1 3 21 19 18 5 17 16 4 2 15 GND 3V3 | `code`, `usb`, `bp` |
+
+**마이컴 보드**(`uno` `nano` `pro` `mega` `wifi`)의 추가 칸:
+- `code`: 보드에 올린 C 코드(문자열, 줄바꿈은 `\n`). `setup()`과 `loop()`가 꼭 있어야 해요. 빼면 내장 LED 깜박이기 코드가 들어가요.
+- `usb`: `false`면 USB를 뺀 것 — 5V(VCC)·3V3 핀에 전원을 주거나 VIN(RAW)에 7V 이상을 넣어야 돌아요. 빼면 USB 꽂음(`pro`는 늘 USB 없음).
+- `bp`: 중단점 줄 번호 목록(예: `[12, 15]`). 디버거가 이 줄 앞에서 멈춰요.
+- 핀 번호: `D7` 핀은 코드에서 `7`, 아날로그 `A0`은 `A0`(표준형·소형·프로 미니형 14, 대형 54). 와이파이형은 GPIO 번호를 그대로 써요(`LED_BUILTIN` = 2).
 
 부품 목록(B-6 같은 텍스트 목록)에는 `kind` 대신 중립 이름(예: `OPAMP_DUAL_JFET_25VUS`, `COMP_DUAL_OC_36V`, `REG_POS_ADJ_1P5A`, `DAC_10B_MULT_R2R`, `BJT_NPN_PWR_60V_150W`, `CPU_16_32B_ASYNC_8MHZ`, `LOGIC_HEX_DFF_CLR_LS`)을 적어도 알아들어요. 부품 정보 창에 나오는 이름이에요.
 
@@ -1261,8 +1305,9 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `bat` | 건전지 | `v`(1.5 3 4.5 6 9) | + | − |
 | `fg` | 함수 발생기 | `wave`(`sq` `sin` `tri` `saw`), `hz`, `vpp`, `off`, `duty`(%) | OUT | GND |
 | `osc` | 오실로스코프 | `tdiv`, `vdiv`, `vdiv2`, `run` | CH1 | CH2 |
+| `spa` | 스펙트럼 분석기 | `cf`(가운데 Hz), `span`(Hz), `ref`(dBm), `dbd`(dB/칸), `rbw`·`vbw`(Hz, 0 = 자동), `att`(dB, −1 = 자동), `swt`(초, 0 = 자동), `hold`(1 = 최대값 유지), `cal`(1 = 내부 교정 신호), `run` | RF IN | — |
 
-- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 170×92, bat 130×74, fg 180×92, osc 250×200.
+- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 170×92, bat 130×74, fg 180×92, osc 250×200, spa 310×250.
 - `k`: 계측기마다 다른 번호(1, 2, 3 …). 단자 구멍 이름은 **`@k:번호`** 예요(`@1:0` = 1번 계측기의 + 단자).
 - 5V가 아닌 전압은 자동 5V 레일과 섞이지 않게 **레일 말고 보드 줄(a~j)** 로 이어 쓰세요.
 - 단자에는 전선을 여러 가닥 이어도 돼요. 단자는 **전선으로만** 보드와 이어요.
@@ -1303,7 +1348,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 불러오기는 문제 있는 부품을 **조용히 빼고** 나머지만 꽂아요. 부품 수가 모자라면 아래를 보세요.
 
-- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc`)
+- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa`)
 - [ ] `ic`의 `chip`이 부록 표에 없다 / `gate`의 `kind`가 7가지가 아니다 / `px`의 `kind`가 표에 없다
 - [ ] 구멍 이름이 없다 — 레일 6의 배수 열, 보드 열 수를 넘음, `mini` 보드의 레일, 없는 보드 번호
 - [ ] 두 부품이 같은 구멍을 쓴다 (전선도 부품이에요)
@@ -1681,6 +1726,20 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 
 ---
 
+## 4-3-1. 마이컴 보드 고르기 (코딩·디버깅)
+
+| 보드 | 논리 전압 | int 크기 | 아날로그 입력 | 브레드보드 | 고를 때 |
+|---|---|---|---|---|---|
+| `nano` 소형 | 5V | 16비트 | A0~A7 (10비트) | 가운데 홈에 바로 꽂음 | 처음 배울 때, 브레드보드 위에서 바로 |
+| `uno` 표준형 | 5V | 16비트 | A0~A5 (10비트) | 실제로는 점퍼선으로 이음 | 자료가 가장 많은 크기 |
+| `pro` 프로 미니형 | 5V | 16비트 | A0~A3 (10비트) | 꽂음 (USB 없음) | 작게 넣을 때 — 전원을 따로 줘요 |
+| `mega` 대형 | 5V | 16비트 | A0~A15 (10비트) | 실제로는 점퍼선으로 이음 | 핀이 많이 필요할 때 |
+| `wifi` 와이파이형 | **3.3V** | 32비트 | 12비트(0~4095) | 꽂음 | 무선이 필요할 때 — 5V 부품에 바로 잇지 않기 |
+
+- 핀 하나로 흘릴 수 있는 전류는 20mA 안쪽으로 잡아요(LED는 220Ω~1kΩ 직렬). 모터·릴레이 코일은 트랜지스터를 거쳐요.
+- 입력을 아무 데도 잇지 않으면 값이 떠요 — `INPUT_PULLUP`을 쓰거나 10kΩ 풀업·풀다운을 달아요.
+- 이 프로그램의 해석기는 C 언어의 기본(변수·배열·함수·if·for·while·switch)과 아두이노 호환 함수를 돌려요. 클래스·포인터·`#include` 라이브러리는 못 써요.
+
 ## 4-4. 계측기용 수동·기구·보호 소자
 
 | 문서 이름 | 프로그램 부품 | 메모 |
@@ -1731,6 +1790,389 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 - 이 안내서와 SPICE 모델은 설계를 돕는 참고 자료예요. 실제 제작 전에 쓰는 부품의 공식 자료로 다시 확인해 주세요.
 </script>
 <script>
+/* ═════════════════ 마이컴 코드 해석기 (MCUC) ═════════════════
+   마이컴 보드에 올리는 C 언어 코드(setup·loop 구조, 아두이노 호환 함수)를 이 페이지 안에서 직접 읽고 돌린다.
+   - 글자 나누기(lex) → 전처리(#define) → 문법 읽기(parse) → 이름·자료형 붙이기(annotate) → 실행(제너레이터)
+   - 문장마다 멈출 수 있어(yield) 디버거가 한 줄씩 실행·중단점·변수 보기를 한다
+   - 정수는 보드 자료형 크기(int 16비트 또는 32비트)대로 넘치고, 나눗셈은 소수점을 버린다
+   - 외부 컴파일러·라이브러리 없이 이 프로그램이 직접 짠 것(공개 C 문법만 보고 작성) */
+const MCUC=(()=>{
+'use strict';
+class CErr extends Error{constructor(msg,ln){super(msg);this.ln=ln;}}
+const OPS=['<<=','>>=','++','--','->','+=','-=','*=','/=','%=','&=','|=','^=','<<','>>','<=','>=','==','!=','&&','||','::'];
+const ESC={n:'\n',t:'\t',r:'\r','0':'\0','\\':'\\',"'":"'",'"':'"',a:'\x07',b:'\b',f:'\f',v:'\v'};
+function lex(src){const T=[];let i=0,ln=1;const n=src.length;
+  const esc=()=>{const c=src[i+1];if(c==='x'){const m=/^[0-9a-fA-F]{1,2}/.exec(src.slice(i+2));i+=2+(m?m[0].length:0);return String.fromCharCode(m?parseInt(m[0],16):0);}i+=2;return ESC[c]??c;};
+  while(i<n){const ch=src[i];
+    if(ch==='\n'){ln++;i++;continue;}
+    if(ch===' '||ch==='\t'||ch==='\r'||ch==='\f'||ch==='\v'){i++;continue;}
+    if(ch==='/'&&src[i+1]==='/'){while(i<n&&src[i]!=='\n')i++;continue;}
+    if(ch==='/'&&src[i+1]==='*'){const l0=ln;i+=2;while(i<n&&!(src[i]==='*'&&src[i+1]==='/')){if(src[i]==='\n')ln++;i++;}if(i>=n)throw new CErr('/* 주석이 닫히지 않았어요 (*/ 가 없어요)',l0);i+=2;continue;}
+    if(ch==='#'){let j=i,s='';const l0=ln;while(j<n&&src[j]!=='\n'){if(src[j]==='\\'&&src[j+1]==='\n'){j+=2;ln++;s+=' ';continue;}if(src[j]==='/'&&src[j+1]==='/')break;s+=src[j];j++;}
+      while(j<n&&src[j]!=='\n')j++;T.push({t:'pp',v:s,ln:l0});i=j;continue;}
+    const m=/^(0[xX][0-9a-fA-F]+|0[bB][01]+|(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?)([uUlLfF]*)/.exec(src.slice(i,i+40));
+    if(m&&/[\d.]/.test(ch)&&!(ch==='.'&&!/\d/.test(src[i+1]))){const s=m[1],suf=m[2].toLowerCase();let v,fl=false;
+      if(/^0[xX]/.test(s))v=parseInt(s.slice(2),16);else if(/^0[bB]/.test(s))v=parseInt(s.slice(2),2);
+      else if(/[.eE]/.test(s)){v=parseFloat(s);fl=true;}else if(s.length>1&&s[0]==='0')v=parseInt(s,8);else v=parseInt(s,10);
+      if(suf.includes('f'))fl=true;T.push({t:'num',v,fl,u:suf.includes('u'),l:suf.includes('l'),ln});i+=m[0].length;continue;}
+    if(ch==='"'){let s='';i++;while(i<n&&src[i]!=='"'){if(src[i]==='\n')throw new CErr('문자열 "…"이 줄 끝까지 닫히지 않았어요',ln);if(src[i]==='\\')s+=esc();else s+=src[i++];}
+      if(i>=n)throw new CErr('문자열 "…"이 닫히지 않았어요',ln);i++;
+      const last=T[T.length-1];if(last&&last.t==='str')last.v+=s;else T.push({t:'str',v:s,ln});continue;}
+    if(ch==="'"){let s='';i++;while(i<n&&src[i]!=="'"&&src[i]!=='\n'){if(src[i]==='\\')s+=esc();else s+=src[i++];}
+      if(src[i]!=="'")throw new CErr("문자 '…'가 닫히지 않았어요",ln);i++;if(!s.length)throw new CErr("빈 문자 ''는 쓸 수 없어요",ln);T.push({t:'num',v:s.charCodeAt(0)&255,ch:true,ln});continue;}
+    if(/[A-Za-z_]/.test(ch)){const w=/^[A-Za-z_]\w*/.exec(src.slice(i,i+80))[0];T.push({t:'id',v:w,ln,sp:src[i+w.length]==='('});i+=w.length;continue;}
+    const op=OPS.find(o=>src.startsWith(o,i))||ch;
+    if(!/[-+*/%=<>!&|^~?:;,.(){}[\]]/.test(op[0]))throw new CErr(`읽을 수 없는 글자 '${ch}'가 있어요`,ln);
+    T.push({t:'op',v:op,ln});i+=op.length;}
+  return T;}
+/* 전처리: #define(값·함수 모양) 펼치기, #include·#if 줄은 넘김 */
+function prep(T,warn){const M=new Map(),out=[];
+  for(const t of T){if(t.t!=='pp'){out.push(t);continue;}
+    const m=/^#\s*(\w+)\s*(.*)$/.exec(t.v);if(!m)continue;const [,d,rest]=m;
+    if(d==='define'){const mm=/^([A-Za-z_]\w*)(\(([^)]*)\))?\s*(.*)$/.exec(rest);if(!mm)throw new CErr('#define 뒤에 이름이 와야 해요',t.ln);
+      const body=lex(mm[4]).map(x=>({...x,ln:t.ln}));const ps=mm[2]&&/^[A-Za-z_]\w*\(/.test(rest)?mm[3].split(',').map(s=>s.trim()).filter(Boolean):null;M.set(mm[1],{ps,body});}
+    else if(d==='undef')M.delete(rest.trim());
+    else if(d==='include'||d==='pragma'){}
+    else if(/^(if|ifdef|ifndef|else|elif|endif)$/.test(d))warn.push([t.ln,`#${d} 줄은 건너뛰어요(모든 줄을 그대로 읽어요)`]);}
+  const expand=(src,depth,hide)=>{const r=[];for(let i=0;i<src.length;i++){const t=src[i];const mac=t.t==='id'&&!hide.has(t.v)&&M.get(t.v);
+      if(!mac){r.push(t);continue;}if(depth>30)throw new CErr(`#define '${t.v}'가 너무 깊이 펼쳐져요`,t.ln);
+      const h2=new Set(hide);h2.add(t.v);
+      if(!mac.ps){r.push(...expand(mac.body.map(x=>({...x,ln:t.ln})),depth+1,h2));continue;}
+      if(!(src[i+1]&&src[i+1].v==='(')){r.push(t);continue;}
+      const args=[[]];let d=0,j=i+2;for(;j<src.length;j++){const x=src[j];if(x.v==='('&&x.t==='op')d++;if(x.v===')'&&x.t==='op'){if(!d)break;d--;}if(x.v===','&&x.t==='op'&&!d){args.push([]);continue;}args[args.length-1].push(x);}
+      if(j>=src.length)throw new CErr(`#define 함수 '${t.v}(…)'의 괄호가 닫히지 않았어요`,t.ln);
+      const sub=[];for(const b of mac.body){const k=b.t==='id'?mac.ps.indexOf(b.v):-1;if(k>=0)sub.push(...(args[k]||[]));else sub.push({...b,ln:t.ln});}
+      r.push(...expand(sub,depth+1,h2));i=j;}return r;};
+  return expand(out,0,new Set());}
+/* ── 자료형 */
+const TV={k:'v'},TF={k:'f'},TS={k:'s'},TB={k:'i',bits:8,uns:true,b:true};
+const ti=(bits,uns,ch)=>({k:'i',bits,uns:!!uns,ch:!!ch});
+const TYW=new Set(['void','int','long','short','char','byte','bool','boolean','float','double','word','String','unsigned','signed','uint8_t','int8_t','uint16_t','int16_t','uint32_t','int32_t','uint64_t','int64_t','size_t','const','static','volatile','unsigned']);
+function tyName(t){if(!t)return'?';if(t.k==='v')return'void';if(t.k==='f')return'float';if(t.k==='s')return'String';if(t.b)return'bool';return(t.uns?'unsigned ':'')+(t.ch?'char':t.bits===8?'byte(8비트)':t.bits===16?'int(16비트)':'long(32비트)');}
+function wrap(v,t){if(t.k==='f')return typeof v==='string'?parseFloat(v)||0:+v;if(t.k==='s')return typeof v==='string'?v:fmtNum(v,null);if(typeof v==='string')v=parseInt(v)||0;
+  if(t.b)return v?1:0;if(!Number.isFinite(v))v=0;v=Math.trunc(v);if(Math.abs(v)>9e15)v=v%4294967296;
+  switch(t.bits){case 8:return t.uns?v&255:(v<<24)>>24;case 16:return t.uns?v&65535:(v<<16)>>16;default:return t.uns?v>>>0:v|0;}}
+function fmtNum(v,t,base,dig){if(typeof v==='string')return v;if(t&&t.k==='f'||(!t&&!Number.isInteger(v))){if(!Number.isFinite(v))return Number.isNaN(v)?'nan':v>0?'inf':'-inf';return v.toFixed(dig==null?2:Math.max(0,Math.min(10,dig)));}
+  if(base&&base!==10){const u=v<0?v>>>0:v;return u.toString(base).toUpperCase();}return String(v);}
+/* ── 문법 읽기 */
+function parse(T,IB){let i=0;const eof={t:'eof',v:'',ln:T.length?T[T.length-1].ln:1};
+  const pk=(o=0)=>T[i+o]||eof,nx=()=>T[i++]||eof,is=(v,o=0)=>{const t=pk(o);return(t.t==='op'||t.t==='id')&&t.v===v;},eat=v=>{if(is(v)){i++;return true;}return false;};
+  const show=t=>t.t==='eof'?'코드 끝':t.t==='str'?'"'+t.v+'"':`'${t.v}'`;
+  const exp=(v,why)=>{if(!eat(v)){const t=pk();const p=T[i-1];throw new CErr(v===';'?`문장 끝에 ';'(세미콜론)이 빠졌어요${why?' — '+why:''}`:`${why||''}'${v}'가 와야 하는데 ${show(t)}가 있어요`,v===';'&&p?p.ln:t.ln);}};
+  const idn=why=>{const t=nx();if(t.t!=='id'||TYW.has(t.v))throw new CErr(`${why||'이름'}이 와야 하는데 ${show(t)}가 있어요`,t.ln);return t;};
+  const isTy=(o=0)=>pk(o).t==='id'&&TYW.has(pk(o).v);
+  function ptype(){const ln=pk().ln;const w=[];let cst=false,st=false;while(isTy()){const v=nx().v;if(v==='const')cst=true;else if(v==='static')st=true;else if(v!=='volatile')w.push(v);}
+    if(!w.length)throw new CErr('자료형(int, float …)이 빠졌어요',ln);const s=w.join(' ');let t;
+    if(s==='void')t=TV;else if(/^(float|double|long double)$/.test(s))t=TF;else if(s==='String')t=TS;else if(/^(bool|boolean)$/.test(s))t=TB;
+    else if(/^(byte|uint8_t|unsigned char)$/.test(s))t=ti(8,1);else if(/^(char|signed char)$/.test(s))t=ti(8,0,1);else if(s==='int8_t')t=ti(8,0);
+    else if(/^(short|short int|signed short|int16_t)$/.test(s))t=ti(16,0);else if(/^(word|uint16_t|unsigned short|unsigned short int)$/.test(s))t=ti(16,1);
+    else if(/^(int|signed|signed int)$/.test(s))t=ti(IB,0);else if(/^(unsigned|unsigned int|size_t)$/.test(s))t=ti(IB,1);
+    else if(/^(long|long int|signed long|int32_t|long long|int64_t)$/.test(s))t=ti(32,0);else if(/^(unsigned long|unsigned long int|uint32_t|unsigned long long|uint64_t)$/.test(s))t=ti(32,1);
+    else throw new CErr(`'${s}' 자료형은 몰라요`,ln);return{t:cst?{...t,cst:true}:t,st};}
+  function dims(){const d=[];while(eat('[')){if(is(']')){nx();d.push(null);continue;}d.push(expr());exp(']');}return d;}
+  function initl(){if(eat('{')){const a=[];if(!is('}'))do{if(is('}'))break;a.push(initl());}while(eat(','));exp('}','배열 초기값 목록 끝에 ');return{k:'list',a};}return asg();}
+  function decl(ty,st,first){const ds=[];let nm=first;for(;;){const dd=dims();let init=null;if(eat('='))init=initl();ds.push({nm:nm.v,ln:nm.ln,dims:dd,init});if(!eat(','))break;nm=idn('변수 이름');}
+    exp(';');return{k:'decl',ty,st,ds,ln:first.ln};}
+  function block(){const ln=pk().ln;exp('{');const b=[];while(!is('}')){if(pk().t==='eof')throw new CErr("'{'로 연 묶음을 닫는 '}'가 빠졌어요",ln);b.push(stmt());}nx();return{k:'blk',b,ln};}
+  function stmt(){const t=pk(),ln=t.ln;
+    if(t.t==='op'&&t.v==='{')return block();
+    if(t.t==='op'&&t.v===';'){nx();return{k:'nop',ln};}
+    if(t.t==='id')switch(t.v){
+      case'if':{nx();exp('(','if 뒤에 ');const c=expr();exp(')','if 조건 뒤에 ');const a=stmt();let b=null;if(eat('else'))b=stmt();return{k:'if',c,a,b,ln};}
+      case'while':{nx();exp('(','while 뒤에 ');const c=expr();exp(')','while 조건 뒤에 ');return{k:'wh',c,s:stmt(),ln};}
+      case'do':{nx();const s=stmt();if(!eat('while'))throw new CErr("do { … } 뒤에 while(조건); 이 와야 해요",pk().ln);exp('(');const c=expr();exp(')');exp(';');return{k:'do',c,s,ln};}
+      case'for':{nx();exp('(','for 뒤에 ');let init=null;if(!is(';')){if(isTy()){const {t:ty,st}=ptype();init=decl(ty,st,idn('변수 이름'));}else{init={k:'ex',e:expr(),ln};exp(';','for( 처음 ; 조건 ; 바꾸기 ) — ');}}else nx();
+        const c=is(';')?null:expr();exp(';','for( 처음 ; 조건 ; 바꾸기 ) — ');const u=is(')')?null:expr();exp(')','for 괄호 끝에 ');return{k:'for',init,c,u,s:stmt(),ln};}
+      case'switch':{nx();exp('(');const e=expr();exp(')');const bl=block();return{k:'sw',e,b:bl.b,ln};}
+      case'case':{nx();const e=tern();exp(':',"case 값 뒤에 ");return{k:'case',e,ln};}
+      case'default':{nx();exp(':',"default 뒤에 ");return{k:'dflt',ln};}
+      case'break':nx();exp(';');return{k:'brk',ln};
+      case'continue':nx();exp(';');return{k:'cnt',ln};
+      case'return':{nx();const e=is(';')?null:expr();exp(';');return{k:'ret',e,ln};}
+      case'else':throw new CErr("else 앞에 짝이 되는 if가 없어요(앞 줄의 ';'나 '}'를 확인해 보세요)",ln);
+      case'goto':throw new CErr('goto는 쓸 수 없어요 — while·for·break로 바꿔 보세요',ln);}
+    if(isTy()&&!(pk().v==='String'&&is('(',1))){const {t:ty,st}=ptype();return decl(ty,st,idn('변수 이름'));}
+    const e=expr();exp(';');return{k:'ex',e,ln};}
+  const BIN=[['||'],['&&'],['|'],['^'],['&'],['==','!='],['<','>','<=','>='],['<<','>>'],['+','-'],['*','/','%']];
+  function expr(){let e=asg();while(is(',')){const ln=nx().ln;e={k:'comma',a:e,b:asg(),ln};}return e;}
+  function asg(){const a=tern(),t=pk();if(t.t==='op'&&/^([-+*/%&|^]|<<|>>)?=$/.test(t.v)){nx();const b=asg();if(!['var','idx'].includes(a.k))throw new CErr('= 왼쪽에는 변수나 배열 칸이 와야 해요',t.ln);return{k:'asg',op:t.v,a,b,ln:t.ln};}return a;}
+  function tern(){const c=bin(0);if(is('?')){const ln=nx().ln;const a=expr();exp(':',"조건 ? 값1 : 값2 — ");const b=tern();return{k:'cond',c,a,b,ln};}return c;}
+  function bin(l){if(l>=BIN.length)return un();let a=bin(l+1);for(;;){const t=pk();if(t.t==='op'&&BIN[l].includes(t.v)){nx();const b=bin(l+1);a={k:t.v==='&&'?'and':t.v==='||'?'or':'bin',op:t.v,a,b,ln:t.ln};}else return a;}}
+  function un(){const t=pk();
+    if(t.t==='op'&&['-','+','!','~'].includes(t.v)){nx();return{k:'un',op:t.v,a:un(),ln:t.ln};}
+    if(t.t==='op'&&(t.v==='++'||t.v==='--')){nx();const a=un();if(!['var','idx'].includes(a.k))throw new CErr(`${t.v} 는 변수에만 쓸 수 있어요`,t.ln);return{k:'pre',op:t.v,a,ln:t.ln};}
+    if(t.t==='op'&&(t.v==='&'||t.v==='*'))throw new CErr(`포인터('${t.v}')는 아직 못 써요 — 배열이나 전역 변수로 바꿔 보세요`,t.ln);
+    if(t.t==='op'&&t.v==='('&&isTy(1)&&!(pk(1).v==='String'&&is('(',2))){nx();const {t:ty}=ptype();exp(')','형 변환 (자료형) 뒤에 ');return{k:'cast',to:ty,a:un(),ln:t.ln};}
+    if(t.t==='id'&&t.v==='sizeof'){nx();exp('(');let n;if(isTy()){n={k:'sizeT',to:ptype().t,ln:t.ln};}else n={k:'sizeE',a:expr(),ln:t.ln};exp(')');return n;}
+    return post(prim());}
+  function args(){const a=[];if(!is(')'))do a.push(asg());while(eat(','));exp(')','함수 인자 끝에 ');return a;}
+  function post(e){for(;;){const t=pk();
+      if(t.t==='op'&&t.v==='['){nx();const ix=expr();exp(']');e={k:'idx',a:e,i:ix,ln:t.ln};}
+      else if(t.t==='op'&&t.v==='('){nx();if(e.k!=='var')throw new CErr('함수 이름 뒤에만 ( 를 쓸 수 있어요',t.ln);e={k:'call',nm:e.nm,a:args(),ln:t.ln};}
+      else if(t.t==='op'&&(t.v==='.'||t.v==='->')){nx();const m=idn('함수(메서드) 이름');if(eat('('))e={k:'mcall',o:e,m:m.v,a:args(),ln:m.ln};else e={k:'mem',o:e,m:m.v,ln:m.ln};}
+      else if(t.t==='op'&&(t.v==='++'||t.v==='--')){nx();if(!['var','idx'].includes(e.k))throw new CErr(`${t.v} 는 변수에만 쓸 수 있어요`,t.ln);e={k:'post',op:t.v,a:e,ln:t.ln};}
+      else return e;}}
+  function prim(){const t=nx();
+    if(t.t==='num')return{k:'num',v:t.v,fl:t.fl,u:t.u,l:t.l,ch:t.ch,ln:t.ln};
+    if(t.t==='str')return{k:'str',v:t.v,ln:t.ln};
+    if(t.t==='id'){if(t.v==='true'||t.v==='false')return{k:'num',v:t.v==='true'?1:0,b:true,ln:t.ln};if(t.v==='String')return{k:'var',nm:'String',ln:t.ln};if(TYW.has(t.v))throw new CErr(`'${t.v}' 자료형이 여기에 올 수 없어요`,t.ln);return{k:'var',nm:t.v,ln:t.ln};}
+    if(t.t==='op'&&t.v==='('){const e=expr();exp(')','괄호를 닫는 ');return e;}
+    throw new CErr(t.t==='eof'?'코드가 중간에 끝났어요(괄호나 ; 가 빠졌는지 확인해 보세요)':`여기에 ${show(t)}가 올 수 없어요`,t.ln);}
+  // 맨 바깥: 함수 정의·선언, 전역 변수
+  const top=[];while(pk().t!=='eof'){if(eat(';'))continue;const t=pk();
+    if(t.t==='id'&&(t.v==='struct'||t.v==='class'||t.v==='enum'||t.v==='typedef'||t.v==='union'))throw new CErr(`${t.v}는 아직 못 써요`,t.ln);
+    if(!isTy()){throw new CErr(t.t==='id'?`'${t.v}' — 함수 밖에는 변수 선언이나 함수만 올 수 있어요(자료형부터 써요, 예: int ${t.v} …)`:`함수 밖에 ${show(t)}가 있어요`,t.ln);}
+    const {t:ty,st}=ptype(),nm=idn('함수나 변수 이름');
+    if(eat('(')){const ps=[];if(!is(')')){if(is('void')&&is(')',1))nx();else do{const {t:pt}=ptype();let pn=null;if(pk().t==='id'&&!TYW.has(pk().v))pn=nx();const dd=dims();ps.push({nm:pn?pn.v:null,ty:pt,arr:dd.length>0,ln:pn?pn.ln:nm.ln});}while(eat(','));}
+      exp(')','함수 인자 끝에 ');if(eat(';')){top.push({k:'proto',nm:nm.v,ln:nm.ln});continue;}
+      if(!is('{'))throw new CErr(`함수 ${nm.v}( ) 뒤에 '{'가 와야 해요`,pk().ln);const body=block();top.push({k:'fn',nm:nm.v,ty,ps,body,ln:nm.ln,end:T[i-1].ln});}
+    else top.push(decl(ty,st,nm));}
+  return top;}
+/* ── 내장 상수·함수 */
+const KC={HIGH:1,LOW:0,INPUT:0,OUTPUT:1,INPUT_PULLUP:2,DEC:10,HEX:16,BIN:2,OCT:8,LSBFIRST:0,MSBFIRST:1,CHANGE:1,FALLING:2,RISING:3};
+const KF={PI:Math.PI,HALF_PI:Math.PI/2,TWO_PI:Math.PI*2,DEG_TO_RAD:Math.PI/180,RAD_TO_DEG:180/Math.PI,EULER:Math.E};
+/* 이름 붙이기: 변수 → 칸 번호, 식마다 자료형(ty)·멈춤 필요(y) */
+function annotate(top,o,warn){const IB=o.intBits,TI=ti(IB,0),TL=ti(32,0),TUL=ti(32,1);
+  const fns=new Map(),G=[],gsyms=[];
+  for(const d of top)if(d.k==='fn'){if(fns.has(d.nm))throw new CErr(`함수 ${d.nm}( )를 두 번 만들었어요(같은 이름 함수 여러 개는 아직 못 써요)`,d.ln);if(BI[d.nm]||d.nm==='Serial')throw new CErr(`${d.nm}( )는 이미 있는 내장 함수 이름이라 새로 만들 수 없어요`,d.ln);fns.set(d.nm,d);}
+  let F=null,scopes=[],loopD=0,swD=0;
+  const prom=t=>t.k!=='i'?t:t.bits<IB||t.b?TI:{k:'i',bits:t.bits,uns:t.uns};
+  const arith=(a,b)=>{if(a.k==='s'||b.k==='s')return TS;if(a.k==='f'||b.k==='f')return TF;const x=prom(a),y=prom(b);if(x.bits!==y.bits)return x.bits>y.bits?x:y;return{k:'i',bits:x.bits,uns:x.uns||y.uns};};
+  const look=nm=>{for(let k=scopes.length-1;k>=0;k--)if(scopes[k].has(nm))return scopes[k].get(nm);return null;};
+  const newSym=(nm,ty,dimsN,ln,glob)=>{const cur=scopes[scopes.length-1];if(cur.has(nm))throw new CErr(`'${nm}'을(를) 같은 곳에서 두 번 선언했어요`,ln);
+    const s={nm,ty,nd:dimsN,ln,g:glob,i:glob?G.length:F.ns++};if(glob){G.push(s);gsyms.push(s);}else F.syms.push(s);cur.set(nm,s);return s;};
+  const cdim=(e,ln)=>{const v=cval(e);if(!Number.isInteger(v)||v<1||v>4096)throw new CErr('배열 칸 수는 1~4096 사이 정수 상수여야 해요',ln);return v;};
+  function cval(e){ex(e);if(e.k==='num')return e.v;if(e.k==='var'&&e.sym&&e.sym.cv!=null)return e.sym.cv;if(e.k==='un'&&e.op==='-')return-cval(e.a);if(e.k==='bin'){const a=cval(e.a),b=cval(e.b);return{'+':a+b,'-':a-b,'*':a*b,'/':Math.trunc(a/b),'%':a%b,'<<':a<<b,'>>':a>>b,'|':a|b,'&':a&b}[e.op];}
+    if(e.k==='sizeT'||e.k==='sizeE'||e.k==='cast')return e.cv;throw new CErr('여기에는 상수(숫자)가 와야 해요',e.ln);}
+  const sizeOf=t=>t.k==='f'?4:t.k==='s'?6:t.b?1:t.bits/8;
+  function declD(d,glob){for(const v of d.ds){let dd=v.dims.map(x=>x?cdim(x,v.ln):null);
+      if(v.init)if(v.init.k==='list'){if(!dd.length)throw new CErr(`{ … } 초기값은 배열에만 쓸 수 있어요 — ${v.nm}[] 처럼 써요`,v.ln);
+        const fill=(L,k)=>{if(L.k!=='list'){ex(L);return;}if(k>=dd.length)throw new CErr('초기값 { } 묶음이 배열 차원보다 많아요',v.ln);if(dd[k]==null)dd[k]=L.a.length;if(L.a.length>dd[k])throw new CErr(`${v.nm}의 칸은 ${dd[k]}개인데 초기값이 ${L.a.length}개예요`,v.ln);L.a.forEach(x=>fill(x,k+1));};fill(v.init,0);}
+      else if(dd.length&&v.init.k==='str'&&d.ty.ch&&dd.length===1){if(dd[0]==null)dd[0]=v.init.v.length+1;v.init={k:'list',a:[...v.init.v].map(c=>({k:'num',v:c.charCodeAt(0),ch:true,ty:ti(8,0,1)})).concat([{k:'num',v:0,ty:TI}])};}
+      else{ex(v.init);if(dd.length)throw new CErr(`배열 ${v.nm}에는 { … } 로 초기값을 줘요`,v.ln);}
+      if(dd.some(x=>x==null))throw new CErr(`배열 ${v.nm}[]의 칸 수를 정하거나 초기값을 { … }로 줘요`,v.ln);
+      if(d.ty.k==='v')throw new CErr('void 변수는 만들 수 없어요',v.ln);
+      const g=glob||d.st;const saveF=F;if(d.st&&!glob){}const s=newSym(v.nm,d.ty,dd.length,v.ln,g);s.dims=dd;v.sym=s;
+      if(d.ty.cst&&!dd.length&&v.init&&v.init.k!=='list'){try{const c=cval(v.init);if(Number.isFinite(c))s.cv=wrap(c,d.ty);}catch(e){}}
+      if(d.ty.cst&&!v.init)throw new CErr(`const ${v.nm}에는 처음 값(= …)을 꼭 줘요`,v.ln);F=saveF;}}
+  function st(s){switch(s.k){
+    case'blk':scopes.push(new Map());s.b.forEach(st);scopes.pop();break;
+    case'decl':declD(s,false);break;case'ex':ex(s.e);break;
+    case'if':ex(s.c);st(s.a);if(s.b)st(s.b);break;
+    case'wh':case'do':ex(s.c);loopD++;st(s.s);loopD--;break;
+    case'for':scopes.push(new Map());if(s.init)st(s.init);if(s.c)ex(s.c);if(s.u)ex(s.u);loopD++;st(s.s);loopD--;scopes.pop();break;
+    case'sw':ex(s.e);swD++;scopes.push(new Map());for(const x of s.b){if(x.k==='case')x.cv=cval(x.e);else if(x.k!=='dflt')st(x);}scopes.pop();swD--;break;
+    case'case':case'dflt':throw new CErr('case·default는 switch 안에만 써요',s.ln);
+    case'brk':if(!loopD&&!swD)throw new CErr('break는 반복문이나 switch 안에서만 써요',s.ln);break;
+    case'cnt':if(!loopD)throw new CErr('continue는 반복문 안에서만 써요',s.ln);break;
+    case'ret':if(s.e){ex(s.e);if(F.ty.k==='v')throw new CErr(`void 함수 ${F.nm}( )는 값을 돌려줄 수 없어요(return; 만 써요)`,s.ln);}break;}}
+  function ex(e){if(e.ty)return e.ty;let t;switch(e.k){
+    case'num':t=e.b?TB:e.ch?ti(8,0,1):e.fl?TF:e.l?(e.u?TUL:TL):e.u?(e.v>(IB===16?65535:4294967295)?TUL:ti(IB,1)):(e.v>(IB===16?32767:2147483647)?(e.v>2147483647?TUL:TL):TI);break;
+    case'str':t=TS;break;
+    case'var':{const s=look(e.nm);if(s){e.sym=s;t=s.ty;if(s.nd)t={...s.ty,arr:s.nd};break;}
+      if(e.nm in o.consts){e.k='num';e.v=o.consts[e.nm];t=TI;break;}if(e.nm in KC){e.k='num';e.v=KC[e.nm];t=TI;break;}if(e.nm in KF){e.k='num';e.v=KF[e.nm];t=TF;break;}
+      if(fns.has(e.nm)||BI[e.nm])throw new CErr(`${e.nm}은(는) 함수예요 — ${e.nm}( ) 처럼 괄호를 붙여요`,e.ln);
+      if(e.nm==='Serial')throw new CErr('Serial 뒤에는 .begin( ) .print( ) 같은 함수를 붙여요',e.ln);
+      throw new CErr(`'${e.nm}'이(가) 무엇인지 몰라요 — 변수나 상수를 먼저 선언했는지, 글자(대소문자)가 맞는지 확인해 보세요`,e.ln);}
+    case'idx':{const a=ex(e.a);ex(e.i);if(e.i.ty.k==='f')throw new CErr('배열 칸 번호에는 정수가 와야 해요',e.ln);if(a.k==='s'&&!a.arr){t=ti(8,0,1);e.str=true;break;}if(!a.arr)throw new CErr(`'${e.a.nm||'이것'}'은(는) 배열이 아니라 [ ]를 쓸 수 없어요`,e.ln);t=a.arr>1?{...a,arr:a.arr-1}:{...a,arr:0};if(!t.arr)delete t.arr;break;}
+    case'un':{const a=ex(e.a);if(a.arr)throw new CErr('배열 전체에는 계산을 할 수 없어요',e.ln);t=e.op==='!'?TI:e.op==='~'?prom(a):a.k==='f'?TF:prom(a);break;}
+    case'pre':case'post':{const a=ex(e.a);if(a.cst)throw new CErr(`const 상수 '${e.a.nm}'은(는) 바꿀 수 없어요`,e.ln);t=a;break;}
+    case'cast':ex(e.a);t=e.to;if(e.a.cv!=null||e.a.k==='num')e.cv=wrap(e.a.k==='num'?e.a.v:e.a.cv,e.to);break;
+    case'sizeT':e.cv=sizeOf(e.to);t=ti(IB,1);break;
+    case'sizeE':{const a=ex(e.a);let n=sizeOf(a);if(a.arr){const s=e.a.sym;if(e.a.k==='var'&&s){if(!s.dims)throw new CErr('함수 인자로 받은 배열은 sizeof로 크기를 알 수 없어요',e.ln);n*=s.dims.reduce((p,q)=>p*q,1);}else{let x=e.a,k=0;while(x.k==='idx'){x=x.a;k++;}if(x.sym&&x.sym.dims)n*=x.sym.dims.slice(k).reduce((p,q)=>p*q,1);}}e.cv=n;t=ti(IB,1);break;}
+    case'bin':{const a=ex(e.a),b=ex(e.b);if(a.arr||b.arr)throw new CErr('배열 전체끼리는 계산할 수 없어요 — 칸 하나씩 arr[i] 로 써요',e.ln);
+      if(['==','!=','<','>','<=','>='].includes(e.op)){t=TI;e.ct=arith(a,b);}
+      else if(['<<','>>'].includes(e.op)){if(a.k==='f'||b.k==='f')throw new CErr(`${e.op} 는 정수에만 쓸 수 있어요`,e.ln);t=prom(a);}
+      else{t=arith(a,b);if(t.k==='s'&&e.op!=='+')throw new CErr(`글자(String)에는 ${e.op} 계산을 할 수 없어요`,e.ln);if(t.k==='f'&&['%','&','|','^'].includes(e.op))throw new CErr(`${e.op} 는 정수에만 쓸 수 있어요(소수 float에는 못 써요)`,e.ln);}break;}
+    case'and':case'or':ex(e.a);ex(e.b);t=TI;break;
+    case'cond':ex(e.c);t=arith(ex(e.a),ex(e.b));if(e.a.ty.k==='s'||e.b.ty.k==='s')t=TS;break;
+    case'comma':ex(e.a);t=ex(e.b);break;
+    case'asg':{const a=ex(e.a),b=ex(e.b);if(a.cst)throw new CErr(`const 상수 '${e.a.nm}'은(는) 바꿀 수 없어요`,e.ln);if(a.arr)throw new CErr('배열 전체에 한꺼번에 넣을 수는 없어요 — 칸 하나씩 넣어요',e.ln);
+      if(e.op!=='='){e.ct=arith(a,b);if(e.ct.k==='f'&&/[%&|^]|<<|>>/.test(e.op))throw new CErr(`${e.op} 는 정수에만 쓸 수 있어요`,e.ln);}
+      if(b.k==='s'&&a.k!=='s')throw new CErr(`글자(String)를 ${tyName(a)} 변수에 넣을 수 없어요 — .toInt( )를 써 보세요`,e.ln);t=a;break;}
+    case'call':{e.a.forEach(ex);const f=fns.get(e.nm);
+      if(f){if(f.ps.length!==e.a.length)throw new CErr(`${e.nm}( )에는 인자가 ${f.ps.length}개 있어야 하는데 ${e.a.length}개를 줬어요`,e.ln);
+        f.ps.forEach((p,k)=>{const at=e.a[k].ty;if(p.arr&&!at.arr)throw new CErr(`${e.nm}( )의 ${k+1}번째 인자는 배열이어야 해요`,e.ln);if(!p.arr&&at.arr)throw new CErr(`${e.nm}( )의 ${k+1}번째 인자에 배열을 줬어요`,e.ln);});
+        e.fn=f;e.y=true;t=f.ty;break;}
+      if(e.nm==='String'){if(e.a.length>2)throw new CErr('String( )에는 값 하나(와 자릿수/진법)를 줘요',e.ln);e.bi=STRC;t=TS;break;}
+      const b=BI[e.nm];if(!b)throw new CErr(`함수 ${e.nm}( )를 찾을 수 없어요 — 이름이 맞는지, 함수를 만들었는지 확인해 보세요`,e.ln);
+      if(b.n&&(e.a.length<b.n[0]||e.a.length>b.n[1]))throw new CErr(`${e.nm}( )에는 인자가 ${b.n[0]===b.n[1]?b.n[0]:b.n[0]+'~'+b.n[1]}개 있어야 해요 (${b.h})`,e.ln);
+      if(b.only&&!b.only(o))throw new CErr(`${e.nm}( )는 이 보드에서 쓸 수 없어요`,e.ln);
+      e.bi=b;if(b.y)e.y=true;t=typeof b.r==='function'?b.r(e.a.map(x=>x.ty),arith,prom):b.r==='ul'?TUL:b.r==='l'?TL:b.r==='f'?TF:b.r==='v'?TV:b.r==='s'?TS:TI;break;}
+    case'mcall':{const isSer=e.o.k==='var'&&/^Serial\d?$/.test(e.o.nm)&&!look(e.o.nm);e.a.forEach(ex);
+      if(isSer){if(e.o.nm!=='Serial')throw new CErr(`${e.o.nm}는 없어요 — 이 프로그램은 Serial 하나만 있어요`,e.ln);const m=SER[e.m];if(!m)throw new CErr(`Serial.${e.m}( )는 몰라요 (begin·print·println·write·available·read·parseInt 를 써요)`,e.ln);
+        if(e.a.length<m.n[0]||e.a.length>m.n[1])throw new CErr(`Serial.${e.m}( )에는 인자가 ${m.n[0]===m.n[1]?m.n[0]:m.n[0]+'~'+m.n[1]}개 있어야 해요`,e.ln);e.ser=m;if(m.y)e.y=true;t=m.r==='l'?TL:m.r==='f'?TF:m.r==='v'?TV:TI;break;}
+      const ot=ex(e.o);if(ot.k!=='s'||ot.arr)throw new CErr(`.${e.m}( )는 String에만 쓸 수 있어요`,e.ln);const m=STRM[e.m];if(!m)throw new CErr(`String의 .${e.m}( )는 몰라요`,e.ln);e.sm=m;t=m.r==='s'?TS:m.r==='f'?TF:TI;break;}
+    case'mem':throw new CErr(`.${e.m} 는 몰라요 (구조체는 아직 못 써요)`,e.ln);
+    default:throw new CErr('읽을 수 없는 식이에요',e.ln);}
+    e.ty=t;e.y=e.y||['a','b','c','i','o'].some(k=>e[k]&&typeof e[k]==='object'&&e[k].y)||(e.a&&Array.isArray(e.a)&&e.a.some(x=>x.y));return t;}
+  scopes=[new Map()];F=null;
+  for(const d of top){if(d.k==='decl')declD(d,true);
+    else if(d.k==='fn'){F={nm:d.nm,ty:d.ty,ns:0,syms:[]};scopes.push(new Map());d.ps.forEach(p=>{if(!p.nm)return;const s=newSym(p.nm,p.ty,p.arr?1:0,p.ln,false);p.sym=s;});d.ns=0;d.F=F;st(d.body);scopes.pop();d.ns=F.ns;d.syms=F.syms;F=null;}}
+  for(const n of ['setup','loop'])if(!fns.has(n))throw new CErr(`${n}( ) 함수가 없어요 — 마이컴 코드에는 void setup( ) { … } 과 void loop( ) { … } 이 꼭 있어야 해요`,1);
+  return{fns,G:gsyms,top};}
+/* ── 실행 */
+const BRK=1,CNT=2;
+function mkArr(dims,ty,k=0){const n=dims[k];const a=new Array(n);for(let i=0;i<n;i++)a[i]=k+1<dims.length?mkArr(dims,ty,k+1):ty.k==='s'?'':0;return a;}
+function binop(vm,op,x,y,t,ln){if(t.k==='s'){return(typeof x==='string'?x:fmtNum(x,null))+(typeof y==='string'?y:fmtNum(y,null));}
+  if(t.k==='f'){switch(op){case'+':return x+y;case'-':return x-y;case'*':return x*y;case'/':return x/y;}return 0;}
+  switch(op){case'+':return wrap(x+y,t);case'-':return wrap(x-y,t);case'*':return wrap(t.bits===32?Math.imul(x,y):x*y,t);
+    case'/':if(y===0)throw new CErr('0으로 나눴어요 (실제 보드에서는 엉뚱한 값이 나와요)',ln);return wrap(x/y,t);
+    case'%':if(y===0)throw new CErr('0으로 나눈 나머지(% 0)를 구했어요',ln);return wrap(x%y,t);
+    case'<<':return wrap(y>=32?0:x<<y,t);case'>>':return wrap(t.uns?x>>>y:x>>y,t);case'&':return wrap(x&y,t);case'|':return wrap(x|y,t);case'^':return wrap(x^y,t);}return 0;}
+function cmp(op,x,y){switch(op){case'==':return x==y?1:0;case'!=':return x!=y?1:0;case'<':return x<y?1:0;case'>':return x>y?1:0;case'<=':return x<=y?1:0;case'>=':return x>=y?1:0;}}
+const truth=v=>typeof v==='string'?v.length>0:!!v;
+function conv(v,t){return t.arr?v:wrap(v,t);}
+/* 식 계산(멈춤 없는 것) */
+function ev(vm,e,F){switch(e.k){
+  case'num':return e.v;case'str':return e.v;
+  case'var':{const s=e.sym;return s.g?vm.G[s.i]:F.s[s.i];}
+  case'idx':{const a=ev(vm,e.a,F),i=ev(vm,e.i,F);return getIdx(e,a,i);}
+  case'un':{const a=ev(vm,e.a,F);return e.op==='-'?(e.ty.k==='f'?-a:wrap(-a,e.ty)):e.op==='+'?a:e.op==='!'?(truth(a)?0:1):wrap(~a,e.ty);}
+  case'pre':case'post':return incr(vm,e,F,lref(vm,e.a,F));
+  case'cast':return wrap(ev(vm,e.a,F),e.ty);
+  case'sizeT':case'sizeE':return e.cv;
+  case'bin':return bin2(vm,e,ev(vm,e.a,F),ev(vm,e.b,F));
+  case'and':return truth(ev(vm,e.a,F))&&truth(ev(vm,e.b,F))?1:0;
+  case'or':return truth(ev(vm,e.a,F))||truth(ev(vm,e.b,F))?1:0;
+  case'cond':return conv(truth(ev(vm,e.c,F))?ev(vm,e.a,F):ev(vm,e.b,F),e.ty);
+  case'comma':ev(vm,e.a,F);return ev(vm,e.b,F);
+  case'asg':{const r=lref(vm,e.a,F);return doAsg(vm,e,r,ev(vm,e.b,F));}
+  case'call':return e.bi.f(vm,e.a.map(x=>ev(vm,x,F)),e);
+  case'mcall':if(e.ser)return e.ser.f(vm,e.a.map(x=>ev(vm,x,F)),e);return e.sm.f(ev(vm,e.o,F),e.a.map(x=>ev(vm,x,F)),e);}
+  throw new CErr('계산할 수 없는 식',e.ln);}
+function bin2(vm,e,a,b){if(e.ct)return e.ct.k==='s'?cmp(e.op,String(typeof a==='string'?a:fmtNum(a)),String(typeof b==='string'?b:fmtNum(b))):e.ct.k==='f'?cmp(e.op,+a,+b):cmp(e.op,wrap(a,e.ct),wrap(b,e.ct));return binop(vm,e.op,e.ty.k==='i'&&typeof a==='number'?wrap(a,e.ty):a,e.ty.k==='i'&&typeof b==='number'&&e.op!=='<<'&&e.op!=='>>'?wrap(b,e.ty):b,e.ty,e.ln);}
+function getIdx(e,a,i){if(e.str){return i>=0&&i<a.length?a.charCodeAt(i):0;}if(!Array.isArray(a))throw new CErr('배열이 아닌 것에 [ ]를 썼어요',e.ln);
+  if(!(i>=0&&i<a.length))throw new CErr(`배열 칸을 넘었어요: [${i}] — 칸은 ${a.length}개(0~${a.length-1})예요 (실제 보드에서는 다른 변수 값을 망가뜨려요)`,e.ln);return a[i];}
+function lref(vm,e,F){if(e.k==='var'){const s=e.sym;return[s.g?vm.G:F.s,s.i,e.ty];}const a=ev(vm,e.a,F),i=ev(vm,e.i,F);getIdx(e,a,i);if(e.str)throw new CErr('String의 글자 하나를 [ ]로 바꾸는 것은 아직 못 해요',e.ln);return[a,i,e.ty];}
+function doAsg(vm,e,[o,k,t],v){if(e.op==='=')return o[k]=wrap(v,t);const op=e.op.slice(0,-1),ct=e.ct;let r;
+  if(t.k==='s')r=o[k]+(typeof v==='string'?v:fmtNum(v,null));else r=binop(vm,op,ct.k==='i'?wrap(o[k],ct):o[k],ct.k==='i'&&op!=='<<'&&op!=='>>'?wrap(v,ct):v,ct,e.ln);return o[k]=wrap(r,t);}
+function incr(vm,e,F,[o,k,t]){const old=o[k],nv=t.k==='f'?old+(e.op==='++'?1:-1):wrap(old+(e.op==='++'?1:-1),t);o[k]=nv;return e.k==='pre'?nv:old;}
+/* 식 계산(사용자 함수·delay가 들어 있어 멈출 수 있는 것) */
+function* evy(vm,e,F){if(!e.y)return ev(vm,e,F);switch(e.k){
+  case'idx':{const a=yield* evy(vm,e.a,F),i=yield* evy(vm,e.i,F);return getIdx(e,a,i);}
+  case'un':{const a=yield* evy(vm,e.a,F);return e.op==='-'?(e.ty.k==='f'?-a:wrap(-a,e.ty)):e.op==='+'?a:e.op==='!'?(truth(a)?0:1):wrap(~a,e.ty);}
+  case'pre':case'post':return incr(vm,e,F,yield* lrefy(vm,e.a,F));
+  case'cast':return wrap(yield* evy(vm,e.a,F),e.ty);
+  case'bin':{const a=yield* evy(vm,e.a,F),b=yield* evy(vm,e.b,F);return bin2(vm,e,a,b);}
+  case'and':return truth(yield* evy(vm,e.a,F))&&truth(yield* evy(vm,e.b,F))?1:0;
+  case'or':return truth(yield* evy(vm,e.a,F))||truth(yield* evy(vm,e.b,F))?1:0;
+  case'cond':return conv(truth(yield* evy(vm,e.c,F))?yield* evy(vm,e.a,F):yield* evy(vm,e.b,F),e.ty);
+  case'comma':yield* evy(vm,e.a,F);return yield* evy(vm,e.b,F);
+  case'asg':{const r=yield* lrefy(vm,e.a,F);return doAsg(vm,e,r,yield* evy(vm,e.b,F));}
+  case'call':{const av=[];for(const x of e.a)av.push(yield* evy(vm,x,F));if(e.fn)return yield* callU(vm,e.fn,av,e.ln);if(e.bi.y)return yield* e.bi.g(vm,av,e);return e.bi.f(vm,av,e);}
+  case'mcall':{const av=[];for(const x of e.a)av.push(yield* evy(vm,x,F));if(e.ser)return e.ser.y?yield* e.ser.g(vm,av,e):e.ser.f(vm,av,e);return e.sm.f(yield* evy(vm,e.o,F),av,e);}}
+  return ev(vm,e,F);}
+function* lrefy(vm,e,F){if(e.k==='var'||!e.y)return lref(vm,e,F);const a=yield* evy(vm,e.a,F),i=yield* evy(vm,e.i,F);getIdx(e,a,i);return[a,i,e.ty];}
+const E=function*(vm,e,F){return e.y?yield* evy(vm,e,F):ev(vm,e,F);};
+function initVal(vm,sym,init,F){const t=sym.ty;if(sym.nd){const a=mkArr(sym.dims,t);if(init){const put=(arr,L)=>L.a.forEach((x,k)=>{if(x.k==='list')put(arr[k],x);else{if(x.y)throw new CErr('배열 초기값 { } 안에서는 함수를 부를 수 없어요',x.ln);arr[k]=wrap(ev(vm,x,F),t);}});put(a,init);}return a;}
+  return null;}
+function* exec(vm,s,F){switch(s.k){
+  case'blk':for(const x of s.b){const r=yield* exec(vm,x,F);if(r)return r;}return 0;
+  case'nop':return 0;
+  case'decl':F.ln=s.ln;yield s;for(const d of s.ds){const sym=d.sym;if(sym.g){if(vm.sInit.has(sym))continue;vm.sInit.add(sym);}const box=sym.g?vm.G:F.s;
+      if(sym.nd)box[sym.i]=initVal(vm,sym,d.init,F);else box[sym.i]=d.init?wrap(yield* E(vm,d.init,F),sym.ty):sym.ty.k==='s'?'':0;}return 0;
+  case'ex':F.ln=s.ln;yield s;yield* E(vm,s.e,F);return 0;
+  case'if':F.ln=s.ln;yield s;if(truth(yield* E(vm,s.c,F)))return yield* exec(vm,s.a,F);return s.b?yield* exec(vm,s.b,F):0;
+  case'wh':for(;;){F.ln=s.ln;yield s;if(!truth(yield* E(vm,s.c,F)))return 0;const r=yield* exec(vm,s.s,F);if(r===BRK)return 0;if(r&&r!==CNT)return r;}
+  case'do':for(;;){const r=yield* exec(vm,s.s,F);if(r===BRK)return 0;if(r&&r!==CNT)return r;F.ln=s.ln;yield s;if(!truth(yield* E(vm,s.c,F)))return 0;}
+  case'for':{if(s.init)yield* exec(vm,s.init,F);for(let first=true;;first=false){F.ln=s.ln;if(!first||!s.init)yield s;if(s.c&&!truth(yield* E(vm,s.c,F)))return 0;const r=yield* exec(vm,s.s,F);if(r===BRK)return 0;if(r&&r!==CNT)return r;if(s.u)yield* E(vm,s.u,F);}}
+  case'sw':{F.ln=s.ln;yield s;const v=yield* E(vm,s.e,F);let j=s.b.findIndex(x=>x.k==='case'&&x.cv==v);if(j<0)j=s.b.findIndex(x=>x.k==='dflt');if(j<0)return 0;
+    for(let k=j;k<s.b.length;k++){const x=s.b[k];if(x.k==='case'||x.k==='dflt')continue;const r=yield* exec(vm,x,F);if(r===BRK)return 0;if(r)return r;}return 0;}
+  case'brk':F.ln=s.ln;yield s;return BRK;
+  case'cnt':F.ln=s.ln;yield s;return CNT;
+  case'ret':F.ln=s.ln;yield s;return{r:s.e?yield* E(vm,s.e,F):undefined};}
+  return 0;}
+function* callU(vm,fn,av,ln){if(vm.frames.length>=60)throw new CErr(`함수가 너무 깊이 불렸어요(스택 넘침) — ${fn.nm}( )가 자기 자신을 끝없이 부르는지 확인해 보세요`,ln);
+  const F={fn,nm:fn.nm,s:new Array(fn.ns),ln:fn.ln,cl:ln};fn.ps.forEach((p,k)=>{if(p.sym)F.s[p.sym.i]=p.arr?av[k]:wrap(av[k],p.ty);});
+  vm.frames.push(F);const r=yield* exec(vm,fn.body,F);vm.frames.pop();if(fn.ty.k==='v')return undefined;if(!r||r.r===undefined){return fn.ty.k==='s'?'':0;}return wrap(r.r,fn.ty);}
+function* main(vm){const P=vm.P,F0={nm:'(전역)',s:[],ln:1};
+  for(const d of P.top)if(d.k==='decl')for(const v of d.ds){const s=v.sym;vm.sInit.add(s);vm.G[s.i]=s.nd?initVal(vm,s,v.init,F0):v.init?wrap(yield* E(vm,v.init,F0),s.ty):s.ty.k==='s'?'':0;}
+  yield* callU(vm,P.fns.get('setup'),[],1);
+  for(;;){yield LOOPY;yield* callU(vm,P.fns.get('loop'),[],1);}}
+const LOOPY={loop:true};
+/* ── 내장 함수 */
+const num=x=>typeof x==='string'?parseFloat(x)||0:x;
+const pinChk=(vm,p,e,what)=>{if(!vm.hw.valid(p))throw new CErr(`${p}번 핀은 이 보드에 없어요${what?' ('+what+')':''}`,e.ln);return p;};
+function* delayG(vm,s){if(s>0)yield{dl:s};}
+const BI={
+  pinMode:{n:[2,2],h:'핀, 모드',r:'v',f:(vm,[p,m],e)=>{pinChk(vm,p,e);if(![0,1,2].includes(m))throw new CErr('pinMode의 모드는 INPUT·OUTPUT·INPUT_PULLUP 중 하나예요',e.ln);vm.hw.pinMode(p,m);}},
+  digitalWrite:{n:[2,2],h:'핀, HIGH 또는 LOW',r:'v',f:(vm,[p,v],e)=>{pinChk(vm,p,e);vm.hw.digitalWrite(p,v?1:0,e.ln);}},
+  digitalRead:{n:[1,1],h:'핀',r:'i',f:(vm,[p],e)=>{pinChk(vm,p,e);return vm.hw.digitalRead(p,e.ln)?1:0;}},
+  analogRead:{n:[1,1],h:'아날로그 핀(A0 …)',r:'i',f:(vm,[p],e)=>{pinChk(vm,p,e);if(!vm.hw.isAnalog(p))throw new CErr(`${p}번 핀은 아날로그 입력(A0 …)이 아니에요`,e.ln);return vm.hw.analogRead(p);}},
+  analogWrite:{n:[2,2],h:'PWM 핀, 0~255',r:'v',f:(vm,[p,v],e)=>{pinChk(vm,p,e);vm.hw.analogWrite(p,Math.max(0,Math.min(255,Math.round(v))),e.ln);}},
+  delay:{n:[1,1],h:'밀리초',r:'v',y:true,g:function*(vm,[ms]){yield* delayG(vm,Math.max(0,num(ms))/1000);}},
+  delayMicroseconds:{n:[1,1],h:'마이크로초',r:'v',y:true,g:function*(vm,[us]){yield* delayG(vm,Math.max(0,num(us))/1e6);}},
+  millis:{n:[0,0],h:'',r:'ul',f:vm=>wrap(Math.floor(vm.t*1000+1e-9),{k:'i',bits:32,uns:true})},
+  micros:{n:[0,0],h:'',r:'ul',f:vm=>wrap(Math.floor(vm.t*1e6+1e-6),{k:'i',bits:32,uns:true})},
+  tone:{n:[2,3],h:'핀, 주파수(Hz)[, 길이 ms]',r:'v',f:(vm,[p,f,d],e)=>{pinChk(vm,p,e);if(f<31)throw new CErr('tone 주파수는 31Hz 이상이에요',e.ln);vm.hw.tone(p,f,d==null?null:d/1000,e.ln);}},
+  noTone:{n:[1,1],h:'핀',r:'v',f:(vm,[p],e)=>{pinChk(vm,p,e);vm.hw.noTone(p);}},
+  shiftOut:{n:[4,4],h:'데이터 핀, 클럭 핀, MSBFIRST/LSBFIRST, 값',r:'v',f:(vm,[dp,cp,ord,v],e)=>{pinChk(vm,dp,e);pinChk(vm,cp,e);for(let i=0;i<8;i++){const b=ord?(v>>(7-i))&1:(v>>i)&1;vm.hw.digitalWrite(dp,b,e.ln);vm.hw.digitalWrite(cp,1,e.ln);vm.hw.digitalWrite(cp,0,e.ln);}vm.t+=8*16e-6;}},
+  pulseIn:{n:[2,3],h:'핀, HIGH/LOW[, 제한 µs]',r:'ul',y:true,g:function*(vm,[p,lv,to],e){pinChk(vm,p,e);const lim=(to==null?1e6:to)/1e6,t0=vm.t,dt=2e-4;let st=-1,t1=0;
+    while(vm.t-t0<lim){const v=vm.hw.digitalRead(p,e.ln)?1:0;if(st<0){if(v!==lv)st=0;}else if(st===0){if(v===lv){st=1;t1=vm.t;}}else if(v!==lv)return Math.round((vm.t-t1)*1e6);yield{dl:dt};}return 0;}},
+  map:{n:[5,5],h:'값, 원래 최소, 원래 최대, 새 최소, 새 최대',r:'l',f:(vm,[x,a,b,c,d],e)=>{if(b===a)throw new CErr('map( )의 원래 범위가 0이에요(둘째·셋째 값이 같아요)',e.ln);return wrap(Math.trunc((x-a)*(d-c)/(b-a))+c,{k:'i',bits:32});}},
+  constrain:{n:[3,3],h:'값, 최소, 최대',r:(ts,ar)=>ar(ar(ts[0],ts[1]),ts[2]),f:(vm,[x,a,b])=>x<a?a:x>b?b:x},
+  min:{n:[2,2],h:'a, b',r:(ts,ar)=>ar(ts[0],ts[1]),f:(vm,[a,b])=>a<b?a:b},
+  max:{n:[2,2],h:'a, b',r:(ts,ar)=>ar(ts[0],ts[1]),f:(vm,[a,b])=>a>b?a:b},
+  abs:{n:[1,1],h:'값',r:(ts,ar,pr)=>ts[0].k==='f'?ts[0]:pr(ts[0]),f:(vm,[a])=>a<0?-a:a},
+  sq:{n:[1,1],h:'값',r:(ts,ar,pr)=>ts[0].k==='f'?ts[0]:pr(ts[0]),f:(vm,[a])=>a*a},
+  sqrt:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.sqrt(a)},pow:{n:[2,2],h:'밑, 지수',r:'f',f:(vm,[a,b])=>Math.pow(a,b)},
+  sin:{n:[1,1],h:'라디안',r:'f',f:(vm,[a])=>Math.sin(a)},cos:{n:[1,1],h:'라디안',r:'f',f:(vm,[a])=>Math.cos(a)},tan:{n:[1,1],h:'라디안',r:'f',f:(vm,[a])=>Math.tan(a)},
+  atan2:{n:[2,2],h:'y, x',r:'f',f:(vm,[y,x])=>Math.atan2(y,x)},exp:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.exp(a)},log:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.log(a)},log10:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.log10(a)},
+  fabs:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.abs(a)},floor:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.floor(a)},ceil:{n:[1,1],h:'값',r:'f',f:(vm,[a])=>Math.ceil(a)},
+  round:{n:[1,1],h:'값',r:'l',f:(vm,[a])=>a>=0?Math.floor(a+.5):Math.ceil(a-.5)},
+  random:{n:[1,2],h:'[최소,] 최대(미포함)',r:'l',f:(vm,a)=>{const [lo,hi]=a.length===1?[0,a[0]]:a;if(hi<=lo)return lo;return lo+Math.floor(vm.rnd()*(hi-lo));}},
+  randomSeed:{n:[1,1],h:'씨앗 값',r:'v',f:(vm,[s])=>{vm.seed=(s>>>0)||1;}},
+  bitRead:{n:[2,2],h:'값, 비트 번호',r:'i',f:(vm,[v,b])=>(v>>b)&1},bit:{n:[1,1],h:'비트 번호',r:'ul',f:(vm,[b])=>wrap(2**b,{k:'i',bits:32,uns:true})},
+  bitSet:{n:[2,2],h:'변수, 비트',r:'l',f:(vm,[v,b])=>v|(1<<b)},bitClear:{n:[2,2],h:'변수, 비트',r:'l',f:(vm,[v,b])=>v&~(1<<b)},
+  lowByte:{n:[1,1],h:'값',r:'i',f:(vm,[v])=>v&255},highByte:{n:[1,1],h:'값',r:'i',f:(vm,[v])=>(v>>8)&255},
+  isDigit:{n:[1,1],h:'문자',r:'i',f:(vm,[c])=>c>=48&&c<=57?1:0},isAlpha:{n:[1,1],h:'문자',r:'i',f:(vm,[c])=>/[A-Za-z]/.test(String.fromCharCode(c))?1:0},
+  attachInterrupt:{n:[3,3],h:'',r:'v',f:(vm,a,e)=>{throw new CErr('attachInterrupt(인터럽트)는 아직 못 써요 — loop( )에서 digitalRead로 바뀜을 살펴 보세요',e.ln);}},
+  digitalPinToInterrupt:{n:[1,1],h:'핀',r:'i',f:(vm,[p])=>p},
+  noInterrupts:{n:[0,0],h:'',r:'v',f:()=>{}},interrupts:{n:[0,0],h:'',r:'v',f:()=>{}},yield:{n:[0,0],h:'',r:'v',f:()=>{}},
+};
+const STRC={f:(vm,[v,d],e)=>{const t=e.a[0].ty;if(d!=null&&t.k==='i')return fmtNum(v,t,d);return t.k==='f'?fmtNum(v,t,null,d==null?2:d):t.ch?String.fromCharCode(v&255):typeof v==='string'?v:String(v);}};
+const pr=(e,v,k,d)=>{const t=e.a[k].ty;if(typeof v==='string')return v;if(Array.isArray(v)){let s='';for(const c of v){if(!c||typeof c!=='number')break;s+=String.fromCharCode(c&255);}return s;}if(t.k==='f')return fmtNum(v,t,null,d==null?2:d);if(d!=null)return fmtNum(v,t,d);if(t.ch)return String.fromCharCode(v&255);return String(v);};
+const SER={begin:{n:[1,2],r:'v',f:(vm,[b])=>{vm.baud=b;vm.serOn=true;}},end:{n:[0,0],r:'v',f:vm=>{vm.serOn=false;}},
+  print:{n:[1,2],r:'i',f:(vm,[v,d],e)=>vm.out(pr(e,v,0,d))},println:{n:[0,2],r:'i',f:(vm,[v,d],e)=>vm.out((e.a.length?pr(e,v,0,d):'')+'\n')},
+  write:{n:[1,1],r:'i',f:(vm,[v],e)=>vm.out(typeof v==='string'?v:String.fromCharCode(v&255))},
+  available:{n:[0,0],r:'i',f:vm=>vm.hw.serIn.length},read:{n:[0,0],r:'i',f:vm=>vm.hw.serIn.length?vm.hw.serIn.shift():-1},peek:{n:[0,0],r:'i',f:vm=>vm.hw.serIn.length?vm.hw.serIn[0]:-1},
+  flush:{n:[0,0],r:'v',f:()=>{}},availableForWrite:{n:[0,0],r:'i',f:()=>63},setTimeout:{n:[1,1],r:'v',f:(vm,[ms])=>{vm.serTo=ms/1000;}},
+  parseInt:{n:[0,0],r:'l',y:true,g:function*(vm){const q=vm.hw.serIn,t0=vm.t;let s='';for(;;){while(q.length&&!s&&!/[-\d]/.test(String.fromCharCode(q[0])))q.shift();while(q.length&&/[\d]|-/.test(String.fromCharCode(q[0]))&&!(s&&q[0]===45))s+=String.fromCharCode(q.shift());if(s&&q.length)break;if(vm.t-t0>=(vm.serTo??1))break;yield{dl:.005};}return parseInt(s)||0;}},
+  parseFloat:{n:[0,0],r:'f',y:true,g:function*(vm){const q=vm.hw.serIn,t0=vm.t;let s='';for(;;){while(q.length&&!s&&!/[-\d.]/.test(String.fromCharCode(q[0])))q.shift();while(q.length&&/[\d.]|-/.test(String.fromCharCode(q[0])))s+=String.fromCharCode(q.shift());if(s&&q.length)break;if(vm.t-t0>=(vm.serTo??1))break;yield{dl:.005};}return parseFloat(s)||0;}},
+  readString:{n:[0,0],r:'s',y:true,g:function*(vm){const q=vm.hw.serIn,t0=vm.t;let s='',last=vm.t;for(;;){while(q.length){s+=String.fromCharCode(q.shift());last=vm.t;}if(vm.t-last>=(vm.serTo??1)||vm.t-t0>5)break;yield{dl:.005};}return s;}},
+  readStringUntil:{n:[1,1],r:'s',y:true,g:function*(vm,[c]){const q=vm.hw.serIn,t0=vm.t;let s='',last=vm.t;for(;;){while(q.length){const x=q.shift();last=vm.t;if(x===c)return s;s+=String.fromCharCode(x);}if(vm.t-last>=(vm.serTo??1)||vm.t-t0>5)break;yield{dl:.005};}return s;}}};
+SER.readString.r='s';SER.readStringUntil.r='s';
+const STRM={length:{r:'i',f:s=>s.length},toInt:{r:'l',f:s=>parseInt(s)||0},toFloat:{r:'f',f:s=>parseFloat(s)||0},indexOf:{r:'i',f:(s,[x])=>s.indexOf(typeof x==='string'?x:String.fromCharCode(x))},
+  substring:{r:'s',f:(s,[a,b])=>s.substring(a,b)},charAt:{r:'i',f:(s,[i])=>i>=0&&i<s.length?s.charCodeAt(i):0},equals:{r:'i',f:(s,[x])=>s===x?1:0},
+  toUpperCase:{r:'s',f:s=>s.toUpperCase()},toLowerCase:{r:'s',f:s=>s.toLowerCase()},trim:{r:'s',f:s=>s.trim()},startsWith:{r:'i',f:(s,[x])=>s.startsWith(x)?1:0},endsWith:{r:'i',f:(s,[x])=>s.endsWith(x)?1:0},
+  c_str:{r:'s',f:s=>s},concat:{r:'s',f:(s,[x])=>s+(typeof x==='string'?x:String(x))}};
+/* 컴파일: 성공하면 {ok, P}, 실패하면 {ok:false, err:{ln,msg}} */
+function compile(src,o){const warn=[];try{const T=prep(lex(src),warn);const top=parse(T,o.intBits);const P=annotate(top,o,warn);
+    let fnN=0,stN=0;const cnt=s=>{if(!s||typeof s!=='object')return;if(s.k&&s.ln&&['decl','ex','if','wh','do','for','sw','brk','cnt','ret'].includes(s.k))stN++;for(const k of ['b','a','s','init'])if(Array.isArray(s[k]))s[k].forEach(cnt);else if(s[k]&&s[k].k)cnt(s[k]);};
+    for(const d of top)if(d.k==='fn'){fnN++;cnt(d.body);}
+    const lines=new Set();const lw=s=>{if(!s||typeof s!=='object')return;if(s.ln&&['decl','ex','if','wh','do','for','sw','brk','cnt','ret'].includes(s.k))lines.add(s.ln);for(const k of ['b','s','a','init'])if(Array.isArray(s[k]))s[k].forEach(lw);else if(s[k]&&typeof s[k]==='object'&&s[k].k&&['blk','if','wh','do','for','sw','decl','ex','nop','brk','cnt','ret','case','dflt'].includes(s[k].k))lw(s[k]);};
+    for(const d of top)if(d.k==='fn')lw(d.body);
+    const bytes=P.G.reduce((n,s)=>n+(s.ty.k==='f'?4:s.ty.k==='s'?6:s.ty.b?1:s.ty.bits/8)*(s.dims?s.dims.reduce((p,q)=>p*q,1):1),0);
+    return{ok:true,P,warn,info:{fns:fnN,stmts:stN,globals:P.G.length,ram:bytes},lines};}
+  catch(e){if(e instanceof CErr)return{ok:false,err:{ln:e.ln||1,msg:e.message},warn};throw e;}}
+/* 실행기: hw = {valid, isAnalog, pinMode, digitalWrite, digitalRead, analogRead, analogWrite, tone, noTone, serIn[]} */
+function start(P,hw,o={}){const vm={P,hw,G:new Array(P.G.length),frames:[],t:o.t0||0,sInit:new Set(),seed:12345,serOn:false,out:s=>{if(o.out)o.out(s);return s.length;},
+    rnd(){let x=this.seed;x^=x<<13;x^=x>>>17;x^=x<<5;this.seed=x>>>0;return this.seed/4294967296;},err:null,ln:0,done:false,steps:0};
+  vm.gen=main(vm);return vm;}
+/* 한 단계: 다음 멈춤까지. 돌려줌 {k:'ln', ln, d(깊이)} | {k:'dl', s} | {k:'loop'} | {k:'err', msg, ln} */
+function step(vm){if(vm.err)return{k:'err',...vm.err};try{const r=vm.gen.next();if(r.done){vm.done=true;return{k:'done'};}const y=r.value;
+    if(y.dl!=null)return{k:'dl',s:y.dl};if(y.loop)return{k:'loop'};vm.steps++;vm.ln=y.ln;return{k:'ln',ln:y.ln,d:vm.frames.length};}
+  catch(e){const ln=e.ln||(vm.frames.length?vm.frames[vm.frames.length-1].ln:vm.ln);vm.err={msg:e instanceof CErr?e.message:'실행 중 오류: '+e.message,ln};return{k:'err',...vm.err};}}
+/* 디버거용: 변수 보기 */
+function showVal(v,t,sym){if(Array.isArray(v)){const f=x=>Array.isArray(x)?'{'+x.slice(0,16).map(f).join(', ')+(x.length>16?', …':'')+'}':showVal(x,t);return f(v);}
+  if(v===undefined||v===null)return'(아직 없음)';if(typeof v==='string')return JSON.stringify(v);if(t.k==='f')return Number.isFinite(v)?String(+v.toPrecision(7)):String(v);if(t.b)return v?'true':'false';if(t.ch)return v+(v>=32&&v<127?` '${String.fromCharCode(v)}'`:'');return String(v);}
+function vars(vm){const g=vm.P.G.map(s=>({nm:s.nm,ty:tyName(s.ty)+(s.nd?'['+s.dims.join('][')+']':''),v:showVal(vm.G[s.i],s.ty),set:vm.sInit.has(s)}));
+  const fr=vm.frames.map(F=>({nm:F.nm,ln:F.ln,cl:F.cl,vars:(F.fn.syms||[]).filter(s=>F.s[s.i]!==undefined).map(s=>({nm:s.nm,ty:tyName(s.ty)+(s.nd?(s.dims?'['+s.dims.join('][')+']':'[]'):''),v:showVal(F.s[s.i],s.ty)}))}));
+  return{g,fr};}
+return{compile,start,step,vars,fmtNum,tyName,CErr,lex};})();
+</script>
+<script>
 'use strict';
 /* ── 저작자 서명(지우지 마세요) — Copyright (c) 2026 co2maker-cyber. All rights reserved. ── */
 const AUTHOR_SIG=Object.freeze({author:'co2maker-cyber',work:'브레드보드 CAD',year:2026,id:'C2M-2026-BC51AA6C-BBCAD',notice:'© 2026 co2maker-cyber. All rights reserved. 무단 복제·재배포·상업적 이용 금지'});
@@ -1753,12 +2195,17 @@ const pref=b=>b===1?'':b+':';
 /* 보드 목록(S.boards)에서 구멍 표를 만든다. 보드 1의 구멍 이름은 'a12', 다른 보드는 '2:a12' */
 const HOLES=new Map(), HL=[];let baseRep=[],RAILS=[],nBoardHoles=0,termSig=null;
 const boardById=id=>S.boards.find(b=>b.id===id);
-function boardBox(B){const t=BTYPES[B.type],w=bW(B.type);return t.rails?{x0:B.x+4,y0:B.y+4,x1:B.x+w-4,y1:B.y+380}:{x0:B.x+4,y0:B.y+60,x1:B.x+w-4,y1:B.y+324};}
+/* 보드 돌리기(B.rot = 0·90·180·270, 시계 방향): 보드 가운데를 축으로 돈다. 구멍(HOLES)의 x·y는 화면 위치, lx·ly는 돌리기 전 위치 */
+const bCtr=B=>({x:B.x+bW(B.type)/2,y:B.y+MID});
+function rotXY(B,x,y,inv,rot){const r=(((rot??B.rot)||0)*(inv?-1:1)%360+360)%360;if(!r)return{x,y};const C=bCtr(B),dx=x-C.x,dy=y-C.y;
+  return r===90?{x:C.x-dy,y:C.y+dx}:r===180?{x:C.x-dx,y:C.y-dy}:{x:C.x+dy,y:C.y-dx};}
+function boardBox(B){const t=BTYPES[B.type],w=bW(B.type),b=t.rails?{x0:B.x+4,y0:B.y+4,x1:B.x+w-4,y1:B.y+380}:{x0:B.x+4,y0:B.y+60,x1:B.x+w-4,y1:B.y+324};
+  if(!B.rot)return b;const a=rotXY(B,b.x0,b.y0),c=rotXY(B,b.x1,b.y1);return{x0:Math.min(a.x,c.x),y0:Math.min(a.y,c.y),x1:Math.max(a.x,c.x),y1:Math.max(a.y,c.y)};}
 function buildHoles(){HOLES.clear();HL.length=0;const m=new Map();baseRep=[];RAILS=[];
   for(const B of S.boards){const t=BTYPES[B.type];
     for(const r of ROWS){if(isRail(r)&&!t.rails)continue;
       for(let c=1;c<=t.cols;c++){if(isRail(r)&&!railHas(c))continue;
-        const h={id:pref(B.id)+r+c,b:B.id,r,c,ri:ROWS.indexOf(r),x:B.x+X0+(c-1)*P,y:B.y+ROWY[r],i:HL.length};HOLES.set(h.id,h);HL.push(h);
+        const lx=B.x+X0+(c-1)*P,ly=B.y+ROWY[r],wp=rotXY(B,lx,ly),h={id:pref(B.id)+r+c,b:B.id,r,c,ri:ROWS.indexOf(r),x:wp.x,y:wp.y,lx,ly,i:HL.length};HOLES.set(h.id,h);HL.push(h);
         const k=B.id+'|'+(isRail(r)?r:(h.ri<=6?'T':'B')+c);if(!m.has(k))m.set(k,h.i);baseRep.push(m.get(k));
         if(isRail(r)&&c===1+(r[1]==='p'||r[1]==='n'?0:0)&&!RAILS.some(x=>x.b===B.id&&x.r===r))RAILS.push({b:B.id,r,i:h.i,lv:r[1]==='p'?1:0});}}}
   nBoardHoles=HL.length;termSig=null;syncTerms();}
@@ -2777,6 +3224,151 @@ pxDef({k:'cpu64',sub:'dig',pre:'U',nid:'CPU_16_32B_ASYNC_8MHZ',title:'16/32비�
     ...rng(20,i=>'A'+(i+1)),'VCC','A21','A22','A23','GND','D15','D14','D13','D12','D11','D10','D9','D8','D7','D6','D5'],
   draw:(c,ph)=>{const B=dipBody(ph,'#3A2F28',6);return B.s+`<circle cx="${B.x0-1}" cy="${B.y}" r="2.6" fill="#1E1A17"/><text x="${B.x}" y="${B.y+3}" font-size="9" font-weight="700" fill="#E9D8B8" text-anchor="middle" font-family="var(--mono)">CPU 16/32 · DIP-64</text>`;},
   desc:'안은 32비트 레지스터, 밖으로는 16비트 데이터 버스(D0~D15)와 24비트 주소 버스(A1~A23, 바이트 선택은 ~UDS·~LDS)를 가진 마이크로프로세서예요. ~AS로 주소가 유효함을 알리고, 메모리·주변 장치가 ~DTACK을 LOW로 돌려줄 때까지 기다리는 비동기 버스예요. ~IPL2~0으로 7단계 인터럽트, FC2~0으로 사용자/관리자 상태를 알려요. 안에 32비트 레지스터(데이터 8개, 주소 8개)가 있고 16MB 주소 공간을 다뤄요. 5V, 클럭 8MHz 등급. VCC(14·49번)와 GND(16·53번)가 두 쌍이라 모두 이어야 해요. 폭이 900mil(22.86mm)이라 브레드보드에는 가운데 홈을 걸쳐 꽂을 수 없고, PCB 발자국은 줄 간격 22.86mm로 그려요.'+BLKN});
+// ── 마이컴 보드(코딩 가능, 아두이노 호환 핀 번호·함수): 코드는 MCUC 해석기가 이 페이지 안에서 돌린다
+//   보드마다: 핀 이름(pins) → 핀 번호(D·A·GPIO), 정수 크기(ib), 전원 전압(vcc), ADC 비트, PWM 핀, 내장 LED 핀, USB 전원 여부
+const MCUB={
+  uno:{lab:'표준형',ib:16,vcc:5,adc:10,A0:14,nA:6,pwm:[3,5,6,9,10,11],led:13,usb:1,col:'#0E6A8E',chip:'8비트 MCU 16MHz',flash:32,ram:2},
+  nano:{lab:'소형',ib:16,vcc:5,adc:10,A0:14,nA:8,aOnly:[20,21],pwm:[3,5,6,9,10,11],led:13,usb:1,col:'#1B5C8A',chip:'8비트 MCU',flash:32,ram:2},
+  pro:{lab:'프로 미니형',ib:16,vcc:5,adc:10,A0:14,nA:4,pwm:[3,5,6,9,10,11],led:13,usb:0,col:'#8C2232',chip:'8비트 MCU',flash:32,ram:2},
+  mega:{lab:'대형',ib:16,vcc:5,adc:10,A0:54,nA:16,pwm:[2,3,4,5,6,7,8,9,10,11,12,13,44,45,46],led:13,usb:1,col:'#0D5C86',chip:'8비트 MCU 256KB',flash:256,ram:8},
+  wifi:{lab:'와이파이형',ib:32,vcc:3.3,adc:12,esp:1,led:2,usb:1,col:'#202326',chip:'32비트 듀얼코어 · Wi-Fi',flash:4096,ram:320,inOnly:[34,35,36,39],
+    an:{36:'A0',39:'A3',32:'A4',33:'A5',34:'A6',35:'A7',4:'A10',2:'A12',15:'A13',13:'A14',12:'A15',14:'A16',27:'A17',25:'A18',26:'A19'}}};
+// 핀 이름 → 핀 번호 표, 전원 핀 묶음
+function mcuMap(D,pins){if(D._m)return D._m;const io=new Map(),pw={};
+  pins.forEach((nm,k)=>{const w=nm.split(' ')[0];let m;
+    if((m=/^D(\d+)$/.exec(w)))io.set(+m[1],k);else if((m=/^GPIO(\d+)$/.exec(w)))io.set(+m[1],k);else if((m=/^A(\d+)$/.exec(w)))io.set(D.A0+ +m[1],k);
+    else(pw[w]=pw[w]||[]).push(k);});
+  const ana=new Set(D.esp?Object.keys(D.an).map(Number):rng(D.nA,i=>D.A0+i)),consts={LED_BUILTIN:D.led};
+  if(D.esp)for(const [g,a] of Object.entries(D.an))consts[a]=+g;else for(let i=0;i<D.nA;i++)consts['A'+i]=D.A0+i;
+  return D._m={io,pw,ana,consts,pwm:new Set(D.esp?[...io.keys()].filter(p=>!D.inOnly.includes(p)):D.pwm)};}
+const MCU_BLINK=`// 내장 LED 깜박이기 — [업로드]를 누르면 보드에서 돌아가요
+// 줄 번호를 누르면 중단점(빨간 점)이 생겨요. [한 줄씩]으로 따라가 보세요
+
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);   // 내장 LED 핀을 출력으로
+  Serial.begin(9600);             // 시리얼 모니터로 글자 보내기 시작
+  Serial.println("안녕하세요!");
+}
+
+int count = 0;
+
+void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);   // 켜기
+  delay(500);                        // 0.5초 기다리기
+  digitalWrite(LED_BUILTIN, LOW);    // 끄기
+  delay(500);
+  count++;
+  Serial.print("깜박인 횟수: ");
+  Serial.println(count);
+}
+`;
+const mcuDraw=D=>(c,ph,r)=>{const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),M=r&&r.m,pw=!!(r&&r.mpw),mp=mcuMap(D,PX[c.kind].pins);
+  const on=k=>pw&&M&&M.mode[k]===1&&(M.out[k]||M.pwm[k]>0),ledK=mp.io.get(D.led);const big=ph.length>40;
+  let s=`<rect x="${x0-16}" y="${y0-15}" width="${x1-x0+32+(D.usb?10:0)}" height="${y1-y0+30}" rx="4" fill="${D.col}" stroke="#0A0C10" stroke-width="1"/>`;
+  if(D.usb)s+=`<rect x="${x1+12}" y="${(y0+y1)/2-8}" width="16" height="16" rx="1.5" fill="#B8BEC6" stroke="#5A6068"/><rect x="${x1+16}" y="${(y0+y1)/2-4}" width="9" height="8" fill="#7B828B"/>`;
+  for(const p of ph)s+=`<rect x="${p.x-4}" y="${p.y-4}" width="8" height="8" fill="#16181C"/><circle cx="${p.x}" cy="${p.y}" r="2.2" fill="#D9B44A"/>`;
+  const pins=PX[c.kind].pins,n=pins.length,h=n/2;
+  ph.forEach((p,k)=>{const nm=pins[k].split(' ')[0].replace('GPIO','');s+=`<text x="${p.x}" y="${p.y+(k<h?-7:11)}" font-size="${big?4.2:4.8}" fill="#E8EEF4" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${nm}</text>`;});
+  const cx=(x0+x1)/2,cy=(y0+y1)/2,cw=Math.min(90,x1-x0-30);
+  s+=`<rect x="${cx-cw/2}" y="${cy-8}" width="${cw}" height="16" rx="1.5" fill="#15171A"/><text x="${cx}" y="${cy+3}" font-size="6" font-weight="700" fill="#C9CFD6" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${D.chip}</text>`;
+  const lx=x0+(D.usb?8:6);const st=M&&M.st,tx=M&&M.tx&&simNow()-M.tx<.12;
+  s+=`<rect x="${lx-4}" y="${cy-9}" width="7" height="5" rx="1" fill="${pw?'#3BE36B':'#20462B'}"/><rect x="${lx-4}" y="${cy-2}" width="7" height="5" rx="1" fill="${ledK!=null&&on(ledK)?'#FFB224':'#4A3A1A'}"/><rect x="${lx-4}" y="${cy+5}" width="7" height="4" rx="1" fill="${tx?'#FFD84A':'#3D3A20'}"/>`;
+  s+=`<text x="${lx+5}" y="${cy-5}" font-size="4.5" fill="#E8EEF4" font-family="var(--mono)" pointer-events="none">ON</text><text x="${lx+5}" y="${cy+2}" font-size="4.5" fill="#E8EEF4" font-family="var(--mono)" pointer-events="none">L</text><text x="${lx+5}" y="${cy+9}" font-size="4.5" fill="#E8EEF4" font-family="var(--mono)" pointer-events="none">TX</text>`;
+  const badge=!M||!M.P?(M&&M.cerr?['코드 오류','#E5484D']:['코드 없음','#8A9099']):st==='err'?['실행 오류','#E5484D']:st==='pause'?['멈춤 '+(M.vm?M.vm.ln:'')+'줄','#F5A524']:!pw?['전원 없음','#8A9099']:['실행 중','#3BE36B'];
+  s+=`<text x="${x1+(D.usb?8:12)}" y="${y0-4}" font-size="6" font-weight="700" fill="${badge[1]}" text-anchor="end" font-family="var(--sans)" pointer-events="none">${D.lab} · ${badge[0]}</text>`;
+  return s;};
+const MCUD=' 코드는 [속성]의 [코드 편집 · 디버그]에서 써요. C 언어로 setup( )·loop( )를 쓰고 pinMode·digitalWrite·digitalRead·analogRead·analogWrite·delay·millis·tone·Serial.print 같은 아두이노 호환 함수를 써요. [업로드]하면 보드가 처음부터 다시 돌고, 중단점·한 줄씩 실행·변수 보기로 디버깅해요. 이 프로그램이 직접 만든 해석기라 C++의 클래스·포인터·라이브러리(#include)는 못 써요.';
+const mcuDef=(k,title,cols,pins,desc,extra)=>pxDef(Object.assign({k,sub:'mcu',pre:'U',title,lay:'dip',cols:rng(cols,i=>i),pins,mcu:MCUB[k],bh:12,init:()=>({code:MCU_BLINK}),draw:mcuDraw(MCUB[k]),desc:desc+MCUD,
+  props:c=>mcuProps(c),bind:c=>mcuBind(c)},extra||{}));
+mcuDef('uno','마이컴 보드 · 표준형 (5V, 디지털 14 · 아날로그 6, USB)',13,
+  ['D0 (RX)','D1 (TX)','D2','D3 (PWM)','D4','D5 (PWM)','D6 (PWM)','D7','D8','D9 (PWM)','D10 (PWM)','D11 (PWM)','D12','D13 (내장 LED)','GND','AREF','A0','A1','A2','A3','A4','A5','VIN (7~12V 입력)','GND','5V','3V3'],
+  '가장 흔한 크기의 8비트 마이컴 보드예요(5V, 16MHz, 프로그램 32KB·변수 2KB). 디지털 핀 D0~D13(그중 3·5·6·9·10·11은 PWM), 아날로그 입력 A0~A5(0~5V → 0~1023)가 있고 D13에 내장 LED가 달려 있어요. USB로 전원을 받으면 5V·3V3 핀에서 전원이 나와 브레드보드 레일에 이을 수 있어요. 실제 보드는 브레드보드에 꽂지 않고 점퍼선으로 잇지만, 이 프로그램에서는 헤더 핀을 가운데 홈에 걸쳐 꽂아 바로 옆 구멍에서 전선을 뽑게 했어요(핀 순서는 이 프로그램이 정한 것).',{rw:15.24});
+mcuDef('nano','마이컴 보드 · 소형 (5V, 30핀 DIP, 브레드보드용)',15,
+  ['D1 (TX)','D0 (RX)','RESET','GND','D2','D3 (PWM)','D4','D5 (PWM)','D6 (PWM)','D7','D8','D9 (PWM)','D10 (PWM)','D11 (PWM)','D12','D13 (내장 LED)','3V3','AREF','A0','A1','A2','A3','A4','A5','A6 (아날로그 전용)','A7 (아날로그 전용)','5V','RESET','GND','VIN (7~12V 입력)'],
+  '브레드보드 가운데 홈에 바로 꽂는 작은 8비트 마이컴 보드예요(5V, 16MHz, 30핀 DIP 모양, 핀 간격 600mil). 핀 번호는 표준형과 같고 아날로그 입력이 A0~A7로 두 개 더 있어요(A6·A7은 아날로그 입력 전용). 1번 핀이 D1(TX), 15번이 D12, 16번이 D13이에요. USB를 꽂으면(기본) 5V 핀에서 전원이 나와요.',{rw:15.24});
+mcuDef('pro','마이컴 보드 · 프로 미니형 (5V, 24핀, USB 없음)',12,
+  ['D1 (TXO)','D0 (RXI)','RESET','GND','D2','D3 (PWM)','D4','D5 (PWM)','D6 (PWM)','D7','D8','D9 (PWM)','D10 (PWM)','D11 (PWM)','D12','D13 (내장 LED)','A0','A1','A2','A3','VCC (5V)','RESET','GND','RAW (6~12V 입력)'],
+  'USB 칩을 빼서 아주 작게 만든 8비트 마이컴 보드예요(5V, 16MHz). USB가 없어서 전원을 따로 줘야 해요: VCC 핀에 5V(브레드보드 + 레일)를 주거나 RAW 핀에 6~12V를 넣어요. GND도 꼭 이어요. 전원이 없으면 코드가 돌지 않아요. 핀 번호·함수는 표준형과 같아요.',{rw:15.24,init:()=>({code:MCU_BLINK,usb:false})});
+mcuDef('mega','마이컴 보드 · 대형 (5V, 디지털 54 · 아날로그 16, USB)',38,
+  [...rng(38,i=>'D'+i+(i===0?' (RX)':i===1?' (TX)':i===13?' (내장 LED)':MCUB.mega.pwm.includes(i)?' (PWM)':'')),...rng(16,i=>'D'+(38+i)+(MCUB.mega.pwm.includes(38+i)?' (PWM)':'')),...rng(16,i=>'A'+i),'5V','3V3','GND','GND','VIN (7~12V 입력)','AREF'],
+  '핀이 아주 많은 8비트 마이컴 보드예요(5V, 16MHz, 프로그램 256KB·변수 8KB). 디지털 D0~D53(2~13·44~46은 PWM), 아날로그 A0~A15(핀 번호 54~69)가 있어요. LED를 많이 켜거나 버튼·센서를 여럿 이을 때 써요. 실제 보드는 헤더가 가장자리에 둘러 있지만 이 프로그램에서는 두 줄로 펴서 홈에 걸쳐 꽂게 했어요(핀 순서는 이 프로그램이 정한 것).',{rw:15.24});
+mcuDef('wifi','마이컴 보드 · 와이파이형 (3.3V, 32비트 듀얼코어, 30핀)',15,
+  ['EN (리셋)','GPIO36 (입력 전용, A0)','GPIO39 (입력 전용, A3)','GPIO34 (입력 전용, A6)','GPIO35 (입력 전용, A7)','GPIO32 (A4)','GPIO33 (A5)','GPIO25 (A18)','GPIO26 (A19)','GPIO27 (A17)','GPIO14 (A16)','GPIO12 (A15)','GPIO13 (A14)','GND','VIN (5V)',
+   'GPIO23','GPIO22','GPIO1 (TX0)','GPIO3 (RX0)','GPIO21','GPIO19','GPIO18','GPIO5','GPIO17','GPIO16','GPIO4 (A10)','GPIO2 (내장 LED, A12)','GPIO15 (A13)','GND','3V3'],
+  '와이파이가 들어 있는 32비트 마이컴 보드예요(3.3V 논리, 240MHz 듀얼코어). 핀은 GPIO 번호로 불러요(예: digitalWrite(2, HIGH) — 내장 LED). 정수 int가 32비트라 큰 수도 넘치지 않아요. 아날로그 입력은 12비트(0~3.3V → 0~4095)이고, GPIO34·35·36·39는 입력 전용이라 출력으로 못 써요. 출력 HIGH는 3.3V예요(5V 부품에 바로 이을 때 조심). 와이파이 통신은 시뮬레이션하지 않아요.',{rw:25.4});
+/* 보드 실행 상태(rt(c).m): vm(해석기), mode/out/pwm/tone(핀 상태, 부품 핀 칸 번호로), ser(시리얼 글), st 'run'|'pause'|'err'|'done' */
+function mcuM(c){const r=rt(c);if(!r.m)r.m={mode:{},out:{},pwm:{},tone:{},pull:{},ser:'',serIn:[],st:'run',bp:new Set(c.bp||[]),dirty:false};return r.m;}
+function mcuReset(c,keepSer){const m=mcuM(c);m.vm=null;m.mode={};m.out={};m.pwm={};m.tone={};m.pull={};m.err=null;m.warn=null;m.stp=null;m.slow=false;if(!keepSer)m.ser='';m.st='run';m.fw=0;m.pw1=0;m.nob=false;}
+function mcuCompile(c){const m=mcuM(c),D=PX[c.kind].mcu,mp=mcuMap(D,PX[c.kind].pins);if(m.src===c.code&&m.P!==undefined)return m;m.src=c.code;
+  const r=MCUC.compile(c.code||'',{intBits:D.ib,consts:mp.consts});m.P=r.ok?r.P:null;m.cerr=r.ok?null:r.err;m.info=r.ok?r.info:null;m.lines=r.ok?r.lines:null;m.cwarn=r.warn||[];mcuReset(c);return m;}
+// 전원: USB면 늘 켜짐, 아니면 5V(VCC)·3V3 핀에 전원이 들어오거나 VIN(RAW)에 충분한 전압
+function mcuPw(c,lv,vv){const D=PX[c.kind].mcu,mp=mcuMap(D,PX[c.kind].pins);if(D.usb&&c.usb!==false)return true;const P_=mp.pw;
+  const hi=k=>lv(k)===Hh,v=k=>{const x=vv(k);return x==null?(lv(k)===Hh?5:0):x;};
+  if(D.esp)return(P_['3V3']||[]).some(k=>v(k)>=3)||(P_.VIN||[]).some(k=>v(k)>=4.5);
+  return[...(P_['5V']||[]),...(P_.VCC||[])].some(k=>hi(k)&&v(k)>=4.3)||[...(P_.VIN||[]),...(P_.RAW||[])].some(k=>v(k)>=6.5);}
+// 회로에 내보내기: resolve에서 부른다. add(줄, 값), srcV(줄 → 전압)
+function mcuDrive(c,hs,netOf,add,srcV,late){const r=rt(c),D=PX[c.kind].mcu,mp=mcuMap(D,PX[c.kind].pins),m=r.m;
+  if(late){if(!r.mpw||!m)return;for(const k of Object.keys(m.pull))if(m.pull[k]&&m.mode[k]!==1)late(netOf[hs[k]]);return;}
+  const usb=D.usb&&c.usb!==false,P_=mp.pw;
+  if(r.mpw||usb){for(const k of P_.GND||[])add(netOf[hs[k]],L);
+    const v5=usb||(P_.VIN||P_.RAW||[]).some(k=>(srcV.get(netOf[hs[k]])||0)>=6.5);
+    if(v5)for(const k of D.esp?(usb?P_.VIN||[]:[]):P_['5V']||[]){add(netOf[hs[k]],Hh);srcV.set(netOf[hs[k]],5);}
+    if(v5||(r.mpw&&!D.esp))for(const k of P_['3V3']||[]){add(netOf[hs[k]],Hh);srcV.set(netOf[hs[k]],3.3);}}
+  if(!r.mpw||!m)return;
+  for(const ks of Object.keys(m.mode)){const k=+ks;if(m.mode[k]!==1)continue;const n=netOf[hs[k]];
+    if(m.tone[k]){add(n,Hh);srcV.set(n,D.vcc/2);}else if(m.pwm[k]>0&&m.pwm[k]<255){add(n,Hh);srcV.set(n,D.vcc*m.pwm[k]/255);}
+    else{const o=m.pwm[k]>=255?1:m.out[k];add(n,o?Hh:L);srcV.set(n,o?D.vcc:0);}}}
+// 해석기에 주는 하드웨어
+function mcuHW(c){const m=mcuM(c),D=PX[c.kind].mcu,mp=mcuMap(D,PX[c.kind].pins);
+  const K=p=>mp.io.get(p),net=k=>{const h=HOLES.get(pinHoles(c)[k]);return h&&SIM.netOf?SIM.netOf[h.i]:-1;};
+  const fresh=()=>{if(m.dirty){m.dirty=false;settle();}};
+  const outOK=(p,ln)=>{if(D.aOnly&&D.aOnly.includes(p))throw new MCUC.CErr(`A${p-D.A0}는 아날로그 입력 전용이라 출력으로 쓸 수 없어요`,ln);if(D.inOnly&&D.inOnly.includes(p))throw new MCUC.CErr(`GPIO${p}는 입력 전용 핀이라 출력으로 쓸 수 없어요`,ln);};
+  const chg=(o,k,v)=>{if(o[k]!==v){o[k]=v;m.dirty=true;m.chg=true;}};
+  return{serIn:m.serIn,valid:p=>mp.io.has(p),isAnalog:p=>mp.ana.has(p),
+    pinMode(p,md){const k=K(p);if(md===1)outOK(p);chg(m.mode,k,md);chg(m.pull,k,md===2);if(md!==1){chg(m.pwm,k,0);delete m.tone[k];}},
+    digitalWrite(p,v,ln){const k=K(p);outOK(p,ln);if(m.mode[k]!==1){chg(m.pull,k,!!v);if(!m.warn)m.warn=[ln,`${p}번 핀에 pinMode(${p}, OUTPUT)을 하지 않고 digitalWrite를 했어요 — 출력 대신 풀업 저항만 켜지고 꺼져요`];return;}
+      if(m.tone[k]){delete m.tone[k];m.chg=true;}chg(m.pwm,k,0);chg(m.out,k,v);},
+    digitalRead(p,ln){const k=K(p);if(m.mode[k]===1)return m.pwm[k]>0?1:m.out[k]||0;fresh();const n=net(k),lv=SIM.lvl.get(n),va=SIM.vOf?SIM.vOf(n):null;
+      if(lv===Hh||lv===L){if(va!=null&&SIM.weak.has(n))return va>=D.vcc*.5?1:0;return lv===Hh?1:0;}
+      if(m.pull[k])return 1;if(!m.fw){m.fw=1;m.warn=[ln,`${p}번 핀이 아무 데도 이어지지 않아 값이 떠 있어요(실제로는 0과 1이 마구 바뀌어요) — 풀업·풀다운 저항을 달거나 INPUT_PULLUP을 써요`];}return 0;},
+    analogRead(p){const k=K(p);fresh();const n=net(k);let v=SIM.vOf?SIM.vOf(n):null;if(v==null){const lv=SIM.lvl.get(n);v=lv===Hh?D.vcc:lv===L?0:m.pull[k]?D.vcc:D.vcc*(.3+.1*Math.sin(m.vm.t*7));}
+      const mx=2**D.adc-1;return Math.max(0,Math.min(mx,Math.round(v/D.vcc*mx)));},
+    analogWrite(p,v,ln){const k=K(p);outOK(p,ln);chg(m.mode,k,1);delete m.tone[k];if(!mp.pwm.has(p)){chg(m.pwm,k,0);chg(m.out,k,v>=128?1:0);if(!m.pw1){m.pw1=1;m.warn=[ln,`${p}번 핀은 PWM 핀이 아니라 analogWrite가 HIGH/LOW(128 기준)로만 나가요 — PWM 핀: ${[...mp.pwm].slice(0,12).join(', ')}`];}return;}
+      chg(m.out,k,v>=255?1:0);chg(m.pwm,k,v);},
+    tone(p,f,dur){const k=K(p);outOK(p);chg(m.mode,k,1);m.tone[k]={f,end:dur?m.vm.t+dur:null};m.dirty=true;m.chg=true;},
+    noTone(p){const k=K(p);if(m.tone[k]){delete m.tone[k];m.dirty=true;m.chg=true;}}};}
+// 20ms마다: 보드마다 시뮬레이션 시각까지 코드를 돌린다. 출력이 바뀌면 true
+const MCU_STMT=1.5e-6,MCU_BUDGET=60000;
+function mcuTick(now){let any=false;for(const c of S.comps){if(c.t!=='px'||!PX[c.kind].mcu)continue;const r=rt(c),m=mcuCompile(c);
+    if(!r.mpw||!m.P){if(m.vm){mcuReset(c,true);any=true;}continue;}
+    if(!m.vm){m.vm=MCUC.start(m.P,mcuHW(c),{out:s=>{if(!m.vm.serOn){m.nob=true;return;}m.ser=(m.ser+s).slice(-20000);m.tx=simNow();m.serNew=true;}});m.t0=now;m.st=m.holdPause?'pause':'run';m.holdPause=false;any=true;}
+    if(m.st!=='run')continue;const vm=m.vm,target=now-m.t0;let n=0;m.chg=false;
+    for(const k of Object.keys(m.tone))if(m.tone[k].end!=null&&m.tone[k].end<=vm.t){delete m.tone[k];m.chg=true;m.dirty=true;}
+    while(vm.t<target){if(++n>MCU_BUDGET){m.slow=true;vm.t=target;break;}const y=MCUC.step(vm);
+      if(y.k==='ln'){vm.t+=MCU_STMT;const s=m.stp;
+        if(s?(s.mode==='into'||(s.mode==='over'&&y.d<=s.d)||(s.mode==='out'&&y.d<s.d)):m.bp.has(y.ln)){m.st='pause';m.stp=null;m.why=s?'step':'bp';break;}}
+      else if(y.k==='dl'){vm.t+=y.s;for(const k of Object.keys(m.tone))if(m.tone[k].end!=null&&m.tone[k].end<=vm.t){delete m.tone[k];m.chg=true;m.dirty=true;}}
+      else if(y.k==='loop')vm.t+=4e-6;
+      else if(y.k==='err'){m.st='err';m.err=y;any=true;break;}
+      else if(y.k==='done'){m.st='done';break;}}
+    if(m.st==='run'&&vm.t<target-.05)vm.t=target;
+    if(m.chg||m.st!=='run'||m.serNew)any=true;m.serNew=false;}
+  return any;}
+const mcuList=()=>S.comps.filter(c=>c.t==='px'&&PX[c.kind]&&PX[c.kind].mcu);
+// [속성] 칸: 상태·버튼·시리얼 미리 보기
+function mcuState(c){const r=rt(c),m=mcuCompile(c);if(m.cerr)return`<b style="color:var(--bad)">코드 오류 (${m.cerr.ln}줄)</b>: ${esc(m.cerr.msg)}`;
+  if(!S.power)return'전원 꺼짐(위 전원 단추)';if(!r.mpw)return`<b style="color:var(--warn)">전원 없음</b> — ${PX[c.kind].mcu.usb?'USB를 켜거나 ':''}${PX[c.kind].mcu.esp?'3V3 핀에 3.3V 또는 VIN에 5V':'5V(VCC) 핀에 5V 또는 VIN(RAW)에 7V 이상'}을 넣어요`;
+  if(m.st==='err')return`<b style="color:var(--bad)">실행 오류 (${m.err.ln}줄)</b>: ${esc(m.err.msg)}`;if(m.st==='pause')return`<b style="color:var(--warn)">일시 정지</b> — ${m.vm?m.vm.ln:''}줄 앞에서 멈췄어요`;
+  if(m.st==='done')return'코드가 끝났어요';return`<b style="color:var(--ok)">실행 중</b> · millis() = ${m.vm?Math.floor(m.vm.t*1000):0}${m.slow?' · 쉬지 않는 반복이 많아 시간을 건너뛰었어요':''}`;}
+function mcuProps(c){const D=PX[c.kind].mcu,m=mcuCompile(c),tail=m.ser.split('\n').slice(-6).join('\n');
+  return`<div class="prop"><label>상태</label><p class="desc" id="mcuSt" style="margin:0">${mcuState(c)}</p></div>
+    <div class="row"><button class="btn pri" id="mcuEd">코드 편집 · 디버그</button><button class="btn" id="mcuRs">리셋</button></div>
+    ${D.usb?`<div class="prop"><label>USB 전원</label><div class="seg" id="mcuUsb"><button data-v="1" aria-pressed="${c.usb!==false}">USB 꽂음 (5V 공급)</button><button data-v="0" aria-pressed="${c.usb===false}">빼기 (핀으로 전원)</button></div></div>`:''}
+    <div class="prop"><label>시리얼 모니터 (마지막 6줄)</label><pre id="mcuSer" style="margin:0;max-height:110px;overflow:auto;background:var(--sunk);border-radius:6px;padding:6px;font:11.5px/1.4 var(--mono);white-space:pre-wrap">${esc(tail)||'(아직 없음)'}</pre></div>
+    <p class="desc">${D.ib}비트 int · ADC ${D.adc}비트 · 논리 ${D.vcc}V · 프로그램 ${D.flash}KB${m.info?` · 지금 코드: 함수 ${m.info.fns}개, 전역 변수 ${m.info.ram}바이트`:''}</p>`;}
+function mcuBind(c){const q=id=>document.getElementById(id);const e=q('mcuEd');if(e)e.onclick=()=>mcuOpen(c.id);
+  const rs=q('mcuRs');if(rs)rs.onclick=()=>{mcuReset(c);settle();render();renderInfo();toast('보드를 리셋했어요 — 코드가 처음부터 다시 돌아요');};
+  const u=q('mcuUsb');if(u)u.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();if(b.dataset.v==='1')delete c.usb;else c.usb=false;commit(true);});}
 // 아날로그 IC 상태 글: r.ast = [{k, st, code}]
 function anaTx(c,r){const A_=(r&&r.ast)||[];if(!S.power)return '전원 꺼짐';if(!A_.length)return '계산 전';
   return A_.map((a,i)=>{const n=A_.filter(x=>x.k===a.k).length>1?(A_.slice(0,i).filter(x=>x.k===a.k).length+1)+' ':'';
@@ -3081,16 +3673,16 @@ const HZ=[0.5,1,2,4,10];
 const BAND=['#111','#7B4A1E','#D33','#F07A00','#E8D100','#2A2','#24D','#82C','#888','#FFF'];
 const ohmTx=o=>o>=1e6?(o/1e6)+'MΩ':o>=1000?(o/1000)+'kΩ':o+'Ω';
 const bands=o=>{const s=String(o);return[BAND[+s[0]],BAND[+s[1]],BAND[s.length-2],'#C9A227'];};
-const PREFIX={px:'X',led3:'D',psu:'PS',bat:'BAT',fg:'FG',osc:'OSC',cap:'C',gate:'G',ic:'U',seg7:'DS',wire:'W',res:'R',led:'D',btn:'BTN',sw:'SW',clk:'CLK'};
-const TNAME={px:'수동 소자·스위치',led3:'2색 LED (3핀)',cap:'커패시터',wire:'전선',res:'저항',led:'LED',btn:'푸시 버튼',sw:'토글 스위치',clk:'클럭 발생기',seg7:'7세그먼트 표시기',psu:'파워 서플라이',bat:'건전지',fg:'함수 발생기',osc:'오실로스코프'};
+const PREFIX={px:'X',led3:'D',psu:'PS',bat:'BAT',fg:'FG',osc:'OSC',spa:'SA',cap:'C',gate:'G',ic:'U',seg7:'DS',wire:'W',res:'R',led:'D',btn:'BTN',sw:'SW',clk:'CLK'};
+const TNAME={px:'수동 소자·스위치',led3:'2색 LED (3핀)',cap:'커패시터',wire:'전선',res:'저항',led:'LED',btn:'푸시 버튼',sw:'토글 스위치',clk:'클럭 발생기',seg7:'7세그먼트 표시기',psu:'파워 서플라이',bat:'건전지',fg:'함수 발생기',osc:'오실로스코프',spa:'스펙트럼 분석기'};
 const TWO=new Set(['wire','res','led','btn','sw','cap']);
 /* 계측기·건전지: 몸통은 보드 밖 아무 데나(c.x,c.y) 놓이고, 몸통의 단자가 구멍 노릇을 한다.
    단자 구멍의 이름은 '@열쇠:번호'(c.k = 계측기마다 다른 번호)이고, 보통 전선으로 보드 구멍과 잇는다. */
-const INST=new Set(['psu','bat','fg','osc']);
-const ISZ={psu:[170,92],bat:[130,74],fg:[180,92],osc:[250,200]};
-const IJACK={psu:[[20,16,'#E5484D','+'],[150,16,'#59606B','−',1]],bat:[[18,16,'#E5484D','+'],[112,16,'#59606B','−',1]],fg:[[20,16,'#F08C00','OUT'],[160,16,'#59606B','GND',1]],osc:[[28,16,'#F2C230','CH1'],[78,16,'#35B6E8','CH2']]};
-const JWIRE={psu:['#D93A3A','#24282D'],bat:['#D93A3A','#24282D'],fg:['#E57A1F','#24282D'],osc:['#E8B820','#2F6FDB']}; // 단자에서 뽑는 전선의 기본 색
-const IDEF={psu:()=>({v:5,on:true}),bat:()=>({v:9}),fg:()=>({wave:'sq',hz:1,vpp:5,off:0,duty:50}),osc:()=>({tdiv:.5,vdiv:2,vdiv2:2,pos1:3.25,pos2:6.75,on1:true,on2:true,run:true})};
+const INST=new Set(['psu','bat','fg','osc','spa']);
+const ISZ={psu:[170,92],bat:[130,74],fg:[180,92],osc:[250,200],spa:[310,250]};
+const IJACK={psu:[[20,16,'#E5484D','+'],[150,16,'#59606B','−',1]],bat:[[18,16,'#E5484D','+'],[112,16,'#59606B','−',1]],fg:[[20,16,'#F08C00','OUT'],[160,16,'#59606B','GND',1]],osc:[[28,16,'#F2C230','CH1'],[78,16,'#35B6E8','CH2']],spa:[[28,16,'#5CFF8F','RF IN']]};
+const JWIRE={psu:['#D93A3A','#24282D'],bat:['#D93A3A','#24282D'],fg:['#E57A1F','#24282D'],osc:['#E8B820','#2F6FDB'],spa:['#2FBF71']}; // 단자에서 뽑는 전선의 기본 색
+const IDEF={psu:()=>({v:5,on:true}),bat:()=>({v:9}),fg:()=>({wave:'sq',hz:1,vpp:5,off:0,duty:50}),osc:()=>({tdiv:.5,vdiv:2,vdiv2:2,pos1:3.25,pos2:6.75,on1:true,on2:true,run:true}),spa:()=>({cf:1000,span:2000,ref:20,dbd:10,rbw:0,vbw:0,att:-1,swt:0,hold:0,cal:0,run:true})};
 const PSU_V=[3.3,5,9,12,24,48,100],PSU_MAX=100,BAT_V=[1.5,3,4.5,6,9],FG_HZ=[0.5,1,2,5,10],FG_VPP=[1,3.3,5],OSC_T=[.05,.1,.2,.5,1],OSC_V=[1,2,5,10,20,50];
 const batName=v=>v===9?'9V 사각 건전지':'AA 건전지 '+Math.round(v/1.5)+'개';
 const isTerm=id=>typeof id==='string'&&id[0]==='@';
@@ -3121,7 +3713,7 @@ function pinHoles(c){
   if(c.t==='ic'||c.t==='seg7'){const n=c.t==='ic'?CHIPS[c.chip].pins.length:10,h=n/2,a=[];
     const pf=pref(c.b||1);for(let k=0;k<n;k++)a.push(k<h?pf+'f'+(c.col+k):pf+'e'+(c.col+n-1-k));return a;}
   return c.pins;}
-const pinNames=c=>c.t==='px'?PX[c.kind].pins:c.t==='led3'?(c.ca?['빨강 캐소드(R)','공통 애노드(A)','초록 캐소드(G)']:['빨강 애노드(R)','공통 캐소드(K)','초록 애노드(G)']):c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:c.t==='psu'||c.t==='bat'?['+ 단자','− 단자(GND)']:c.t==='fg'?['출력(OUT)','GND']:c.t==='osc'?['CH1 단자','CH2 단자']:['1','2'];
+const pinNames=c=>c.t==='px'?PX[c.kind].pins:c.t==='led3'?(c.ca?['빨강 캐소드(R)','공통 애노드(A)','초록 캐소드(G)']:['빨강 애노드(R)','공통 캐소드(K)','초록 애노드(G)']):c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:c.t==='psu'||c.t==='bat'?['+ 단자','− 단자(GND)']:c.t==='fg'?['출력(OUT)','GND']:c.t==='osc'?['CH1 단자','CH2 단자']:c.t==='spa'?['RF IN 단자']:['1','2'];
 /* 구멍 → 꽂힌 부품. 계측기 단자에는 전선을 여러 가닥 물릴 수 있어서 차지한 것으로 치지 않는다 */
 function occ(except){const m=new Map();for(const c of S.comps){if(c.id===except)continue;for(const h of pinHoles(c))if(!isTerm(h))m.set(h,c.id);}return m;}
 function labels(){const cnt={},m=new Map();for(const c of S.comps){const p=c.t==='px'?PX[c.kind].pre:c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].disp?'DS':PREFIX[c.t];cnt[p]=(cnt[p]||0)+1;m.set(c.id,p+cnt[p]);}return m;}
@@ -3175,7 +3767,7 @@ function settle(){
   // LED: 아날로그로 푸는 줄(트랜지스터·커패시터·다이오드 쪽)에 닿으면 다이오드처럼(색마다 켜지는 전압) 함께 푼다. 아니면 지금처럼 논리 값으로
   const LEDVF={red:1.8,orange:2,yellow:2,green:2.1,blue:2.9,white:2.9};
   const ledL=S.comps.filter(c=>c.t==='led').map(c=>{const hs=ph.get(c.id);rt(c).ai=null;return{c,a:netOf[hs[0]],k:netOf[hs[1]],m:{vf:LEDVF[c.color]||2,rs:15},st:0,i:0};});
-  const ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
+  const mcus=mcuList(),ics=S.comps.filter(c=>c.t==='ic'||c.t==='gate'),clks=S.comps.filter(c=>c.t==='clk'),psus=S.comps.filter(c=>c.t==='psu'||c.t==='bat'),fgs=S.comps.filter(c=>c.t==='fg');
   // 클럭 발생기(또는 함수 발생기 출력)가 물린 줄: 그 줄에 + 레일이 있으면 자동 5V를 넣지 않고 클럭 배선으로 쓴다
   const clkNets=new Set([...clks,...fgs].map(c=>netOf[ph.get(c.id)[0]]));
   let lvl,weak,strong=new Map(),volt=new Map(),srcV=new Map(); // srcV: 서플라이·함수 발생기가 직접 정하는 줄의 전압
@@ -3191,6 +3783,7 @@ function settle(){
       for(const c of clks)add(netOf[ph.get(c.id)[0]],clkVal(c,now));}
     for(const c of ics){const o=rt(c).out;if(!o)continue;const hs=ph.get(c.id);
       for(let k=0;k<o.length;k++)if(o[k]!==Z)add(netOf[hs[k]],o[k]);}
+    if(S.power){for(const c of mcus)mcuDrive(c,ph.get(c.id),netOf,add,srcV);for(const c of mcus)mcuDrive(c,ph.get(c.id),netOf,add,srcV,net=>{if(!m.has(net))add(net,Hh);});}   // 마이컴 보드 출력, 그다음 풀업(다른 것이 정하지 않은 줄만)
     lvl=new Map();for(const [net,mk] of m)lvl.set(net,combine(mk));strong=new Map(lvl);
     weak=new Set();const wm=new Map();let ch=true,guard=0;
     while(ch&&guard++<60){ch=false;
@@ -3322,6 +3915,7 @@ function settle(){
       const prev=r.out;
       if(!(prev===out||(prev&&out&&prev.every((v,k)=>v===out[k])))){changed=true;stepChips.push(c.id);}
       r.out=out;r.pw=pw;}
+    for(const c of mcus){const r=rt(c),hs=ph.get(c.id),pw=!!S.power&&mcuPw(c,k=>lvl.get(netOf[hs[k]]),k=>vOf(netOf[hs[k]]));if(!!r.mpw!==pw){r.mpw=pw;changed=true;}}   // 마이컴 보드 전원
     if(!changed){stable=true;break;}
   }
   if(dioL.length&&stepChips.length){analogStep();}
@@ -3534,11 +4128,11 @@ function oneBoardSVG(B){const t=BTYPES[B.type],Wb=bW(B.type),N_=t.cols,cx=c=>X0+
       s+=`<text class="rlab" x="16" y="${ROWY[r]+4}" text-anchor="middle" fill="${col}">${tx}</text><text class="rlab" x="${Wb-16}" y="${ROWY[r]+4}" text-anchor="middle" fill="${col}">${tx}</text>`;}}
   for(const r of 'abcdefghij')s+=`<text class="rl" x="18" y="${ROWY[r]+3}" text-anchor="middle">${r}</text><text class="rl" x="${Wb-18}" y="${ROWY[r]+3}" text-anchor="middle">${r}</text>`;
   for(let c=1;c<=N_;c++)if(c===1||c%5===0)s+=`<text class="rl" x="${cx(c)}" y="78" text-anchor="middle">${c}</text><text class="rl" x="${cx(c)}" y="312" text-anchor="middle">${c}</text>`;
-  for(const h of HL)if(h.b===B.id)s+=`<rect class="hole" x="${h.x-B.x-3.5}" y="${h.y-B.y-3.5}" width="7" height="7" rx="1.6"/>`;
+  for(const h of HL)if(h.b===B.id)s+=`<rect class="hole" x="${h.lx-B.x-3.5}" y="${h.ly-B.y-3.5}" width="7" height="7" rx="1.6"/>`;
   return s;}
-function boardTab(B){const t=BTYPES[B.type],y=(t.rails?4:60)-26,label=`보드 ${B.id} · ${t.name}`;const w=label.length*7.4+34;
-  return`<g class="btab" data-board="${B.id}" transform="translate(${B.x+4} ${B.y+y})"><title>끌면 보드가 옮겨지고, 누르면 메뉴가 떠요</title><rect width="${w}" height="20" rx="5"/><text x="9" y="14">${esc(label)}</text><path d="M${w-15} 8l4 4 4-4" fill="none" stroke-width="1.6"/></g>`;}
-function renderBoards(){$('gB').innerHTML=DEFS+S.boards.map(B=>`<g transform="translate(${B.x} ${B.y})">${oneBoardSVG(B)}</g>`).join('')+S.boards.map(boardTab).join('');}
+function boardTab(B){const t=BTYPES[B.type],bx=boardBox(B),label=`보드 ${B.id} · ${t.name}${B.rot?' · '+B.rot+'°':''}`;const w=label.length*7.4+34;
+  return`<g class="btab" data-board="${B.id}" transform="translate(${bx.x0} ${bx.y0-26})"><title>끌면 보드가 옮겨지고, 누르면 메뉴가 떠요</title><rect width="${w}" height="20" rx="5"/><text x="9" y="14">${esc(label)}</text><path d="M${w-15} 8l4 4 4-4" fill="none" stroke-width="1.6"/></g>`;}
+function renderBoards(){$('gB').innerHTML=DEFS+S.boards.map(B=>{const C=bCtr(B);return`<g transform="${B.rot?`rotate(${B.rot} ${C.x} ${C.y}) `:''}translate(${B.x} ${B.y})">${oneBoardSVG(B)}</g>`;}).join('')+S.boards.map(boardTab).join('');}
 svg.innerHTML=`<g id="gB"></g><g id="gH"></g><g id="gC"></g><g id="gF" pointer-events="none"></g><g id="gO"></g>`;
 const gH=document.getElementById('gH'),gC=document.getElementById('gC'),gO=document.getElementById('gO');
 const LVCOL=['var(--lo)','var(--hi)','var(--xx)','var(--zz)','var(--sh)'];
@@ -3587,6 +4181,99 @@ function oscTrace(c){const r=rt(c),buf=r.buf||[],W=200,win=10*(c.tdiv||.5),tE=bu
       const f=ups.length>1?(ups.length-1)/(ups[ups.length-1]-ups[0]):0;meas[ch]=(f?fmtHz(f)+' · ':'')+(mx-mn).toFixed(1)+'Vpp';}
     else meas[ch]=vals[vals.length-1][1].toFixed(2)+'V';}
   return{d,meas};}
+/* ═════ 스펙트럼 분석기 (계측기 'spa') ═════
+   스윕 동조형 분석기가 하는 일을 한 대에 모아 흉내 낸다:
+   입력 감쇠기 → 믹서(국부 발진기를 시작~끝 주파수로 훑음) → IF 분해능 필터(RBW, 가우스 모양) → 로그 증폭 → 검파 → 비디오 필터(VBW) → 화면(10칸 × 8칸)
+   - 입력 신호: RF IN 단자가 닿은 줄을 직접 정하는 신호원(함수 발생기·클럭·마이컴 tone/PWM)이 있으면 그 파형을 바로 계산(정밀),
+     아니면 20ms마다 잰 전압 표본(25Hz까지)을 쓴다. 50Ω 입력으로 보고 dBm으로 그린다
+   - 화면은 스윕 시간 동안 왼쪽에서 오른쪽으로 한 점씩 그려진다(최대값 유지·피크 마커) */
+const SPA_N=401;
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}}
+  for(let len=2;len<=n;len<<=1){const a=-2*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const p=i+k,q=p+len/2,tr=re[q]*cr-im[q]*ci,ti=re[q]*ci+im[q]*cr;re[q]=re[p]-tr;im[q]=im[p]-ti;re[p]+=tr;im[p]+=ti;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t;}}}}
+const spaHz=f=>{const a=Math.abs(f);return a>=1e6?(f/1e6).toFixed(3)+' MHz':a>=1e3?(f/1e3).toFixed(3)+' kHz':a>=10?f.toFixed(1)+' Hz':f.toFixed(2)+' Hz';};
+const spaRng=c=>{const sp=Math.max(1,num(c.span,2000)),cf=Math.max(sp/2,num(c.cf,1000));return{f0:cf-sp/2,f1:cf+sp/2,sp,cf};};
+const spaRbw=c=>{const r=num(c.rbw,0);if(r>0)return r;const {sp}=spaRng(c);const L=[0.01,0.03,0.1,0.3,1,3,10,30,100,300,1000,3000];return L.find(x=>x>=sp/100)||3000;};
+const spaVbw=c=>num(c.vbw,0)>0?num(c.vbw,0):spaRbw(c);
+const spaAtt=c=>num(c.att,-1)>=0?num(c.att,-1):Math.max(0,Math.min(70,Math.round((num(c.ref,30)+10)/10)*10));
+const spaSwt=c=>num(c.swt,0)>0?num(c.swt,0):Math.max(.2,Math.min(5,2*spaRng(c).sp/spaRbw(c)**2));
+// 입력 신호: {fn(t) 또는 buf, how}
+// 주기 신호의 선 스펙트럼(푸리에 급수): [{f, a(진폭 V)}]. 구형파는 듀티에 따라 고조파 크기가 바뀐다(50%면 홀수만)
+function spaLines(kind,f0,vpp,duty,lo,fmax){const L=[],n1=Math.max(1,Math.min(4000,Math.floor(fmax/f0)+2));let dc=lo;
+  if(kind==='sin'){L.push({f:f0,a:vpp/2});dc+=vpp/2;}
+  else if(kind==='tri'){for(let n=1;n<=n1;n+=2)L.push({f:n*f0,a:4*vpp/(Math.PI*Math.PI*n*n)});dc+=vpp/2;}
+  else if(kind==='saw'){for(let n=1;n<=n1;n++)L.push({f:n*f0,a:vpp/(n*Math.PI)});dc+=vpp/2;}
+  else{for(let n=1;n<=n1;n++){const a=2*vpp/(n*Math.PI)*Math.abs(Math.sin(n*Math.PI*duty));if(a>vpp*1e-9)L.push({f:n*f0,a});}dc+=vpp*duty;}
+  L.push({f:0,a:dc,dc:1});return L;}
+function spaSrc(c){const fmax=spaRng(c).f1*1.2+50;if(num(c.cal,0))return{lines:[{f:1000,a:.1}],how:'내부 교정 신호 1kHz −10dBm'};
+  const id=c.pins&&c.pins[0];if(!id||!SIM.netOf||!HOLES.has(id))return null;const net=SIM.netOf[HOLES.get(id).i],nOf=x=>{const h=HOLES.get(x);return h?SIM.netOf[h.i]:-2;};
+  const touches=S.comps.some(w=>w.t==='wire'&&w.pins.includes(id));if(!touches)return null;
+  for(const f of S.comps)if(f.t==='fg'&&nOf(f.pins[0])===net)return{lines:spaLines(f.wave||'sq',num(f.hz,1),num(f.vpp,5),Math.min(.95,Math.max(.05,num(f.duty,50)/100)),num(f.off,0),fmax),how:'함수 발생기 '+(LBL.get(f.id)||'')+' 파형 직접'};
+  for(const k of S.comps)if(k.t==='clk'&&nOf(pinHoles(k)[0])===net){const hz=+k.hz||1;return{lines:spaLines('sq',hz,5,.5,0,fmax),how:'클럭 '+(LBL.get(k.id)||'')+' 파형 직접'};}
+  for(const u of S.comps){if(u.t!=='px'||!PX[u.kind]||!PX[u.kind].mcu)continue;const m=rt(u).m;if(!m||!rt(u).mpw)continue;const hs=pinHoles(u),V=PX[u.kind].mcu.vcc;
+    for(const ks of Object.keys(m.mode)){const k=+ks;if(m.mode[k]!==1||nOf(hs[k])!==net)continue;const nm=PX[u.kind].pins[k].split(' ')[0];
+      if(m.tone[k]){const f=m.tone[k].f;return{lines:spaLines('sq',f,V,.5,0,fmax),how:`${LBL.get(u.id)||'U'} ${nm} tone ${f}Hz 직접`};}
+      if(m.pwm[k]>0&&m.pwm[k]<255){const du=m.pwm[k]/255,f=PX[u.kind].mcu.esp?1000:/D(5|6)$/.test(nm)?980:490;return{lines:spaLines('sq',f,V,du,0,fmax),how:`${LBL.get(u.id)||'U'} ${nm} PWM ${f}Hz · 듀티 ${Math.round(du*100)}% 직접`};}}}
+  const r=rt(c);return{buf:r.buf||[],how:'20ms 표본 (25Hz까지)'};}
+// 지금 신호의 스펙트럼: 주파수 칸 간격 df, 칸마다 전력 P(mW, 50Ω 기준)
+const spaMW=a=>a*a/2/50*1000;
+function spaSpec(c,now){const src=spaSrc(c);if(!src)return null;let x,fs,N;
+  if(src.lines)return{lines:src.lines.map(l=>({f:l.f,P:l.dc?l.a*l.a/50*1000:spaMW(l.a)})),how:src.how};
+  {const b=src.buf;if(b.length<16)return{how:src.how,P:null};fs=50;N=1;while(N*2<=b.length&&N<2048)N*=2;x=new Float64Array(N);const s=b.slice(-N);for(let i=0;i<N;i++)x[i]=s[i].v;}
+  let mean=0;for(let i=0;i<N;i++)mean+=x[i];mean/=N;
+  const re=new Float64Array(N),im=new Float64Array(N);for(let i=0;i<N;i++){const w=.5-.5*Math.cos(2*Math.PI*i/N);re[i]=x[i]*w;}fft(re,im);
+  const P=new Float64Array(N/2);for(let k=0;k<N/2;k++){const a=Math.hypot(re[k],im[k])/(N*.5)*(k?2:1),vr=k?a/Math.SQRT2:a;P[k]=vr*vr/50*1000;}
+  return{P,df:fs/N,how:src.how,dc:mean};}
+// 화면 점 하나(주파수 f)의 dBm
+function spaPoint(c,S_,f,rbw){const att=spaAtt(c),nf=-112+10*Math.log10(Math.max(rbw,.01))+att;let p=Math.pow(10,nf/10)*(-Math.log(1-Math.random()*.999));
+  if(S_&&S_.lines){for(const l of S_.lines){const d=(l.f-f)/rbw;if(d*d<40)p+=l.P*Math.exp(-4*Math.LN2*d*d);}}
+  else if(S_&&S_.P){const bw=Math.max(rbw,2*S_.df),k0=Math.max(0,Math.floor((f-3*bw)/S_.df)),k1=Math.min(S_.P.length-1,Math.ceil((f+3*bw)/S_.df));let s=0;
+    for(let k=k0;k<=k1;k++){const d=(k*S_.df-f)/bw;s+=S_.P[k]*Math.exp(-4*Math.LN2*d*d);}p+=s/1.5;}
+  let db=10*Math.log10(p);const mix=db-att;if(mix>-10)db=-10+att+(mix+10)*.3;return db;}
+function spaTick(now){for(const c of S.comps){if(c.t!=='spa')continue;const r=rt(c);
+    // 표본 기록(신호원이 없을 때 씀)
+    const id=c.pins&&c.pins[0];if(id&&HOLES.has(id)&&SIM.netOf){const lv=levelOfHole(id);const v=lv.volt!=null?lv.volt:lv.v===Hh?5:lv.v===L?0:0;(r.buf||(r.buf=[])).push({t:now,v});if(r.buf.length>4096)r.buf.splice(0,r.buf.length-4096);}
+    if(c.run===false)continue;
+    const key=[c.cf,c.span,c.rbw,c.vbw,c.att,c.ref,c.swt,c.hold,c.cal].join('|');if(r.key!==key||!r.tr){r.key=key;r.tr=new Float64Array(SPA_N).fill(NaN);r.mx=null;r.i=0;r.t0=now;}
+    const swt=spaSwt(c),want=Math.min(SPA_N,Math.floor((now-r.t0)/swt*SPA_N));if(want<=r.i&&want<SPA_N)continue;
+    if(!r.sp||now-r.spT>.1){r.sp=spaSpec(c,now);r.spT=now;}
+    const {f0,f1}=spaRng(c),rbw=spaRbw(c),avg=Math.max(1,Math.min(30,Math.round(rbw/spaVbw(c))));
+    for(let i=r.i;i<Math.min(want,SPA_N);i++){const f=f0+(f1-f0)*i/(SPA_N-1);let s=0;for(let a=0;a<avg;a++)s+=Math.pow(10,spaPoint(c,r.sp,f,rbw)/10);let db=10*Math.log10(s/avg);
+      if(num(c.hold,0)&&r.mx&&Number.isFinite(r.mx[i]))db=Math.max(db,r.mx[i]);r.tr[i]=db;}
+    r.i=want;r.how=r.sp?r.sp.how:'입력 없음 (RF IN 단자를 회로에 이어요)';
+    if(r.i>=SPA_N){r.mx=Float64Array.from(r.tr);r.done=Float64Array.from(r.tr);r.i=0;r.t0=now;}
+    spaDraw(c);}}
+function spaGeo(c){const x=c.x+12,y=c.y+34;return{x,y,w:240,h:160};}
+function spaPath(c){const r=rt(c),G=spaGeo(c),ref=num(c.ref,30),dbd=num(c.dbd,10);if(!r.tr)return'';let d='',pen=false;
+  for(let i=0;i<SPA_N;i++){const v=r.tr[i];if(!Number.isFinite(v)){pen=false;continue;}const yy=G.y+Math.max(0,Math.min(G.h,(ref-v)/dbd*20)),xx=G.x+G.w*i/(SPA_N-1);d+=(pen?'L':'M')+xx.toFixed(1)+' '+yy.toFixed(1);pen=true;}return d;}
+function spaMarker(c){const r=rt(c),t=r.done||r.tr;if(!t)return null;const {f0,f1}=spaRng(c),skip=Math.max(1.2*spaRbw(c),(f1-f0)*.012);let bi=-1,bv=-1e9;   // 0Hz(직류) 근처는 건너뜀
+  for(let i=0;i<SPA_N;i++){const f=f0+(f1-f0)*i/(SPA_N-1);if(f<skip)continue;if(Number.isFinite(t[i])&&t[i]>bv){bv=t[i];bi=i;}}if(bi<0)return null;return{i:bi,f:f0+(f1-f0)*bi/(SPA_N-1),db:bv};}
+function spaInfo(c){const mk=spaMarker(c),{cf,sp}=spaRng(c);return{top:`REF ${num(c.ref,30).toFixed(1)} dBm  ATT ${spaAtt(c)} dB  ${num(c.dbd,10)} dB/`,mk:mk?`MKR ${spaHz(mk.f)}  ${mk.db.toFixed(1)} dBm`:'MKR —',
+  bot:`CENTER ${spaHz(cf)}   SPAN ${spaHz(sp)}`,bw:`RBW ${spaHz(spaRbw(c))}  VBW ${spaHz(spaVbw(c))}  SWP ${spaSwt(c).toFixed(2)} s`,mkO:mk};}
+function spaDraw(c){const g=document.querySelector(`#bb g[data-id="${c.id}"]`);if(!g)return;const I=spaInfo(c),G=spaGeo(c),ref=num(c.ref,30),dbd=num(c.dbd,10);
+  const set=(q,f)=>{const el=g.querySelector(q);if(el)f(el);};set('.satr',el=>el.setAttribute('d',spaPath(c)));set('.samk',el=>el.textContent=I.mk);set('.sahow',el=>el.textContent=rt(c).how||'');
+  set('.sadot',el=>{if(!I.mkO){el.setAttribute('opacity',0);return;}el.setAttribute('opacity',1);el.setAttribute('transform',`translate(${(G.x+G.w*I.mkO.i/(SPA_N-1)).toFixed(1)} ${(G.y+Math.max(0,Math.min(G.h,(ref-I.mkO.db)/dbd*20))).toFixed(1)})`);});}
+function spaSVG(c){const G=spaGeo(c),I=spaInfo(c),on=S.power,x=c.x,y=c.y,id=c.id;let g='';for(let i=1;i<10;i++)g+=`M${G.x+i*24} ${G.y}V${G.y+G.h}`;for(let i=1;i<8;i++)g+=`M${G.x} ${G.y+i*20}H${G.x+G.w}`;
+  const T=(tx,ty,t,sz,col,cls,anc='start')=>`<text${cls?` class="${cls}"`:''} x="${tx}" y="${ty}" font-size="${sz}" font-weight="700" fill="${col}" text-anchor="${anc}" font-family="var(--mono)" pointer-events="none">${esc(t)}</text>`;
+  return`<clipPath id="sac${id}"><rect x="${G.x}" y="${G.y}" width="${G.w}" height="${G.h}"/></clipPath><rect x="${G.x-2}" y="${G.y-2}" width="${G.w+4}" height="${G.h+4}" rx="4" fill="#041008" stroke="#000"/>
+    <path d="${g}" stroke="#16402A" stroke-width=".8" fill="none"/>${T(G.x+3,G.y+9,I.top,7,'#7EE7A0')}${T(G.x+G.w-3,G.y+9,I.mk,7,'#FFD84A','samk','end')}
+    <g clip-path="url(#sac${id})"><path class="satr" d="${spaPath(c)}" fill="none" stroke="${on?'#5CFF8F':'#2A5A3A'}" stroke-width="1.3" stroke-linejoin="round"/><path class="sadot" d="M0 -5L4 0L0 5L-4 0Z" fill="#FFD84A" opacity="0"/></g>
+    ${T(G.x+3,G.y+G.h+12,I.bot,7.5,'#C9D6CE')}${T(G.x+3,G.y+G.h+23,I.bw,7,'#9FB3A6')}${T(G.x+3,G.y+G.h+34,rt(c).how||'',6.5,'#7C8B82','sahow')}
+    ${T(x+258,y+48,'감쇠기',7,'#8A9099')}${T(x+258,y+60,spaAtt(c)+' dB',8,'#DDE1E7')}${T(x+258,y+80,'RBW',7,'#8A9099')}${T(x+258,y+92,spaHz(spaRbw(c)).replace(' ',''),7.5,'#DDE1E7')}
+    ${T(x+258,y+112,'트레이스',7,'#8A9099')}${T(x+258,y+124,num(c.hold,0)?'최대 유지':'다시 그림',7.5,'#DDE1E7')}${T(x+258,y+144,'입력',7,'#8A9099')}${T(x+258,y+156,num(c.cal,0)?'교정':'RF IN',7.5,num(c.cal,0)?'#FFB648':'#7EE787')}
+    ${T(x+258,y+176,c.run===false?'정지':'스윕',8,c.run===false?'#E5484D':'#4BE38A')}`;}
+// 신호 찾아 맞추기: 넓게 훑어 가장 센 신호의 기본 주파수가 화면 왼쪽 1/10쯤, 고조파 9개가 보이게
+function spaAuto(c){const nowT=simNow(),src=spaSrc(c);if(!src){toast('RF IN 단자를 재고 싶은 구멍에 먼저 이어요');return;}
+  const save={cf:c.cf,span:c.span};c.cf=25000;c.span=50000;let S_=spaSpec(c,nowT);if(src.buf){c.cf=12.5;c.span=25;S_=spaSpec(c,nowT);}
+  if(S_&&S_.lines){const ac=S_.lines.filter(l=>l.f>0).sort((a,b)=>b.P-a.P);if(!ac.length){Object.assign(c,save);toast('교류 신호가 없어요(직류만 있어요)');return;}
+    const f=Math.min(...ac.filter(l=>l.P>ac[0].P*.05).map(l=>l.f));const L=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];const sp=L.find(x=>x>=f*10)||50000;c.span=sp;c.cf=sp/2;
+    toast(`가장 센 신호 약 ${spaHz(f)} — 0 ~ ${spaHz(sp)}를 보이게 맞췄어요`);return;}
+  if(!S_||!S_.P){Object.assign(c,save);toast('신호를 아직 모으는 중이에요 — 몇 초 뒤에 다시 눌러요');return;}
+  let bi=0,bv=0;for(let k=1;k<S_.P.length;k++)if(S_.P[k]>bv){bv=S_.P[k];bi=k;}
+  if(!bi||bv<1e-12){Object.assign(c,save);toast('교류 신호가 없어요(직류만 있어요) — 바뀌는 신호를 넣어 보세요');return;}
+  // 가장 센 성분보다 낮은 곳에 센 성분(기본파)이 있으면 그쪽
+  let f=bi*S_.df;for(let k=1;k<bi;k++)if(S_.P[k]>bv*.05&&(bi/k)%1<.05){f=k*S_.df;break;}
+  const L=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];const sp=L.find(x=>x>=f*10)||50000;c.span=sp;c.cf=sp/2;
+  toast(`가장 센 신호 약 ${spaHz(f)} — 0 ~ ${spaHz(sp)}를 보이게 맞췄어요`);}
 function instSVG(c,ph,isSel,one){const id=c.id,[w,h]=ISZ[c.t],x=c.x,y=c.y,J=IJACK[c.t],on=S.power;let s=`<g class="c" data-id="${id}">`;
   if(isSel)s+=`<rect x="${x-4}" y="${y-4}" width="${w+8}" height="${h+8}" rx="11" fill="none" stroke="#1F8FFF" stroke-width="2.5" stroke-opacity=".8"/>`;
   s+=`<rect x="${x+3}" y="${y+5}" width="${w}" height="${h}" rx="8" fill="#000" opacity=".25"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#2A2E35" stroke="#0E1013" stroke-width="1.2"/>
@@ -3599,6 +4286,7 @@ function instSVG(c,ph,isSel,one){const id=c.id,[w,h]=ISZ[c.t],x=c.x,y=c.y,J=IJAC
   if(c.t==='fg'){const du=Math.min(.95,Math.max(.05,num(c.duty,50)/100)),lo=num(c.off,0),wv=c.wave==='sin'?'M0 8Q6 -6 12 8T24 8T36 8':c.wave==='tri'?'M0 14L6 2L12 14L18 2L24 14L30 2L36 14':c.wave==='saw'?'M0 14L12 2V14L24 2V14L36 2':`M0 14V2H${(18*du).toFixed(1)}V14H18V2H${(18+18*du).toFixed(1)}V14H36`;
     s+=`<rect x="${x+12}" y="${y+34}" width="${w-24}" height="34" rx="4" fill="#0B1322" stroke="#000"/><path d="${wv}" transform="translate(${x+20} ${y+43})" fill="none" stroke="${on?'#FFB648':'#5C4A2A'}" stroke-width="1.8" stroke-linejoin="round"/>`
       +T(w-18,49,c.hz+' Hz',12,on?'#FFD08A':'#6B5A3C','end')+T(w-18,62,c.vpp+' Vpp',9,on?'#C9A56A':'#5C4A2A','end')+T(w/2,83,WAVES[c.wave]+' · '+lo+' ~ '+Math.round((lo+num(c.vpp,5))*10)/10+'V'+(c.wave==='sq'&&num(c.duty,50)!==50?' · 듀티 '+num(c.duty,50)+'%':''),9,'#AEB4BD','middle','var(--sans)');}
+  if(c.t==='spa')s+=spaSVG(c);
   if(c.t==='osc'){const sx=x+12,sy=y+34,o=oscTrace(c);let g='';
     for(let i=1;i<10;i++)g+=`M${sx+i*20} ${sy}V${sy+140}`;for(let i=1;i<7;i++)g+=`M${sx} ${sy+i*20}H${sx+200}`;
     s+=`<clipPath id="oc${id}"><rect x="${sx}" y="${sy}" width="200" height="140"/></clipPath><rect x="${sx}" y="${sy}" width="200" height="140" rx="3" fill="#06110C" stroke="#000"/><path d="${g}" stroke="#1E3A2C" stroke-width=".8" fill="none"/>
@@ -3752,7 +4440,7 @@ function render(){
   syncTerms();syncSel();LBL=labels();buildRoutes();const now=simNow();
   // 와이어를 가장 위에 그림
   const order=[...S.comps].sort((a,b)=>(a.t==='wire')-(b.t==='wire'));
-  gC.innerHTML=order.map(c=>compSVG(c,now)).join('')+doneBadges()+warnRings()+planOverlay();
+  gC.innerHTML=order.map(c=>compSVGr(c,now)).join('')+doneBadges()+warnRings()+planOverlay();
   svg.classList.toggle('bchk',bchk);if(bchk)gC.querySelectorAll('.c[data-id]').forEach(g=>{const c=compById(+g.dataset.id);g.classList.toggle('undone',!!c&&!c.done);});
   bchkLabel();
   if(FLOWQ)launchFlows();
@@ -3963,13 +4651,19 @@ function renderOverlay(){
 /* ── 겹치지 않게 놓기 ──
    부품을 놓으려는 자리가 다른 부품과 겹치면 가장 가까운 빈자리를 찾아 준다. */
 /* 겹침 검사용 부품 몸통 사각형(px). 전선은 위로 지나가도 되므로 뺀다 */
-function bodyRect(c){if(c.t==='wire'||INST.has(c.t))return null;const ph=pinHoles(c).map(h=>HOLES.get(h));if(!ph.length||ph.some(h=>!h))return null;
+function rotBoardOf(c){if(c.t==='wire'||INST.has(c.t))return null;let B=null;for(const id of pinHoles(c)){const h=HOLES.get(id);if(!h||h.b==null)return null;const b=boardById(h.b);if(!b||!b.rot)return null;if(B&&B!==b)return null;B=b;}return B;}
+function inLocal(c,fn){const B=rotBoardOf(c);if(!B)return[fn(),null];const hs=pinHoles(c).map(id=>HOLES.get(id)),sv=hs.map(h=>[h.x,h.y]);for(const h of hs){h.x=h.lx;h.y=h.ly;}
+  try{return[fn(),B];}finally{hs.forEach((h,i)=>{h.x=sv[i][0];h.y=sv[i][1];});}}
+function compSVGr(c,now){const [s,B]=inLocal(c,()=>compSVG(c,now));if(!B)return s;const C=bCtr(B);return`<g transform="rotate(${B.rot} ${C.x} ${C.y})">${s}</g>`;}
+function bodyRect(c){const [r,B]=inLocal(c,()=>bodyRect0(c));if(!B||!r)return r;const a=rotXY(B,r.x0,r.y0),b=rotXY(B,r.x1,r.y1);
+  return{x0:Math.min(a.x,b.x),y0:Math.min(a.y,b.y),x1:Math.max(a.x,b.x),y1:Math.max(a.y,b.y),seg:r.seg?pinHoles(c).map(id=>HOLES.get(id)):null};}
+function bodyRect0(c){if(c.t==='wire'||INST.has(c.t))return null;const ph=pinHoles(c).map(h=>HOLES.get(h));if(!ph.length||ph.some(h=>!h))return null;
   if(c.t==='ic'||c.t==='seg7'){const n=ph.length,h=n/2,my=(ph[0].y+ph[n-1].y)/2,d=c.t==='ic'?(CHIPS[c.chip].bodyH||26):40;return{x0:ph[0].x-9,x1:ph[h-1].x+9,y0:my-d,y1:my+d};}
   if(c.t==='gate'){const a=ph[0],y=ph[ph.length-1];return{x0:a.x-7,x1:y.x+7,y0:a.y-43,y1:a.y+4};}
   if(c.t==='clk'){const a=ph[0];return{x0:a.x-20,x1:a.x+20,y0:a.y-34,y1:a.y+4};}
   if(c.t==='led3'){const a=ph[0],b=ph[2];return{x0:a.x-4,x1:b.x+4,y0:a.y-25,y1:a.y+4};}
   if(c.t==='px'){const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),d=PX[c.kind];
-    return d.lay==='dip'?{x0:x0-10,x1:x1+10,y0:y0+3,y1:y1-3}:{x0:x0-8,x1:x1+8,y0:y0-(d.pot?26:24),y1:y0+3};}
+    return d.lay==='dip'?{x0:x0-10-(d.bh||0),x1:x1+10+(d.bh?d.bh+(d.mcu&&d.mcu.usb?10:0):0),y0:y0+3-(d.bh||0),y1:y1-3+(d.bh||0)}:{x0:x0-8,x1:x1+8,y0:y0-(d.pot?26:24),y1:y0+3};}
   // 저항·LED처럼 다리 둘인 부품은 비스듬히 놓일 수 있어서, 두 다리를 잇는 선분(seg)으로 따로 검사한다
   const xs=ph.map(p=>p.x),ys=ph.map(p=>p.y);return{x0:Math.min(...xs)-7,x1:Math.max(...xs)+7,y0:Math.min(...ys)-7,y1:Math.max(...ys)+7,seg:ph.length===2?ph:null};}
 const rectHit=(a,b)=>a.x0<b.x1-1&&b.x0<a.x1-1&&a.y0<b.y1-1&&b.y0<a.y1-1;
@@ -4078,6 +4772,7 @@ function partDesc(c){return{
   psu:'실험실의 직류 전원 장치예요. 전압은 0V부터 100V까지 맞출 수 있어요(3V 이상이면 디지털 회로는 HIGH로 읽어요). + 단자와 − 단자에서 각각 전선을 끌어 + 레일, − 레일에 이으면 그 줄에 전원이 들어가요. 서플라이나 건전지를 하나라도 놓으면 보드의 자동 5V 전원은 꺼지니, 위·아래 레일을 모두 쓰려면 레일끼리 전선으로 이어 주세요. 74 계열 칩은 5V에 맞추세요.',
   bat:'건전지예요. + 단자와 − 단자에서 전선을 끌어 회로에 이으면 전원이 돼요. 1.5V 하나로는 LED도 켜지지 않고(3V부터 켜져요), 74 계열 칩은 4.5~5V가 필요해서 AA 3개(4.5V)가 가장 가까워요. 9V는 칩에 바로 걸면 망가져요. 건전지를 놓으면 보드의 자동 5V 전원은 꺼져요.',
   fg:'구형파·사인파·삼각파·톱니파를 내보내요. 주파수, 크기(Vpp), 가장 낮은 전압(오프셋), 구형파의 듀티비를 [속성]에서 숫자로 바꿀 수 있어요. OUT 단자에서 신호를 넣을 구멍까지, GND 단자에서 − 레일까지 전선을 끌어 이으세요. 2.5V를 넘으면 디지털 회로는 HIGH로 읽어요.',
+  spa:'신호를 주파수별로 나눠 각 주파수 성분의 세기(dBm, 50Ω 기준)를 그려 줘요. 스윕 동조형 분석기처럼 입력 감쇠기 → 믹서(국부 발진기가 시작~끝 주파수를 훑음) → IF 분해능 필터(RBW) → 로그 증폭·검파 → 비디오 필터(VBW) 순서로 계산하고, 화면은 스윕 시간 동안 왼쪽에서 오른쪽으로 그려져요. Ⓟ10 예제에서 보드 6장(감쇠기·국부 발진기·변환 체인·IF 로그 증폭·스윕 발생기·CRT)으로 나눠 놓았던 일을 한 대에 모아 실제로 동작하게 만든 계측기예요. RF IN 단자를 재고 싶은 구멍에 이어요. 함수 발생기·클럭·마이컴 보드의 tone/PWM 핀에 바로 이으면 그 파형을 정밀하게 분석하고(구형파의 홀수 고조파가 보여요), 다른 줄은 20ms마다 잰 전압으로 25Hz까지 분석해요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 노란 마름모가 가장 센 점(피크 마커)이에요. 입력이 너무 세면(믹서에 −10dBm 넘게 들어가면) 꼭대기가 눌려요 — 기준 레벨을 올리면 감쇠기가 자동으로 커져요.',
   osc:'두 곳의 전압이 시간에 따라 어떻게 바뀌는지 그려 줘요. 시간/칸, 채널별 전압/칸과 0V 자리, 채널 표시 여부를 [속성]에서 바꿀 수 있어요. CH1·CH2 단자에서 보고 싶은 구멍까지 전선을 끌어 이으세요. 전압은 회로의 GND(−)를 기준으로 재요. 화면 왼쪽의 짧은 눈금이 각 채널의 0V 자리예요.',
   seg7:c.ca?'공통 애노드 7세그먼트예요. COM(3·8번 핀)을 + 에 연결하고, a~g 핀이 LOW면 해당 획이 켜져요. 74LS47·46 과 짝이에요.':'공통 캐소드 7세그먼트예요. COM(3·8번 핀)을 − 에 연결하고, a~g 핀이 HIGH면 해당 획이 켜져요. CD4511 과 짝이에요.'}[c.t];}
 const segBtns=(f,list,cur,tx)=>`<div class="seg" data-f="${f}">${list.map(v=>`<button data-v="${v}" aria-pressed="${cur===v}">${tx(v)}</button>`).join('')}</div>`;
@@ -4092,6 +4787,16 @@ function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}<
     +P('크기 Vpp (0 ~ 20V)',numIn('vpp',num(c.vpp,5),0,20,0.1,'V')+segBtns('vpp',FG_VPP,+c.vpp,v=>v+'V'))
     +P('가장 낮은 전압 · 오프셋 (−10 ~ 10V)',numIn('off',num(c.off,0),-10,10,0.1,'V')+segBtns('off',[0,-2.5,-5],num(c.off,0),v=>v+'V'))
     +P('듀티비 · 구형파에서 높은 구간의 비율 (5 ~ 95%)',numIn('duty',num(c.duty,50),5,95,1,'%')+segBtns('duty',[25,50,75],num(c.duty,50),v=>v+'%'));
+  if(c.t==='spa'){const hz=v=>v>=1000?v/1000+'k':v+'';return P('가운데 주파수 (CENTER)',numIn('cf',num(c.cf,1000),0,100000,0.01,'Hz'))
+    +P('스팬 (SPAN, 화면 폭)',segBtns('span',[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000],num(c.span,2000),v=>hz(v)+'Hz'))
+    +'<div class="row" style="margin:2px 0 8px"><button class="btn pri" id="spaAuto">신호 찾아 맞추기</button><button class="btn" id="spaPk">피크를 가운데로</button><button class="btn" id="spaClr">트레이스 지우기</button></div>'
+    +P('기준 레벨 (화면 맨 위, dBm)',segBtns('ref',[30,20,10,0,-10,-20,-30,-40],num(c.ref,20),v=>(v>0?'+':'')+v))+P('세로 눈금 (dB/칸)',segBtns('dbd',[10,5,2,1],num(c.dbd,10),v=>v+'dB'))
+    +P('분해능 대역폭 RBW (좁을수록 가까운 신호가 갈라지고 느려져요)',segBtns('rbw',[0,0.03,0.1,0.3,1,3,10,30,100,300],num(c.rbw,0),v=>v?hz(v)+'Hz':'자동 '+spaHz(spaRbw(c)).replace(' ','')))
+    +P('비디오 대역폭 VBW (좁을수록 잡음이 매끈)',segBtns('vbw',[0,0.03,0.3,3,30,300],num(c.vbw,0),v=>v?hz(v)+'Hz':'자동'))
+    +P('입력 감쇠기',segBtns('att',[-1,0,10,20,30,40,50,60,70],num(c.att,-1),v=>v<0?'자동 '+spaAtt(c)+'dB':v+'dB'))
+    +P('스윕 시간',segBtns('swt',[0,0.2,0.5,1,2,5],num(c.swt,0),v=>v?v+'s':'자동 '+spaSwt(c).toFixed(1)+'s'))
+    +P('트레이스',segBtns('hold',[0,1],num(c.hold,0),v=>v?'최대값 유지':'매번 다시 그림'))+P('입력',segBtns('cal',[0,1],num(c.cal,0),v=>v?'내부 교정 신호 (1kHz, −10dBm)':'RF IN 단자'))
+    +P('스윕',segBtns('run',[1,0],c.run===false?0:1,v=>v?'실행':'정지'))+`<p class="desc">신호 받는 방식: ${esc(rt(c).how||'(스윕 시작 전)')}</p>`;}
   return P('시간 / 칸 (0.01 ~ 5초)',numIn('tdiv',+c.tdiv,0.01,5,0.01,'초')+segBtns('tdiv',OSC_T,+c.tdiv,v=>v<1?v*1000+'ms':v+'s'))
     +P('CH1 전압 / 칸 (0.1 ~ 100V)',numIn('vdiv',+c.vdiv,0.1,100,0.1,'V')+segBtns('vdiv',OSC_V,+c.vdiv,v=>v+'V'))
     +P('CH2 전압 / 칸 (0.1 ~ 100V)',numIn('vdiv2',+(c.vdiv2||c.vdiv),0.1,100,0.1,'V')+segBtns('vdiv2',OSC_V,+(c.vdiv2||c.vdiv),v=>v+'V'))
@@ -4107,7 +4812,7 @@ function propEditor(c){
     +`<div class="prop"><label>정격 전력</label><div class="seg" id="rPw">${Object.entries(RESPW).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${(c.pw||.25)==+k}">${n}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>재질</label><div class="seg" id="rMat">${Object.entries(RESMAT).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${M===k}">${n}</button>`).join('')}</div></div><p class="desc">${RESMAT[M][4]}</p>`
     +`<div class="prop"><label>허용 오차 (색띠 ${(c.tol||RESMAT[M][3])<=2?5:4}개)</label><div class="seg" id="rTol">${[0.1,1,2,5,10].map(t=>`<button data-v="${t}" aria-pressed="${(c.tol||RESMAT[M][3])===t}">±${t}%</button>`).join('')}</div></div>`;}
-  if(c.t==='px'){const d=PX[c.kind];let h='';
+  if(c.t==='px'){const d=PX[c.kind];let h='';if(d.props)return d.props(c);
     if(d.pot){h+=`<div class="prop"><label>저항 값</label><div class="seg" id="pxV">${POTV.map(o=>`<button data-v="${o}" aria-pressed="${(c.ohms||10000)===o}">${ohmTx(o)}</button>`).join('')}</div></div>`
       +`<div class="prop"><label>변화 곡선</label><div class="seg" id="pxT">${Object.entries(TAPER).map(([k,[n]])=>`<button data-v="${k}" aria-pressed="${(c.taper||'B')===k}">${n}</button>`).join('')}</div></div>`
       +`<div class="prop"><label>돌린 정도 ${Math.round((c.pos??.5)*100)}% → 1번 쪽 저항 ${ohmTx(Math.round((c.ohms||10000)*potF(c)))} (${Math.round(potF(c)*100)}%)</label><input type="range" id="pxP" min="0" max="100" value="${Math.round((c.pos??.5)*100)}" style="width:100%"></div>`;}
@@ -4151,6 +4856,8 @@ function bindProps(c){
   if(INST.has(c.t)){$('info').querySelectorAll('[data-f] button').forEach(b=>b.onclick=()=>{pushHist();const f=b.closest('[data-f]').dataset.f,v=b.dataset.v;
       if(f==='wave')c.wave=v;else if(['on','run','on1','on2'].includes(f))c[f]=v==='1';else c[f]=+v;commit(true);});
     const cl=$('oscClr');if(cl)cl.onclick=()=>{rt(c).buf=[];render();};
+    {const a=$('spaAuto');if(a)a.onclick=()=>{pushHist();spaAuto(c);commit(true);};const pk=$('spaPk');if(pk)pk.onclick=()=>{const mk=spaMarker(c);if(!mk){toast('아직 그린 트레이스가 없어요');return;}pushHist();c.cf=Math.max(num(c.span,2000)/2,+mk.f.toPrecision(4));commit(true);};
+     const sc=$('spaClr');if(sc)sc.onclick=()=>{const r=rt(c);r.tr=null;r.done=null;r.mx=null;render();};}
     // 숫자 칸: 범위 안으로 맞춘 뒤 적용
     $('info').querySelectorAll('input[data-n]').forEach(inp=>inp.onchange=()=>{const f=inp.dataset.n,st=+inp.step||0.1,dec=(String(inp.step).split('.')[1]||'').length;
       let v=+inp.value;if(!Number.isFinite(v)||inp.value===''){inp.value=c[f];return;}v=Math.max(+inp.min,Math.min(+inp.max,+(Math.round(v/st)*st).toFixed(dec)));
@@ -4167,7 +4874,7 @@ function bindProps(c){
      btns('rPw',d=>{c.pw=+d.v;if(c.pw===.25)delete c.pw;});btns('rMat',d=>{c.mat=d.v;delete c.tol;if(d.v==='carbon')delete c.mat;});btns('rTol',d=>{c.tol=+d.v;});}
    if(c.t==='cap'){const dk=q('cDk'),vr=q('cVr');if(dk)dk.onchange=()=>{pushHist();c.dk=dk.value;delete c.vr;if(c.dk==='edlc'&&c.farad<.01)c.farad=1;if(c.dk!=='edlc'&&c.farad>=.01)c.farad=1e-4;commit(true);};
      if(vr)vr.onchange=()=>{pushHist();c.vr=+vr.value;commit(true);};}
-   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});
+   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});if(d.bind)d.bind(c);
      const pp=q('pxP');if(pp){pp.oninput=()=>{c.pos=+pp.value/100;settle();render();};pp.onchange=()=>{pushHist();c.pos=+pp.value/100;commit(true);};}}}
   const pc2=$('pc2');if(pc2&&c.t==='led')pc2.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;if(v==='std')delete c.lk;else c.lk=v;opt.lk=v;store.set('opt',opt);commit(true);});
   if(!pc)return;
@@ -4234,7 +4941,9 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>전선</b>: 선택 도구에서 빈 구멍을 누른 채 다른 구멍까지 끌면 그려져요. <b>끌고 간 길을 따라</b> 전선이 가로·세로로 반듯하게 놓이고(곧게 끌면 직선), 이미 있는 전선과 같은 길이면 옆으로 비켜 놓여요. 터치 화면에서는 [전선] 도구를 고른 뒤 구멍에서 끌면 돼요. 같은 줄에서 겹치는 전선은 저절로 비켜 가서 경로가 하나하나 보여요. <b>꺾기</b>: 전선 도구로 그리는 도중에 구멍 사이 빈 곳을 누르면 거기서 꺾이고, 다 그린 전선은 골라서 가운데 점선 동그라미를 끌면 꺾여요(더블클릭해도 돼요). 꺾는 점(흰 네모)은 끌어서 옮기고, 더블클릭하거나 다시 일직선에 놓으면 없어져요.</li>
 <li><b>여러 개</b>: 보드 밖 빈 곳을 끌어 범위 선택, <kbd>Shift</kbd>+클릭으로 더하기, <kbd>Ctrl</kbd>+<kbd>A</kbd> 모두 선택. 방향키로 한 칸씩 옮기고 <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd>로 복사·붙여넣기·복제해요.</li>
 <li>도구 막대의 <b>[점검]</b>은 회로에서 찾은 문제를, <b>[객체]</b>는 보드에 있는 부품 목록을 창으로 보여 줘요. [파일 배치]로 회로도 사진이나 부품 목록을 올리면 자동으로 배치해요.</li>
-<li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드는 가장자리나 가운데 홈을 끌거나, [보드 이동] 도구(M)로 아무 데나 끌면 꽂힌 부품과 함께 옮겨져요. 이름표를 누르면 종류 바꾸기·삭제 메뉴가 떠요. 보드끼리 전선으로 이어도 돼요.</li>
+<li><b>브레드보드 추가</b>: 도구 막대의 [브레드보드 추가]에서 종류를 골라요. 보드는 가장자리나 가운데 홈을 끌거나, [보드 이동] 도구(M)로 아무 데나 끌면 꽂힌 부품과 함께 옮겨져요. 이름표를 누르면 종류 바꾸기·<b>90° 돌리기</b>(세로로 세우기)·삭제 메뉴가 떠요. 끌 때 5px씩 움직이고, Alt를 누른 채 끌면 1px씩 자유롭게 놓여요. 보드끼리 딱 붙여 놓을 수 있고, 전선으로 이어도 돼요.</li>
+<li><b>마이컴 보드 (코딩·디버깅)</b>: [부품 고르기] → [마이컴 보드]에서 표준형·소형·프로 미니형·대형·와이파이형을 골라 홈에 걸쳐 꽂아요. [속성]의 [코드 편집 · 디버그]를 누르면 코드 창이 떠요. C 언어로 setup( )·loop( )를 쓰고 [업로드]하면 보드가 돌아요. 줄 번호를 누르면 중단점이 생기고, [디버그 시작]·[한 줄씩](F10)·[들어가기](F11)·[나오기]로 따라가며 [변수]·[호출 스택]·[핀] 탭에서 값을 봐요. [시리얼 모니터]에서 Serial.println 글을 보고 글을 보내요. 예제 Ⓜ1·Ⓜ2를 열어 보세요.</li>
+<li><b>스펙트럼 분석기</b>: [계측기·전원]에서 놓고 RF IN 단자를 재고 싶은 구멍에 이어요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 예제 Ⓟ11.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
 <li><b>부품 고르기 창</b>: 도구 막대의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
 <li><b>계측기·전원</b>: [부품 고르기]의 [계측기·전원]에서 <b>파워 서플라이·건전지·함수 발생기·오실로스코프</b>를 고르고 놓을 자리를 누르면 그곳에 놓여요. 그다음 몸통의 <b>단자(동그라미)에서 구멍까지 끌면</b> 전선이 이어져요. 몸통은 끌어서 옮기고, 전압·파형·시간 눈금은 계측기를 누른 뒤 [속성]에서 바꿔요. 파워 서플라이나 건전지를 놓으면 보드의 자동 전원은 꺼지고, 그 전원이 전선으로 이어진 레일에만 전원이 들어가요.</li>
@@ -4260,6 +4969,7 @@ const ICO={led3:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M6 17V
   psu:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><rect x="4" y="4" width="16" height="6" rx="1" fill="#07140D"/><text x="12" y="9.3" font-size="5.5" font-weight="700" fill="#4BE38A" text-anchor="middle" font-family="monospace">5.0V</text><circle cx="7" cy="13.5" r="1.8" fill="#E5484D"/><circle cx="17" cy="13.5" r="1.8" fill="#8A9099"/></svg>',
   bat:'<svg width="24" height="14" viewBox="0 0 24 14"><rect x="1" y="2" width="19" height="10" rx="2.5" fill="#B45309"/><rect x="1" y="2" width="6" height="10" rx="2.5" fill="#1F2937"/><rect x="20" y="5" width="3" height="4" rx="1" fill="#9CA3AF"/><text x="13" y="10" font-size="6.5" font-weight="700" fill="#fff" text-anchor="middle" font-family="monospace">9V</text></svg>',
   fg:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><path d="M4 9Q7 1 10 9T16 9T22 9" fill="none" stroke="#FFB648" stroke-width="1.6"/><circle cx="7" cy="14" r="1.6" fill="#F08C00"/></svg>',
+  spa:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><rect x="3.5" y="3.5" width="14" height="11" rx="1" fill="#041008"/><path d="M4 13h2l1-7 1 7h2l1-4 1 4h2l1-2 1 2h1" fill="none" stroke="#5CFF8F" stroke-width="1.1"/><circle cx="20" cy="6" r="1.4" fill="#5CFF8F"/></svg>',
   osc:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><rect x="3.5" y="3.5" width="13" height="11" rx="1" fill="#06110C"/><path d="M4 11h3V6h3v5h3V6h3" fill="none" stroke="#F2C230" stroke-width="1.3"/><circle cx="19.5" cy="6" r="1.4" fill="#8A9099"/><circle cx="19.5" cy="11" r="1.4" fill="#8A9099"/></svg>',
   seg7:'<svg width="16" height="20" viewBox="0 0 16 20"><rect width="16" height="20" rx="2" fill="#1A1C1F"/><path d="M5 3h6M4 4v5M12 4v5M5 10h6M4 11v5M12 11v5M5 17h6" stroke="#FF3B30" stroke-width="1.8"/></svg>',
   ic:'<svg width="26" height="16" viewBox="0 0 26 16"><rect x="1" y="3" width="24" height="10" rx="1.5" fill="#26292E"/><path d="M1 6a2 2 0 0 1 0 4z" fill="#000"/>'+[4,9,14,19].map(x=>`<rect x="${x}" y="0" width="2.5" height="3" fill="#AAB"/><rect x="${x}" y="13" width="2.5" height="3" fill="#AAB"/>`).join('')+'</svg>'};
@@ -4282,7 +4992,7 @@ const gIco=k=>`<svg width="30" height="16" viewBox="20 -10 64 30">${gateSVG(k,(k
 /* 부품 리본: 분류 탭 + 가로 목록 */
 const CATALOG=(()=>{const fam=d=>d.name.startsWith('74LS')?1:d.name.startsWith('74HC')?0:2,sorted=Object.values(CHIPS).sort((a,b)=>(+chipNum(a.name)-+chipNum(b.name))||fam(a)-fam(b));
   const tabs=[{k:'basic',label:'도구·부품',items:[...TOOLS,...PARTS].map(t=>({t,ico:ICO[t[0]]}))},
-    {k:'inst',label:'계측기·전원',items:[['psu','파워 서플라이','직류 전원 0 ~ 100V',''],['bat','건전지','1.5V ~ 9V',''],['fg','함수 발생기','구형·사인·삼각파',''],['osc','오실로스코프','2채널 파형 보기','']].map(t=>({t,ico:ICO[t[0]]}))},
+    {k:'inst',label:'계측기·전원',items:[['psu','파워 서플라이','직류 전원 0 ~ 100V',''],['bat','건전지','1.5V ~ 9V',''],['fg','함수 발생기','구형·사인·삼각파',''],['osc','오실로스코프','2채널 파형 보기',''],['spa','스펙트럼 분석기','주파수별 신호 세기 (dBm)','']].map(t=>({t,ico:ICO[t[0]]}))},
     {k:'gates',label:'기본 게이트',items:Object.values(GATES).map(d=>({t:['gate:'+d.name,d.name,'Y = '+d.expr,''],ico:gIco(d.name)}))}];
   for(const [k,label] of CATS){const list=sorted.filter(d=>d.cat===k);if(list.length)tabs.push({k:'ic-'+k,label:'IC '+label,items:list.map(d=>({t:['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ico:ICO.ic}))});}
   return tabs;})();
@@ -4325,7 +5035,7 @@ const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','w
   const ics=CATALOG.filter(t=>t.k.startsWith('ic-')&&t.k!=='ic-ledx').map(t=>({k:t.k,label:t.label.replace(/^IC /,''),items:t.items,ico:ICO.ic,
     sub:t.items.slice(0,3).map(it=>it.t[1]).join(' · ')+(t.items.length>3?' …':'')}));
   return[{k:'basic',label:'기본 부품',sub:'저항 · LED · 스위치 · 버튼 · 클럭 · 커패시터 · 7세그먼트',items:tab('basic').items.filter(noTool)},
-    {k:'inst',label:'계측기 · 전원',sub:'파워 서플라이 · 건전지 · 함수 발생기 · 오실로스코프',items:tab('inst').items},
+    {k:'inst',label:'계측기 · 전원',sub:'파워 서플라이 · 건전지 · 함수 발생기 · 오실로스코프 · 스펙트럼 분석기',items:tab('inst').items},
     {k:'gates',label:'기본 게이트',sub:'전원 연결 없이 쓰는 연습용 AND · OR · NOT …',items:tab('gates').items},
     {k:'ic',label:'IC',sub:'74HC · 74LS 시리즈, CD4511, NE555 — 종류별로 골라요',kids:ics,ico:ICO.ic},
     {k:'pas',label:'수동 소자 · 스위치',sub:'저항(전력·재질) · 가변저항 · 커패시터(유전체) · 스위치·인코더',ico:pxIco('pot16'),kids:PXSUB.map(([k,label])=>{
@@ -4338,10 +5048,11 @@ const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','w
     {k:'aic',label:'아날로그 · 혼합신호 IC · 모듈',sub:'연산 증폭기 · 비교기 · 레귤레이터 · D/A 변환기 · CPU · RF/IF/CRT 블록',ico:pxIco('oa2j'),kids:PXIC.map(([k,label])=>{
       const items=Object.values(PX).filter(d=>d.sub===k).map(d=>({t:['px:'+d.k,d.title,d.pins.length+'핀'+(d.lay==='dip'?' · 홈 걸치기':' · 한 줄'),''],ico:pxIco(d.k)}));
       return{k:'a-'+k,label,items,ico:items[0].ico,sub:items.slice(0,3).map(it=>it.t[1]).join(' · ')+(items.length>3?' …':'')};})}];})();
+PTREE.push({k:'mcu',label:'마이컴 보드 (코딩 · 디버깅)',sub:'표준형 · 소형 · 프로 미니형 · 대형 · 와이파이형 — 아두이노 호환 함수로 코딩',ico:pxIco('nano'),items:Object.values(PX).filter(d=>d.sub==='mcu').map(d=>({t:['px:'+d.k,d.title,d.pins.length+'핀 · 홈 걸치기 · 코드 실행',''],ico:pxIco(d.k)}))});
 const SCHTREE=[PTREE[0],PTREE[4],PTREE[5],{k:'pwr',label:'전원 기호',sub:'VCC(+5V) · GND(접지) — 회로도에서 전원을 나타내요',items:[
     {t:['vcc','VCC','전원 + 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 17V6M5 6h14" stroke="#E5484D" stroke-width="2" fill="none"/></svg>'},
     {t:['lbl','넷 이름표','같은 이름끼리 선 없이 이어져요',''],ico:'<svg width="26" height="18" viewBox="0 0 26 18"><path d="M1 9h4l4-6h15v12H9l-4-6" stroke="#3E63DD" stroke-width="1.8" fill="none"/></svg>'},
-    {t:['gnd','GND','접지(−) 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 1v8M4 9h16M7 13h10M10 17h4" stroke="#3E63DD" stroke-width="2" fill="none"/></svg>'}]},PTREE[2],PTREE[3],PTREE[6]];
+    {t:['gnd','GND','접지(−) 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 1v8M4 9h16M7 13h10M10 17h4" stroke="#3E63DD" stroke-width="2" fill="none"/></svg>'}]},PTREE[2],PTREE[3],PTREE[6],PTREE[7]];
 /* PCB에서만 쓰는 기구 부품: 장착 구멍(도금 없는 나사 구멍). 회로와 상관없이 PCB에만 놓인다 */
 const MHK={mh25:{dr:2.7,nm:'M2.5'},mh3:{dr:3.2,nm:'M3'},mh4:{dr:4.3,nm:'M4'}};
 const PCBTREE=[{k:'pcbx',label:'PCB 기구',sub:'장착 구멍 M2.5 · M3 · M4 — 회로와 상관없이 PCB에만 놓여요',items:Object.entries(MHK).map(([k,m])=>({t:['pcb:'+k,'장착 구멍 '+m.nm,`나사 구멍 지름 ${m.dr}mm · 도금 없음`,''],ico:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#D4A93A" stroke-width="1.6" stroke-dasharray="2.5 1.5"/><circle cx="12" cy="12" r="5" fill="#333"/></svg>'}))},...SCHTREE.filter(n=>n.k!=='pwr')];
@@ -4417,6 +5128,7 @@ function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선
   bat:'<b>건전지</b> · 놓을 자리를 누르세요 · 그다음 + / − 단자에서 구멍까지 끌어 전선을 이으세요',
   fg:'<b>함수 발생기</b> · 놓을 자리를 누르세요 · 그다음 OUT / GND 단자에서 구멍까지 끌어 전선을 이으세요',
   osc:'<b>오실로스코프</b> · 놓을 자리를 누르세요 · 그다음 CH1 / CH2 단자에서 구멍까지 끌어 전선을 이으세요',
+  spa:'<b>스펙트럼 분석기</b> · 놓을 자리를 누르세요 · 그다음 RF IN 단자에서 재고 싶은 구멍까지 끌어 전선을 이으세요',
   clk:'<b>클럭</b> · 출력 핀을 꽂을 구멍을 누르세요',seg7:'<b>7세그먼트</b> · 놓을 곳 근처를 누르세요 · 가운데 홈에, 겹치지 않는 빈자리로 자동으로 놓여요'};
   if(tool.startsWith('gate:')){$('hint').innerHTML=`<b>${tool.slice(5)} 게이트</b> · 놓을 줄을 누르세요. 다리는 같은 줄의 서로 다른 열(입력 왼쪽, 출력 오른쪽)에 꽂혀요 · 겹치면 가까운 빈자리로 옮겨 놓아요`;return;}
   $('hint').innerHTML=tool.startsWith('ic:')?`<b>${tool.slice(3)}</b> · 놓을 곳 근처를 누르세요 · 가운데 홈에, 겹치지 않는 빈자리로 자동으로 놓여요 (1번 핀이 왼쪽 아래)`:H_[tool==='select'&&pending?'wire':tool];}
@@ -4455,7 +5167,7 @@ new ResizeObserver(()=>{const r=svg.getBoundingClientRect();if(!r.width)return;a
 function toolName(){return tool==='select'?'선택':tool==='move'?'보드 이동':tool==='wire'?'전선':tool==='erase'?'지우개':tool.startsWith('ic:')?tool.slice(3):tool.startsWith('gate:')?tool.slice(5)+' 게이트':(TNAME[tool]||tool);}
 /* 점이 속한(없으면 가장 가까운) 보드 안의 행·열. forceB로 보드를 고정할 수 있다 */
 function boardAt(p){let best=S.boards[0],bd=1e18;for(const B of S.boards){const bx=boardBox(B),dx=Math.max(bx.x0-p.x,0,p.x-bx.x1),dy=Math.max(bx.y0-p.y,0,p.y-bx.y1),d=dx*dx+dy*dy;if(d<bd){bd=d;best=B;}}return best;}
-function gridAt(p,forceB){const B=forceB?boardById(forceB):boardAt(p),t=BTYPES[B.type];const lx=p.x-B.x,ly=p.y-B.y;
+function gridAt(p,forceB){const B=forceB?boardById(forceB):boardAt(p),t=BTYPES[B.type];const q=rotXY(B,p.x,p.y,true),lx=q.x-B.x,ly=q.y-B.y;
   const c=Math.max(1,Math.min(t.cols,Math.round((lx-X0)/P)+1));let ri=2,bd=1e9;ROWS.forEach((r,i)=>{if(isRail(r)&&!t.rails)return;const d=Math.abs(ROWY[r]-ly);if(d<bd){bd=d;ri=i;}});return{ri,c,b:B.id};}
 /* 전선 도구로 두 번째 구멍을 고르는 중에는(마우스) 구멍을 좁게 잡아서, 구멍 사이 빈 곳을 누르면 꺾는 점이 되게 한다 */
 function nearHole(p){const tm=termAt(p);if(tm)return tm;const {ri,c,b}=gridAt(p);let h=holeAt(ri,c,b);if(!h)return null;const rad=tool==='wire'&&pending&&lastPtrType!=='touch'?7:11;return Math.hypot(h.x-p.x,h.y-p.y)<rad?h:null;}
@@ -4474,7 +5186,7 @@ svg.addEventListener('pointermove',e=>{lastPtrType=e.pointerType||'mouse';
     if(!panState.on&&Math.hypot(dx,dy)>5){panState.on=true;svg.classList.add('panning');}
     if(panState.on){view.x=panState.vx-dx/view.s;view.y=panState.vy-dy/view.s;applyView();return;}}
   const p=svgPt(e);lastPt=p;const h=nearHole(p);
-  if(drag){doDrag(p);updTip(e);return;}
+  if(drag){altKey=!!e.altKey;doDrag(p);updTip(e);return;}
   if(erase){eraseAt(e);return;}
   if(wireDrag){if(h!==hover){hover=h;setStatus();}if(!wireDrag.moved&&Math.hypot(e.clientX-wireDrag.sx,e.clientY-wireDrag.sy)>4){wireDrag.moved=true;renderFbar();}
     // 끌고 간 길을 적어 둔다 → 그 길을 따라 전선이 놓인다
@@ -4603,8 +5315,9 @@ function instGhost(p){const [w,h]=ISZ[tool],taken=S.comps.filter(c=>INST.has(c.t
 function allBox(){const b=boardsBox();for(const c of S.comps)if(INST.has(c.t)){const r=instRect(c);b.x0=Math.min(b.x0,r.x0);b.y0=Math.min(b.y0,r.y0);b.x1=Math.max(b.x1,r.x1);b.y1=Math.max(b.y1,r.y1+8);}
   for(const c of S.comps)if(c.t==='wire')for(const q of c.pts||[]){b.x0=Math.min(b.x0,q.x-6);b.y0=Math.min(b.y0,q.y-6);b.x1=Math.max(b.x1,q.x+6);b.y1=Math.max(b.y1,q.y+6);}   // 보드 밖으로 돌아가는 전선도 화면에 들어오게
   return b;}
+let altKey=false;   // 보드를 끌 때 Alt를 누르면 1px 단위(아니면 5px)
 function doDrag(p){
-  if(drag.kind==='board'){const B=boardById(drag.id);if(!B)return;const nx=Math.round((drag.ox+p.x-drag.sx)/10)*10,ny=Math.round((drag.oy+p.y-drag.sy)/10)*10;
+  if(drag.kind==='board'){const B=boardById(drag.id);if(!B)return;const g_=altKey?1:5,nx=Math.round((drag.ox+p.x-drag.sx)/g_)*g_,ny=Math.round((drag.oy+p.y-drag.sy)/g_)*g_;
     if(!drag.moved&&Math.hypot(p.x-drag.sx,p.y-drag.sy)*view.s<4)return;
     if(!drag.moved){pushHist();drag.moved=true;}
     if(slideBoard(B,nx,ny)){settle();render();}return;}
@@ -4649,7 +5362,7 @@ function tryMove(ids,origs,dr,dc,before,mp){const fixed=ids.some(id=>{const o=or
 function nudge(dr,dc){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;const origs=new Map(ids.map(i=>[i,JSON.parse(JSON.stringify(compById(i)))]));
   if(tryMove(ids,origs,dr,dc,pushHist))commit(true);else toast('그쪽으로는 옮길 수 없어요 (구멍이 없거나 다른 부품이 있어요)');}
 /* 브레드보드 추가·종류 변경·삭제·이동 */
-function boardsOverlap(B,skip){const a=boardBox(B);return S.boards.some(o=>{if(o.id===skip)return false;const b=boardBox(o);return a.x0<b.x1+20&&b.x0<a.x1+20&&a.y0-30<b.y1+20&&b.y0-30<a.y1+20;});}
+function boardsOverlap(B,skip){const a=boardBox(B);return S.boards.some(o=>{if(o.id===skip)return false;const b=boardBox(o);return a.x0<b.x1+2&&b.x0<a.x1+2&&a.y0-28<b.y1+2&&b.y0-28<a.y1+2;});}
 function addBoard(type,where){const id=Math.max(0,...S.boards.map(b=>b.id))+1,t=BTYPES[type];const bb=allBox();
   let B;if(where==='right'){B={id,type,x:Math.round((bb.x1+60)/10)*10,y:S.boards[0].y};}
   else{const minX=Math.min(...S.boards.map(b=>b.x));B={id,type,x:minX,y:Math.round((bb.y1+70-(t.rails?4:60))/10)*10};}
@@ -4668,10 +5381,16 @@ function moveBoard(B,nx,ny){const dx=nx-B.x,dy=ny-B.y;if(!dx&&!dy)return false;c
   B.x=nx;B.y=ny;buildHoles();renderBoards();return true;}
 /* 끌어 옮기기: 다른 보드에 막히면 닿기 직전까지 가로→세로 순서로 미끄러진다 */
 function slideBoard(B,nx,ny){const free=(x,y)=>!boardsOverlap({...B,x,y},B.id);if(free(nx,ny))return moveBoard(B,nx,ny);
-  let x=B.x,y=B.y;const sx=Math.sign(nx-x)*10,sy=Math.sign(ny-y)*10;
+  let x=B.x,y=B.y;const sx=Math.sign(nx-x)*Math.min(5,Math.abs(nx-x)||1),sy=Math.sign(ny-y)*Math.min(5,Math.abs(ny-y)||1);
   while(sx&&(nx-x)*sx>0&&free(x+sx,y))x+=sx;while(sy&&(ny-y)*sy>0&&free(x,y+sy))y+=sy;return moveBoard(B,x,y);}
+/* 보드 돌리기: 꽂힌 부품·이 보드 안의 전선(꺾은 점 포함)이 함께 돈다. 다른 보드와 겹치면 돌리지 않는다 */
+function rotateBoard(id,da){const B=boardById(id);if(!B)return;const nr=(((B.rot||0)+da)%360+360)%360;if(boardsOverlap({...B,rot:nr},B.id)){toast('돌리면 다른 보드와 겹쳐요 — 보드를 조금 떨어뜨린 뒤 돌려 주세요');return;}
+  pushHist();const on=h=>{const H_=HOLES.get(h);return H_&&H_.b===B.id;};
+  for(const c of S.comps)if(c.t==='wire'&&c.pts&&c.pins.every(on))c.pts=c.pts.map(q=>rotXY(B,q.x,q.y,false,(da%360+360)%360));
+  if(nr)B.rot=nr;else delete B.rot;buildHoles();renderBoards();commit(true);fitView();toast(`보드 ${id}를 ${da<0?'반시계 방향으로 ':''}${Math.abs(da)}° 돌렸어요 (지금 ${nr}°) · 꽂힌 부품도 함께 돌아요 · Ctrl+Z로 되돌려요`);}
 function openBoardMenu(id,cx,cy){const B=boardById(id);if(!B)return;
   const items=Object.entries(BTYPES).filter(([k])=>k!==B.type).map(([k,t])=>({label:`종류 바꾸기 → ${t.name}`,fn:()=>changeBoardType(id,k)}));
+  items.push('-',{label:'시계 방향으로 90° 돌리기',fn:()=>rotateBoard(id,90)},{label:'반시계 방향으로 90° 돌리기',fn:()=>rotateBoard(id,-90)},{label:'180° 뒤집기',fn:()=>rotateBoard(id,180)});
   items.push('-',{label:'오른쪽에 같은 보드 추가',fn:()=>addBoard(B.type,'right')},{label:'아래에 같은 보드 추가',fn:()=>addBoard(B.type,'below')});
   if(S.boards.length>1)items.push('-',{label:`보드 ${id} 삭제`,del:true,fn:()=>deleteBoard(id)});
   openMenu(cx,cy,items,false);}
@@ -4818,7 +5537,9 @@ function nearBoard(p){let best=null,bd=1e18;for(const B of S.boards){const b=boa
 function gapYs(B){const t=BTYPES[B.type],b=boardBox(B),rs=ROWS.filter(r=>t.rails||!isRail(r)).map(r=>B.y+ROWY[r]),ys=[];
   for(let i=0;i<rs.length-1;i++)ys.push((rs[i]+rs[i+1])/2);
   for(let k=0;k<12;k++){ys.unshift(b.y0-10-k*P);ys.push(b.y1+10+k*P);}return ys;}
-function gapSnap(p){const B=nearBoard(p);if(!B)return{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};
+function gapSnap(p){const B0=nearBoard(p);if(!B0)return{x:Math.round(p.x/5)*5,y:Math.round(p.y/5)*5};
+  if(B0.rot){const B={...B0,rot:0},q=rotXY(B0,p.x,p.y,true),r=gapSnapB(B,q);return rotXY(B0,r.x,r.y);}return gapSnapB(B0,p);}
+function gapSnapB(B,p){
   const x=B.x+X0+(Math.round((p.x-B.x-X0-P/2)/P)+.5)*P;let y=null,bd=1e9;for(const g of gapYs(B)){const d=Math.abs(g-p.y);if(d<bd){bd=d;y=g;}}
   if(bd>P)y=Math.round(p.y/10)*10;return{x,y};}
 /* ── 부품 곁에 바로 꽂는 전선: y축으로 보드 바깥까지 뺀 다음 돌아 들어온다 ──
@@ -5190,7 +5911,7 @@ function fixComp(c){if(!c||typeof c!=='object'||typeof c.t!=='string')return nul
   return c;}
 const DEFAULT_BOARDS=()=>[{id:1,type:'std',x:0,y:0}];
 function setBoards(bs){const ok=Array.isArray(bs)&&bs.length&&bs.every(b=>b&&BTYPES[b.type]&&Number.isFinite(b.id)&&Number.isFinite(b.x)&&Number.isFinite(b.y));
-  S.boards=ok?bs.map(b=>({id:b.id,type:b.type,x:b.x,y:b.y})):DEFAULT_BOARDS();if(!S.boards.some(b=>b.id===1))S.boards[0].id=1;buildHoles();renderBoards();}
+  S.boards=ok?bs.map(b=>({id:b.id,type:b.type,x:b.x,y:b.y,...([90,180,270].includes(+b.rot)?{rot:+b.rot}:{})})):DEFAULT_BOARDS();if(!S.boards.some(b=>b.id===1))S.boards[0].id=1;buildHoles();renderBoards();}
 /* 계측기에 번호(k)와 단자 이름을 붙인다. 예전 방식(선 두 가닥을 구멍에 바로 꽂음)으로 저장된 것은 단자 + 전선으로 바꾼다 */
 function migrateInst(list){const out=[],seen=new Set();let nk=0;for(const c of list)if(c&&INST.has(c.t)&&Number.isFinite(c.k))nk=Math.max(nk,c.k);
   for(const c of list){if(!c||!INST.has(c.t)){out.push(c);continue;}
@@ -5506,7 +6227,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 계측기 예제 프로젝트 Ⓟ10';
+const APP_VER='2026-11-27 · 마이컴 보드 코딩·디버깅 · 스펙트럼 분석기 · 보드 돌리기';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -5598,6 +6319,58 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('fbDlg'
 const w=(a,b,color='#D93A3A')=>({t:'wire',pins:[a,b],color});
 const R=(a,b,ohms=330)=>({t:'res',pins:[a,b],ohms});
 const RED='#D93A3A',BLK='#24282D',BLU='#2F6FDB',GRN='#2E9E5B',YEL='#E8B820',ORG='#E57A1F',PUR='#8B5CD6';
+const MCU_EX_BASIC=`// Ⓜ1 마이컴 보드 기초 — 버튼(D2)을 누를 때마다 초록 LED(D8)가 켜졌다 꺼졌다,
+// 가변저항(A0)을 돌리면 노랑 LED(D9, PWM) 밝기가 바뀌어요. 값은 시리얼 모니터로 나가요
+const int BUTTON = 2, GREEN = 8, YELLOW = 9;
+bool ledOn = false;
+int lastButton = HIGH;
+unsigned long lastPrint = 0;
+
+void setup() {
+  pinMode(BUTTON, INPUT_PULLUP);
+  pinMode(GREEN, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  Serial.begin(9600);
+  Serial.println("Ⓜ1 시작!");
+}
+
+void loop() {
+  int now = digitalRead(BUTTON);
+  if (now == LOW && lastButton == HIGH) {   // 막 눌린 순간
+    ledOn = !ledOn;
+    digitalWrite(GREEN, ledOn ? HIGH : LOW);
+    Serial.println(ledOn ? "초록 켜짐" : "초록 꺼짐");
+  }
+  lastButton = now;
+
+  int raw = analogRead(A0);                 // 0 ~ 1023
+  analogWrite(YELLOW, raw / 4);             // 0 ~ 255
+
+  if (millis() - lastPrint >= 1000) {       // 1초마다
+    lastPrint = millis();
+    Serial.print("A0 = ");
+    Serial.println(raw);
+  }
+  delay(10);
+}
+`;
+const MCU_EX_TONE=`// Ⓟ11 음계 — D8에서 네모파 소리 신호가 나와요. 스펙트럼 분석기 SA1에서
+// 기본 주파수와 3·5·7배 고조파(네모파라 홀수만)가 계속 움직이는 걸 보세요
+int notes[] = {262, 330, 392, 523, 392, 330};
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  for (int i = 0; i < 6; i++) {
+    tone(8, notes[i]);
+    Serial.print(notes[i]);
+    Serial.println(" Hz");
+    delay(2000);
+  }
+}
+`;
 const EXAMPLES={
   gates:()=>[
     {t:'sw',pins:['tp3','a3'],on:false},w('e3','f3',YEL),R('j3','bn3',10000),
@@ -6093,6 +6866,27 @@ Object.assign(EXAMPLES,{
     K.vcc(QX(0));K.link(UX(0),QX(1),10000);K.gnd(QX(2),10000);K.vcc(QY(0));K.link(UX(6),QY(1),10000);K.gnd(QY(2),10000);   // 고내압 PNP 편향 구동
     K.link(QX(2),CR(4));K.link(QY(2),CR(6));K.gnd(CR(11));K.gnd(CR(10));
     return K.fin();},
+  // Ⓜ1 마이컴 보드 기초(소형 보드): D2 버튼(누르면 LOW) → LED 켜고 끄기 바꾸기, A0 가변저항 → D9 LED 밝기(PWM), 시리얼로 값 보내기
+  mbasic:()=>{const K=ledKit(1),io=mcuMap(PX.nano.mcu,PX.nano.pins),pw=io.pw,N=K.px('nano',1,null,3,{code:MCU_EX_BASIC}),D=n=>N(io.io.get(n));
+    K.gnd(N(pw.GND[0]));K.gnd(N(pw.GND[1]));
+    const b=K.btnLo(K.at(1,false,24));K.link(D(2),b,0,YEL);                                                            // D2 ← 버튼(GND로), 10kΩ 풀업
+    const L1=K.led(1,30,{color:'green'});K.link(D(8),L1.a,220);K.gnd(L1.k);                                            // D8 → 220Ω → 초록 LED
+    const L2=K.led(1,36,{color:'yellow'});K.link(D(9),L2.a,220);K.gnd(L2.k);                                           // D9(PWM) → 220Ω → 노랑 LED
+    const V=K.px('pot16',1,'b',42);K.vcc(V(2));K.gnd(V(0));K.link(V(1),D(14),0,ORG);                                   // 가변저항 와이퍼 → A0
+    return K.fin();},
+  // Ⓜ2 신호등(표준형 보드): 함수 show( )로 LED 세 개를 차례로 — [디버그 시작]·[들어가기]로 함수 안을 따라가 보기
+  mlight:()=>{const K=ledKit(1),io=mcuMap(PX.uno.mcu,PX.uno.pins),N=K.px('uno',1,null,3,{code:MCUEX.find(e=>e[0]==='light')[2]()}),D=n=>N(io.io.get(n));
+    K.gnd(N(io.pw.GND[0]));
+    [[10,'red',24],[11,'yellow',30],[12,'green',36]].forEach(([pin,color,col])=>{const x=K.led(1,col,{color});K.link(D(pin),x.a,220);K.gnd(x.k);});
+    return K.fin();},
+  // Ⓟ11 스펙트럼 분석기 한 대로 재기: 마이컴 보드 tone(음계) → 분석기 SA1 / 함수 발생기 구형파 2Hz → 분석기 SA2(홀수 고조파)
+  pspec:()=>{const K=ledKit(1),io=mcuMap(PX.nano.mcu,PX.nano.pins),N=K.px('nano',1,null,3,{code:MCU_EX_TONE}),D=n=>N(io.io.get(n));
+    K.gnd(N(io.pw.GND[0]));const L1=K.led(1,26,{color:'blue'});K.link(D(8),L1.a,220);K.gnd(L1.k);
+    const out=K.fin(),cs=out.comps,d8=cs.find(c=>c.t==='px').pins[io.io.get(8)],d8b='j'+d8.replace(/^[a-j]/,'');
+    cs.push({t:'spa',k:7,x:0,y:460,cf:2500,span:5000,ref:20,run:true},{t:'wire',pins:['@7:0',d8b],color:'#2FBF71'});
+    cs.push({t:'fg',k:8,wave:'sq',hz:2,vpp:5,off:0,duty:50,x:380,y:470},{t:'spa',k:9,x:620,y:460,cf:25,span:50,ref:20,run:true},
+      {t:'wire',pins:['@8:0','a44'],color:'#E57A1F'},{t:'wire',pins:['@8:1','tn44'],color:'#24282D'},{t:'wire',pins:['@9:0','b44'],color:'#2FBF71'});
+    return out;},
 });
 
 </script>
@@ -7760,6 +8554,262 @@ document.addEventListener('keydown',e=>{if(!$('licGate').hidden&&!e.target.close
 const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':''}라이선스: ${esc(LIC.info.to||'')}${LIC.info.exp?` · ${esc(LIC.info.exp)}까지`:''} (${esc(LIC.info.id||'')}).`:LIC.mode==='official'?' 공식 주소에서 실행 중.':'';
 
 /* ───────── 시작 ───────── */
+/* ═════════════════ 마이컴 보드 코드 편집기 · 디버거 · 시리얼 모니터 ═════════════════
+   - 떠 있는 창(끌어서 옮기고 크기 조절). 회로를 만지면서 디버깅할 수 있게 화면을 가리지 않는다
+   - 업로드: 먼저 번역(compile)해 보고 오류가 없을 때만 보드에 올린다(실제 개발 도구처럼)
+   - 디버그: 줄 번호 누르면 중단점, 일시 정지 · 계속 · 한 줄씩(함수는 건너뜀) · 들어가기 · 나오기, 변수·호출 스택·핀 보기 */
+const MCUED={id:null,draft:new Map(),tab:'var',auto:true,lastSer:-1};
+const MCUEX=[
+  ['blink','내장 LED 깜박이기',()=>MCU_BLINK],
+  ['button','버튼으로 LED 켜기 (INPUT_PULLUP)',()=>`// 버튼 한쪽을 D2, 다른 쪽을 GND에 이어요. LED(+저항 220Ω)는 D8 → GND
+const int BUTTON = 2;
+const int LED = 8;
+
+void setup() {
+  pinMode(BUTTON, INPUT_PULLUP);   // 안 누르면 HIGH, 누르면 LOW
+  pinMode(LED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int pressed = digitalRead(BUTTON) == LOW;
+  digitalWrite(LED, pressed ? HIGH : LOW);
+  if (pressed) {
+    Serial.println("눌렸어요");
+    delay(200);
+  }
+}
+`],
+  ['pot','가변저항 읽기 (analogRead → 시리얼)',()=>`// 가변저항 양 끝을 5V·GND에, 가운데(와이퍼)를 A0에 이어요
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int raw = analogRead(A0);            // 0 ~ 1023
+  float volts = raw * 5.0 / 1023.0;    // 전압으로
+  Serial.print("A0 = ");
+  Serial.print(raw);
+  Serial.print("  (");
+  Serial.print(volts, 2);
+  Serial.println(" V)");
+  delay(300);
+}
+`],
+  ['fade','LED 밝기 바꾸기 (PWM analogWrite)',()=>`// LED(+저항 220Ω)를 PWM 핀 D9 → GND에 이어요
+const int LED = 9;
+int level = 0;
+int stepSize = 15;
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  analogWrite(LED, level);      // 0(꺼짐) ~ 255(가장 밝음)
+  level = level + stepSize;
+  if (level <= 0 || level >= 255) {
+    stepSize = -stepSize;       // 끝에 닿으면 방향 바꾸기
+    Serial.println(level);
+  }
+  delay(30);
+}
+`],
+  ['light','신호등 (LED 3개, 함수)',()=>`// LED 세 개(+저항)를 D10(빨강) · D11(노랑) · D12(초록) → GND에 이어요
+const int RED = 10, YELLOW = 11, GREEN = 12;
+
+void show(int r, int y, int g, int ms) {
+  digitalWrite(RED, r);
+  digitalWrite(YELLOW, y);
+  digitalWrite(GREEN, g);
+  delay(ms);
+}
+
+void setup() {
+  pinMode(RED, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+}
+
+void loop() {
+  show(LOW, LOW, HIGH, 3000);   // 초록
+  show(LOW, HIGH, LOW, 1000);   // 노랑
+  show(HIGH, LOW, LOW, 3000);   // 빨강
+}
+`],
+  ['serial','시리얼로 명령 받기 (1 켜기, 0 끄기)',()=>`// 아래 시리얼 모니터 칸에 1 또는 0을 쓰고 [보내기]를 눌러요
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(9600);
+  Serial.println("1 = 켜기, 0 = 끄기");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    char c = Serial.read();
+    if (c == '1') {
+      digitalWrite(LED_BUILTIN, HIGH);
+      Serial.println("LED 켰어요");
+    } else if (c == '0') {
+      digitalWrite(LED_BUILTIN, LOW);
+      Serial.println("LED 껐어요");
+    }
+  }
+}
+`],
+  ['tone','신호음 (tone, 스펙트럼 분석기로 보기)',()=>`// D8에서 소리 신호(네모파)가 나와요. 스펙트럼 분석기 IN 단자를 D8 줄에 이어 보세요
+int notes[] = {262, 294, 330, 349, 392, 440, 494, 523};
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  for (int i = 0; i < 8; i++) {
+    tone(8, notes[i]);
+    Serial.print("음 ");
+    Serial.print(notes[i]);
+    Serial.println(" Hz");
+    delay(1500);
+  }
+  noTone(8);
+  delay(1000);
+}
+`],
+  ['debug','디버깅 연습 (배열 평균 — 일부러 넣은 버그)',()=>`// 이 코드에는 버그가 있어요! [디버그 시작]을 누르고 [한 줄씩]으로 따라가며
+// 오른쪽 [변수]에서 i와 sum을 살펴보세요. 무엇이 틀렸을까요?
+int data[5] = {10, 20, 30, 40, 50};
+
+int average(int arr[], int n) {
+  int sum = 0;
+  for (int i = 0; i <= n; i++) {    // ← 여기를 잘 보세요
+    sum += arr[i];
+  }
+  return sum / n;
+}
+
+void setup() {
+  Serial.begin(9600);
+  int avg = average(data, 5);
+  Serial.print("평균: ");
+  Serial.println(avg);
+}
+
+void loop() {
+}
+`],
+  ['shift','시프트 레지스터로 LED 8개 (shiftOut)',()=>`// 74HC595: DS(데이터)=D11, SH_CP(클럭)=D12, ST_CP(래치)=D8. Q0~Q7에 LED+저항
+const int DATA = 11, CLOCK = 12, LATCH = 8;
+byte pattern = 1;
+
+void setup() {
+  pinMode(DATA, OUTPUT);
+  pinMode(CLOCK, OUTPUT);
+  pinMode(LATCH, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LATCH, LOW);
+  shiftOut(DATA, CLOCK, MSBFIRST, pattern);
+  digitalWrite(LATCH, HIGH);     // 래치: 한꺼번에 출력
+  pattern = pattern << 1;
+  if (pattern == 0) pattern = 1;
+  delay(200);
+}
+`]];
+function mcuComp(){return MCUED.id!=null?compById(MCUED.id):null;}
+function mcuOpen(id){const c=compById(id);if(!c)return;MCUED.id=id;let w=$('mcuWin');
+  if(!w){w=document.createElement('div');w.id='mcuWin';w.className='mcuwin';document.body.appendChild(w);
+    w.innerHTML=`<div class="mwh" id="mwHead"><b id="mwTitle"></b><span class="sp"></span><button class="mwx" id="mwMin" title="접기">–</button><button class="mwx" id="mwX" title="닫기">✕</button></div>
+      <div class="mwbar"><button class="btn pri" id="mwUp" title="Ctrl+Enter">⬆ 업로드</button><button class="btn" id="mwDbg" title="업로드하고 첫 줄에서 멈춰요">🐞 디버그 시작</button><span class="mwsep"></span>
+        <button class="btn" id="mwRun" title="F5">▶ 계속</button><button class="btn" id="mwPause">⏸ 일시 정지</button><button class="btn" id="mwOver" title="F10 — 함수 안으로 들어가지 않고 다음 줄로">⤼ 한 줄씩</button><button class="btn" id="mwInto" title="F11 — 함수 안으로 들어가기">↧ 들어가기</button><button class="btn" id="mwOut" title="Shift+F11 — 지금 함수를 끝까지 돌고 나오기">↥ 나오기</button><button class="btn" id="mwRst">⟲ 리셋</button>
+        <span class="mwsep"></span><select class="btn" id="mwEx"><option value="">예제 코드 불러오기…</option>${MCUEX.map(([k,n])=>`<option value="${k}">${esc(n)}</option>`).join('')}</select></div>
+      <div class="mwst" id="mwSt"></div>
+      <div class="mwbody"><div class="mwcode"><div class="mwgut" id="mwGut"></div><div class="mwed"><div class="mwhl" id="mwHl"></div><textarea id="mwTa" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="마이컴 코드"></textarea></div></div>
+        <div class="mwside"><div class="mwtabs" role="tablist"><button data-mt="var">변수</button><button data-mt="stk">호출 스택</button><button data-mt="pin">핀</button><button data-mt="ser">시리얼 모니터</button></div><div class="mwpane" id="mwPane"></div></div></div>`;
+    const hd=$('mwHead');let dg=null;hd.onpointerdown=e=>{if(e.target.closest('button'))return;const r=w.getBoundingClientRect();dg={dx:e.clientX-r.left,dy:e.clientY-r.top};hd.setPointerCapture(e.pointerId);};
+    hd.onpointermove=e=>{if(!dg)return;w.style.left=Math.max(0,Math.min(innerWidth-80,e.clientX-dg.dx))+'px';w.style.top=Math.max(0,Math.min(innerHeight-40,e.clientY-dg.dy))+'px';w.style.right='auto';};hd.onpointerup=()=>{dg=null;};
+    $('mwX').onclick=()=>{mcuKeepDraft();w.hidden=true;MCUED.id=null;};$('mwMin').onclick=()=>w.classList.toggle('min');
+    const ta=$('mwTa');ta.oninput=()=>{MCUED.draft.set(MCUED.id,ta.value);mcuGutter();mcuStatus();};ta.onscroll=()=>{$('mwGut').scrollTop=ta.scrollTop;$('mwHl').style.transform=`translate(${-ta.scrollLeft}px,${-ta.scrollTop}px)`;};
+    ta.onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();const a=ta.selectionStart,b=ta.selectionEnd;ta.setRangeText('  ',a,b,'end');ta.oninput();}
+      else if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();mcuUpload(false);}
+      else if(e.key==='Enter'&&!e.shiftKey){const a=ta.selectionStart,line=ta.value.slice(0,a).split('\n').pop(),ind=(/^\s*/.exec(line)[0])+(/\{\s*$/.test(line)?'  ':'');if(ind){e.preventDefault();ta.setRangeText('\n'+ind,a,ta.selectionEnd,'end');ta.oninput();}}
+      e.stopPropagation();};
+    ta.onkeyup=e=>e.stopPropagation();
+    w.addEventListener('keydown',e=>{if(e.key==='F5'){e.preventDefault();mcuCmd('run');}else if(e.key==='F10'){e.preventDefault();mcuCmd('over');}else if(e.key==='F11'){e.preventDefault();mcuCmd(e.shiftKey?'out':'into');}});
+    $('mwGut').onclick=e=>{const d=e.target.closest('[data-ln]');if(d)mcuToggleBp(+d.dataset.ln);};
+    $('mwUp').onclick=()=>mcuUpload(false);$('mwDbg').onclick=()=>mcuUpload(true);
+    for(const [id,k] of [['mwRun','run'],['mwPause','pause'],['mwOver','over'],['mwInto','into'],['mwOut','out'],['mwRst','rst']])$(id).onclick=()=>mcuCmd(k);
+    $('mwEx').onchange=()=>{const x=MCUEX.find(e=>e[0]===$('mwEx').value);$('mwEx').value='';if(!x)return;const ta=$('mwTa');if(ta.value.trim()&&ta.value!==x[2]()&&!confirm('지금 편집기의 코드를 예제로 바꿀까요? (보드에 올린 코드는 [업로드]하기 전까지 그대로예요)'))return;ta.value=x[2]();ta.oninput();ta.scrollTop=0;toast(`예제 "${x[1]}"를 불러왔어요 · [업로드]를 눌러 보드에 올려요`);};
+    w.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{MCUED.tab=b.dataset.mt;MCUED.lastSer=-1;mcuPane(true);});}
+  w.hidden=false;w.classList.remove('min');const ta=$('mwTa');ta.value=MCUED.draft.has(id)?MCUED.draft.get(id):c.code||'';
+  $('mwTitle').textContent=`코드 편집 · 디버그 — ${LBL.get(id)||'U'} (${PX[c.kind].mcu.lab} 마이컴 보드)`;MCUED.lastSer=-1;mcuGutter();mcuUI();setTimeout(()=>ta.focus(),0);}
+function mcuKeepDraft(){const c=mcuComp(),ta=$('mwTa');if(c&&ta){if(ta.value===c.code)MCUED.draft.delete(c.id);else MCUED.draft.set(c.id,ta.value);}}
+function mcuToggleBp(ln){const c=mcuComp();if(!c)return;const m=mcuM(c);let L=ln;
+  if(!m.bp.has(ln)&&m.lines&&!m.lines.has(ln)){const nx=[...m.lines].filter(x=>x>=ln).sort((a,b)=>a-b)[0];if(nx==null||nx-ln>3){toast(`${ln}줄에는 실행되는 문장이 없어 중단점을 둘 수 없어요`);return;}L=nx;}
+  if(m.bp.has(L))m.bp.delete(L);else m.bp.add(L);c.bp=[...m.bp].sort((a,b)=>a-b);if(!c.bp.length)delete c.bp;save();mcuGutter();mcuStatus();}
+function mcuUpload(dbg){const c=mcuComp();if(!c)return;const ta=$('mwTa'),src=ta.value,D=PX[c.kind].mcu,mp=mcuMap(D,PX[c.kind].pins);
+  const r=MCUC.compile(src,{intBits:D.ib,consts:mp.consts});const m=mcuM(c);
+  if(!r.ok){m.upErr=r.err;mcuGutter();mcuStatus();mcuGoLine(r.err.ln);toast(`번역 오류 ${r.err.ln}줄: ${r.err.msg}`);return;}
+  m.upErr=null;if(src!==c.code){pushHist();c.code=src;}MCUED.draft.delete(c.id);
+  // 중단점: 문장이 없는 줄에 있던 것은 다음 문장 줄로
+  const bp=new Set();for(const b of m.bp){if(r.lines.has(b))bp.add(b);else{const nx=[...r.lines].filter(x=>x>=b).sort((a,b)=>a-b)[0];if(nx!=null&&nx-b<=3)bp.add(nx);}}m.bp=bp;c.bp=[...bp].sort((a,b)=>a-b);if(!c.bp.length)delete c.bp;
+  m.src=null;mcuCompile(c);mcuReset(c,true);if(dbg)m.stp={mode:'into',d:0};commit(true);
+  const pw=rt(c).mpw;if(pw)mcuTick(simNow());settle();render();mcuGutter();mcuUI();
+  toast(pw?(dbg?'업로드했어요 — 첫 줄에서 멈췄어요. [한 줄씩]으로 따라가 보세요':`업로드했어요 (함수 ${r.info.fns}개 · 전역 변수 ${r.info.ram}바이트) — 보드가 처음부터 다시 돌아요`):'업로드했어요. 그런데 보드에 전원이 없어요 — 전원이 들어오면 돌기 시작해요');}
+function mcuCmd(k){const c=mcuComp();if(!c)return;const m=mcuM(c),vm=m.vm;
+  if(k==='rst'){mcuReset(c,true);if(rt(c).mpw)mcuTick(simNow());settle();render();mcuUI();toast('리셋 — 코드가 처음부터 다시 돌아요');return;}
+  if(!vm){toast(m.cerr?'코드에 오류가 있어요 — 고친 뒤 업로드해요':!rt(c).mpw?'보드에 전원이 없어요':'아직 시작 전이에요');return;}
+  if(m.st==='err'||m.st==='done'){toast(m.st==='err'?'실행 오류로 멈췄어요 — 코드를 고쳐 업로드하거나 [리셋]해요':'코드가 끝났어요 — [리셋]하면 처음부터 돌아요');return;}
+  if(k==='pause'){if(m.st==='run'){m.st='pause';m.why='user';}}
+  else if(k==='run'){m.stp=null;m.st='run';if(paused)setPaused(false);}
+  else{if(m.st!=='pause'){toast('먼저 [일시 정지]하거나 중단점에서 멈춰야 한 줄씩 갈 수 있어요');return;}m.stp={mode:k,d:vm.frames.length};m.st='run';if(paused)setPaused(false);}
+  mcuTick(simNow());settle();render();mcuUI();}
+function mcuGoLine(ln){const ta=$('mwTa');if(!ta)return;const lh=parseFloat(getComputedStyle(ta).lineHeight)||17;const want=(ln-1)*lh;if(want<ta.scrollTop+lh||want>ta.scrollTop+ta.clientHeight-2*lh)ta.scrollTop=Math.max(0,want-ta.clientHeight/3);ta.onscroll();}
+function mcuGutter(){const c=mcuComp(),ta=$('mwTa');if(!c||!ta)return;const m=mcuM(c),n=ta.value.split('\n').length,cur=m.st==='pause'&&m.vm?m.vm.ln:0,er=m.upErr?m.upErr.ln:m.st==='err'&&m.err?m.err.ln:m.cerr&&ta.value===c.code?m.cerr.ln:0;
+  let g='',hl='';const lh=parseFloat(getComputedStyle(ta).lineHeight)||17,pt=parseFloat(getComputedStyle(ta).paddingTop)||6;
+  for(let i=1;i<=n;i++)g+=`<div data-ln="${i}" class="${m.bp.has(i)?'bp ':''}${i===cur?'cur ':''}${i===er?'er':''}" title="누르면 중단점">${i===cur?'▶':''}${i}</div>`;
+  if(cur)hl+=`<div style="top:${pt+(cur-1)*lh}px;height:${lh}px" class="c"></div>`;if(er)hl+=`<div style="top:${pt+(er-1)*lh}px;height:${lh}px" class="e"></div>`;
+  for(const b of m.bp)if(b!==cur)hl+=`<div style="top:${pt+(b-1)*lh}px;height:${lh}px" class="b"></div>`;
+  $('mwGut').innerHTML=g+'<div style="height:40px"></div>';$('mwHl').innerHTML=hl;$('mwGut').scrollTop=ta.scrollTop;}
+function mcuStatus(){const c=mcuComp(),el=$('mwSt');if(!c||!el)return;const m=mcuM(c),ta=$('mwTa'),changed=ta&&ta.value!==c.code;let h='',cls='';
+  if(m.upErr){h=`번역 오류 — ${m.upErr.ln}줄: ${esc(m.upErr.msg)}`;cls='bad';}
+  else if(m.cerr){h=`보드에 올린 코드에 오류 — ${m.cerr.ln}줄: ${esc(m.cerr.msg)}`;cls='bad';}
+  else if(!S.power)h='전원이 꺼져 있어요 (위 [전원] 단추)';else if(!rt(c).mpw){h=mcuState(c).replace(/<[^>]+>/g,'');cls='warn';}
+  else if(m.st==='err'){h=`실행 오류 — ${m.err.ln}줄: ${esc(m.err.msg)}`;cls='bad';}
+  else if(m.st==='pause'){h=`⏸ ${m.vm?m.vm.ln:''}줄 앞에서 멈췄어요 (${m.why==='bp'?'중단점':m.why==='step'?'한 단계':'일시 정지'}) — 이 줄은 아직 실행 전이에요`;cls='warn';}
+  else if(m.st==='done')h='코드가 끝났어요';else h=`▶ 실행 중 · millis() = ${m.vm?Math.floor(m.vm.t*1000):0}${m.slow?' · 쉬지 않는 반복이 많아 시간을 건너뛰었어요(delay를 넣어 보세요)':''}`;
+  if(m.warn&&!m.upErr&&m.st!=='err')h+=` <span class="mwwarn">⚠ ${m.warn[0]}줄: ${esc(m.warn[1])}</span>`;
+  if(m.nob&&!m.vm?.serOn)h+=' <span class="mwwarn">⚠ Serial.begin( )을 부르지 않아 시리얼 글이 나가지 않아요</span>';
+  if(changed)h+=' <span class="mwchg">· 편집기 코드가 보드와 달라요 — [업로드]해야 반영돼요</span>';
+  el.innerHTML=h;el.className='mwst '+cls;
+  const can=m.st==='pause'&&!!m.vm;for(const id of ['mwOver','mwInto','mwOut'])$(id).disabled=!can;$('mwRun').disabled=!(m.vm&&m.st==='pause');$('mwPause').disabled=!(m.vm&&m.st==='run');}
+function mcuPane(force){const c=mcuComp(),el=$('mwPane');if(!c||!el)return;const m=mcuM(c),vm=m.vm;
+  document.querySelectorAll('#mcuWin [data-mt]').forEach(b=>b.setAttribute('aria-selected',b.dataset.mt===MCUED.tab));
+  if(MCUED.tab==='ser'){if(!force&&MCUED.lastSer===m.ser.length)return;MCUED.lastSer=m.ser.length;
+    if(!el.querySelector('#mwSer')){el.innerHTML=`<pre id="mwSer" class="mwser"></pre><div class="mwsin"><input id="mwSin" placeholder="보낼 글 (Enter)" aria-label="시리얼로 보낼 글"><select id="mwNl" class="btn" title="줄 끝"><option value="nl">줄바꿈</option><option value="">없음</option></select><button class="btn" id="mwSend">보내기</button><button class="btn" id="mwSclr">지우기</button></div>`;
+      const send=()=>{const v=$('mwSin').value+($('mwNl').value==='nl'?'\n':'');for(const ch of v)m.serIn.push(ch.charCodeAt(0)&255);$('mwSin').value='';};
+      $('mwSend').onclick=send;$('mwSin').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')send();};$('mwSin').onkeyup=e=>e.stopPropagation();$('mwSclr').onclick=()=>{m.ser='';MCUED.lastSer=-1;mcuPane(true);};}
+    const pre=$('mwSer'),atEnd=pre.scrollTop+pre.clientHeight>=pre.scrollHeight-8;pre.textContent=m.ser||'(아직 받은 글이 없어요 — 코드에서 Serial.begin(9600)과 Serial.println( )을 써요)';if(atEnd||force)pre.scrollTop=pre.scrollHeight;return;}
+  let h='';
+  if(MCUED.tab==='var'){if(!vm){el.innerHTML='<p class="desc">보드가 돌기 시작하면 변수 값이 보여요.</p>';return;}const V=MCUC.vars(vm);
+    const tb=(rows)=>rows.length?`<table class="mwvt"><tr><th>이름</th><th>값</th><th>자료형</th></tr>${rows.map(v=>`<tr><td>${esc(v.nm)}</td><td class="v">${esc(v.v)}</td><td class="t">${esc(v.ty)}</td></tr>`).join('')}</table>`:'<p class="desc">(없음)</p>';
+    const top=V.fr[V.fr.length-1];if(top)h+=`<h4>${esc(top.nm)}( ) 안의 변수</h4>`+tb(top.vars);h+='<h4>전역 변수</h4>'+tb(V.g.filter(v=>v.set));
+    if(m.st==='run')h+='<p class="desc">실행 중에는 값이 계속 바뀌어요. [일시 정지]하면 그 순간 값을 볼 수 있어요.</p>';}
+  else if(MCUED.tab==='stk'){if(!vm){el.innerHTML='<p class="desc">보드가 돌기 시작하면 보여요.</p>';return;}const V=MCUC.vars(vm);
+    h=V.fr.length?'<ol class="mwstk">'+V.fr.slice().reverse().map((f,i)=>`<li${i===0?' class="top"':''}><b>${esc(f.nm)}( )</b> — ${f.ln}줄${i===0&&m.st==='pause'?' (여기서 멈춤)':''}${f.cl>1?` <small>(${f.cl}줄에서 불림)</small>`:''}</li>`).join('')+'</ol>':'<p class="desc">함수 밖이에요.</p>';}
+  else{const D=PX[c.kind].mcu,mp=mcuMap(D,PX[c.kind].pins),hs=pinHoles(c),rows=[];
+    for(const [p,k] of mp.io){const md=m.mode[k],used=md!=null||m.pull[k];if(!used&&!(mp.ana.has(p)&&SIM.netOf))continue;const h_=HOLES.get(hs[k]),n=h_&&SIM.netOf?SIM.netOf[h_.i]:-1,v=SIM.vOf?SIM.vOf(n):null,lv=SIM.lvl.get(n);
+      const st=md===1?(m.tone[k]?`tone ${m.tone[k].f}Hz`:m.pwm[k]>0&&m.pwm[k]<255?`PWM ${m.pwm[k]} (${Math.round(m.pwm[k]/2.55)}%)`:(m.pwm[k]>=255||m.out[k])?'HIGH':'LOW'):lv===Hh?'HIGH':lv===L?'LOW':m.pull[k]?'HIGH (풀업)':'떠 있음';
+      if(!used&&lv===undefined&&v==null)continue;rows.push(`<tr><td>${esc(PX[c.kind].pins[k].split(' ')[0])}</td><td>${md===1?'출력':md===2?'입력 (풀업)':md===0?'입력':'—'}</td><td class="v">${st}${v!=null?` · ${v.toFixed(2)}V`:''}</td></tr>`);}
+    h=rows.length?`<table class="mwvt"><tr><th>핀</th><th>모드</th><th>지금</th></tr>${rows.join('')}</table>`:'<p class="desc">아직 쓰는 핀이 없어요 (pinMode·analogRead를 쓰면 여기에 보여요).</p>';}
+  if(el.dataset.h!==h){el.innerHTML=h;el.dataset.h=h;}}
+// 20ms 시계에서 부른다: 열린 창·속성 칸을 가볍게 고친다
+let mcuUIt=0;
+function mcuUI(){const c=mcuComp(),w=$('mcuWin');if(c&&w&&!w.hidden){const m=mcuM(c),key=m.st+'|'+(m.vm?m.vm.ln:0)+'|'+(m.err?1:0)+'|'+[...m.bp].join(',');if(key!==MCUED.key||m.st==='pause'){MCUED.key=key;mcuGutter();if(m.st==='pause'&&m.vm)mcuGoLine(m.vm.ln);}
+    const t=performance.now();if(t-mcuUIt>200||m.st!=='run'){mcuUIt=t;mcuStatus();mcuPane(false);}}
+  const s=$('mcuSt');if(s){const sc=sel!=null?compById(sel):null;if(sc&&sc.t==='px'&&PX[sc.kind].mcu){s.innerHTML=mcuState(sc);const p=$('mcuSer');if(p){const tail=mcuM(sc).ser.split('\n').slice(-6).join('\n');if(p.textContent!==tail){p.textContent=tail||'(아직 없음)';p.scrollTop=p.scrollHeight;}}}}}
 (function start(){
   // 링크 끝에 #예제이름 이 붙어 있으면 그 예제를 바로 연다 (예: …#sync10)
   const hashEx=()=>{const k=(location.hash||'').slice(1);return Object.prototype.hasOwnProperty.call(EXAMPLES,k)?k:null;};
@@ -7788,6 +8838,8 @@ const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':'
     const ana=caps||S.comps.some(c=>c.t==='fg'&&c.wave!=='sq'); // 전압이 연속으로 바뀌는 회로
     if(S.comps.some(c=>c.t==='led'&&c.lk==='blink'&&(SIM.led.get(c.id)||{}).lit)){const bp=Math.floor(now*3)%2;if(bp!==blinkPh){blinkPh=bp;render();}}
     const timed=S.comps.some(c=>c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].timed);
+    if(mcuList().length&&mcuTick(now)){settle();render();if(typeof mcuUI==='function')mcuUI();}
+    if(S.comps.some(c=>c.t==='spa'))spaTick(now);
     if(!clks.length&&!SIM.unstable&&!SIM.buzz&&!caps&&!oscs&&!timed)return;
     const sig=clks.map(c=>c.t==='clk'?clkVal(c,now):+(fgVolt(c,now)>=2.5)).join('')+(timed?'|'+Math.floor(now*50):'');
     if(ana){settle();const ns=snapOut();if(ns!==lastOut||sig!==lastSig||(caps&&++frame%4===0)){lastOut=ns;lastSig=sig;render();}}
