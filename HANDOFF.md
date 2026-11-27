@@ -1,4 +1,4 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 29차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 30차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 9000줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
@@ -14,6 +14,8 @@
 ✓ 28차: IC 몸통 36px 핀 번호·기능 상시 표시, 전선 호버 `wireTip`, 경고 카드 왼쪽 아래·작성 중 숨김, 신호 보기 선 색 유지(`sigCol` 가는 줄), `addComp` 뒤 선택 도구(한 개씩), 풀 보드 2장 묶음 `addBoardPair`·`B.grp`·`boardGroup`
 ✓ 저항 옴의 법칙: `Rl`을 아날로그 마디 씨앗에, 저항만 있어도 analogStep, 커패시터 없으면 1단계. 논리값은 `anaNets`(커패시터·pxR·다이오드·트랜지스터·아날로그 IC 줄)만 전압으로, 저항만 거친 줄은 X·SH일 때만 전압으로. 칩 출력 바뀌면 analogStep 한 번 더(7세그 한 박자 늦음 고침)
 ✓ 29차 실제 특성: `partSeed`(자리 해시 오차, `opt.tol===false`면 0), `resEff`·`partStress`(P>정격 뜨거움, >2배 `rt.burnt` 탐), `capEff`(오차·X7R 바이어스)·`capEsr`·`capLeak`, 정격 1.3배 `rt.fail` 단락, 극성 반대 `rt.rev`. 속성 `partLive`·[새 부품으로 바꾸기]·[부품 오차 반영] 토글. 보드 표시 `partMark`
+
+✓ 30차 코일 임피던스: 인덕터 `thru` 합치기 없앰(`d.ind`면 settle 합치기 건너뜀) → `indL` 후진 오일러(R=DCR, L 오차 ±10% `indModel`, 병렬 손실 `IND_RP` 100k), 포화 `indImaxOf` 넘으면 L 줄어듦·경고, 역전압 `vpk`(끊길 때 바깥 저항 Rth를 `A0`로 따로 풀어 i×min(Rth,√(L/C)), `IND_CP` 20pF), 코일 있으면 시간 단계 L/(R+1000)/4·최대 240. 함수 발생기 잘게 나눈 단계마다 다시 읽음. `gsolve` 분리. 속성 `indLive`(|Z|·위상·FG 주파수·공진 f₀·전류). LED 과전류 경고는 계산 전류 `ai`로. 시험 tests/ui/coil.js
 
 ## 결정사항
 - 제품 상표·로고 안 씀, "UNO/Nano 폼팩터 호환 보드 · 특징"으로 이름 — COPYRIGHT 2절, 8절 기록

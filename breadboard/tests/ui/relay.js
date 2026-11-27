@@ -28,7 +28,7 @@ const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,m
   const Lr={t:'px',kind:'rlyl',cv:5,s:0};const r0={};coilUpd(Lr,r0,5);const s1=Lr.s;coilUpd(Lr,r0,0);const s2=Lr.s;coilUpd(Lr,r0,-5);const s3=Lr.s;T('래칭 SET·유지·RESET',s1===1&&s2===1&&s3===0,[s1,s2,s3].join(''));
   // 버저: 코일을 자기 NC 접점으로 끊는 회로 → 떨림 알림, 오류 없음
   // 인덕터: 직류로 이어짐(LED 켜짐)
-  const ind=px('indr')[0],net=i=>SIM.netOf[HOLES.get(ind.pins[i]).i];T('인덕터 직류 통과',net(0)===net(1),'');
+  const ind=px('indr')[0],net=i=>SIM.netOf[HOLES.get(ind.pins[i]).i];{const va=SIM.vOf(net(0)),vb=SIM.vOf(net(1));T('인덕터 직류 통과(DCR만큼 아주 작은 전압 차)',net(0)!==net(1)&&va!=null&&vb!=null&&Math.abs(va-vb)<.1&&va>3,[va,vb].join(' / '));}
   T('색띠 100µH = 갈 검 갈',indBands(1e-4).join()===[BANDC[1],BANDC[0],BANDC[1]].join(),indBands(1e-4).join());
   // 속성 창: 부품마다 열어 보기
   let pe=0;for(const k of ['rlyc','rlyd','reed','ssr','sol','indr','inda']){try{const x=px(k)[0];sel={type:'comp',id:x.id};renderInfo();if(!document.querySelector('#info .prop,#info .desc'))pe++;}catch(e){pe++;}}T('속성 창 오류 없음',!pe,'');

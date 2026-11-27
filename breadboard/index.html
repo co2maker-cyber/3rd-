@@ -1142,7 +1142,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
   - **row** 형: 한 줄(보통 `c`)에서 `열 + 오프셋` 자리에 핀 순서대로
   - **dip** 형: IC처럼 홈을 걸쳐요. 앞쪽 절반 핀은 `f{열+오프셋}`(왼→오), 뒤쪽 절반은 `e` 줄을 오른→왼
 - 추가 칸: 가변저항 `ohms`·`taper`(`A` 오디오 / `B` 선형 / `C` 역대수)·`pos`(0~1, 와이퍼 위치), 저항 어레이 `ohms`, 스위치 `s`(위치 번호), DIP 스위치 `bits`(`[0,1,…]`), 릴레이·솔레노이드 `cv`(코일 정격 전압 V), 인덕터 `henry`(인덕턴스, H 단위 — 100µH = `0.0001`)
-- 릴레이는 코일 양 끝에 정격의 75% 이상 전압이 걸리면 붙고 10% 밑이면 떨어져요. 인덕터는 직류로 계산해서 1-2번이 전선처럼 이어져요
+- 릴레이는 코일 양 끝에 정격의 75% 이상 전압이 걸리면 붙고 10% 밑이면 떨어져요. 인덕터는 선 저항(DCR)과 인덕턴스로 계산해요(직류에서는 DCR만 남고, 전류가 L÷R 시간에 걸쳐 늘며, 끊으면 역전압이 생김). 오차 ±10%는 꽂은 자리마다 정해지고 `henry`는 표시 값이에요
 
 | kind | 이름 | 배치 | 오프셋 | 핀 순서 | 기본값 |
 |---|---|---|---|---|---|
@@ -1752,7 +1752,7 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 1. 프로그램에서 회로를 만들고 [속성]에서 다이오드 전류·릴레이 코일 전압을 봐요.
 2. 같은 회로를 SPICE 시뮬레이터에 옮겨 `spice/bbcad-parts.lib`의 같은 이름 모델로 돌려요(이름 대응표는 `spice/README.md`).
 3. 두 결과가 크게 다르면 대개 이 둘 중 하나예요.
-   - 프로그램은 다이오드를 꺾은선(켜지는 전압 + 저항)으로, 코일을 직류에서 전선으로 계산해요. 순간적인 변화(코일 역전압, 공진)는 SPICE 쪽이 더 정확해요.
+   - 프로그램은 다이오드를 꺾은선(켜지는 전압 + 저항)으로, 코일을 선 저항(DCR) + 인덕턴스로 시간에 따라 계산해요(전류가 천천히 늘고, 끊으면 역전압, 교류에서는 주파수만큼 임피던스가 커짐). 아주 빠른 변화(수 µs 안쪽의 역전압 모양, MHz 공진)는 SPICE 쪽이 더 정확해요.
    - 브레드보드 접점 저항, 긴 점퍼선을 빠뜨렸을 수 있어요 → `BB_RAIL`·`BB_CONTACT`를 넣어 보세요.
 
 ---
@@ -2910,7 +2910,7 @@ pxDef({k:'sol',pp:10.16,sub:'rly',pre:'SOL',title:'푸시-풀 솔레노이드 (�
   res:coilRes,
   draw:(c,ph,r)=>{const on=!!(r&&r.on),B=bodyAbove(ph,10,18,'#8A9098'),px_=on?0:9;return B.s+`<rect x="${B.x-16}" y="${B.y-7}" width="22" height="14" fill="#B87333" stroke="#6B4520" stroke-width=".8"/><rect x="${B.x+6-px_}" y="${B.y-2.5}" width="${18+px_}" height="5" fill="#D9DEE4" stroke="#555" stroke-width=".6"/><text x="${B.x-5}" y="${B.y+2.5}" font-size="6" font-weight="700" fill="#fff" text-anchor="middle" font-family="var(--mono)">${coilV(c)}V</text>`;},
   desc:'코일에 전류가 흐르면 전자석이 되어 가운데 쇠막대(플런저)를 끌어당기는 부품이에요. 문 잠금장치, 자판기, 밸브처럼 "딸깍" 밀고 당기는 데 써요. 전류를 많이 먹어서(5V면 약 10Ω, 0.5A) 반드시 트랜지스터·MOSFET·DRV-SINK8 같은 드라이버로 켜고, 코일 양 끝에 역전압 다이오드를 달아요. 켜지면 보드에서 쇠막대가 안으로 들어가요.'});
-// ── 코일·인덕터: 직류에서는 전선처럼 이어진다(thru). 값(henry)은 교류 저항(리액턴스) 계산과 표시용
+// ── 코일·인덕터: 선 저항(DCR) + 인덕턴스 L 로 계산한다(analogStep 후진 오일러). 전류는 천천히 늘고, 끊으면 역기전력. 흘릴 수 있는 전류를 넘으면 심이 포화돼 L이 줄어든다
 const INDV=[1e-6,4.7e-6,1e-5,2.2e-5,4.7e-5,1e-4,2.2e-4,4.7e-4,1e-3,2.2e-3,4.7e-3,1e-2,1e-1];
 const henTx=v=>{const f=(x,u)=>(+x.toPrecision(3))+u;return v>=1?f(v,'H'):v>=1e-3?f(v*1e3,'mH'):f(v*1e6,'µH');};
 const INDK={inda:[4,.6,3,.75,.45],indr:[1.2,1.5,5,.8,.5],indt:[.2,5,10,.8,.5]};
@@ -2918,7 +2918,7 @@ const indDcr=c=>{const [k,,,e]=INDK[c.kind],L_=c.henry||1e-4;return +(k*Math.pow
 const indImax=c=>{const [,k,mx,,e]=INDK[c.kind],L_=c.henry||1e-4;return +Math.min(mx,k*Math.pow(L_/1e-4,-e)).toPrecision(2);};
 const BANDC=['#111','#7B4A1E','#D22','#F08C00','#F2D21B','#2E9E44','#2F5FD0','#7A3FB8','#888','#F4F4F4'];
 const indBands=L_=>{const u=L_*1e6,e=Math.floor(Math.log10(u)+1e-9)-1,m=Math.round(u/Math.pow(10,e));const d=m>=100?[9,9]:[Math.floor(m/10),m%10];return[BANDC[d[0]],BANDC[d[1]],e===-1?'#C9A227':e===-2?'#C0C0C0':BANDC[Math.max(0,e)]];};
-const INDD=' 시뮬레이터는 직류(DC)로 계산해서 코일을 전선처럼 이어 줘요(감은 선의 저항 DCR만 조금 있음). 교류에서는 주파수가 높을수록 전류를 막는 정도(리액턴스 X = 2π·f·L)가 커져요 — [속성]에 1kHz·100kHz에서의 값이 나와요. 커패시터와 묶으면 전원 잡음 거르기(LC 필터)·공진 회로가 돼요.';
+const INDD=' 시뮬레이터는 코일을 감은 선의 저항(DCR)과 인덕턴스 L로 계산해요. 직류에서는 DCR만 남아 거의 전선처럼 이어지고, 전압을 걸면 전류가 L÷R 시간에 걸쳐 천천히 늘어요. 갑자기 끊으면 높은 역전압(역기전력)이 생겨요. 교류에서는 주파수가 높을수록 전류를 막는 정도(임피던스 |Z| = √(R² + (2π·f·L)²))가 커져요 — [속성]에 주파수마다 값과 지금 흐르는 전류가 나와요. 흘릴 수 있는 전류를 넘으면 심이 포화돼 인덕턴스가 줄고 뜨거워져요. 커패시터와 묶으면 전원 잡음 거르기(LC 필터)·공진 회로가 돼요.';
 pxDef({k:'inda',pp:10.16,sub:'ind',pre:'L',title:'축형 인덕터 (색띠, 저항 모양)',lay:'row',dc:[0,4],pins:['1','2'],init:()=>({henry:1e-4}),thru:1,ind:1,
   draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10,x=(a.x+b.x)/2,[c1,c2,c3]=indBands(c.henry||1e-4);let s='';for(const p of ph)s+=leg(p,p.x,y);
     return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-17}" y="${y-6}" width="34" height="12" rx="5" fill="#5BAF7A"/><rect x="${x-12}" y="${y-6}" width="3.5" height="12" fill="#C0C0C0"/><rect x="${x-6}" y="${y-6}" width="3" height="12" fill="${c1}"/><rect x="${x-1.5}" y="${y-6}" width="3" height="12" fill="${c2}"/><rect x="${x+3}" y="${y-6}" width="3" height="12" fill="${c3}"/><rect x="${x+9}" y="${y-6}" width="3" height="12" fill="#C9A227"/>`;},
@@ -2934,6 +2934,12 @@ pxDef({k:'indt',pp:7.62,sub:'ind',pre:'L',title:'토로이드 코일 (도넛 모
 // 공심 코일(직접 감기): 지름 0.5mm 에나멜선을 촘촘히 감는다고 보고 길이 = 감은 수 × 0.5mm. 휠러 근사식 L(µH) = N²·r² ÷ (9r + 10ℓ) (r·ℓ 인치)
 const airL=c=>{const N=c.turns||20,r=(c.dmm||10)/2/25.4,l=N*0.5/25.4;return +(N*N*r*r/(9*r+10*l)*1e-6).toPrecision(3);};
 const airR=c=>+(0.0870*(c.turns||20)*Math.PI*(c.dmm||10)/1000).toPrecision(2);   // 지름 0.5mm 구리선 약 0.087Ω/m
+// 코일 계산 모형: L(오차 ±10%, 자리마다 늘 같음), R = DCR. 비드는 직류에서 거의 0Ω·작은 L. IND_RP: 심 손실을 나타내는 병렬 저항(끊을 때 역전압의 크기를 정함)
+const IND_RP=1e5,IND_CP=2e-11;   // IND_CP: 감은 선 사이·브레드보드의 기생 용량 약 20pF — 끊을 때 역전압 ≈ 전류 × √(L/C)
+const indTol=c=>c.kind==='bead'||PX[c.kind].air?0:.1;
+const indModel=c=>{if(c.kind==='bead')return{L:1e-6,R:.03};const L0=PX[c.kind].air?(c.henry||airL(c)):(c.henry||1e-4);return{L:L0*(1+indTol(c)*.6*partSeed(c)),R:Math.max(.005,PX[c.kind].air?airR(c):indDcr(c))};};
+const indImaxOf=c=>c.kind==='bead'?3:PX[c.kind].air?1.5:indImax(c);
+const indZ=(c,f)=>{const m=indModel(c),X=2*Math.PI*f*m.L;return{z:Math.hypot(m.R,X),ph:Math.atan2(X,m.R)*180/Math.PI,X};};
 pxDef({k:'indair',pp:7.62,sub:'ind',pre:'L',title:'공심 코일 (에나멜선 직접 감기)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({turns:20,dmm:10,henry:airL({turns:20,dmm:10})}),thru:1,ind:1,air:1,
   draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-12,n=Math.min(12,Math.max(3,Math.round((c.turns||20)/4))),x0=a.x+6,x1=b.x-6,rr=Math.min(9,3+(c.dmm||10)/3);let s='';for(const p of ph)s+=leg(p,p.x,y);
     for(let i=0;i<n;i++){const x=x0+(x1-x0)*(i+.5)/n;s+=`<ellipse cx="${x}" cy="${y}" rx="${(x1-x0)/n/2}" ry="${rr}" fill="none" stroke="#C8763A" stroke-width="1.6"/>`;}
@@ -2941,7 +2947,7 @@ pxDef({k:'indair',pp:7.62,sub:'ind',pre:'L',title:'공심 코일 (에나멜선 �
   desc:'쇠 심 없이 에나멜선(겉에 얇은 절연 막이 입혀진 구리선)을 연필·빨대 같은 둥근 막대에 감아 만드는 코일이에요. 쇠 심이 없어 큰 전류에도 값이 변하지 않고(포화 없음), 라디오 수신·발진 회로처럼 높은 주파수에서 손실이 적어요. 대신 같은 값이라면 쇠 심 코일보다 훨씬 커요. 다리 끝의 절연 막은 사포나 칼로 벗겨야 브레드보드에 전기가 통해요. [속성]에서 감은 수와 지름을 고르면 휠러 근사식으로 인덕턴스를 계산해 줘요(지름 0.5mm 선을 빈틈없이 감은 것으로 봄).'+INDD});
 pxDef({k:'bead',pp:7.62,sub:'ind',pre:'FB',title:'페라이트 비드 (잡음 막기)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({}),thru:1,ind:1,
   draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10,x=(a.x+b.x)/2;let s='';for(const p of ph)s+=leg(p,p.x,y);return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-11}" y="${y-6}" width="22" height="12" rx="3" fill="#3A3F47"/>`;},
-  desc:'전선에 페라이트 구슬을 끼운 부품이에요. 직류와 낮은 주파수는 그대로 통과시키고(저항 거의 0), 수십 MHz 이상의 높은 주파수 잡음만 열로 바꿔 없애요(보통 100MHz에서 약 600Ω). IC 전원 핀 앞, USB·케이블 선에 달아요. 시뮬레이터는 직류로 계산해서 전선처럼 이어 줘요.'});
+  desc:'전선에 페라이트 구슬을 끼운 부품이에요. 직류와 낮은 주파수는 그대로 통과시키고(저항 거의 0), 수십 MHz 이상의 높은 주파수 잡음만 열로 바꿔 없애요(보통 100MHz에서 약 600Ω). IC 전원 핀 앞, USB·케이블 선에 달아요. 시뮬레이터는 직류 저항 약 0.03Ω, 인덕턴스 약 1µH로 계산해요(브레드보드 회로의 주파수에서는 거의 전선).'});
 // ── 21차 부품: 계측기 부품 명세(전체판)의 수동 소자·기구·보호 소자·메모리 — 이미 있는 부품은 NIDALIAS로 이름만 이어 줌
 const boxDraw=(lab,fill,h,col)=>(c,ph)=>{const B=bodyAbove(ph,5,h||14,fill);return B.s+`<text x="${B.x}" y="${B.y+2.5}" font-size="6.5" font-weight="700" fill="${col||'#E9ECEF'}" text-anchor="middle" font-family="var(--mono)">${typeof lab==='function'?lab(c):lab}</text>`;};
 const NOSIM=' 이 부품은 시뮬레이터가 계산하지 않아요(이어도 신호가 바뀌지 않아요). 회로도·PCB에서 연결과 자리를 잡는 데 써요.';
@@ -3460,6 +3466,10 @@ function setPaused(v){if(v===paused)return;if(v){tHold=simNow();paused=true;}els
   const pb=document.getElementById('pbadge');if(pb)pb.hidden=!paused;
   if(typeof render==='function'){settle();render();}}
 const clkVal=(c,now)=>Math.floor(now*c.hz*2+1e-9)%2;
+/* 가우스-조르당 소거: M(N×(N+1))을 제자리에서 풀어 M[i][N]에 답을 남긴다 */
+function gsolve(A,N_){for(let i=0;i<N_;i++){let p=i;for(let r=i+1;r<N_;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
+    const d=A[i][i]||1e-12;for(let r=0;r<N_;r++){if(r===i)continue;const f=A[r][i]/d;if(f)for(let k=i;k<=N_;k++)A[r][k]-=f*A[i][k];}}
+  for(let i=0;i<N_;i++)A[i][N_]/=(A[i][i]||1e-12);}
 function settle(){
   syncTerms();LBL=labels();
   const n=HL.length,uf=makeUF(n),now=simNow();
@@ -3467,14 +3477,16 @@ function settle(){
   const ph=new Map();
   for(const c of S.comps){const hs=pinHoles(c).map(id=>HOLES.get(id).i);ph.set(c.id,hs);
     if(c.t==='wire'||(c.t==='sw'&&c.on)||(c.t==='btn'&&rt(c).pressed))uf.u(hs[0],hs[1]);
-    else if(c.t==='px'){const d=PX[c.kind];if(d.contacts)for(const [i,j] of d.contacts(c,rt(c)))uf.u(hs[i],hs[j]);if(d.thru)uf.u(hs[0],hs[1]);}}
+    else if(c.t==='px'){const d=PX[c.kind];if(d.contacts)for(const [i,j] of d.contacts(c,rt(c)))uf.u(hs[i],hs[j]);if(d.thru&&!d.ind)uf.u(hs[0],hs[1]);}}
   const netOf=new Int32Array(n);for(let i=0;i<n;i++)netOf[i]=uf.f(i);
   // 트랜지스터 접점을 뺀 연결(베이스를 이미터 쪽에 바로 눌러 끄는 것과, 자기 C-E로 묶인 것을 가른다) — 필요할 때만 만든다
   let UF2=null;const uf2=()=>{if(UF2)return UF2;const u=makeUF(n);for(let i=0;i<n;i++)u.u(i,baseRep[i]);for(const c of S.comps){const hs=ph.get(c.id);
-      if(c.t==='wire'||(c.t==='sw'&&c.on)||(c.t==='btn'&&rt(c).pressed))u.u(hs[0],hs[1]);else if(c.t==='px'){const d=PX[c.kind];if(d.tr)continue;if(d.contacts)for(const [i,j] of d.contacts(c,rt(c)))u.u(hs[i],hs[j]);if(d.thru)u.u(hs[0],hs[1]);}}return UF2=u;};
+      if(c.t==='wire'||(c.t==='sw'&&c.on)||(c.t==='btn'&&rt(c).pressed))u.u(hs[0],hs[1]);else if(c.t==='px'){const d=PX[c.kind];if(d.tr)continue;if(d.contacts)for(const [i,j] of d.contacts(c,rt(c)))u.u(hs[i],hs[j]);if(d.thru&&!d.ind)u.u(hs[0],hs[1]);}}return UF2=u;};
   // 가변저항·저항 어레이 안의 저항들: [줄 a, 줄 b, 옴]
   const pxR=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].res){const hs=ph.get(c.id);for(const [i,j,o] of PX[c.kind].res(c))pxR.push([netOf[hs[i]],netOf[hs[j]],o]);}
-  const res=[...S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
+  // 코일·인덕터: 선 저항(DCR) + 인덕턴스 L. {c, r, a, b, L(포화 반영), R}
+  const indL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ind&&PX[c.kind].thru){const hs=ph.get(c.id),m=indModel(c),r=rt(c),im=indImaxOf(c),ia=Math.abs(r.iL||0);indL.push({c,r,a:netOf[hs[0]],b:netOf[hs[1]],L:ia>im?m.L*im/ia:m.L,R:m.R});}
+  const res=[...indL.map(e=>[e.a,e.b]),...S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
   // 다이오드: {c, a 애노드 줄, k 캐소드 줄, m 특성, st 상태(1 순방향, −1 제너 역방향, 0 끊김), i 전류}
   // 아날로그 IC: 연산 증폭기(이상 증폭기+출력 한계), 오픈컬렉터 비교기, 가변 레귤레이터, 곱셈형 R-2R DAC
   const anaL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ana){const A_=PX[c.kind].ana,hs=ph.get(c.id),n=k=>netOf[hs[k]],r=rt(c),pv=r.ast||[];r.ast=[];let q_=0;const ps=(d)=>{const x=pv[q_++];return x&&x.st!=='off'&&x.st!=null?x.st:d;};   // 지난번 상태에서 시작(빨리 수렴)
@@ -3532,7 +3544,7 @@ function settle(){
     // 모드: 이미터·소스가 전원·출력에 바로 붙었으면 스위치, 아니면 아날로그(이미 스스로 이어 붙은 것은 그대로 스위치)
     for(const t of trL){const an=!!S.power&&!strong.has(t.e)&&!(t.r.on&&!t.r.an&&t.cN===t.e);if(!!t.r.an!==an){if(t.r.on)t.r.anCh=true;t.r.an=an;if(an)t.r.on=false;}}
     const resAny=S.comps.some(c=>c.t==='res');   // 저항만 있는 회로(전압 나누기, 저항 + LED)도 옴의 법칙으로 푼다
-    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny)||!S.power){for(const c of caps)rt(c).v=0;for(const d of dioL){d.st=0;d.i=0;}return;}
+    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny&&!indL.length)||!S.power){for(const c of caps)rt(c).v=0;for(const e of indL){e.r.iL=0;e.r.vL=0;}for(const d of dioL){d.st=0;d.i=0;}return;}
     const t555=ics.filter(c=>c.t==='ic'&&CHIPS[c.chip].is555&&rt(c).pw&&rt(c).st);
     const pn=(c,k)=>netOf[ph.get(c.id)[CHIPS[c.chip].idx[k]]];
     const Rl=S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/resEff(c)]);   // 저항: 오차를 반영한 실제 값, 탄 것은 빠짐
@@ -3545,20 +3557,21 @@ function settle(){
     const trA=trL.filter(t=>t.r.an);
     // 아날로그 IC 연결(전원 0V 기준점은 GND0 = 가짜 줄 -1)
     const GND0=-1;for(const a of anaL){if(a.k==='oa'||a.k==='cmp'){link(a.o,a.p);link(a.p,a.o);link(a.o,a.m);link(a.m,a.o);}else if(a.k==='reg'){link(a.o,a.adj);link(a.adj,a.o);}else{link(a.vref,a.io1);link(a.io1,a.vref);link(a.vref,a.io2);link(a.io2,a.vref);link(a.rfb,a.io1);link(a.io1,a.rfb);}}
-    for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...dioL.map(d=>({a:d.a,b:d.k})),...trA.flatMap(t=>[{a:t.cN,b:t.e},{a:t.b,b:t.e}])]){link(e.a,e.b);link(e.b,e.a);}
-    const steps=caps.length||t555.length?Math.max(1,Math.min(80,Math.ceil(dtT/5e-4))):1,h=dtT/steps;let V=new Map(),known;   // 커패시터가 없으면 정상 상태(직류) 한 번
+    for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...indL,...dioL.map(d=>({a:d.a,b:d.k})),...trA.flatMap(t=>[{a:t.cN,b:t.e},{a:t.b,b:t.e}])]){link(e.a,e.b);link(e.b,e.a);}
+    /* 코일이 있으면 L/R 시정수보다 잘게 */const hT=Math.min(5e-4,...indL.map(e=>e.L/(e.R+1000)/4)),steps=caps.length||t555.length||indL.length?Math.max(1,Math.min(indL.length?240:80,Math.ceil(dtT/hT))):1,h=dtT/steps;let V=new Map(),known;   // 커패시터가 없으면 정상 상태(직류) 한 번
     for(let s=0;s<steps;s++){
       known=new Map();known.set(-1,0);
       for(const [net,v] of strong)if(!disch.has(net))known.set(net,srcV.has(net)?srcV.get(net):v===Hh?5:v===L?0:2.5);
       for(const [net,c] of disch)if(rt(c).st.q===L)known.set(net,0);
+      if(steps>1)for(const c of fgs){const n=netOf[ph.get(c.id)[0]];if(known.has(n)&&srcV.has(n))known.set(n,fgVolt(c,now-dtT+(s+1)*h));}   // 함수 발생기: 잘게 나눈 단계마다 그 순간의 전압(교류 임피던스가 제대로 나오게)
       // 미지 노드: 커패시터 단자에서 저항·커패시터로 닿는 줄 (알려진 줄에서 멈춤)
       // MOSFET 게이트 줄(저항으로만 이어진 것도 전압을 풀어야 한다)·아날로그 트랜지스터 단자도 출발점
-      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...Rl.map(([a,b])=>({a,b})),...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e})),...anaL.flatMap(a=>a.k==='dac'?[{a:a.io1,b:a.io2},{a:a.vref,b:a.rfb}]:a.k==='reg'?[{a:a.o,b:a.adj}]:[{a:a.o,b:a.p},{a:a.m,b:a.m}])])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
+      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...indL,...Rl.map(([a,b])=>({a,b})),...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e})),...anaL.flatMap(a=>a.k==='dac'?[{a:a.io1,b:a.io2},{a:a.vref,b:a.rfb}]:a.k==='reg'?[{a:a.o,b:a.adj}]:[{a:a.o,b:a.p},{a:a.m,b:a.m}])])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
       while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);}}
       {let grew=true;while(grew){grew=false;for(const d of ledL){if(d.a===d.k||!(ix.has(d.a)||ix.has(d.k)))continue;for(const n of [d.a,d.k])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);grew=true;}}
         while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);grew=true;}}}}
       var ledA=ledL.filter(d=>d.a!==d.k&&(ix.has(d.a)||ix.has(d.k)));
-      const N_=U.length;let A,dIt=0,dCh;
+      const N_=U.length;let A,A0=null,dIt=0,dCh;
       // 다이오드·아날로그 트랜지스터 상태를 가정하고 풀어 본 뒤, 맞지 않으면 상태를 고쳐 다시 푼다(최대 30번)
       do{A=Array.from({length:N_},()=>new Float64Array(N_+1));
       for(let i=0;i<N_;i++)A[i][i]+=1e-9;
@@ -3567,6 +3580,7 @@ function settle(){
         if(ib!==undefined){A[ib][ib]+=G;if(ia!==undefined)A[ib][ia]-=G;else A[ib][N_]+=G*va;A[ib][N_]-=I;}};
       for(const [a,b,G] of Rl)if(a!==b&&(ix.has(a)||ix.has(b)))stamp(a,b,G,0);
       for(const e of Cl){if(e.a===e.b){e.r.v=0;continue;}const G=1/(h/e.C+e.esr);stamp(e.a,e.b,G,G*(e.r.v||0));}   // 커패시터 + 직렬 ESR
+      for(const e of indL){if(e.a===e.b)continue;const G=1/(e.R+e.L/h);stamp(e.a,e.b,G,-G*(e.L/h)*(e.r.iL||0));stamp(e.a,e.b,1/IND_RP,0);}   // 코일: 후진 오일러 v = R·i + L·di/dt, 심의 손실(병렬 저항)
       for(const d of dioL){if(d.a===d.k||!(ix.has(d.a)||ix.has(d.k)))continue;const m=d.m;
         if(d.st===1){const G=1/m.rs;stamp(d.a,d.k,G,G*m.vf);}else if(d.st===-1){const G=1/m.rz;stamp(d.a,d.k,G,-G*m.vz);}else stamp(d.a,d.k,1e-9,0);}
       // 전압 제어 전류원: f 줄에서 t 줄로 gm×(V(cp)−V(cn)) − off 가 흐른다
@@ -3585,9 +3599,9 @@ function settle(){
       for(const t of trA){const {T}=t,[hi,lo]=t.pol>0?[t.cN,t.e]:[t.e,t.cN];if(t.cN===t.e)continue;
         if(t.bj){const m=t.d&&t.d.m;if(t.st==='sat')stamp(hi,lo,1,.2);else if(t.d&&t.d.st===1){const gm=T.beta/m.rs;if(t.pol>0)vccs(t.cN,t.e,t.b,t.e,gm,gm*m.vf);else vccs(t.e,t.cN,t.e,t.b,gm,gm*m.vf);}}
         else{const vt=T.vth;if(t.st==='lin')stamp(hi,lo,1/T.ron,0);else if(t.st==='on'){if(t.pol>0)vccs(t.cN,t.e,t.b,t.e,T.gm,T.gm*vt);else vccs(t.e,t.cN,t.e,t.b,T.gm,T.gm*vt);}}}
-      for(let i=0;i<N_;i++){let p=i;for(let r=i+1;r<N_;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
-        const d=A[i][i]||1e-12;for(let r=0;r<N_;r++){if(r===i)continue;const f=A[r][i]/d;if(f)for(let k=i;k<=N_;k++)A[r][k]-=f*A[i][k];}}
-      V=new Map();U.forEach((n,i)=>V.set(n,A[i][N_]/(A[i][i]||1e-12)));
+      if(indL.length)A0=A.map(r=>r.slice());   /* 코일 역전압 계산용(바깥 저항을 따로 푼다) */
+      gsolve(A,N_);
+      V=new Map();U.forEach((n,i)=>V.set(n,A[i][N_]));
       // 바뀔 상태를 모아 두었다가: 처음 세 번은 한꺼번에, 그 뒤로는 하나씩만 바꾼다(되먹임 고리에서 모두가 동시에 뒤집혀 맴도는 것을 막음)
       dCh=false;const chg=[];for(const d of dioL){const va=V.has(d.a)?V.get(d.a):known.get(d.a),vk=V.has(d.k)?V.get(d.k):known.get(d.k);if(va==null||vk==null)continue;const v=va-vk,m=d.m,e=1e-6;
         const st=v>m.vf+(d.st===1?-e:e)?1:m.vz&&-v>m.vz+(d.st===-1?-e:e)?-1:0;if(st!==d.st)chg.push(()=>{d.st=st;});
@@ -3611,12 +3625,13 @@ function settle(){
       for(const t of trA){t.r.on=!!t.st;if(t.bj)t.r.ib=t.d&&t.d.st===1?t.d.i:0;else{const g=vn(t.b),sv=vn(t.e);t.r.vgs=g!=null&&sv!=null?g-sv:null;}
         const vc=vn(t.cN),ve=vn(t.e);t.r.vce=vc!=null&&ve!=null?t.pol*(vc-ve):null;t.r.sat=t.st==='sat'||t.st==='lin';}
       for(const e of Cl){const a=vn(e.a),b=vn(e.b);if(a!=null&&b!=null){const v0=e.r.v||0,i=(a-b-v0)/(h/e.C+e.esr);e.r.v=v0+i*h/e.C;e.r.ic=i;}}
+      for(const e of indL){const a=vn(e.a),b=vn(e.b);if(e.a===e.b||a==null||b==null){e.r.iL=0;e.r.vL=0;continue;}const ip=e.r.iL||0,i=(a-b+(e.L/h)*ip)/(e.R+e.L/h),vl=a-b;e.r.iL=i;e.r.vL=vl;let kick=vl*i<0?Math.abs(vl):0;if(A0&&vl*i<0&&Math.abs(ip)>1e-4&&Math.abs(i)<.5*Math.abs(ip)){const ia=ix.get(e.a),ib=ix.get(e.b),G=1/(e.R+e.L/h),M=A0.map(r=>r.slice());for(const r of M)r[N_]=0;if(ia!==undefined){M[ia][ia]-=G;M[ia][N_]=1;}if(ib!==undefined){M[ib][ib]-=G;M[ib][N_]=-1;}if(ia!==undefined&&ib!==undefined){M[ia][ib]+=G;M[ib][ia]+=G;}gsolve(M,N_);const Rth=Math.abs((ia!==undefined?M[ia][N_]:0)-(ib!==undefined?M[ib][N_]:0));kick=Math.max(kick,Math.min(1e4,Math.abs(ip)*Math.min(Rth,Math.sqrt(e.L/IND_CP))));}e.r.vpk=Math.max(kick,(e.r.vpk||0)*Math.exp(-h/.5));}   /* 코일이 전류를 내보낼 때(끊는 순간) 진짜 역전압 = 그때 전류 × 바깥 저항 */
       for(const c of t555){const d=CHIPS[c.chip],hs=ph.get(c.id);const va=k=>{const n=netOf[hs[d.idx[k]]];const x=vn(n);return x!=null?x:vOf(n);};
         const g=k=>{const v=lvl.get(netOf[hs[d.idx[k]]]);return v===L||v===Hh?v:Hh;};d.eval(g,rt(c).st,va);}
     }
     // 알려진 줄에서 실제로 전류가 흐를 수 있는 길(저항·커패시터·켜진 다이오드·켜진 트랜지스터)로 닿는 줄만 전압을 내놓는다
     {const adj2=new Map(),ln=(a,b)=>{if(a===b)return;if(!adj2.has(a))adj2.set(a,[]);if(!adj2.has(b))adj2.set(b,[]);adj2.get(a).push(b);adj2.get(b).push(a);};
-      for(const [a,b] of Rl)ln(a,b);for(const e of Cl)ln(e.a,e.b);for(const d of dioL)if(d.st)ln(d.a,d.k);for(const d of ledA||[])if(d.st)ln(d.a,d.k);for(const a of anaL){if(!a.on)continue;if(a.k==='oa'||a.k==='reg')ln(a.o,-1);else if(a.k==='cmp'){if(a.st===1)ln(a.o,a.g);}else{ln(a.vref,a.io1);ln(a.vref,a.io2);ln(a.rfb,a.io1);}}
+      for(const [a,b] of Rl)ln(a,b);for(const e of Cl)ln(e.a,e.b);for(const e of indL)ln(e.a,e.b);for(const d of dioL)if(d.st)ln(d.a,d.k);for(const d of ledA||[])if(d.st)ln(d.a,d.k);for(const a of anaL){if(!a.on)continue;if(a.k==='oa'||a.k==='reg')ln(a.o,-1);else if(a.k==='cmp'){if(a.st===1)ln(a.o,a.g);}else{ln(a.vref,a.io1);ln(a.vref,a.io2);ln(a.rfb,a.io1);}}
       known.set(-1,0);for(const d of ledA||[])rt(d.c).ai=d.i;for(const t of trA)if(t.st){ln(t.cN,t.e);}
       const ok=new Set(),st=[];for(const n of V.keys())if((adj2.get(n)||[]).some(m=>known.has(m))){ok.add(n);st.push(n);}
       while(st.length){const n=st.pop();for(const m of adj2.get(n)||[])if(V.has(m)&&!ok.has(m)){ok.add(m);st.push(m);}}
@@ -3728,7 +3743,9 @@ function settle(){
         if(pw>rate)W_.push(['bad',`${LBL.get(c.id)} 저항(${ohmTx(c.ohms)}, ${rn})에 ${Math.abs(va-vb).toFixed(1)}V가 걸려 약 ${pw>=10?pw.toFixed(0):pw.toFixed(2)}W가 열로 나가요. 정격 ${rn}을 넘어서 실제로는 타 버려요. 정격 전력이 큰 저항으로 바꾸세요.`]);
         else if(pw>.6*rate)W_.push(['warn',`${LBL.get(c.id)} 저항(${ohmTx(c.ohms)}, ${rn})에서 약 ${pw.toFixed(2)}W가 열로 나가요. 정격의 60%를 넘으면 뜨거워지고 수명이 줄어요(여유 있게 정격의 절반 정도로).`]);}}}
     // 켜진 LED에 흐르는 전류 어림: (전원 전압 − 약 2V) ÷ 직렬 저항. 30mA를 넘으면 실제로는 타 버린다
-    if(c.t==='led'&&c.lk!=='res'&&S.power&&lvAt(hs[0])===Hh&&lvAt(hs[1])===L){
+    const aiL=c.t==='led'?rt(c).ai:null;   // 회로 계산(옴의 법칙)으로 구한 실제 LED 전류가 있으면 그것으로 판단
+    if(aiL!=null&&c.lk!=='res'&&S.power){if(aiL>.03){W_.push(['warn',`${LBL.get(c.id)} LED에 약 ${(aiL*1000).toFixed(0)}mA가 흘러요(회로 계산 값). 20mA 안팎이 한계라 실제로는 LED가 타요. 직렬 저항을 키우거나 전압을 낮추세요.`]);}}
+    else if(c.t==='led'&&c.lk!=='res'&&S.power&&lvAt(hs[0])===Hh&&lvAt(hs[1])===L){
       const side=(net,hi)=>{if(strong.has(net))return{v:vOf(net),r:0};let best=null;
         for(const x of S.comps){if(x.t!=='res')continue;const [p,q]=ph.get(x.id).map(i=>netOf[i]),o=p===net?q:q===net?p:null;if(o==null||o===net||!strong.has(o))continue;
           const v=vOf(o);if(v==null||(hi?v<2.5:v>2.5))continue;if(!best||x.ohms<best.r)best={v,r:x.ohms};}return best;};
@@ -4557,6 +4574,9 @@ const fmtA=i=>{const a=Math.abs(i);return a>=1?a.toFixed(2)+'A':a>=1e-3?(a*1e3).
 const fmtW=w=>w>=1?w.toFixed(2)+'W':w>=1e-3?(w*1e3).toFixed(1)+'mW':(w*1e6).toFixed(1)+'µW';
 // 한 번 계산한 뒤: 저항 전력·커패시터 전압으로 상태(뜨거움·탐·고장·거꾸로) 정하고 경고
 function partStress(W_,vOf,netOf,ph){let changed=false;
+  for(const c of S.comps){if(c.t!=='px'||!PX[c.kind].ind||!PX[c.kind].thru)continue;const r=rt(c),i=Math.abs(r.iL||0),im=indImaxOf(c),nm=LBL.get(c.id)||'',m=indModel(c);
+    if(i>im)W_.push([i>2*im?'bad':'warn',`${nm} 코일에 ${fmtA(i)}가 흘러 흘릴 수 있는 전류(약 ${fmtA(im)})를 넘었어요 — 심이 포화돼 인덕턴스가 줄고, 선 저항(${ohmTx(+m.R.toPrecision(2))})에서 ${fmtW(i*i*m.R)}의 열이 나요. 직렬 저항을 넣거나 전류가 큰 코일(드럼 코어·토로이드)로 바꿔요.`,c.id]);
+    if((r.vpk||0)>40)W_.push(['warn',`${nm} 코일 전류가 갑자기 끊겨 양 끝에 약 ${Math.round(r.vpk)}V의 역전압(역기전력)이 생겼어요. 실제로는 스위치·트랜지스터가 망가질 수 있어요 — 코일 양 끝에 다이오드를 거꾸로(띠를 + 쪽으로) 달아요.`,c.id]);}
   for(const c of S.comps){if(c.t!=='res'&&c.t!=='cap')continue;const hs=ph.get(c.id);if(!hs)continue;const r=rt(c),va=vOf(netOf[hs[0]]),vb=vOf(netOf[hs[1]]),nm=LBL.get(c.id)||'';
     if(c.t==='res'){if(va==null||vb==null){r.p=0;r.i=0;continue;}const R=resEff(c),V=va-vb;r.i=r.burnt?0:V/R;r.p=r.burnt?0:V*V/R;const pr=resPw(c);
       if(r.burnt)W_.push(['bad',`${nm} 저항이 타서 끊어졌어요(정격 ${RESPW[pr]?RESPW[pr][0]:pr+'W'}보다 훨씬 큰 전력). [속성]에서 [새 부품으로 바꾸기]를 누르고, 저항 값을 키우거나 정격 전력이 큰 저항으로 바꿔요.`,c.id]);
@@ -4569,6 +4589,17 @@ function partStress(W_,vOf,netOf,ph){let changed=false;
       const rev=pol&&V<-1;if(rev!==!!r.rev){r.rev=rev;changed=true;}
       if(rev)W_.push(['bad',`${nm} 극성 커패시터가 거꾸로 꽂혔어요(− 극이 ${(-V).toFixed(1)}V 높아요). 크게 새고 뜨거워져 터질 수 있어요 — 방향을 바꿔 꽂아요.`,c.id]);}}
   if(changed&&!partStress.busy){partStress.busy=true;setTimeout(()=>{partStress.busy=false;settle();if(typeof render==='function')render();if(typeof renderInfo==='function')renderInfo();},0);}}
+// 코일 계산 결과: 실제 L·DCR, 주파수별 임피던스 |Z|와 위상, 함수 발생기 주파수에서의 값, 같은 줄의 커패시터와 공진 주파수, 지금 전류·전압·에너지
+function indLive(c){const r=rt(c),m=indModel(c),i=r.iL||0,im=indImaxOf(c),zt=f=>{const z=indZ(c,f);return`${f>=1e6?f/1e6+'MHz':f>=1e3?f/1e3+'kHz':f+'Hz'} <b>${ohmTx(+z.z.toPrecision(3))}</b> (${z.ph.toFixed(0)}°)`;};
+  const fg=S.comps.filter(x=>x.t==='fg').map(x=>+x.hz||0).filter(f=>f>0),ph_=pinHoles(c).map(id=>HOLES.get(id)),nets=SIM.netOf&&ph_.every(Boolean)?ph_.map(hh=>SIM.netOf[hh.i]):[];
+  const res_=[];if(nets.length)for(const x of S.comps)if(x.t==='cap'){const q=pinHoles(x).map(id=>HOLES.get(id));if(q.every(Boolean)&&q.some(hh=>nets.includes(SIM.netOf[hh.i])))res_.push(x);}
+  const h=`실제 인덕턴스 <b>${henTx(+m.L.toPrecision(3))}</b>${indTol(c)?` (표시 ${henTx(c.henry||1e-4)}, 오차 ±${indTol(c)*100}% 안)`:''} · 선 저항(DCR) <b>${ohmTx(+m.R.toPrecision(2))}</b> · 시정수 L/R ${fmtT(m.L/m.R)}`
+    +`<br>임피던스 |Z| = √(R² + (2πfL)²): ${[50,1e3,1e4,1e5,1e6].map(zt).join(' · ')}`+(fg.length?`<br>함수 발생기 주파수에서: ${[...new Set(fg)].map(zt).join(' · ')}`:'')
+    +(res_.length?`<br>같은 줄의 커패시터와 공진(f₀ = 1 ÷ 2π√LC): ${res_.slice(0,3).map(x=>`${LBL.get(x.id)||'C'} → <b>${fmtF(1/(2*Math.PI*Math.sqrt(m.L*capEff(x))))}</b>`).join(' · ')}`:'')
+    +`<br>지금 전류 <b>${fmtA(i)}</b> / 흘릴 수 있는 전류 약 ${fmtA(im)} · 양 끝 전압 <b>${(r.vL||0).toFixed(3)}V</b> · 저장 에너지 ${fmtW(.5*m.L*i*i).replace('W','J')}`+(Math.abs(i)>im?' · <b style="color:var(--warn)">포화(L 줄어듦)</b>':'');
+  return`<div class="prop"><label>계산 결과 (실제 특성)</label><p class="desc" style="margin:0">${h}</p></div>`;}
+const fmtT=t=>t>=1?t.toFixed(2)+'s':t>=1e-3?+(t*1e3).toPrecision(3)+'ms':t>=1e-6?+(t*1e6).toPrecision(3)+'µs':+(t*1e9).toPrecision(3)+'ns';
+const fmtF=f=>f>=1e6?+(f/1e6).toPrecision(3)+'MHz':f>=1e3?+(f/1e3).toPrecision(3)+'kHz':+f.toPrecision(3)+'Hz';
 function partLive(c){const r=rt(c);let h='';
   if(c.t==='res'){const R=resEff(c);h=`실제 값 <b>${ohmTx(+R.toPrecision(4))}</b> (표시 ${ohmTx(c.ohms)}, 오차 ±${(resTol(c)*100).toFixed(0)}% 안) · 전류 <b>${fmtA(r.i||0)}</b> · 전력 <b>${fmtW(r.p||0)}</b> / 정격 ${fmtW(resPw(c))}`+(r.burnt?' · <b style="color:var(--bad)">탐(끊어짐)</b>':(r.p||0)>resPw(c)?' · <b style="color:var(--warn)">뜨거움</b>':'');}
   else if(c.t==='cap'){const C=capEff(c),V=r.vc??r.v??0;h=`실제 용량 <b>${capTx(+C.toPrecision(3))}</b> (표시 ${capTx(c.farad)}, 오차 ±${((CAPTOL[capDk(c)]||.1)*100).toFixed(0)}%${capDk(c)==='x7r'?', 걸린 전압만큼 줄어듦':''}) · 전압 <b>${V.toFixed(2)}V</b> / 정격 ${capVr(c)}V · ESR ${ohmTx(+capEsr(c).toPrecision(2))} · 누설 ${fmtA(Math.abs(V)/capLeak(c))} · 저장 에너지 ${fmtW(.5*C*V*V).replace('W','J')}`
@@ -4605,6 +4636,7 @@ function propEditor(c){
     else if(c.kind.startsWith('sip'))h+=`<div class="prop"><label>저항 값 (모두 같음)</label><div class="seg" id="pxV">${[220,330,470,1000,4700,10000,47000,100000].map(o=>`<button data-v="${o}" aria-pressed="${(c.ohms||10000)===o}">${ohmTx(o)}</button>`).join('')}</div></div>`;
     if(d.tap&&!d.pot){const btns=c.kind.startsWith('dip')?(c.bits||[]).map((b,i,a)=>[(i/(a.length-1))*2-1,`${i+1}: ${b?'ON':'OFF'}`]):c.kind==='tog3'?[[-1,'왼쪽 (1번)'],[0,'가운데 (끊김)'],[1,'오른쪽 (3번)']]:c.kind==='enc'||c.kind==='rpg'?[[-1,'◀ 반시계 한 칸'],[1,'시계 한 칸 ▶']]:c.kind==='kp44'?[[-1,'◀ 이전 키'],[1,'다음 키 ▶']]:c.kind==='ctrim'?[[-1,'◀ 작게'],[1,'크게 ▶']]:/^(rbcd|rhex|sel)/.test(c.kind)?[[1,'다음 자리 ▶']]:[[1,'바꾸기']];
       h+=`<div class="prop"><label>조작</label><div class="seg" id="pxS">${btns.map(([sd,n])=>`<button data-side="${sd}">${n}</button>`).join('')}</div></div>`;}
+    if(d.ind&&d.thru)return indLive(c)+h;
     const cs=d.contacts?d.contacts(c,rt(c)):[];h+=`<p class="desc">지금 이어진 접점: ${cs.length?cs.map(([i,j])=>d.pins[i]+'↔'+d.pins[j]).join(', '):'없음'}</p>`;return h;}
   if(c.t==='led')return`<div class="prop"><label>LED 색</label><div class="seg" id="pc">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-v="${k}" aria-pressed="${c.color===k}">${n}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>LED 종류</label><div class="seg" id="pc2">${Object.entries(LEDK).map(([k,[n,t]])=>`<button data-v="${k}" aria-pressed="${(c.lk||'std')===k}" title="${t}">${n}</button>`).join('')}</div></div><p class="desc">${LEDK[c.lk||'std'][1]}</p>`
@@ -6041,7 +6073,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 저항·커패시터 실제 특성(오차·전력·ESR·누설·정격 전압·극성)';
+const APP_VER='2026-11-27 · 코일 임피던스(DCR·인덕턴스·역전압·포화) · 교류 신호 계산 정밀화';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
