@@ -339,7 +339,29 @@ function inPage() {
       const dup = Object.values(PX).map(d => d.nid).filter(Boolean).filter((n, i, a) => a.indexOf(n) !== i);
       rec('아날로그 IC', '명세 부품 ID 28개 → 부품 (중복 없음)', !bad.length && ls && !dup.length, bad.length || dup.length ? '틀림: ' + bad.concat(dup).join(' ') : `PX ${Object.keys(DOC).length}개 + 74LS174 · 중복 nid 없음`); }
     // 다 확인했는지
-    const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
+    // ⑪ 마이컴 보드: 실제 보드의 핀 순서(사실)와 맞는지, 코드가 내장 LED 핀을 보드 전압으로 켜는지
+    {
+      const FACT = { uno: { n: 26, at: {} }, nano: { n: 30, at: { 1: 'D1', 2: 'D0', 15: 'D12', 16: 'D13', 27: '5V', 30: 'VIN' } },
+        pro: { n: 24, at: { 1: 'D1', 12: 'D9', 13: 'D10', 21: 'VCC', 24: 'RAW' } }, mega: { n: 76, at: {} },
+        wifi: { n: 30, at: { 1: 'EN', 15: 'VIN', 16: '3V3', 30: 'GPIO23' } } };
+      const LEDP = { uno: 13, nano: 13, pro: 13, mega: 13, wifi: 2 }, VCC = { uno: 5, nano: 5, pro: 5, mega: 5, wifi: 3.3 };
+      for (const k of Object.keys(PX).filter(k => PX[k].mcu)) {
+        const d = PX[k], f = FACT[k];
+        if (!f) { rec('마이컴 보드', k, false, '기대값 없음'); continue; }
+        const badPin = Object.entries(f.at).filter(([i, nm]) => d.pins[i - 1].split(' ')[0] !== nm).map(([i]) => i);
+        const pins = pxHolesAt(k, 1, null, 3);
+        build([{ t: 'px', kind: k, pins, code: 'void setup(){pinMode(LED_BUILTIN,OUTPUT);digitalWrite(LED_BUILTIN,HIGH);}void loop(){}', ...(k === 'pro' ? {} : {}) }]);
+        const c = S.comps[0];
+        if (k === 'pro') {   // USB가 없어 VCC를 + 레일에 이어 전원을 준다
+          const vi = d.pins.findIndex(n => /^VCC/.test(n)), h = c.pins[vi], col = +h.slice(1), r = h[0] === 'f' ? ['j', 'bp'] : ['a', 'tp'];
+          S.comps.push({ t: 'wire', id: 999, pins: [r[0] + col, r[1] + (col % 6 ? col : col + 1)] }); settle(); }
+        setPaused(true); for (let i = 0; i < 5; i++) { tHold += .02; mcuTick(simNow()); settle(); } setPaused(false);
+        const mp = mcuMap(d.mcu, d.pins), hl = HOLES.get(c.pins[mp.io.get(LEDP[k])]), net = SIM.netOf[hl.i], v = SIM.vOf(net);
+        const ok = d.pins.length === f.n && !badPin.length && SIM.lvl.get(net) === Hh && Math.abs(v - VCC[k]) < .01;
+        rec('마이컴 보드', `${k} · ${d.title}`, ok, `핀 ${d.pins.length}개${badPin.length ? ' · 핀 순서 틀림 ' + badPin.join(',') : ''} · 내장 LED(${LEDP[k]}) ${v == null ? '?' : v.toFixed(2)}V`);
+      }
+    }
+    const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC' || r.grp === '마이컴 보드').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }
 
   /* ───── ③ LED 표시기: 칸마다 애노드·캐소드·색·위치 ───── */
