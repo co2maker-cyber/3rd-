@@ -444,7 +444,7 @@ body.planon .cbar{display:none}
 .pnum.en circle{fill:#2FBF71}.pnum.en text{fill:#fff}
 .navhud button.chk[aria-pressed="true"]{background:var(--ok);color:#fff;border-color:var(--ok)}
 /* 오류 알림: 새 문제가 생기면 보드 위쪽에 카드로 뜬다 */
-.alerts{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;gap:6px;width:min(440px,calc(100% - 24px));pointer-events:none}
+.alerts{position:absolute;left:10px;bottom:34px;z-index:6;display:flex;flex-direction:column-reverse;gap:5px;width:min(360px,calc(100% - 80px));pointer-events:none}.alerts .alert{font-size:11.5px;padding:6px 6px 6px 8px}
 .alert{pointer-events:auto;display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:8px;padding:8px 8px 8px 10px;font-size:12.5px;line-height:1.45;box-shadow:0 4px 16px rgba(0,0,0,.22);animation:alIn .2s ease-out}
 .alert.bad{border-left-color:var(--bad)}
 .alert .ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px;background:var(--warn);color:#fff}
@@ -549,6 +549,7 @@ body.planon .cbar{display:none}
       <select class="ex" id="addBoard" aria-label="브레드보드 추가" title="브레드보드를 하나 더 놓아요">
         <option value="">＋ 브레드보드 추가…</option>
         <option value="full">풀 사이즈 830홀 (63열)</option>
+        <option value="full2">풀 사이즈 830홀 2장 묶음 (126열, 함께 움직임)</option>
         <option value="std">표준 50열 (약 670홀)</option>
         <option value="half">하프 400홀 (30열)</option>
         <option value="mini">미니 170홀 (17열, 레일 없음)</option>
@@ -3526,7 +3527,8 @@ function settle(){
     const dtT=Math.min(.05,Math.max(1e-6,now-(SIM.lastA||now)));SIM.lastA=now;
     // 모드: 이미터·소스가 전원·출력에 바로 붙었으면 스위치, 아니면 아날로그(이미 스스로 이어 붙은 것은 그대로 스위치)
     for(const t of trL){const an=!!S.power&&!strong.has(t.e)&&!(t.r.on&&!t.r.an&&t.cN===t.e);if(!!t.r.an!==an){if(t.r.on)t.r.anCh=true;t.r.an=an;if(an)t.r.on=false;}}
-    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length)||!S.power){for(const c of caps)rt(c).v=0;for(const d of dioL){d.st=0;d.i=0;}return;}
+    const resAny=S.comps.some(c=>c.t==='res');   // 저항만 있는 회로(전압 나누기, 저항 + LED)도 옴의 법칙으로 푼다
+    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny)||!S.power){for(const c of caps)rt(c).v=0;for(const d of dioL){d.st=0;d.i=0;}return;}
     const t555=ics.filter(c=>c.t==='ic'&&CHIPS[c.chip].is555&&rt(c).pw&&rt(c).st);
     const pn=(c,k)=>netOf[ph.get(c.id)[CHIPS[c.chip].idx[k]]];
     const Rl=S.comps.filter(c=>c.t==='res').map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/c.ohms]);
@@ -3539,14 +3541,14 @@ function settle(){
     // 아날로그 IC 연결(전원 0V 기준점은 GND0 = 가짜 줄 -1)
     const GND0=-1;for(const a of anaL){if(a.k==='oa'||a.k==='cmp'){link(a.o,a.p);link(a.p,a.o);link(a.o,a.m);link(a.m,a.o);}else if(a.k==='reg'){link(a.o,a.adj);link(a.adj,a.o);}else{link(a.vref,a.io1);link(a.io1,a.vref);link(a.vref,a.io2);link(a.io2,a.vref);link(a.rfb,a.io1);link(a.io1,a.rfb);}}
     for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...dioL.map(d=>({a:d.a,b:d.k})),...trA.flatMap(t=>[{a:t.cN,b:t.e},{a:t.b,b:t.e}])]){link(e.a,e.b);link(e.b,e.a);}
-    const steps=Math.max(1,Math.min(80,Math.ceil(dtT/5e-4))),h=dtT/steps;let V=new Map(),known;
+    const steps=caps.length||t555.length?Math.max(1,Math.min(80,Math.ceil(dtT/5e-4))):1,h=dtT/steps;let V=new Map(),known;   // 커패시터가 없으면 정상 상태(직류) 한 번
     for(let s=0;s<steps;s++){
       known=new Map();known.set(-1,0);
       for(const [net,v] of strong)if(!disch.has(net))known.set(net,srcV.has(net)?srcV.get(net):v===Hh?5:v===L?0:2.5);
       for(const [net,c] of disch)if(rt(c).st.q===L)known.set(net,0);
       // 미지 노드: 커패시터 단자에서 저항·커패시터로 닿는 줄 (알려진 줄에서 멈춤)
       // MOSFET 게이트 줄(저항으로만 이어진 것도 전압을 풀어야 한다)·아날로그 트랜지스터 단자도 출발점
-      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e})),...anaL.flatMap(a=>a.k==='dac'?[{a:a.io1,b:a.io2},{a:a.vref,b:a.rfb}]:a.k==='reg'?[{a:a.o,b:a.adj}]:[{a:a.o,b:a.p},{a:a.m,b:a.m}])])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
+      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...Rl.map(([a,b])=>({a,b})),...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e})),...anaL.flatMap(a=>a.k==='dac'?[{a:a.io1,b:a.io2},{a:a.vref,b:a.rfb}]:a.k==='reg'?[{a:a.o,b:a.adj}]:[{a:a.o,b:a.p},{a:a.m,b:a.m}])])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
       while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);}}
       {let grew=true;while(grew){grew=false;for(const d of ledL){if(d.a===d.k||!(ix.has(d.a)||ix.has(d.k)))continue;for(const n of [d.a,d.k])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);grew=true;}}
         while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);grew=true;}}}}
@@ -3729,7 +3731,7 @@ function settle(){
         if(mA>30)W_.push(['warn',`${LBL.get(c.id)} LED에 약 ${mA.toFixed(0)}mA가 흘러요(전원 ${A.v-K.v}V, 저항 ${ohmTx(A.r+K.r)}). 20mA 안팎이 한계라 실제로는 LED가 타요. 저항을 ${ohmTx(OHMS.find(o=>o>=(A.v-K.v-2)/.015)||1e6)} 이상으로 바꾸거나 전압을 낮추세요.`]);}}
     if(c.t==='led'){const a=lvAt(hs[0]),k=lvAt(hs[1]),ai=rt(c).ai;const lit=ai!=null&&c.lk!=='bip'?ai>2e-4:(a===Hh&&k===L)||(c.lk==='bip'&&a===L&&k===Hh);
       const noR=lit&&c.lk!=='res'&&!weak.has(netOf[hs[0]])&&!weak.has(netOf[hs[1]]);
-      SIM.led.set(c.id,{lit,noR,rev:a===L&&k===Hh});
+      SIM.led.set(c.id,{lit,noR,rev:a===L&&k===Hh,br:ai!=null?Math.max(.25,Math.min(1,ai/.01)):1});   // br: 흐르는 전류로 밝기(10mA에서 최대)
       if(noR)W_.push(['warn',`${LBL.get(c.id)} LED에 저항 없이 전압이 바로 걸려 있어요. 실제로는 LED가 탈 수 있으니 220Ω~1kΩ 저항을 직렬로 넣으세요.`]);
       if(a===L&&k===Hh&&c.lk!=='bip')W_.push(['warn',`${LBL.get(c.id)} LED가 거꾸로 꽂혀 있어요. 긴 다리(애노드, +)가 높은 전압 쪽이어야 켜져요.`]);}
     if(c.t==='cap'&&S.power){const v=Math.abs(rt(c).v||0),dk=c.dk||(c.farad>=1e-6?'alu':'x7r'),vr=c.vr||CAPDK[dk][2],k=dk==='tant'?2:dk==='alu'?1.5:1;
@@ -3851,7 +3853,7 @@ function oneBoardSVG(B){const t=BTYPES[B.type],Wb=bW(B.type),N_=t.cols,cx=c=>X0+
   for(let c=1;c<=N_;c++)if(c===1||c%5===0)s+=`<text class="rl" x="${cx(c)}" y="78" text-anchor="middle">${c}</text><text class="rl" x="${cx(c)}" y="312" text-anchor="middle">${c}</text>`;
   for(const h of HL)if(h.b===B.id)s+=`<rect class="hole" x="${h.lx-B.x-3.5}" y="${h.ly-B.y-3.5}" width="7" height="7" rx="1.6"/>`;
   return s;}
-function boardTab(B){const t=BTYPES[B.type],bx=boardBox(B),label=`보드 ${B.id} · ${t.name}${B.rot?' · '+B.rot+'°':''}`;const w=label.length*7.4+34;
+function boardTab(B){const t=BTYPES[B.type],bx=boardBox(B),label=`보드 ${B.id} · ${t.name}${B.rot?' · '+B.rot+'°':''}${B.grp!=null?' · 묶음':''}`;const w=label.length*7.4+34;
   return`<g class="btab" data-board="${B.id}" transform="translate(${bx.x0} ${bx.y0-26})"><title>끌면 보드가 옮겨지고, 누르면 메뉴가 떠요</title><rect width="${w}" height="20" rx="5"/><text x="9" y="14">${esc(label)}</text><path d="M${w-15} 8l4 4 4-4" fill="none" stroke-width="1.6"/></g>`;}
 function renderBoards(){$('gB').innerHTML=DEFS+S.boards.map(B=>{const C=bCtr(B);return`<g transform="${B.rot?`rotate(${B.rot} ${C.x} ${C.y}) `:''}translate(${B.x} ${B.y})">${oneBoardSVG(B)}</g>`;}).join('')+S.boards.map(boardTab).join('');}
 svg.innerHTML=`<g id="gB"></g><g id="gH"></g><g id="gC"></g><g id="gF" pointer-events="none"></g><g id="gO"></g>`;
@@ -4028,12 +4030,12 @@ function compSVG(c,now){
   const id=c.id,ph=pinHoles(c).map(h=>HOLES.get(h));const isSel=SEL.has(id),one=isSel&&SEL.size===1;let s='';
   const ia=(c.t==='btn'||c.t==='sw')?' ia':'';
   if(c.t==='wire'){const [a,b]=ph;let col=c.color;
-    if(sigMode){const lv=levelOfHole(a.id).v;if(lv!==Z)col=LVCOL[lv];}   // 신호 보기: HIGH 빨강·LOW 파랑, 아직 아무것도 안 이어진 전선은 고른 색 그대로
+    let sigCol=null;if(sigMode){const lv=levelOfHole(a.id).v;if(lv!==Z)sigCol=LVCOL[lv];}   // 신호 보기: 고른 색은 그대로 두고 가운데에 가는 신호 색 줄(HIGH 빨강·LOW 파랑)
     const R=routePts(c),d=wirePath(a,b,R);
     const hk=hScale();
     if(isSel)s+=`<path d="${d}" fill="none" stroke="#1F8FFF" stroke-opacity=".45" stroke-width="${4.5+6.5*hk}" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`;
     s+=`<g class="c" data-id="${id}"><path d="${d}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"${sigMode&&levelOfHole(a.id).v===SH?' class="blink"':''}/>
+      <path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"${sigMode&&levelOfHole(a.id).v===SH?' class="blink"':''}/>${sigCol?`<path d="${d}" fill="none" stroke="${sigCol}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`:''}
       <path d="${d}" fill="none" stroke="transparent" stroke-width="12"/>
       <circle cx="${a.x}" cy="${a.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/><circle cx="${b.x}" cy="${b.y}" r="3.4" fill="#C7CCD2" stroke="#666" stroke-width=".8"/></g>`;
     if(one){const L=[a,...R,b];for(let k=0;k<L.length-1;k++){const u=L[k],v=L[k+1];if(Math.hypot(v.x-u.x,v.y-u.y)<30)continue;
@@ -4051,7 +4053,7 @@ function compSVG(c,now){
       else{s+=`<rect x="${-bw/2}" y="${-hh}" width="${bw}" height="${2*hh}" rx="${hh}" fill="${M[1]}" stroke="${M[2]}" stroke-width=".8"/>`;
         const bd=bands5(c.ohms,c.tol||M[3]),n=bd.length;bd.forEach((col,i)=>{const x=-bw/2+bw*(.2+.5*i/(n-2))+(i===n-1?bw*.12:0)-(i===n-1?bw*.5/(n-2):0);s+=`<rect x="${x-1.1}" y="${-hh+.3}" width="2.2" height="${2*hh-.6}" fill="${col}"/>`;});}}
     else if(c.t==='led'){const st0=SIM.led.get(id)||{},st=c.lk==='blink'&&st0.lit&&Math.floor(now*3)%2?{...st0,lit:false}:st0,[col]=st.rev&&c.lk==='bip'?LEDC.green:LEDC[c.color]||LEDC.red;
-      if(st.lit)s+=`<circle r="${c.pk==='r18'?8:c.pk==='r10'?17:13}" fill="${col}" opacity=".75" filter="url(#glow)"/>`;
+      if(st.lit)s+=`<circle r="${c.pk==='r18'?8:c.pk==='r10'?17:13}" fill="${col}" opacity="${(.75*(st.br??1)).toFixed(2)}" filter="url(#glow)"/>`;
       s+=ledBody(c,st.lit,col);
       s+=`
         <text x="-13" y="-6" font-size="8" font-weight="700" fill="#666" transform="rotate(${-ang} -13 -6)" text-anchor="middle">+</text>`;
@@ -4092,12 +4094,15 @@ function compSVG(c,now){
     s+=`<g class="c" data-id="${id}">`;
     if(c.t==='ic')for(const p of ph)s+=p.y>MID?`<rect x="${p.x-3}" y="${MID+10}" width="6" height="${p.y-MID-7}" rx="1" fill="#B8BEC6"/>`:`<rect x="${p.x-3}" y="${p.y-3}" width="6" height="${MID-p.y-7}" rx="1" fill="#B8BEC6"/>`;
     if(c.t==='ic'&&CHIPS[c.chip].disp)s+=dispSVG(c,x1,x2,MID,ph);
-    else if(c.t==='ic'){const pw=rt(c).pw;
-      s+=`<rect x="${x1}" y="${MID-13}" width="${x2-x1}" height="26" rx="2.5" fill="url(#icg)"/>
+    else if(c.t==='ic'){const pw=rt(c).pw,d=CHIPS[c.chip];
+      s+=`<rect x="${x1}" y="${MID-18}" width="${x2-x1}" height="36" rx="2.5" fill="url(#icg)"/>
         <path d="M${x1} ${MID-5} a5 5 0 0 1 0 10z" fill="#111"/>
-        <circle cx="${x1+7}" cy="${MID+7.5}" r="1.8" fill="#666"/>
-        <text x="${(x1+x2)/2}" y="${MID+3.5}" font-size="10" font-weight="600" fill="#E9ECEF" text-anchor="middle" font-family="var(--mono)">${c.chip}</text>
-        <circle cx="${x2-6}" cy="${MID-7}" r="2.2" fill="${!S.power?'#555':pw?'#3DDC84':'#E5484D'}"/>`;}
+        <text x="${(x1+x2)/2}" y="${MID+2.6}" font-size="7.5" font-weight="700" fill="#E9ECEF" fill-opacity=".9" text-anchor="middle" font-family="var(--mono)">${c.chip}</text>
+        <circle cx="${x2-5}" cy="${MID}" r="2" fill="${!S.power?'#555':pw?'#3DDC84':'#E5484D'}"/>`;
+      // 핀마다 번호와 기능(늘 보임): 위쪽 가장자리 = 위 줄 핀, 아래쪽 가장자리 = 아래 줄 핀. 전원 핀은 색으로
+      ph.forEach((q,k)=>{const nm=d.pins[k]||'',up=q.y<MID,neg=nm[0]==='~',t=esc((neg?nm.slice(1):nm).slice(0,6)),fc=nm===d.vcc?'#FF8A80':nm===d.gnd?'#8AB4FF':nm==='NC'?'#7A818B':'#C9D1DA';
+        const yN=up?MID-12.2:MID+16.2,yF=up?MID-6.4:MID+10.4;
+        s+=`<text x="${q.x}" y="${yN}" font-size="4.6" font-weight="700" fill="#8A929C" text-anchor="middle" font-family="var(--mono)" pointer-events="none">${k+1}</text><text x="${q.x}" y="${yF}" font-size="4.4" font-weight="700" fill="${fc}" text-anchor="middle" font-family="var(--mono)" pointer-events="none"${neg?' text-decoration="overline"':''}>${t}</text>`;});}
     else{/* 7세그먼트: 회색 몸통, 오른쪽으로 기운 획(a~g)과 소수점, 위아래로 나온 다리와 핀 번호·이름.
             아래 1~5번 = e d COM c DP, 위 10~6번 = g f COM a b (표준 핀 배열) */
       const on=SIM.seg.get(id)||{},cx=(x1+x2)/2,cy=MID,col='#FF3B30',h2=2.8,T=-20,B=20,XR=12.6;
@@ -4441,6 +4446,7 @@ function notifyWarns(){const now=Date.now(),fresh=[];
   for(const w of SIM.warns){if(!wIsAlert(w))continue;const k=wKey(w),t=WSEEN.get(k);if(t==null||now-t>3000)fresh.push(w);WSEEN.set(k,now);}
   for(const [k,t] of WSEEN)if(now-t>60000)WSEEN.delete(k);
   if(!fresh.length||(typeof VM!=='undefined'&&VM!=='bb'))return;
+  if(tool!=='select'||pending||drag)return;   // 작성 중에는 띄우지 않는다(점검 배지·부품 둘레 표시로만)
   fresh.sort((a,b)=>(b[0]==='bad')-(a[0]==='bad'));
   const box=$('alerts'),shown=fresh.slice(0,2),rest=fresh.length-shown.length;
   box.innerHTML=shown.map((w,i)=>`<div class="alert ${w[0]}" role="alert"><span class="ic">!</span><div>${esc(w[1])}</div><div class="bt">${w[2]!=null&&compById(w[2])?`<button data-go="${w[2]}">보기</button>`:''}<button class="x" data-x title="알림 닫기" aria-label="알림 닫기">✕</button></div>${i===shown.length-1&&rest>0?`<div class="more">문제가 ${rest}개 더 있어요 · <button data-all>점검 창 열기</button></div>`:''}</div>`).join('');
@@ -4663,6 +4669,9 @@ function helpHTML(){return`<h3>사용법</h3><ol class="help">
 <li><b>아두이노 호환 보드</b>: [부품 고르기] → [아두이노 호환 보드]. Nano·MKR 폼팩터는 브레드보드 가운데 홈을 걸쳐 꽂히고(Nano 600mil은 c·h줄, MKR 800mil은 b·i줄), UNO·Mega 폼팩터는 실제 크기로 보드 밖에 놓여요 — 헤더 단자에서 구멍까지 끌면 점퍼선이 생겨요. USB(기본 꽂음)나 VIN으로 켜지면 5V·3V3 핀에서 전원이 나와요. 3.3V 보드 핀에 5V가 걸리면 빨간 경고가 떠요. 예제 ⓐ1.</li>
 <li><b>스펙트럼 분석기</b>: [계측기·전원]에서 놓고 RF IN 단자를 재고 싶은 구멍에 이어요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 예제 Ⓟ11.</li>
 <li>화면: 휠로 확대/축소, 오른쪽 버튼·휠 버튼·<kbd>Space</kbd>+끌기로 이동, <kbd>F</kbd> 화면 맞춤. 휴대폰·태블릿은 두 손가락을 벌리거나 오므려 확대·축소하고, 두 손가락으로 밀어 이동해요(캔버스 오른쪽 아래의 ＋ − 버튼도 돼요).</li>
+<li><b>IC 핀·전선 정보</b>: 브레드보드의 IC 몸통에 핀 번호와 기능(VCC 빨강·GND 파랑)이 늘 보여요. 전선에 마우스를 대면 그 전선의 전압과 이어진 IC 핀 번호·기능이 떠요. 부품은 한 번에 하나씩 놓이고, 놓으면 선택 도구로 돌아가요(전선은 이어서 그릴 수 있어요). 경고 카드는 작성하는 동안에는 뜨지 않고, 왼쪽 아래 구석에 작게 떠요.</li>
+<li><b>저항 계산</b>: 저항은 옴의 법칙으로 계산해요 — 전압 나누기 가운데 전압, LED에 흐르는 전류(밝기)가 저항 값대로 달라져요. 큰 저항(수 MΩ)을 단 LED는 꺼져요.</li>
+<li><b>보드 2장 묶음</b>: [브레드보드 추가] → [풀 사이즈 830홀 2장 묶음]을 고르면 풀 보드 두 장이 나란히 붙어 126열이 되고, 끌면 함께 움직여요. 이름표 메뉴의 [묶음 풀기]로 따로 움직일 수 있어요.</li>
 <li><b>부품 검색</b>: [부품 고르기] 창 위 칸에 번호를 쳐요. 74 뒤의 계열 글자는 빼고 쳐도 돼요(7490 → 74LS90, 4511 → CD4511). 맞는 것이 맨 앞에 나오고, <kbd>Enter</kbd>를 누르면 첫 부품이 바로 빈자리에 놓여요(저항·LED처럼 다리를 직접 찍는 부품은 그 도구가 골라져요).</li>
 <li><b>회로도에서 지우기</b>: 기호나 선을 마우스 오른쪽 단추로 누르면 [삭제]·[90° 돌리기] 메뉴가 떠요. 회로도의 IC는 VCC·GND·NC까지 모든 핀이 보여요(전원 핀을 잇지 않아도 전원이 들어간 것으로 계산해요).</li>
 <li><b>부품 고르기 창</b>: 도구 막대의 [부품 고르기]를 누르면 종류별(기본 부품·계측기·게이트·IC 종류)로 모아 놓은 창이 떠요. 왼쪽에서 종류를 고르거나 검색한 뒤 부품을 누르고, 보드에서 놓을 자리를 누르세요.</li>
@@ -4882,7 +4891,8 @@ function redo(){if(!fut.length)return;hist.push(snap());applySnap(fut.pop());}
 function undo(){if(!hist.length)return;fut.push(snap());applySnap(hist.pop());}
 function save(){store.set('circuit',{comps:S.comps,power:S.power,nextId:S.nextId,boards:S.boards});}
 function commit(info){syncTerms();save();settle();render();if(info)renderInfo();syncPower();}
-function addComp(c){pushHist();c.id=S.nextId++;S.comps.push(c);commit(true);}
+function addComp(c){pushHist();c.id=S.nextId++;S.comps.push(c);commit(true);
+  if(c.t!=='wire'&&!['select','wire','erase','move'].includes(tool)){setTool('select');sel={type:'comp',id:c.id};SEL.clear();SEL.add(c.id);syncSel();render();renderInfo();}}   // 부품은 한 개씩: 놓으면 선택 도구로
 function delComp(id){pushHist();S.comps=S.comps.filter(c=>c.id!==id);RT.delete(id);if(sel&&sel.id===id)sel=null;commit(true);}
 let toastT;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800);}
 
@@ -5101,7 +5111,12 @@ function tryMove(ids,origs,dr,dc,before,mp){const fixed=ids.some(id=>{const o=or
 function nudge(dr,dc){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;const origs=new Map(ids.map(i=>[i,JSON.parse(JSON.stringify(compById(i)))]));
   if(tryMove(ids,origs,dr,dc,pushHist))commit(true);else toast('그쪽으로는 옮길 수 없어요 (구멍이 없거나 다른 부품이 있어요)');}
 /* 브레드보드 추가·종류 변경·삭제·이동 */
-function boardsOverlap(B,skip){const a=boardBox(B);return S.boards.some(o=>{if(o.id===skip)return false;const b=boardBox(o);return a.x0<b.x1+2&&b.x0<a.x1+2&&a.y0-28<b.y1+2&&b.y0-28<a.y1+2;});}
+/* 보드 묶음(B.grp 같은 번호): 끌면 함께 움직인다 */
+const boardGroup=B=>B.grp!=null?S.boards.filter(o=>o.grp===B.grp):[B];
+function addBoardPair(){const bb=allBox(),minX=Math.min(...S.boards.map(b=>b.x)),y=Math.round((bb.y1+70-4)/10)*10,id1=Math.max(0,...S.boards.map(b=>b.id))+1,id2=id1+1,w=bW('full');
+  pushHist();S.boards.push({id:id1,type:'full',x:minX,y,grp:id1},{id:id2,type:'full',x:minX+w-6,y,grp:id1});buildHoles();renderBoards();commit(true);fitView();
+  toast(`풀 사이즈 보드 2장을 묶어 놓았어요 (보드 ${id1}·${id2}, 126열) · 끌면 함께 움직여요 · 이름표 메뉴에서 묶음을 풀 수 있어요`);}
+function boardsOverlap(B,skip){const a=boardBox(B),sk=skip instanceof Set?skip:new Set([skip]);return S.boards.some(o=>{if(sk.has(o.id))return false;const b=boardBox(o);return a.x0<b.x1+2&&b.x0<a.x1+2&&a.y0-28<b.y1+2&&b.y0-28<a.y1+2;});}
 function addBoard(type,where){const id=Math.max(0,...S.boards.map(b=>b.id))+1,t=BTYPES[type];const bb=allBox();
   let B;if(where==='right'){B={id,type,x:Math.round((bb.x1+60)/10)*10,y:S.boards[0].y};}
   else{const minX=Math.min(...S.boards.map(b=>b.x));B={id,type,x:minX,y:Math.round((bb.y1+70-(t.rails?4:60))/10)*10};}
@@ -5115,11 +5130,12 @@ function deleteBoard(id){if(S.boards.length<2){toast('보드가 하나뿐이라 
   const gone=S.comps.filter(c=>pinHoles(c).some(h=>{const H_=HOLES.get(h);return H_&&H_.b===id;}));pushHist();
   const set=new Set(gone.map(c=>c.id));S.comps=S.comps.filter(c=>!set.has(c.id));set.forEach(i=>RT.delete(i));S.boards=S.boards.filter(b=>b.id!==id);
   sel=null;SEL.clear();buildHoles();renderBoards();commit(true);fitView();toast(`보드 ${id}를 지웠어요${gone.length?` (꽂혀 있던 부품 ${gone.length}개 포함)`:''} · Ctrl+Z로 되돌려요`);}
-function moveBoard(B,nx,ny){const dx=nx-B.x,dy=ny-B.y;if(!dx&&!dy)return false;const test={...B,x:nx,y:ny};if(boardsOverlap(test,B.id))return false;
-  for(const c of S.comps)if(c.t==='wire'&&c.pts&&c.pins.every(h=>{const H_=HOLES.get(h);return H_&&H_.b===B.id;}))c.pts=c.pts.map(q=>({x:q.x+dx,y:q.y+dy}));
-  B.x=nx;B.y=ny;buildHoles();renderBoards();return true;}
+function moveBoard(B,nx,ny){const dx=nx-B.x,dy=ny-B.y;if(!dx&&!dy)return false;const G=boardGroup(B),ids=new Set(G.map(o=>o.id));
+  if(G.some(o=>boardsOverlap({...o,x:o.x+dx,y:o.y+dy},ids)))return false;
+  for(const c of S.comps)if(c.t==='wire'&&c.pts&&c.pins.every(h=>{const H_=HOLES.get(h);return H_&&ids.has(H_.b);}))c.pts=c.pts.map(q=>({x:q.x+dx,y:q.y+dy}));
+  for(const o of G){o.x+=dx;o.y+=dy;}buildHoles();renderBoards();return true;}
 /* 끌어 옮기기: 다른 보드에 막히면 닿기 직전까지 가로→세로 순서로 미끄러진다 */
-function slideBoard(B,nx,ny){const free=(x,y)=>!boardsOverlap({...B,x,y},B.id);if(free(nx,ny))return moveBoard(B,nx,ny);
+function slideBoard(B,nx,ny){const G=boardGroup(B),ids=new Set(G.map(o=>o.id)),free=(x,y)=>!G.some(o=>boardsOverlap({...o,x:o.x+x-B.x,y:o.y+y-B.y},ids));if(free(nx,ny))return moveBoard(B,nx,ny);
   let x=B.x,y=B.y;const sx=Math.sign(nx-x)*Math.min(5,Math.abs(nx-x)||1),sy=Math.sign(ny-y)*Math.min(5,Math.abs(ny-y)||1);
   while(sx&&(nx-x)*sx>0&&free(x+sx,y))x+=sx;while(sy&&(ny-y)*sy>0&&free(x,y+sy))y+=sy;return moveBoard(B,x,y);}
 /* 보드 돌리기: 꽂힌 부품·이 보드 안의 전선(꺾은 점 포함)이 함께 돈다. 다른 보드와 겹치면 돌리지 않는다 */
@@ -5131,9 +5147,10 @@ function openBoardMenu(id,cx,cy){const B=boardById(id);if(!B)return;
   const items=Object.entries(BTYPES).filter(([k])=>k!==B.type).map(([k,t])=>({label:`종류 바꾸기 → ${t.name}`,fn:()=>changeBoardType(id,k)}));
   items.push('-',{label:'시계 방향으로 90° 돌리기',fn:()=>rotateBoard(id,90)},{label:'반시계 방향으로 90° 돌리기',fn:()=>rotateBoard(id,-90)},{label:'180° 뒤집기',fn:()=>rotateBoard(id,180)});
   items.push('-',{label:'오른쪽에 같은 보드 추가',fn:()=>addBoard(B.type,'right')},{label:'아래에 같은 보드 추가',fn:()=>addBoard(B.type,'below')});
+  if(B.grp!=null)items.push('-',{label:'묶음 풀기 (따로 움직이기)',fn:()=>{pushHist();for(const o of boardGroup(B))delete o.grp;renderBoards();commit(true);toast('보드 묶음을 풀었어요');}});
   if(S.boards.length>1)items.push('-',{label:`보드 ${id} 삭제`,del:true,fn:()=>deleteBoard(id)});
   openMenu(cx,cy,items,false);}
-$('addBoard').onchange=()=>{const t=$('addBoard').value;$('addBoard').value='';if(t)addBoard(t,'below');};
+$('addBoard').onchange=()=>{const t=$('addBoard').value;$('addBoard').value='';if(t==='full2')addBoardPair();else if(t)addBoard(t,'below');};
 /* 지우기 · 복사 · 붙여넣기 */
 function delSel(){const ids=[...SEL].filter(id=>compById(id));if(!ids.length)return;pushHist();const set=new Set(ids);S.comps=S.comps.filter(c=>!set.has(c.id));ids.forEach(i=>RT.delete(i));
   sel=null;SEL.clear();commit(true);toast(ids.length>1?`${ids.length}개를 지웠어요 · Ctrl+Z로 되돌려요`:'지웠어요 · Ctrl+Z로 되돌려요');}
@@ -5218,7 +5235,16 @@ function renderFbar(){const fb=$('fbar');
       if(a==='del')delSel();else if(a==='dup')dupSel();else if(a==='props')openDock('info');else if(a==='straight')straightenSel();else if(a==='reroute')rerouteSel();else if(b.dataset.col)recolorSel(b.dataset.col);});}
   fb.hidden=false;}
 /* 마우스를 올린 핀 이름표 */
-function updTip(e){const tp=$('tip');if(!hover||e.pointerType==='touch'){tp.hidden=true;return;}
+function wireTip(c){if(!SIM.netOf)return'';const h=HOLES.get(c.pins[0]);if(!h)return'';const net=SIM.netOf[h.i],lv=levelOfHole(c.pins[0]),parts=[];
+  for(const o of S.comps){if(o.t==='wire')continue;const hs=SIM.ph.get(o.id);if(!hs)continue;const nm=pinNames(o);
+    hs.forEach((i,k)=>{if(SIM.netOf[i]!==net)return;const n=nm[k]||'',fn=n[0]==='~'?n.slice(1)+'̅':n;
+      parts.push(o.t==='ic'?`${LBL.get(o.id)||''} ${o.chip} ${k+1}번 ${fn}`:o.t==='gate'?`${LBL.get(o.id)||''} ${o.kind} ${fn}`:`${LBL.get(o.id)||''} ${fn.replace(/ 단자$/,'')}`);});}
+  const role=lv.v===Hh?(lv.volt!=null?lv.volt.toFixed(2)+'V':'HIGH'):lv.v===L?(lv.volt!=null?lv.volt.toFixed(2)+'V':'LOW'):lv.volt!=null?lv.volt.toFixed(2)+'V':'연결 없음';
+  return`전선 ${LBL.get(c.id)||''} · ${role} · ${parts.length?parts.slice(0,6).join(' ↔ ')+(parts.length>6?` 외 ${parts.length-6}곳`:''):'이어진 부품 핀 없음'}`;}
+function updTip(e){const tp=$('tip');
+  if(!hover&&e.pointerType!=='touch'&&!drag&&e.target&&e.target.closest){const g=e.target.closest('g.c[data-id]'),c=g&&compById(+g.dataset.id);
+    if(c&&c.t==='wire'){const t=wireTip(c);if(t){const r=$('bw').getBoundingClientRect();tp.textContent=t;tp.hidden=false;let x=e.clientX-r.left+14,y=e.clientY-r.top+16;if(x+tp.offsetWidth>r.width-6)x=Math.max(4,e.clientX-r.left-tp.offsetWidth-10);if(y+24>r.height)y=e.clientY-r.top-28;tp.style.left=x+'px';tp.style.top=y+'px';return;}}}
+  if(!hover||e.pointerType==='touch'){tp.hidden=true;return;}
   const cid=occ().get(hover.id);let t=holeName(hover.id);
   if(cid){const c=compById(cid),k=pinHoles(c).indexOf(hover.id),nm=pinNames(c)[k];
     t+=' · '+(LBL.get(cid)||'')+' '+(c.t==='ic'?c.chip+' '+(k+1)+'번 '+(nm[0]==='~'?nm.slice(1)+'̅':nm):compName(c)+' '+nm);}
@@ -5650,7 +5676,7 @@ function fixComp(c){if(!c||typeof c!=='object'||typeof c.t!=='string')return nul
   return c;}
 const DEFAULT_BOARDS=()=>[{id:1,type:'std',x:0,y:0}];
 function setBoards(bs){const ok=Array.isArray(bs)&&bs.length&&bs.every(b=>b&&BTYPES[b.type]&&Number.isFinite(b.id)&&Number.isFinite(b.x)&&Number.isFinite(b.y));
-  S.boards=ok?bs.map(b=>({id:b.id,type:b.type,x:b.x,y:b.y,...([90,180,270].includes(+b.rot)?{rot:+b.rot}:{})})):DEFAULT_BOARDS();if(!S.boards.some(b=>b.id===1))S.boards[0].id=1;buildHoles();renderBoards();}
+  S.boards=ok?bs.map(b=>({id:b.id,type:b.type,x:b.x,y:b.y,...([90,180,270].includes(+b.rot)?{rot:+b.rot}:{}),...(Number.isFinite(+b.grp)&&b.grp!==null?{grp:+b.grp}:{})})):DEFAULT_BOARDS();if(!S.boards.some(b=>b.id===1))S.boards[0].id=1;buildHoles();renderBoards();}
 /* 계측기에 번호(k)와 단자 이름을 붙인다. 예전 방식(선 두 가닥을 구멍에 바로 꽂음)으로 저장된 것은 단자 + 전선으로 바꾼다 */
 function migrateInst(list){const out=[],seen=new Set();let nk=0;for(const c of list)if(c&&INST.has(c.t)&&Number.isFinite(c.k))nk=Math.max(nk,c.k);
   for(const c of list){if(!c||!INST.has(c.t)){out.push(c);continue;}
@@ -5966,7 +5992,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 부품 검색 Enter 배치 · 회로도 우클릭 삭제 · 회로도 모든 핀';
+const APP_VER='2026-11-27 · IC 핀 표시 · 전선 정보 · 저항 옴의 법칙 · 보드 2장 묶음';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
