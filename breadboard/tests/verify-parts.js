@@ -358,7 +358,39 @@ function inPage() {
       rec('아두이노 호환', 'auno3 헤더 · D7–D8 4.064mm, 위·아래 48.26mm, 32단자', Math.abs(at('D7')[0] - at('D8')[0] - 4.064) < 1e-6 && Math.abs(at('D0')[1] - at('A0')[1] - 48.26) < 1e-6 && u.length === 32, `${u.length}단자`);
       rec('아두이노 호환', 'amega 헤더 · 2×18(5V·D22~D53·GND), 확장 A8~A15', ARDX.amega.hdr.length === 32 + 16 + 36 && ARDX.amega.hdr.some(h => h[2] === 'D53') && ARDX.amega.hdr.some(h => h[2] === 'A15'), `${ARDX.amega.hdr.length}단자`);
     }
-    const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC' || r.grp === '아두이노 호환').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
+    // 35차 센서·출력 장치: 공식(저항·전압·시간)과 동작(접점·출력)을 부품마다 확인 (opt.tol=false)
+    { const G = '센서·출력 장치', mk = (k, o) => Object.assign({ t: 'px', kind: k }, PX[k].init(), o || {}), out = (k, o, vs, i = 0) => { const c = mk(k, o), r = { }; return PX[k].vs(c, r)[i].f(vs); },
+        near = (a, b, e) => a != null && Math.abs(a - b) <= e, T = (k, ok, msg) => rec(G, `${k} · ${PX[k].title}`, ok, msg);
+      T('sldr', near(ldrR(mk('sldr', { lux: 10 })), 2e4, 1) && near(ldrR(mk('sldr', { lux: 1000 })), 502.4, 1) && ldrR(mk('sldr', { lux: 0 })) === 1e6, `10lux ${Math.round(ldrR(mk('sldr', { lux: 10 })))}Ω · 1000lux ${Math.round(ldrR(mk('sldr', { lux: 1000 })))}Ω · 어둠 1MΩ`);
+      T('sntc', near(ntcR(mk('sntc', { temp: 25 })), 1e4, 1) && near(ntcR(mk('sntc', { temp: 50 })), 3588, 5), `25°C ${Math.round(ntcR(mk('sntc', { temp: 25 })))}Ω · 50°C ${Math.round(ntcR(mk('sntc', { temp: 50 })))}Ω (B 3950)`);
+      T('sfsr', fsrR(mk('sfsr', { force: 0 })) === 1e7 && near(fsrR(mk('sfsr', { force: .1 })), 1e5, 1) && near(fsrR(mk('sfsr', { force: 10 })), 1e3, 1), '0N 10MΩ · 0.1N 100kΩ · 10N 1kΩ');
+      T('slm35', near(out('slm35', { temp: 25 }, 5), .25, 1e-9) && near(out('slm35', { temp: 100 }, 12), 1, 1e-9) && out('slm35', {}, 3) === null && out('slm35', { temp: -10 }, 5) === 0, '10mV/°C · 4V 아래 꺼짐 · 영하 0V');
+      { const R_ = PX.sjoy.res(mk('sjoy', { jx: .2, jy: .8 })); T('sjoy', near(R_[1][2] / (R_[0][2] + R_[1][2]), .2, 1e-9) && near(R_[3][2] / (R_[2][2] + R_[3][2]), .8, 1e-9) && PX.sjoy.contacts({}, { pr: 1 }).length === 1, 'X·Y 와이퍼 비율 · 누르면 SW-GND'); }
+      T('shall', near(out('shall', { mag: 0 }, 5), 2.5, 1e-9) && near(out('shall', { mag: 1 }, 5), 4.5, 1e-9) && out('shall', { mag: 1, hm: 'dig' }, 5) === 0 && out('shall', { mag: 0, hm: 'dig' }, 5) === 5, '선형 VCC/2 ± 0.4VCC · 디지털 N극 LOW');
+      T('smq2', near(out('smq2', { gas: 0 }, 5, 0), .4, 1e-9) && near(out('smq2', { gas: 100 }, 5, 0), 4.5, 1e-9) && out('smq2', { gas: 100 }, 5, 1) === 0 && out('smq2', { gas: 0 }, 5, 1) === 5 && out('smq2', {}, 3.3, 0) === null, 'AO 0.4~4.5V · DO 넘으면 LOW · 히터 5V 필요');
+      T('smic', near(out('smic', { db: 30 }, 5, 0), 2.5, 1e-9) && out('smic', { db: 90, th: 70 }, 5, 1) === 5 && out('smic', { db: 40, th: 70 }, 5, 1) === 0, 'AO 조용하면 VCC/2 · DO 기준 넘으면 HIGH');
+      T('ssoil', near(out('ssoil', { wet: 0 }, 5, 0), 5, 1e-9) && near(out('ssoil', { wet: 100 }, 5, 0), 1, 1e-9) && out('ssoil', { wet: 90 }, 5, 1) === 0, '마르면 VCC · 물속 20% · 젖으면 DO LOW');
+      { const c = mk('susr', { cm: 100 }), r = { ok: true }; let tv = 0; PX.susr.upd(c, r, () => tv, 1); tv = 5; PX.susr.upd(c, r, () => tv, 2); const a = r.echo; PX.susr.upd(c, r, () => tv, 2.01); T('susr', a === true && near(r.e1 - r.e0, 2 * 100 / 34300, 1e-12) && r.echo === false, `100cm → 에코 ${((r.e1 - r.e0) * 1000).toFixed(3)}ms (= 2d ÷ 343m/s)`); }
+      { const c = mk('spir', { hold: 3 }), r = { mt: 10 }; PX.spir.upd(c, r, () => 0, 12); const a = r.on; PX.spir.upd(c, r, () => 0, 13.5); T('spir', a === true && r.on === false && out('spir', {}, 5) === 0, '감지 뒤 유지 시간 동안 3.3V'); }
+      T('sir', out('sir', { obs: 1 }, 5) === 0 && out('sir', { obs: 0 }, 5) === 5, '장애물 있으면 LOW');
+      T('stilt', PX.stilt.contacts(mk('stilt', { tilt: 0 })).length === 1 && PX.stilt.contacts(mk('stilt', { tilt: 1 })).length === 0, '바로 서면 이어짐');
+      T('sreed', PX.sreed.contacts(mk('sreed', { mag: 1 })).length === 1 && PX.sreed.contacts(mk('sreed', { mag: 0 })).length === 0, '자석 오면 이어짐');
+      T('sdht', PX.sdht.pwr[2] === 3.3 && PX.sdht.pwr[3] === 5.5 && PX.sdht.pins[1] === 'DATA', '3.3~5.5V · DATA 풀업 검사');
+      T('sbme', PX.sbme.pwr[3] === 3.6 && PX.sbme.pwr[4] < 5 && PX.sbme.pins.join() === 'VIN,GND,SCL,SDA', '3.3V 전용 (5V면 고장)');
+      T('smpu', PX.smpu.pins.length === 8 && PX.smpu.pins[6] === 'AD0', 'AD0로 주소 0x68/0x69');
+      T('sbh17', PX.sbh17.pins[4] === 'ADDR', 'ADDR로 주소 0x23/0x5C');
+      for (const k of ['doled', 'doledv']) T(k, PX[k].pins.length === 4 && PX[k].pins.includes('SDA') && PX[k].pins.includes('SCL') && PX[k].pwr[3] === 5.5, PX[k].pins.join('·'));
+      T('dlcd16', PX.dlcd16.pins.length === 16 && PX.dlcd16.pins[2].startsWith('VO') && PX.dlcd16.dio[0][0] === 14 && DIOM.lcdbl.vf === 3, '16핀 · VO 3번 · 백라이트 A→K 다이오드');
+      T('dlcd16i', PX.dlcd16i.pins.join() === 'GND,VCC,SDA,SCL', 'I2C 백팩 4핀 · 명암 가변저항');
+      T('dtft', PX.dtft.pins.length === 8 && PX.dtft.pins[6] === 'SCK', 'SPI 8핀');
+      T('abuz', PX.abuz.res({})[0][2] === 200, '5V에서 25mA');
+      T('pbuz', PX.pbuz.res({})[0][2] === 1e4, '피에조(높은 임피던스)');
+      { const r = {}, c = mk('asrv'), sq = d => { const net = () => -9; let t = 0; for (let i = 0; i < 6; i++) { r.ok = true; PX.asrv.upd(c, r, () => 5, t, net); t += d; PX.asrv.upd(c, r, () => 0, t, net); t += 1 - d; } return r.ang; };
+        const a90 = sq(.075), a0 = sq(.05), a180 = sq(.1); T('asrv', a90 === 90 && a0 === 0 && a180 === 180, `듀티비 7.5% → ${a90}° · 5% → ${a0}° · 10% → ${a180}°`); }
+      T('adcm', PX.adcm.res({})[0][2] === 10, '안의 저항 10Ω');
+      T('dneo8', near(5 / PX.dneo8.res(mk('dneo8', { bri: 1 }), { st: 'READY' })[0][2], .488, .001), '8 × 60mA (+ 대기)');
+      T('arel', PX.arel.contacts({}, { on: true })[0].join() === '4,3' && PX.arel.contacts({}, {})[0].join() === '4,5', '켜지면 COM-NO, 꺼지면 COM-NC'); }
+    const done = new Set(R.filter(r => r.grp === '수동 소자' || r.grp === '아날로그 IC' || r.grp === '아두이노 호환' || r.grp === '센서·출력 장치').map(r => r.part.split(' ')[0])); for (const k of Object.keys(PX)) if (!done.has(k)) rec('수동 소자', k, false, '확인하지 않음');
   }
 
   /* ───── ③ LED 표시기: 칸마다 애노드·캐소드·색·위치 ───── */

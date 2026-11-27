@@ -1,4 +1,4 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 34차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 35차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 9000줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
@@ -25,6 +25,8 @@
 
 ✓ 34차 계측기 앞판(`openInstPop`, `.ipanel`): 위 채널 키(`IPCH`), 왼쪽 LCD(모든 num 값 줄 `iprow`, 고른 값 크게 `ipmain`), 오른쪽 노브(휠·끌기)·±·미세/크게·빠른 값, 아래 하드 키(tog·seg·btn), 스크롤 없음. 키보드: 숫자·Enter·↑↓·Tab·Esc(`IPST.keys` capture). 숫자 키패드는 터치 화면만(`ipTouch`: 마지막 포인터 touch/pen 또는 coarse 전용), PC는 키보드 안내 `iphint`. 멀티미터는 읽은 값 250ms 갱신. 속성 창 [앞판 열기]
 
+✓ 35차 센서·출력 장치 29종(사용자 조사 보고서): `px` sub `sen`·`out`, 부품 고르기 [센서 · 출력 장치](PTREE 맨 뒤 push — SCHTREE가 자리 번호 씀). 엔진: `vsL` 센서 전압원(PX.vs, 테브난 R, anaNets), `PX.upd`(시간·전압 상태, true면 다시 계산), `PX.res(c,r)`, 전원 검사 `sxPower`(pwr [+,−,최소,최대,절대], r.fail·r.rev), `PX.diag` 버스·화면 진단(ctx.ard 핀 역할 i2cRole·spiRole), 화면 `dispLines`(demo·text·sense, sense는 같은 보드에 이은 센서 `read`), `PX.tick` 다시 그리기 열쇠. 속성 `senProps`·`senBind`(sld 슬라이더·so·acts·txt). 소리 `SND` Web Audio 기본 꺼짐. 예제 ⓢ1~ⓢ4(sx1~sx4). 제품 형번은 이름에 안 씀(COPYRIGHT 8절). 시험 tests/ui/sensor-disp.js, verify-parts '센서·출력 장치' 29개
+
 ## 결정사항
 - 제품 상표·로고 안 씀, "UNO/Nano 폼팩터 호환 보드 · 특징"으로 이름 — COPYRIGHT 2절, 8절 기록
 - 시험(verify-parts·analog-ic)은 `opt.tol=false` — 공식 확인용, 오차 켜면 이득 2.025 등으로 흔들림
@@ -35,6 +37,7 @@
 - 사용자: 한국어 쉬운 말(~해요), 즉시 구현, **답마다 아티팩트 링크**, main 반영 시 깃허브 페이지 주소. "물어보라고 하기 전까지" 시험 통과 즉시 main + publish (CLAUDE.md)
 - 레일 구멍은 6의 배수 열 없음(tn6·tn12 등) — 시험 회로에서 전선이 빠지는 함정
 - ic-examples `lud`는 실제 시간이 섞여 가끔 흔들림(다시 돌리면 통과)
+- `node tests/guide-sync.js --fix`는 .md → index.html 방향(문서는 .md를 고칠 것)
 - 한 줄 코드에 `//` 주석 넣으면 뒤가 주석 처리됨 — 이번에도 한 번 터짐
 - Playwright `confirm()`은 `p.on('dialog',d=>d.accept())` 필요
 - 사용자가 마지막에 "저항이 제대로 작동이 안됨" → v81(옴의 법칙 반영판) 올린 뒤 구체 회로 요청함, 답 대기

@@ -416,6 +416,41 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `tco` | 열 차단 스위치 (평소 닫힘) | row | 0,3 | 1 2 | `hot:0` |
 | `fan` · `emif` | 냉각 팬 · EMI 라인 필터 — 시뮬레이션 없음 | row | 0,2 · 0~8 | L N · L·N·PE IN, L·N OUT | |
 
+#### 센서 · 출력 장치 `px` (35차)
+
+| kind | 이름 | 배치 | 오프셋 | 핀 순서 | 추가 칸 |
+|---|---|---|---|---|---|
+| `sldr` | CdS 조도 센서 | row | 0,2 | 1 2 | `lux` 0~1000 |
+| `sntc` | NTC 온도 센서 10kΩ B3950 | row | 0,2 | 1 2 | `temp` −20~120 |
+| `sfsr` | 압력 센서 FSR | row | 0,1 | 1 2 | `force` 0~10 (N) |
+| `slm35` | 선형 온도 센서 IC 10mV/°C | row | 0,1,2 | +Vs Vout GND | `temp` |
+| `sjoy` | 2축 조이스틱 모듈 | row | 0~4 | GND +5V VRx VRy SW | `jx` `jy` 0~1 |
+| `shall` | 홀 효과 자기 센서 | row | 0,1,2 | VCC GND OUT | `mag` −1~1, `hm` `lin`·`dig` |
+| `smq2` | 가스·연기 센서 모듈 | row | 0~3 | VCC GND DO AO | `gas` 0~100, `th` 0.1~0.9 |
+| `smic` | 사운드 센서 모듈 | row | 0~3 | AO GND + DO | `db` 30~100, `th` |
+| `ssoil` | 토양 수분 센서 모듈 | row | 0~3 | VCC GND DO AO | `wet` 0~100, `th` |
+| `susr` | 초음파 거리 센서 모듈 | row | 0~3 | VCC TRIG ECHO GND | `cm` 2~400 |
+| `spir` | PIR 인체 감지 센서 | row | 0,1,2 | VCC OUT GND | `hold` 1~30 (초) |
+| `sir` | 적외선 장애물 센서 | row | 0,1,2 | VCC GND OUT | `obs` 0·1 |
+| `stilt` | 기울기 스위치 | row | 0,2 | 1 2 | `tilt` 0·1 |
+| `sreed` | 리드 스위치 | row | 0,4 | 1 2 | `mag` 0·1 |
+| `sdht` | 디지털 온습도 센서 (1선) | row | 0~3 | VCC DATA NC GND | `temp` `hum` |
+| `sbme` | I2C 기압·온습도 센서 (3.3V 전용) | row | 0~3 | VIN GND SCL SDA | `temp` `hum` `hpa` |
+| `smpu` | I2C 6축 가속도·자이로 | row | 0~7 | VCC GND SCL SDA XDA XCL AD0 INT | `pitch` `roll` |
+| `sbh17` | I2C 디지털 조도 센서 | row | 0~4 | VCC GND SCL SDA ADDR | `lux` |
+| `doled` · `doledv` | 0.96" I2C OLED 128×64 (GND·VCC 판 · VCC·GND 판) | row | 0~3 | GND VCC SCL SDA (doledv는 VCC GND SCL SDA) | `src` `demo`·`text`·`sense`, `col` `white`·`blue`·`yb`, `txt` |
+| `dlcd16` | 16×2 캐릭터 LCD 병렬 | row | 0~15 | VSS VDD VO RS RW E D0~D7 A K | `src`, `lc` `yg`·`blue`, `txt` |
+| `dlcd16i` | 16×2 LCD + I2C 백팩 | row | 0~3 | GND VCC SDA SCL | `src`, `lc`, `con` 0~1, `blon` 0·1, `txt` |
+| `dtft` | 1.8" 컬러 TFT SPI | row | 0~7 | VCC GND CS RESET DC MOSI SCK LED | `src`, `txt` |
+| `abuz` · `pbuz` | 능동 부저 · 수동(피에조) 부저 | row | 0,3 | + − |  |
+| `asrv` | 마이크로 서보 | row | 0,1,2 | GND VCC PWM |  |
+| `adcm` | 소형 DC 모터 | row | 0,3 | + − |  |
+| `dneo8` | RGB LED 스틱 8구 | row | 0~3 | GND 5V DIN DOUT | `bri` 0.05~1 |
+| `arel` | 5V 릴레이 모듈 1채널 | row | 0,1,2,5,6,7 | VCC GND IN NO COM NC | `act` `L`·`H` |
+
+- 센서의 슬라이더 값(`lux` `temp` …)은 파일에 그대로 저장돼요. 범위를 벗어나면 가까운 끝값으로 맞춰요.
+- 화면 `src`: `demo` 데모, `text` 직접 쓴 글(`txt`, 줄 바꿈 `\n`), `sense` 같은 보드에 이어진 센서 값. 화면이 나오려면 전원 + 보드 연결(I2C는 SDA·SCL, LCD 병렬은 RS·E·D4~D7, TFT는 SCK·MOSI·CS·DC)이 맞아야 해요.
+
 커패시터 `dk`에 `mica`(실버 마이카)가 생겼어요. 문서 이름 중 이미 있는 부품과 같은 것(예: `RES_MF_1PCT_0P125W` → 금속 피막 1/8W 저항, `CAP_TANT_SOLID` → 탄탈 커패시터, `IND_RF_CHOKE` → 축형 인덕터, `RELAY_SIG_REED` → 리드 릴레이)은 그 부품으로 놓여요.
 
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`

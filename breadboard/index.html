@@ -246,6 +246,7 @@ select.ex{height:30px;align-self:center;border:1px solid var(--line);background:
 .imsg.bad{background:color-mix(in srgb,var(--bad) 14%,transparent)}
 .imsg.busy::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);border-right-color:transparent;animation:spin .8s linear infinite;margin-right:8px;vertical-align:-1px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.bzw{animation:bzw .5s ease-in-out infinite}@keyframes bzw{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.imsg.busy::before{animation:none}}
 #impText{width:100%;min-height:220px;resize:vertical;font:12.5px/1.5 var(--mono);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px}
 .aibox{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--sunk)}
@@ -653,6 +654,12 @@ body.planon .cbar{display:none}
         </optgroup>
         <optgroup label="새로 추가 · 아두이노 호환 보드">
         <option value="ard1">ⓐ1 아두이노 호환 보드: 소형 5V·3.3V 보드는 브레드보드에 꽂고, UNO 폼팩터는 밖에 두고 점퍼선으로 — 전원 핀으로 LED 켜기</option>
+        </optgroup>
+        <optgroup label="새로 추가 · 센서 · 출력 장치">
+        <option value="sx1">ⓢ1 자동 가로등: CdS 조도 센서 + 트랜지스터 + LED (코드·보드 없이)</option>
+        <option value="sx2">ⓢ2 서보 테스터: 함수 발생기 PWM(듀티비 5~10%)으로 마이크로 서보 각도 바꾸기</option>
+        <option value="sx3">ⓢ3 온도계: UNO 폼팩터 호환 보드 + 선형 온도 센서 + 16×2 LCD(명암 트리머·백라이트 저항)</option>
+        <option value="sx4">ⓢ4 거리계: Nano 폼팩터 호환 보드 + 초음파 거리 센서 + 0.96" I2C OLED</option>
         </optgroup>
         <optgroup label="새로 추가 · 스펙트럼 분석기">
         <option value="pspec">Ⓟ11 스펙트럼 분석기: 함수 발생기 구형파(홀수 고조파)와 사인파(선 하나) 비교</option>
@@ -1306,6 +1313,41 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `tco` | 열 차단 스위치 (평소 닫힘) | row | 0,3 | 1 2 | `hot:0` |
 | `fan` · `emif` | 냉각 팬 · EMI 라인 필터 — 시뮬레이션 없음 | row | 0,2 · 0~8 | L N · L·N·PE IN, L·N OUT | |
 
+#### 센서 · 출력 장치 `px` (35차)
+
+| kind | 이름 | 배치 | 오프셋 | 핀 순서 | 추가 칸 |
+|---|---|---|---|---|---|
+| `sldr` | CdS 조도 센서 | row | 0,2 | 1 2 | `lux` 0~1000 |
+| `sntc` | NTC 온도 센서 10kΩ B3950 | row | 0,2 | 1 2 | `temp` −20~120 |
+| `sfsr` | 압력 센서 FSR | row | 0,1 | 1 2 | `force` 0~10 (N) |
+| `slm35` | 선형 온도 센서 IC 10mV/°C | row | 0,1,2 | +Vs Vout GND | `temp` |
+| `sjoy` | 2축 조이스틱 모듈 | row | 0~4 | GND +5V VRx VRy SW | `jx` `jy` 0~1 |
+| `shall` | 홀 효과 자기 센서 | row | 0,1,2 | VCC GND OUT | `mag` −1~1, `hm` `lin`·`dig` |
+| `smq2` | 가스·연기 센서 모듈 | row | 0~3 | VCC GND DO AO | `gas` 0~100, `th` 0.1~0.9 |
+| `smic` | 사운드 센서 모듈 | row | 0~3 | AO GND + DO | `db` 30~100, `th` |
+| `ssoil` | 토양 수분 센서 모듈 | row | 0~3 | VCC GND DO AO | `wet` 0~100, `th` |
+| `susr` | 초음파 거리 센서 모듈 | row | 0~3 | VCC TRIG ECHO GND | `cm` 2~400 |
+| `spir` | PIR 인체 감지 센서 | row | 0,1,2 | VCC OUT GND | `hold` 1~30 (초) |
+| `sir` | 적외선 장애물 센서 | row | 0,1,2 | VCC GND OUT | `obs` 0·1 |
+| `stilt` | 기울기 스위치 | row | 0,2 | 1 2 | `tilt` 0·1 |
+| `sreed` | 리드 스위치 | row | 0,4 | 1 2 | `mag` 0·1 |
+| `sdht` | 디지털 온습도 센서 (1선) | row | 0~3 | VCC DATA NC GND | `temp` `hum` |
+| `sbme` | I2C 기압·온습도 센서 (3.3V 전용) | row | 0~3 | VIN GND SCL SDA | `temp` `hum` `hpa` |
+| `smpu` | I2C 6축 가속도·자이로 | row | 0~7 | VCC GND SCL SDA XDA XCL AD0 INT | `pitch` `roll` |
+| `sbh17` | I2C 디지털 조도 센서 | row | 0~4 | VCC GND SCL SDA ADDR | `lux` |
+| `doled` · `doledv` | 0.96" I2C OLED 128×64 (GND·VCC 판 · VCC·GND 판) | row | 0~3 | GND VCC SCL SDA (doledv는 VCC GND SCL SDA) | `src` `demo`·`text`·`sense`, `col` `white`·`blue`·`yb`, `txt` |
+| `dlcd16` | 16×2 캐릭터 LCD 병렬 | row | 0~15 | VSS VDD VO RS RW E D0~D7 A K | `src`, `lc` `yg`·`blue`, `txt` |
+| `dlcd16i` | 16×2 LCD + I2C 백팩 | row | 0~3 | GND VCC SDA SCL | `src`, `lc`, `con` 0~1, `blon` 0·1, `txt` |
+| `dtft` | 1.8" 컬러 TFT SPI | row | 0~7 | VCC GND CS RESET DC MOSI SCK LED | `src`, `txt` |
+| `abuz` · `pbuz` | 능동 부저 · 수동(피에조) 부저 | row | 0,3 | + − |  |
+| `asrv` | 마이크로 서보 | row | 0,1,2 | GND VCC PWM |  |
+| `adcm` | 소형 DC 모터 | row | 0,3 | + − |  |
+| `dneo8` | RGB LED 스틱 8구 | row | 0~3 | GND 5V DIN DOUT | `bri` 0.05~1 |
+| `arel` | 5V 릴레이 모듈 1채널 | row | 0,1,2,5,6,7 | VCC GND IN NO COM NC | `act` `L`·`H` |
+
+- 센서의 슬라이더 값(`lux` `temp` …)은 파일에 그대로 저장돼요. 범위를 벗어나면 가까운 끝값으로 맞춰요.
+- 화면 `src`: `demo` 데모, `text` 직접 쓴 글(`txt`, 줄 바꿈 `\n`), `sense` 같은 보드에 이어진 센서 값. 화면이 나오려면 전원 + 보드 연결(I2C는 SDA·SCL, LCD 병렬은 RS·E·D4~D7, TFT는 SCK·MOSI·CS·DC)이 맞아야 해요.
+
 커패시터 `dk`에 `mica`(실버 마이카)가 생겼어요. 문서 이름 중 이미 있는 부품과 같은 것(예: `RES_MF_1PCT_0P125W` → 금속 피막 1/8W 저항, `CAP_TANT_SOLID` → 탄탈 커패시터, `IND_RF_CHOKE` → 축형 인덕터, `RELAY_SIG_REED` → 리드 릴레이)은 그 부품으로 놓여요.
 
 예) `dip4`를 `열 20`에: `["f20","f21","f22","f23","e23","e22","e21","e20"]`
@@ -1793,6 +1835,26 @@ B 형식으로 만들게 할 때는 이것도 덧붙이세요.
 | `PROT_FUSE_FAN_THERMAL` | **`fuse`** · **`ntc`** · **`tco`** · `fan` · `emif` | 퓨즈 끊김·온도별 저항·열 차단 계산 |
 
 ---
+
+## 4-5. 센서 · 출력 장치 고르기 (35차)
+
+[부품 고르기] → [센서 · 출력 장치]에 있어요. 코드를 돌리는 기능은 없으니 세 가지 방식으로 동작해요.
+
+| 방식 | 부품 | 시뮬레이터가 하는 일 |
+|---|---|---|
+| 순수 전기 모델 | CdS 조도 · NTC · 압력(FSR) · 선형 온도 IC · 조이스틱 · 홀 · 가스 · 소리 · 토양 · 초음파 · PIR · 적외선 · 기울기 · 리드, 부저 · 서보 · DC 모터 · 릴레이 모듈 | 저항·전압원·스위치·부하로 회로 계산에 그대로 참여해요. 트랜지스터·비교기·555·74 계열과 실제처럼 이어져요 |
+| 배선 검사 + 화면 | OLED · 16×2 LCD(병렬·I2C) · TFT · RGB LED 스틱 | 전원 극성·정격, LCD 명암(VO 0.3~1.2V), 백라이트 저항, 통신선 연결을 검사하고 맞으면 화면을 보여 줘요 |
+| 보드 연동 | I2C 센서(기압·자세·조도) · 온습도 · 초음파 등 + 화면 | 센서와 화면을 같은 아두이노 호환 보드에 바르게 이으면, 화면의 [연결된 센서 값]에 센서 값이 나와요(보드가 미리 넣어 둔 표시 프로그램으로 봐요) |
+
+- **저항형 센서는 분배기로**: 센서와 고정 저항(보통 10kΩ)을 직렬로 이어 가운데 전압을 읽어요. CdS는 어두우면 약 1MΩ · 밝으면 수백 Ω, NTC는 25°C에서 10kΩ.
+- **전압 출력 센서**는 출력 저항이 있는 전압원으로 계산해요. 출력끼리 이어도 계산이 망가지지 않고 전류 경고가 떠요.
+- **3.3V 전용 부품**(I2C 기압 센서 모듈)에 5V를 걸면 고장(빨간 경고)이 나요. [속성]의 [새 부품으로 바꾸기]로 되살려요.
+- **I2C**: UNO·Nano 폼팩터는 A4 = SDA, A5 = SCL(UNO 폼팩터는 SDA·SCL 핀도 있음), Mega 폼팩터는 20·21, Leonardo는 2·3. SDA·SCL이 바뀌면 경고가 떠요.
+- **16×2 LCD 병렬**: VO는 10kΩ 트리머 가운데 다리에, RW는 GND에, 백라이트 A에는 220Ω. 제어선 없이 전원·명암만 맞으면 실제처럼 윗줄에 네모만 보여요.
+- **서보**는 시뮬레이터가 느리게 돌기 때문에 PWM의 듀티비로 각도를 정해요(50Hz 기준 5% = 0°, 7.5% = 90°, 10% = 180°). 함수 발생기 앞판에서 듀티비를 바꿔 보세요.
+- **부저 소리**는 기본으로 꺼져 있어요. 부저의 [속성]에서 [소리 켜기/끄기]를 눌러요.
+- 예제: ⓢ1 자동 가로등 · ⓢ2 서보 테스터 · ⓢ3 온도계(LCD) · ⓢ4 거리계(OLED).
+- 8×8 LED 매트릭스 · 10구 LED 바 · 로터리 엔코더는 이미 [LED · 표시 소자]와 [스위치 · 인코더]에 있어요.
 
 ## 5. 프로그램 ↔ SPICE로 맞춰 보기
 
@@ -2995,6 +3057,321 @@ pxDef({k:'indair',pp:7.62,sub:'ind',pre:'L',title:'공심 코일 (에나멜선 �
 pxDef({k:'bead',pp:7.62,sub:'ind',pre:'FB',title:'페라이트 비드 (잡음 막기)',lay:'row',dc:[0,3],pins:['1','2'],init:()=>({}),thru:1,ind:1,
   draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10,x=(a.x+b.x)/2;let s='';for(const p of ph)s+=leg(p,p.x,y);return s+`<path d="M${a.x} ${y}H${b.x}" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${x-11}" y="${y-6}" width="22" height="12" rx="3" fill="#3A3F47"/>`;},
   desc:'전선에 페라이트 구슬을 끼운 부품이에요. 직류와 낮은 주파수는 그대로 통과시키고(저항 거의 0), 수십 MHz 이상의 높은 주파수 잡음만 열로 바꿔 없애요(보통 100MHz에서 약 600Ω). IC 전원 핀 앞, USB·케이블 선에 달아요. 시뮬레이터는 직류 저항 약 0.03Ω, 인덕턴스 약 1µH로 계산해요(브레드보드 회로의 주파수에서는 거의 전선).'});
+// ══════════ 35차: 센서 · 출력 장치 (조사 보고서 Phase 1~3) ══════════
+// 공통 칸: sld 슬라이더[{k,l,min,max,step,u,def,pre}], so 고르기[{k,l,opts:[[v,t]],def}], acts 단추[{l,f(c,r)}], txt 글 칸 키,
+//   pwr [전원 핀, GND 핀, 최소, 최대(경고), 절대 최대(고장)], vs 출력 전압원, upd 시간·전압 상태, diag 화면·버스 진단, read 연결된 보드가 읽는 값, sig 신호 핀,
+//   tick 화면을 다시 그릴 때를 정하는 열쇠, live2 속성 창 '지금 상태' 글
+const SXSUB=[['sen','센서 (조도 · 온도 · 압력 · 거리 · 움직임 · 가스 · 소리 …)'],['out','출력 장치 (OLED · LCD · TFT · 부저 · 서보 · 모터 · RGB LED · 릴레이 모듈)']];
+const sxOn=(c,r,vs)=>{const p=PX[c.kind].pwr;return!(r&&r.fail)&&vs>=p[2]&&vs<=p[4];};
+const sxSeed=(c,t)=>opt.tol===false?1:1+t*partSeed(c);
+const fx1=(v,d=1)=>(+v).toFixed(d);
+// CdS 조도 센서: 10lux에서 20kΩ, 감마 0.8 → 1000lux 약 500Ω, 어두우면 1MΩ까지
+const ldrR=(c)=>{const L=num(c.lux,300);return Math.min(1e6,L<=0?1e6:2e4*Math.pow(L/10,-.8))*sxSeed(c,.15);};
+const ntcR=(c)=>1e4*Math.exp(3950*(1/(273.15+num(c.temp,25))-1/298.15))*sxSeed(c,.05);
+const fsrR=(c)=>{const F=num(c.force,0);return F<.05?1e7:Math.max(800,1e5*Math.pow(F/.1,-1))*sxSeed(c,.2);};
+const legs2=(ph,y)=>ph.map(p=>leg(p,p.x,y)).join('');
+const hdrBody=(ph,w,h,fill,dy=6)=>{const x0=Math.min(...ph.map(p=>p.x))-w,x1=Math.max(...ph.map(p=>p.x))+w,y1=ph[0].y-dy,y0=y1-h;return{s:legs2(ph,y1)+`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${h}" rx="3" fill="${fill}" stroke="#0E1013" stroke-width=".8"/>`,x0,x1,y0,y1,cx:(x0+x1)/2};};
+const sxTx=(x,y,t,sz,col,anc='middle',w=700)=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="${w}" fill="${col}" text-anchor="${anc}" font-family="var(--mono)">${esc(String(t))}</text>`;
+const pinLab=(ph,names,y,col='#E9ECEF')=>ph.map((p,i)=>`<text x="${p.x}" y="${y}" font-size="4.6" font-weight="700" fill="${col}" text-anchor="middle" font-family="var(--mono)">${esc(names[i])}</text>`).join('');
+// 아두이노 호환 보드 핀의 I2C·SPI 역할
+const i2cRole=(b,nm)=>{nm=String(nm||'');if(/^SDA|\(SDA\)/.test(nm))return'SDA';if(/^SCL|\(SCL\)/.test(nm))return'SCL';const D=ardSpec(b),f=D&&D.form,p=nm.split(' ')[0];
+  if(b.t==='aleo')return p==='D2'?'SDA':p==='D3'?'SCL':null;if(f==='mega')return p==='D20'?'SDA':p==='D21'?'SCL':null;if(f==='uno'||(!f&&ARDX[b.t]))return p==='A4'?'SDA':p==='A5'?'SCL':null;return null;};
+const spiRole=(b,nm)=>{nm=String(nm||'');if(/SCK/.test(nm))return'SCK';if(/MOSI/.test(nm))return'MOSI';const D=ardSpec(b),f=D&&D.form,p=nm.split(' ')[0];
+  if(f==='mega')return p==='D52'?'SCK':p==='D51'?'MOSI':null;return p==='D13'?'SCK':p==='D11'?'MOSI':null;};
+const sxPin=x=>String(x.nm).split(' ')[0];
+/* ── 소리(부저): Web Audio, 기본은 꺼짐 — [소리 켜기]로 모든 부저 소리 ── */
+const SND={on:false,ctx:null,src:new Map()};
+try{SND.on=localStorage.getItem('bbSnd')==='1';}catch(_){}
+function sndSet(id,f){if(!SND.on||!f){const o=SND.src.get(id);if(o){try{o.stop();}catch(_){}SND.src.delete(id);}return;}
+  try{if(!SND.ctx)SND.ctx=new (window.AudioContext||window.webkitAudioContext)();const cur=SND.src.get(id);if(cur){cur.frequency.value=f;return;}
+    const o=SND.ctx.createOscillator(),g=SND.ctx.createGain();o.type='square';o.frequency.value=f;g.gain.value=.03;o.connect(g).connect(SND.ctx.destination);o.start();SND.src.set(id,o);}catch(_){}}
+function sndClick(){if(!SND.on)return;try{if(!SND.ctx)SND.ctx=new (window.AudioContext||window.webkitAudioContext)();const o=SND.ctx.createOscillator(),g=SND.ctx.createGain(),t=SND.ctx.currentTime;o.type='square';o.frequency.value=2000;g.gain.value=.03;o.connect(g).connect(SND.ctx.destination);o.start(t);o.stop(t+.02);}catch(_){}}
+function sndAll(on){SND.on=on;try{localStorage.setItem('bbSnd',on?'1':'0');}catch(_){}if(!on)for(const id of [...SND.src.keys()])sndSet(id,0);}
+// 전원 핀 검사(정격·절대 최대·역접속·부족) → r.ok, r.vs. 고장은 [새 부품으로 바꾸기]
+function sxPower(c,r,v,nm,W_){const d=PX[c.kind],[pi,gi,mn,mx,ab]=d.pwr,a=v(pi),g=v(gi),vs=a!=null&&g!=null?a-g:0;r.vs=vs;r.ok=false;
+  if(r.fail){W_.push(['bad',`${nm} ${d.title}: 전원이 정격(${mx}V)을 크게 넘어 망가졌어요. [속성]에서 [새 부품으로 바꾸기]를 누르고, ${mx}V 이하로 이어요.`,c.id]);return vs;}
+  if(vs<-.5){W_.push(['bad',`${nm} ${d.title}: 전원이 거꾸로 꽂혔어요(${d.pins[pi]} 쪽이 ${fx1(-vs)}V 낮아요). 실제로는 뜨거워지고 망가질 수 있어요 — ${d.pins[pi]}를 +, ${d.pins[gi]}를 − 에 이어요.`,c.id]);r.rev=true;return vs;}
+  r.rev=false;
+  if(vs>ab){r.fail=true;W_.push(['bad',`${nm} ${d.title}: ${fx1(vs)}V가 걸려 절대 최대(${ab}V)를 넘었어요 — 망가졌어요.`,c.id]);return vs;}
+  if(vs>mx)W_.push(['warn',`${nm} ${d.title}: ${fx1(vs)}V가 걸려 정격(${mn}~${mx}V)을 넘었어요. 오래 쓰면 망가져요.`,c.id]);
+  if(vs<mn){if(vs>.3)W_.push(['warn',`${nm} ${d.title}: 전원 ${fx1(vs)}V로는 모자라 동작하지 않아요(${mn}~${mx}V).`,c.id]);return vs;}
+  r.ok=true;return vs;}
+// 아날로그 출력 센서를 보드 아날로그 핀으로 읽은 값(10비트 기준, 기준 전압은 보드 전압)
+const adcTx=(V,b)=>{const Vr=(ardSpec(b)||{}).v||5;return`${fx1(V,2)}V ${Math.max(0,Math.min(1023,Math.round(V/Vr*1023)))}`;};
+
+pxDef({k:'sldr',pp:2.54,sub:'sen',pre:'LDR',title:'CdS 조도 센서 (LDR, 빛이 밝을수록 저항이 작아짐)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({lux:300}),
+  res:c=>[[0,1,ldrR(c)]],sld:[{k:'lux',l:'밝기 (조도)',min:0,max:1000,step:1,u:'lux',def:300,pre:[0,10,100,300,1000]}],
+  tap:c=>{const T=[0,10,100,300,1000],i=T.indexOf(num(c.lux,300));c.lux=T[(i+1)%T.length];return true;},
+  live2:c=>`지금 저항 <b>${ohmTx(+ldrR(c).toPrecision(3))}</b> (밝기 ${num(c.lux,300)} lux)`,
+  read:(c,r,V,b)=>V!=null?'LDR '+adcTx(V,b):null,sig:[0,1],
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-13,L=num(c.lux,300);return legs2(ph,y+4)+`<circle cx="${x}" cy="${y}" r="9" fill="#D9A441" stroke="#7A5A1E"/><path d="M${x-6} ${y-3}h3v3h3v-3h3v3h3M${x-6} ${y+3}h3v-3" stroke="#8B2E1A" stroke-width="1.3" fill="none"/>`+(L>50?`<circle cx="${x}" cy="${y}" r="12" fill="#FFE27A" opacity="${Math.min(.5,L/2000)}"/>`:'');},
+  desc:'빛을 받으면 저항이 작아지는 황화카드뮴(CdS) 소자예요. 어두우면 약 1MΩ, 밝은 실내(300lux) 약 3kΩ, 아주 밝으면(1000lux) 약 500Ω이에요. 고정 저항과 묶어 전압 분배기를 만들면 밝기를 전압으로 읽을 수 있어서, 트랜지스터·비교기와 함께 "어두워지면 켜지는 가로등"을 코드 없이 만들어요. [속성]의 밝기 슬라이더로 빛을 바꾸고, 보드에서 누르면 0→10→100→300→1000lux로 바뀌어요. 부품마다 ±15% 오차가 있어요.'});
+pxDef({k:'sntc',pp:2.54,sub:'sen',pre:'TH',title:'NTC 온도 센서 (서미스터 10kΩ, B 3950)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({temp:25}),
+  res:c=>[[0,1,ntcR(c)]],sld:[{k:'temp',l:'온도',min:-20,max:120,step:1,u:'°C',def:25,pre:[-10,0,25,50,80,100]}],
+  tap:c=>{const T=[0,25,50,80,100],i=T.indexOf(num(c.temp,25));c.temp=T[(i+1)%T.length];return true;},
+  live2:c=>`지금 저항 <b>${ohmTx(+ntcR(c).toPrecision(3))}</b> (온도 ${num(c.temp,25)}°C) · R = 10kΩ · e^(3950·(1/T − 1/298.15))`,
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-12,T=num(c.temp,25),col=T>60?'#E5484D':T<10?'#3E8EDE':'#2B2F35';return legs2(ph,y+3)+`<ellipse cx="${x}" cy="${y}" rx="6" ry="7.5" fill="${col}"/>`+sxTx(x,y+2.2,T+'°',5.5,'#fff');},
+  read:(c,r,V,b)=>V!=null?'NTC '+adcTx(V,b):null,sig:[0,1],
+  desc:'온도가 오르면 저항이 줄어드는(NTC) 서미스터예요. 25°C에서 10kΩ, B값 3950이라 0°C 약 33kΩ, 50°C 약 3.6kΩ, 100°C 약 0.7kΩ이에요. 10kΩ 고정 저항과 전압 분배기를 만들어 비교기·트랜지스터로 "과열 경보기"를 만들거나 보드 아날로그 핀으로 읽어요. [속성]의 온도 슬라이더(−20~120°C)로 바꿔요. 부품마다 ±5% 오차가 있어요.'});
+pxDef({k:'sfsr',pp:2.54,sub:'sen',pre:'FSR',title:'압력 센서 (FSR, 누를수록 저항이 작아짐)',lay:'row',dc:[0,1],pins:['1','2'],init:()=>({force:0}),
+  res:(c,r)=>[[0,1,fsrR(r&&r.pr?Object.assign({},c,{force:Math.max(5,num(c.force,0))}):c)]],sld:[{k:'force',l:'누르는 힘',min:0,max:10,step:.1,u:'N',def:0,pre:[0,.1,1,5,10]}],mom:1,
+  live2:c=>`지금 저항 <b>${fsrR(c)>=1e7?'10MΩ 넘음 (끊김)':ohmTx(+fsrR(c).toPrecision(3))}</b>`,
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-16,F=num(c.force,0);return legs2(ph,y+9)+`<rect x="${x-3}" y="${y+2}" width="6" height="7" fill="#C8A64B"/><circle cx="${x}" cy="${y-3}" r="8" fill="#2B2F35" stroke="${F>0?'#F2C230':'#555'}" stroke-width="1.5"/>`+sxTx(x,y-1,F>0?fx1(F)+'N':'',5,'#F2C230');},
+  desc:'얇은 필름을 누르면 저항이 작아지는 압력 센서예요. 안 누르면 10MΩ이 넘어 끊긴 것과 같고, 0.1N에서 약 100kΩ, 10N에서 약 1kΩ으로 힘에 반비례해요. 무게 감지, 누름 버튼 대용, 악기 패드에 써요. [속성]의 힘 슬라이더로 바꿔요. 오차가 커서(±20%) 정확한 저울로는 못 써요.'});
+pxDef({k:'slm35',pp:2.54,sub:'sen',pre:'U',title:'선형 온도 센서 IC (10mV/°C, 3핀)',lay:'row',dc:[0,1,2],pins:['+Vs','Vout','GND'],init:()=>({temp:25}),
+  pwr:[0,2,4,30,35],res:c=>[[0,2,83000]],sig:[1],
+  vs:(c,r)=>[{o:1,g:2,vcc:0,R:1,f:vs=>sxOn(c,r,vs)?Math.max(0,Math.min(vs-1.5,.01*num(c.temp,25)*sxSeed(c,.01))):null}],
+  sld:[{k:'temp',l:'온도',min:-20,max:120,step:.5,u:'°C',def:25,pre:[0,25,37,50,100]}],
+  live2:(c,r)=>r.ok?`Vout <b>${fx1(Math.max(0,.01*num(c.temp,25)),3)}V</b> (10mV × ${num(c.temp,25)}°C)`:'전원(4~30V)이 맞지 않아 출력이 없어요',
+  read:(c,r,V)=>V!=null?`TEMP ${fx1(V*100)}C`:null,
+  draw:(c,ph)=>{const B=bodyAbove(ph,4,14,'#22262B');return B.s+sxTx(B.x,B.y+2,'TEMP',5.5,'#E9ECEF')+pinLab(ph,['+','O','G'],ph[0].y+7);},
+  desc:'온도에 정확히 비례하는 전압을 내는 3핀(TO-92) 센서예요. 출력 = 10mV × 섭씨 온도(25°C면 0.25V). 평평한 면을 보고 왼쪽부터 +Vs(4~30V) · Vout · GND예요. 이 기본 연결로는 0°C 아래(음수)는 0V로 나와요. 출력 저항이 작아 바로 보드 아날로그 핀이나 비교기에 넣어요. 전원을 거꾸로 꽂으면 뜨거워지고 망가질 수 있어요.'});
+pxDef({k:'sjoy',pp:2.54,sub:'sen',pre:'J',title:'2축 아날로그 조이스틱 모듈 (가변저항 2개 + 누름 스위치)',lay:'row',dc:[0,1,2,3,4],pins:['GND','+5V','VRx','VRy','SW'],init:()=>({jx:.5,jy:.5}),mom:1,
+  res:c=>{const x=Math.max(.001,Math.min(.999,num(c.jx,.5))),y=Math.max(.001,Math.min(.999,num(c.jy,.5)));return[[1,2,1e4*(1-x)],[2,0,1e4*x],[1,3,1e4*(1-y)],[3,0,1e4*y]];},
+  contacts:(c,r)=>r&&r.pr?[[4,0]]:[],sig:[2,3,4],
+  sld:[{k:'jx',l:'X 축 (왼쪽 0 ~ 오른쪽 1)',min:0,max:1,step:.01,u:'',def:.5,pre:[0,.5,1]},{k:'jy',l:'Y 축 (아래 0 ~ 위 1)',min:0,max:1,step:.01,u:'',def:.5,pre:[0,.5,1]}],
+  live2:c=>`VRx = <b>${fx1(5*num(c.jx,.5),2)}V</b> · VRy = <b>${fx1(5*num(c.jy,.5),2)}V</b> (+5V일 때) · 보드에서 누르는 동안 SW가 GND와 이어져요`,
+  read:(c,r,V)=>V!=null?`JOY ${fx1(V,2)}V`:null,
+  draw:(c,ph,r)=>{const B=hdrBody(ph,8,46,'#1F2A44'),cx=B.cx,cy=B.y0+21,x=cx+(num(c.jx,.5)-.5)*16,y=cy-(num(c.jy,.5)-.5)*16;return B.s+`<circle cx="${cx}" cy="${cy}" r="15" fill="#2B2F35"/><circle cx="${x}" cy="${y}" r="9" fill="${r&&r.pr?'#3A3F47':'#111'}" stroke="#555"/>`+pinLab(ph,['G','+','X','Y','S'],B.y1-2);},
+  desc:'엄지로 움직이는 조이스틱이에요. 안에 10kΩ 가변저항 2개(X·Y)가 있어 +5V와 GND 사이에서 와이퍼 전압이 0~5V로 바뀌고(가운데 2.5V), 손잡이를 누르면 SW가 GND와 이어져요(보드 입력에 풀업을 켜서 읽어요). [속성]의 X·Y 슬라이더로 움직이고, 보드에서 누르고 있으면 SW가 눌려요.'});
+pxDef({k:'shall',pp:2.54,sub:'sen',pre:'U',title:'홀 효과 자기 센서 (선형 / 디지털)',lay:'row',dc:[0,1,2],pins:['VCC','GND','OUT'],init:()=>({mag:0,hm:'lin'}),
+  pwr:[0,1,3,5.5,7],res:c=>[[0,1,800]],sig:[2],
+  vs:(c,r)=>[{o:2,g:1,vcc:0,R:c.hm==='dig'?1e4:100,f:vs=>{if(!sxOn(c,r,vs))return null;const B=num(c.mag,0);return c.hm==='dig'?(B>.3?0:vs):Math.max(.2,Math.min(vs-.2,vs/2+B*vs*.4));}}],
+  sld:[{k:'mag',l:'자기장 (S극 −1 ~ 0 ~ N극 +1)',min:-1,max:1,step:.05,u:'',def:0,pre:[-1,0,1]}],so:[{k:'hm',l:'출력 방식',opts:[['lin','선형 (자기장에 비례)'],['dig','디지털 스위치 (N극 가까우면 LOW)']],def:'lin'}],
+  tap:c=>{c.mag=num(c.mag,0)>.5?0:1;return true;},
+  read:(c,r,V)=>V!=null?`HALL ${fx1(V,2)}V`:null,
+  draw:(c,ph)=>{const B=bodyAbove(ph,4,13,'#2B2F35'),m=num(c.mag,0);return B.s+sxTx(B.x,B.y+2,'HALL',5,'#E9ECEF')+(Math.abs(m)>.05?`<rect x="${B.x-7}" y="${B.y-22}" width="14" height="7" fill="${m>0?'#E5484D':'#3E63DD'}"/>`+sxTx(B.x,B.y-16.5,m>0?'N':'S',5,'#fff'):'');},
+  desc:'자석이 가까이 오면 출력이 바뀌는 센서예요. 선형 방식은 자기장이 없으면 전원의 절반(VCC/2), N극이 다가오면 올라가고 S극이면 내려가요. 디지털 방식은 N극이 가까우면 OUT이 LOW가 되는 스위치처럼(오픈 컬렉터, 풀업 저항 필요) 동작해요. 모터 회전수·문 열림 감지에 써요. [속성]에서 자기장과 방식을 바꾸고, 보드에서 누르면 자석을 대고 떼요.'});
+pxDef({k:'smq2',pp:2.54,sub:'sen',pre:'G',title:'가스·연기 센서 모듈 (히터 5V, AO·DO)',lay:'row',dc:[0,1,2,3],pins:['VCC','GND','DO','AO'],init:()=>({gas:10,th:.5}),
+  pwr:[0,1,4.5,5.5,6.5],res:c=>[[0,1,33]],sig:[2,3],
+  vs:(c,r)=>{const ao=vs=>.4*vs/5+(num(c.gas,10)/100)*4.1*vs/5;return[{o:3,g:1,vcc:0,R:1e3,f:vs=>sxOn(c,r,vs)?ao(vs):null},{o:2,g:1,vcc:0,R:1e3,f:vs=>sxOn(c,r,vs)?(ao(vs)>num(c.th,.5)*vs?0:vs):null}];},
+  sld:[{k:'gas',l:'가스·연기 농도',min:0,max:100,step:1,u:'%',def:10,pre:[0,10,50,100]},{k:'th',l:'DO 기준 (모듈 가변저항, 전원 대비)',min:.1,max:.9,step:.05,u:'',def:.5}],
+  live2:(c,r)=>r.ok?`AO ≈ <b>${fx1(.4+num(c.gas,10)/100*4.1,2)}V</b> · DO ${(.4+num(c.gas,10)/100*4.1)>num(c.th,.5)*5?'<b>LOW (감지)</b>':'HIGH'} · 히터 약 150mA`:'히터에 5V가 필요해요 (4.5~5.5V)',
+  read:(c,r,V)=>V!=null?`GAS ${fx1(V,2)}V`:null,
+  draw:(c,ph)=>{const B=hdrBody(ph,10,40,'#1F5E3A'),g=num(c.gas,10);return B.s+`<circle cx="${B.cx}" cy="${B.y0+17}" r="13" fill="#B8BDC4" stroke="#6B7078"/><circle cx="${B.cx}" cy="${B.y0+17}" r="9" fill="#8A9099"/>`+[0,1,2].map(i=>`<circle cx="${B.cx-5+i*5}" cy="${B.y0+17}" r="1.2" fill="#333"/>`).join('')+`<circle cx="${B.x0+5}" cy="${B.y0+5}" r="2" fill="${g>50?'#E5484D':'#3A2626'}"/>`+pinLab(ph,['V','G','D','A'],B.y1-2);},
+  desc:'가연성 가스·연기를 감지하는 모듈이에요. 안의 히터를 5V로 데워야(약 150mA, 그래서 3.3V로는 제대로 동작 안 함) 센서가 반응해요. AO는 농도에 따라 약 0.4~4.5V, DO는 모듈의 가변저항으로 정한 기준을 넘으면 LOW(빨간 불)가 돼요. [속성]에서 농도와 기준을 바꿔요. 실제로는 켜고 수십 초~수 분 예열이 필요해요.'});
+pxDef({k:'smic',pp:2.54,sub:'sen',pre:'MIC',title:'사운드 센서 모듈 (마이크 + 비교기)',lay:'row',dc:[0,1,2,3],pins:['AO','GND','+','DO'],init:()=>({db:40,th:70}),
+  pwr:[2,1,3,5.5,6.5],res:c=>[[2,1,1e3]],sig:[0,3],
+  upd:(c,r,v,now)=>{const on=!!r.clap&&now-r.clap<.25;if(on!==!!r.clapOn){r.clapOn=on;return true;}return false;},tick:(c,r,now)=>r.clap&&now-r.clap<.4?'c':'',
+  vs:(c,r)=>{const lvl=()=>r.clapOn?100:num(c.db,40);return[{o:0,g:1,vcc:2,R:1e3,f:vs=>sxOn(c,r,vs)?vs/2+Math.min(vs/2-.1,(lvl()-30)/70*vs/2*.9):null},{o:3,g:1,vcc:2,R:1e3,f:vs=>sxOn(c,r,vs)?(lvl()>num(c.th,70)?vs:0):null}];},
+  sld:[{k:'db',l:'주변 소리 크기',min:30,max:100,step:1,u:'dB',def:40,pre:[30,50,70,90]},{k:'th',l:'DO 기준 (감도 가변저항)',min:40,max:95,step:1,u:'dB',def:70}],
+  acts:[{l:'👏 박수 (0.25초)',f:(c,r)=>{r.clap=simNow();}}],tap:(c)=>{rt(c).clap=simNow();return true;},
+  read:(c,r,V)=>V!=null?`SOUND ${fx1(V,2)}V`:null,
+  draw:(c,ph,r)=>{const B=hdrBody(ph,8,34,'#1F3F7A'),on=r&&r.clapOn;return B.s+`<circle cx="${B.cx}" cy="${B.y0+14}" r="9" fill="#1A1C1F" stroke="#B8BDC4" stroke-width="2"/>`+(on?`<path d="M${B.x1+2} ${B.y0+6}q6 8 0 16M${B.x1+6} ${B.y0+3}q9 11 0 22" stroke="#F2C230" stroke-width="1.5" fill="none"/>`:'')+pinLab(ph,['A','G','+','D'],B.y1-2);},
+  desc:'마이크로 소리 크기를 재는 모듈이에요. AO는 조용하면 전원의 절반쯤이고 소리가 클수록 커져요. DO는 감도 가변저항으로 정한 크기를 넘으면 HIGH가 돼요("박수 스위치"). [속성]에서 주변 소리 크기를 정하고, 보드에서 누르거나 [박수]를 누르면 0.25초 동안 큰 소리가 나요.'});
+pxDef({k:'ssoil',pp:2.54,sub:'sen',pre:'S',title:'토양 수분 · 수위 센서 모듈 (탐침 + 비교기)',lay:'row',dc:[0,1,2,3],pins:['VCC','GND','DO','AO'],init:()=>({wet:30,th:.5}),
+  pwr:[0,1,3.3,5.5,6.5],res:c=>[[0,1,1500]],sig:[2,3],
+  vs:(c,r)=>{const ao=vs=>vs*(1-num(c.wet,30)/100*.8);return[{o:3,g:1,vcc:0,R:1e3,f:vs=>sxOn(c,r,vs)?ao(vs):null},{o:2,g:1,vcc:0,R:1e3,f:vs=>sxOn(c,r,vs)?(ao(vs)<num(c.th,.5)*vs?0:vs):null}];},
+  sld:[{k:'wet',l:'흙의 수분 · 물 높이',min:0,max:100,step:1,u:'%',def:30,pre:[0,30,60,100]},{k:'th',l:'DO 기준 (전원 대비)',min:.1,max:.9,step:.05,u:'',def:.5}],
+  read:(c,r,V)=>V!=null?`SOIL ${fx1(V,2)}V`:null,
+  draw:(c,ph)=>{const B=hdrBody(ph,8,26,'#2E5E8F'),w=num(c.wet,30);return B.s+`<rect x="${B.cx-14}" y="${B.y0-34}" width="10" height="36" fill="#C8A64B"/><rect x="${B.cx+4}" y="${B.y0-34}" width="10" height="36" fill="#C8A64B"/><rect x="${B.cx-18}" y="${B.y0-34*w/100}" width="36" height="${34*w/100}" fill="#3E8EDE" opacity=".35"/>`+pinLab(ph,['V','G','D','A'],B.y1-2);},
+  desc:'두 갈래 탐침을 흙이나 물에 꽂아 젖은 정도를 재는 모듈이에요. 젖을수록 탐침 사이 저항이 작아져 AO 전압이 내려가요(마르면 전원 가까이, 물속이면 약 20%). DO는 기준보다 젖으면 LOW예요. 탐침은 계속 전기가 흐르면 부식되니, 실제로는 잴 때만 전원을 켜요.'});
+pxDef({k:'susr',pp:2.54,sub:'sen',pre:'US',title:'초음파 거리 센서 모듈 (4핀, 2~400cm)',lay:'row',dc:[0,1,2,3],pins:['VCC','TRIG','ECHO','GND'],init:()=>({cm:50}),
+  pwr:[0,3,4.5,5.5,6.5],res:c=>[[0,3,330]],sig:[1,2],
+  upd:(c,r,v,now)=>{const tr=(v(1)||0)>=2.5,rise=tr&&!r.trg;r.trg=tr;if(rise&&r.ok){r.e0=now;r.e1=now+2*Math.max(2,Math.min(400,num(c.cm,50)))/34300;}const on=!!r.e1&&now>=r.e0&&now<r.e1;if(on!==!!r.echo){r.echo=on;return true;}return false;},
+  tick:(c,r,now)=>r.e1&&now<r.e1+.05?'e'+Math.floor(now*100):'',
+  vs:(c,r)=>[{o:2,g:3,vcc:0,R:100,f:vs=>sxOn(c,r,vs)?(r.echo?vs:0):null}],
+  sld:[{k:'cm',l:'물체까지 거리',min:2,max:400,step:1,u:'cm',def:50,pre:[5,20,50,100,300]}],
+  live2:c=>`에코 펄스 = 2 × ${num(c.cm,50)}cm ÷ 343m/s = <b>${fx1(2*num(c.cm,50)/34300*1000,2)}ms</b> · TRIG가 HIGH로 오를 때마다 ECHO가 그동안 HIGH`,
+  read:(c,r)=>`DIST ${num(c.cm,50)}cm`,
+  draw:(c,ph,r)=>{const B=hdrBody(ph,22,34,'#1F4E8C');return B.s+[-1,1].map(s=>`<circle cx="${B.cx+s*20}" cy="${B.y0+15}" r="12" fill="#C9CED6" stroke="#6B7078"/><circle cx="${B.cx+s*20}" cy="${B.y0+15}" r="8" fill="#2B2F35"/>`).join('')+sxTx(B.cx,B.y0+6,'T  R',4.5,'#fff')+(r&&r.echo?`<path d="M${B.cx-30} ${B.y0-4}q30 -14 60 0" stroke="#5CFFB0" stroke-width="1.5" fill="none"/>`:'')+pinLab(ph,['V','T','E','G'],B.y1-2);},
+  desc:'초음파를 쏘고 되돌아오는 시간으로 거리를 재는 모듈이에요(2~400cm). TRIG에 HIGH 펄스(10µs 이상)를 주면, ECHO가 소리가 갔다 오는 시간(거리 × 2 ÷ 343m/s, 50cm면 약 2.9ms)만큼 HIGH가 돼요. 시뮬레이터는 TRIG가 HIGH로 오를 때마다 에코 펄스를 내요 — 함수 발생기나 클럭을 TRIG에 잇고 ECHO를 오실로스코프로 보세요. 보드의 디지털 핀 두 개에 TRIG·ECHO를 이으면 보드가 거리를 읽은 것으로 표시돼요. 5V 전용이에요.'});
+pxDef({k:'spir',pp:2.54,sub:'sen',pre:'PIR',title:'PIR 인체 감지 센서 (출력 3.3V, 유지 시간 조절)',lay:'row',dc:[0,1,2],pins:['VCC','OUT','GND'],init:()=>({hold:3}),
+  pwr:[0,2,4.5,20,24],res:c=>[[0,2,1e5]],sig:[1],
+  upd:(c,r,v,now)=>{const on=!!r.mt&&now-r.mt<num(c.hold,3);if(on!==!!r.on){r.on=on;return true;}return false;},tick:(c,r,now)=>r.mt&&now-r.mt<num(c.hold,3)+.1?'p'+Math.floor(now*10):'',
+  vs:(c,r)=>[{o:1,g:2,vcc:0,R:200,f:vs=>sxOn(c,r,vs)?(r.on?3.3:0):null}],
+  sld:[{k:'hold',l:'감지 뒤 HIGH 유지 시간',min:1,max:30,step:1,u:'초',def:3,pre:[1,3,5,10]}],acts:[{l:'🚶 움직임 감지',f:(c,r)=>{r.mt=simNow();}}],tap:c=>{rt(c).mt=simNow();return true;},
+  read:(c,r)=>`MOTION ${r.on?'YES':'NO'}`,
+  draw:(c,ph,r)=>{const B=hdrBody(ph,14,30,'#1E7A4C'),on=r&&r.on;return B.s+`<path d="M${B.cx-15} ${B.y0+2}a15 15 0 0 1 30 0z" fill="${on?'#FFF7D6':'#F4F1E8'}" stroke="#999"/>`+[...Array(4)].map((_,i)=>`<path d="M${B.cx-12+i*8} ${B.y0-8}v8" stroke="#CCC" stroke-width=".6"/>`).join('')+`<circle cx="${B.x1-5}" cy="${B.y1-6}" r="2" fill="${on?'#4BE38A':'#264A33'}"/>`+pinLab(ph,['V','O','G'],B.y1-2);},
+  desc:'사람·동물의 몸에서 나오는 적외선이 움직이면 감지하는 모듈이에요(약 7m, 110°). 감지하면 OUT이 3.3V(HIGH)로 정한 시간 동안 유지돼요(모듈의 가변저항으로 약 1~30초). 전원은 4.5~20V를 받아 안에서 3.3V로 낮춰요. 보드에서 누르거나 [움직임 감지]를 누르면 감지돼요. 켠 뒤 처음 1분쯤은 실제로는 오작동이 있어요.'});
+pxDef({k:'sir',pp:2.54,sub:'sen',pre:'IR',title:'적외선 장애물 감지 센서 (가까우면 LOW)',lay:'row',dc:[0,1,2],pins:['VCC','GND','OUT'],init:()=>({obs:0}),
+  pwr:[0,1,3.3,5.5,6.5],res:c=>[[0,1,250]],sig:[2],
+  vs:(c,r)=>[{o:2,g:1,vcc:0,R:1e3,f:vs=>sxOn(c,r,vs)?(c.obs?0:vs):null}],
+  so:[{k:'obs',l:'장애물',opts:[[0,'없음 (OUT HIGH)'],[1,'가까이 있음 (OUT LOW)']],def:0}],tap:c=>{c.obs=c.obs?0:1;return true;},
+  read:c=>`OBSTACLE ${c.obs?'YES':'NO'}`,
+  draw:(c,ph,r)=>{const B=hdrBody(ph,10,26,'#1F4E8C');return B.s+`<rect x="${B.cx-12}" y="${B.y0-12}" width="8" height="14" rx="3" fill="#E9ECEF"/><rect x="${B.cx+4}" y="${B.y0-12}" width="8" height="14" rx="3" fill="#2B2F35"/><circle cx="${B.x1-5}" cy="${B.y0+6}" r="2" fill="${c.obs&&r&&r.ok?'#4BE38A':'#264A33'}"/>`+(c.obs?`<rect x="${B.cx-16}" y="${B.y0-24}" width="32" height="6" fill="#8A9099"/>`:'')+pinLab(ph,['V','G','O'],B.y1-2);},
+  desc:'적외선 LED를 비추고 반사된 빛으로 바로 앞(약 2~30cm, 가변저항으로 조절)의 물체를 감지해요. 물체가 있으면 OUT이 LOW가 되고(액티브 로우) 모듈의 초록 불이 켜져요. 로봇 장애물 피하기, 라인 따라가기에 써요. 보드에서 누르면 물체를 대고 떼요.'});
+pxDef({k:'stilt',pp:2.54,sub:'sen',pre:'S',title:'기울기 스위치 (볼 타입)',lay:'row',dc:[0,2],pins:['1','2'],init:()=>({tilt:0}),
+  contacts:c=>c.tilt?[]:[[0,1]],tap:c=>{c.tilt=c.tilt?0:1;return true;},so:[{k:'tilt',l:'자세',opts:[[0,'바로 섬 (이어짐)'],[1,'기울어짐 (끊김)']],def:0}],
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-13;return legs2(ph,y+6)+`<rect x="${x-5}" y="${y-10}" width="10" height="16" rx="3" fill="#B8BDC4" transform="rotate(${c.tilt?35:0} ${x} ${y+6})"/>`;},
+  desc:'통 안의 쇠구슬이 굴러 두 다리를 잇거나 끊는 스위치예요. 바로 서 있으면 이어지고, 기울이면 끊겨요. 넘어짐·흔들림 감지에 써요. 보드에서 누르면 기울였다 세웠다 해요.'});
+pxDef({k:'sreed',pp:2.54,sub:'sen',pre:'S',title:'리드 스위치 (자석이 오면 이어짐)',lay:'row',dc:[0,4],pins:['1','2'],init:()=>({mag:0}),
+  contacts:c=>c.mag?[[0,1]]:[],tap:c=>{c.mag=c.mag?0:1;return true;},so:[{k:'mag',l:'자석',opts:[[0,'멀리 (끊김)'],[1,'가까이 (이어짐)']],def:0}],
+  draw:(c,ph)=>{const a=ph[0],b=ph[1],y=a.y-10;return legs2(ph,y)+`<rect x="${a.x+4}" y="${y-4}" width="${b.x-a.x-8}" height="8" rx="4" fill="#CFE8F0" opacity=".8" stroke="#8AA"/><path d="M${a.x+6} ${y}H${(a.x+b.x)/2+(c.mag?2:-2)}M${b.x-6} ${y}H${(a.x+b.x)/2-(c.mag?2:-6)}" stroke="#C8A64B" stroke-width="1.6"/>`+(c.mag?`<rect x="${(a.x+b.x)/2-8}" y="${y-16}" width="16" height="6" fill="#E5484D"/>`:'');},
+  desc:'유리관 안의 두 쇳조각이 자석이 다가오면 붙어서 이어지는 스위치예요. 문·창문 열림 감지, 자전거 속도계에 써요. 보드에서 누르면 자석을 대고 떼요.'});
+// I2C·1-Wire 센서: 버스 배선(보드 SDA·SCL 핀) 검사, 3.3V 전용 과전압, 주소(ADDR·AD0)
+function i2cDiag(c,r,ctx,scl,sda,nm,W_){const ps=ctx.ard(sda),pc=ctx.ard(scl),hs=ps.filter(x=>x.role==='SDA'),hc=pc.filter(x=>x.role==='SCL');r.host=null;
+  if(ps.some(x=>x.role==='SCL')&&pc.some(x=>x.role==='SDA')){W_.push(['warn',`${nm}: SDA와 SCL이 서로 바뀌었어요. 모듈 SDA는 보드 SDA에, SCL은 SCL에 이어요.`,c.id]);return null;}
+  if(hs.length&&hc.length&&hs[0].b===hc[0].b){r.host=hs[0].b;return hs[0].b;}
+  if(ps.length||pc.length)W_.push(['warn',`${nm}: SDA·SCL이 보드의 I2C 핀이 아닌 곳에 이어졌어요. UNO·Nano 폼팩터는 A4(SDA)·A5(SCL), Mega 폼팩터는 20(SDA)·21(SCL), Leonardo는 2·3이에요.`,c.id]);
+  return null;}
+const i2cLive=(r,addr)=>`I2C 주소 <b>0x${addr.toString(16).toUpperCase()}</b> · ${r.host?`보드 ${LBL.get(r.host.id)||''}에 연결됨 (읽는 중)`:'보드 SDA·SCL에 아직 안 이어짐'}`;
+pxDef({k:'sdht',pp:2.54,sub:'sen',pre:'U',title:'디지털 온습도 센서 (1선 통신, 4핀)',lay:'row',dc:[0,1,2,3],pins:['VCC','DATA','NC','GND'],init:()=>({temp:24,hum:50}),
+  pwr:[0,3,3.3,5.5,6],res:c=>[[0,3,2e3]],sig:[1],
+  sld:[{k:'temp',l:'온도',min:-20,max:60,step:.5,u:'°C',def:24},{k:'hum',l:'습도',min:0,max:100,step:1,u:'%',def:50}],
+  diag:(c,r,ctx,nm,W_)=>{const dn=ctx.net(1),pu=ctx.pullUp(1);r.host=(ctx.ard(1).find(x=>/^D\d|^A\d/.test(sxPin(x)))||{}).b||null;if(r.ok&&r.host&&!pu)W_.push(['info',`${nm}: DATA 선에 풀업 저항(4.7k~10kΩ, DATA와 VCC 사이)이 없어요. 짧은 선은 보드 내부 풀업으로도 되지만 저항을 다는 게 안전해요.`,c.id]);},
+  read:(c,r)=>r.host?`T ${fx1(num(c.temp,24))}C H ${num(c.hum,50)}%`:null,
+  live2:(c,r)=>`${num(c.temp,24)}°C · ${num(c.hum,50)}% · ${r.host?'보드 디지털 핀에 연결됨':'DATA를 보드 디지털 핀에 이어요'}`,
+  draw:(c,ph)=>{const B=hdrBody(ph,4,34,'#5DA9E9');return B.s+[...Array(5)].map((_,i)=>`<rect x="${B.x0+5}" y="${B.y0+4+i*5}" width="${B.x1-B.x0-10}" height="2.5" fill="#3D86C6"/>`).join('')+pinLab(ph,['+','D','NC','−'],B.y1-2,'#1A1C1F');},
+  desc:'온도와 습도를 1선(DATA)으로 알려 주는 센서예요(3.3~5.5V). DATA 선은 4.7k~10kΩ 풀업 저항으로 VCC에 이어 두고 보드 디지털 핀에 연결해요. 2초에 한 번쯤 읽을 수 있어요. 보드에 이으면 OLED·LCD의 [연결된 센서 값] 화면에 값이 나와요.'});
+pxDef({k:'sbme',pp:2.54,sub:'sen',pre:'U',title:'I2C 기압·온습도 센서 모듈 (3.3V 전용)',lay:'row',dc:[0,1,2,3],pins:['VIN','GND','SCL','SDA'],init:()=>({temp:24,hum:45,hpa:1013}),
+  pwr:[0,1,1.8,3.6,4.25],res:c=>[[0,1,1e4]],sig:[2,3],
+  sld:[{k:'temp',l:'온도',min:-40,max:85,step:.5,u:'°C',def:24},{k:'hum',l:'습도',min:0,max:100,step:1,u:'%',def:45},{k:'hpa',l:'기압',min:300,max:1100,step:1,u:'hPa',def:1013}],
+  diag:(c,r,ctx,nm,W_)=>{i2cDiag(c,r,ctx,2,3,nm,W_);},
+  read:(c,r)=>r.host&&r.ok?`${fx1(num(c.temp,24))}C ${num(c.hum,45)}% ${num(c.hpa,1013)}hPa`:null,
+  live2:(c,r)=>`${num(c.temp,24)}°C · ${num(c.hum,45)}% · ${num(c.hpa,1013)}hPa · ${i2cLive(r,0x76)}`,
+  draw:(c,ph)=>{const B=hdrBody(ph,4,26,'#5B2C83');return B.s+`<rect x="${B.cx-4}" y="${B.y0+6}" width="8" height="8" fill="#C9CED6"/>`+pinLab(ph,['V','G','C','D'],B.y1-2);},
+  desc:'기압·온도·습도를 I2C로 알려 주는 센서예요(주소 0x76). 이 모듈은 전압 변환기가 없는 3.3V 전용이라, 5V에 이으면 망가져요 — 보드의 3.3V 핀에 이어요. SDA·SCL을 보드의 I2C 핀(UNO·Nano 폼팩터 A4·A5)에 이으면 OLED·LCD의 [연결된 센서 값]에 나와요. 기압으로 높이(1hPa ≈ 8m)도 알 수 있어요.'});
+pxDef({k:'smpu',pp:2.54,sub:'sen',pre:'U',title:'I2C 6축 가속도·자이로 센서 모듈 (8핀)',lay:'row',dc:[0,1,2,3,4,5,6,7],pins:['VCC','GND','SCL','SDA','XDA','XCL','AD0','INT'],init:()=>({pitch:0,roll:0}),
+  pwr:[0,1,3,5.5,6],res:c=>[[0,1,1200]],sig:[2,3],
+  sld:[{k:'pitch',l:'앞뒤 기울기 (피치)',min:-90,max:90,step:1,u:'°',def:0,pre:[-45,0,45]},{k:'roll',l:'좌우 기울기 (롤)',min:-90,max:90,step:1,u:'°',def:0,pre:[-45,0,45]}],
+  diag:(c,r,ctx,nm,W_)=>{i2cDiag(c,r,ctx,2,3,nm,W_);const a=ctx.v(6);r.addr=a!=null&&a>=2?0x69:0x68;},
+  read:(c,r)=>r.host&&r.ok?`P ${num(c.pitch,0)} R ${num(c.roll,0)} deg`:null,
+  live2:(c,r)=>`피치 ${num(c.pitch,0)}° · 롤 ${num(c.roll,0)}° · ${i2cLive(r,r.addr||0x68)} (AD0 ${r.addr===0x69?'HIGH':'LOW·열림'})`,
+  draw:(c,ph)=>{const B=hdrBody(ph,4,32,'#2E5E8F');return B.s+`<rect x="${B.cx-7}" y="${B.y0+8}" width="14" height="14" fill="#1A1C1F" transform="rotate(${num(c.roll,0)/3} ${B.cx} ${B.y0+15})"/>`+pinLab(ph,['V','G','C','D','XD','XC','A0','I'],B.y1-2);},
+  desc:'3축 가속도와 3축 자이로를 I2C로 알려 주는 센서예요(전압 변환기 내장이라 3~5V). AD0를 GND(또는 열림)에 두면 주소 0x68, VCC에 이으면 0x69 — 같은 버스에 두 개를 달 때 바꿔요. 기울기·흔들림 감지, 자세 제어에 써요. [속성]에서 피치·롤을 바꿔요.'});
+pxDef({k:'sbh17',pp:2.54,sub:'sen',pre:'U',title:'I2C 디지털 조도 센서 모듈 (lux 단위)',lay:'row',dc:[0,1,2,3,4],pins:['VCC','GND','SCL','SDA','ADDR'],init:()=>({lux:300}),
+  pwr:[0,1,3,5.5,6],res:c=>[[0,1,1e4]],sig:[2,3],sld:[{k:'lux',l:'밝기',min:0,max:65535,step:1,u:'lux',def:300,pre:[0,10,300,1000,10000]}],
+  diag:(c,r,ctx,nm,W_)=>{i2cDiag(c,r,ctx,2,3,nm,W_);const a=ctx.v(4);r.addr=a!=null&&a>=2?0x5C:0x23;},
+  read:(c,r)=>r.host&&r.ok?`LIGHT ${num(c.lux,300)}lx`:null,
+  live2:(c,r)=>`${num(c.lux,300)} lux · ${i2cLive(r,r.addr||0x23)}`,
+  draw:(c,ph)=>{const B=hdrBody(ph,4,24,'#2E5E8F');return B.s+`<rect x="${B.cx-3}" y="${B.y0+6}" width="6" height="5" fill="#1A1C1F"/>`+pinLab(ph,['V','G','C','D','A'],B.y1-2);},
+  desc:'빛의 세기를 lux 단위의 숫자로 바로 알려 주는 I2C 센서예요(1~65535lux). CdS(LDR)는 저항이라 계산·보정이 필요하지만, 이 센서는 보정된 값을 줘요. ADDR이 LOW면 주소 0x23, HIGH면 0x5C예요.'});
+
+/* ── 출력 장치 ── */
+// 화면 내용: 직접 쓴 글 / 데모 / 연결된 센서 값 (보드가 미리 넣어 둔 프로그램이 보여 준다고 봄)
+const DSRC=[['demo','데모 화면'],['text','직접 쓴 글'],['sense','연결된 센서 값']];
+function dispLines(c,r,cols,rows){const src=c.src||'demo',now=simNow();
+  if(src==='text')return String(c.txt||'').split('\n').slice(0,rows).map(s=>s.slice(0,cols));
+  if(src==='sense'){const L=(r.sense||[]);return L.length?L.slice(0,rows).map(s=>s.slice(0,cols)):['NO SENSOR','wire a sensor','to the board'].slice(0,rows).map(s=>s.slice(0,cols));}
+  const t=Math.floor(now),hh=String(Math.floor(t/3600)%24).padStart(2,'0'),mm=String(Math.floor(t/60)%60).padStart(2,'0'),ss=String(t%60).padStart(2,'0');
+  return['BREADBOARD CAD','Hello, World!',`TIME ${hh}:${mm}:${ss}`,`V=${fx1(r.vs||0,2)}V`].slice(0,rows).map(s=>s.slice(0,cols));}
+// 디스플레이 공통 진단: OFF / REV / OVERVOLT / NO_CONTRAST / BUS_ERR / NO_HOST / READY
+const DST={OFF:'전원 꺼짐',REV:'전원 거꾸로',OVERVOLT:'과전압 고장',NO_CONTRAST:'명암(VO) 맞추기 필요',BUS_ERR:'통신선 오배선',NO_HOST:'보드 연결 필요',NO_INIT:'제어선 연결 필요',READY:'정상 표시'};
+function dispSense(c,r,ctx){r.sense=[];if(!r.host)return;for(const s of S.comps){if(s.t!=='px'||!PX[s.kind].read||s.id===c.id)continue;const d=PX[s.kind],rs=rt(s);let V=null,b=null;
+  for(const k of d.sig||[]){const on=ctx.ardOf(s,k).filter(x=>x.b===r.host);if(on.length){b=on[0].b;if(/^A\d/.test(sxPin(on[0]))&&V==null)V=ctx.vOfPin(s,k);}}
+  if(!b&&!(rs.host===r.host))continue;const t=d.read(s,rs,V,r.host);if(t)r.sense.push(t);}}
+pxDef({k:'doled',pp:2.54,sub:'out',pre:'DS',title:'0.96" I2C OLED 디스플레이 128×64 (GND·VCC·SCL·SDA)',lay:'row',dc:[0,1,2,3],pins:['GND','VCC','SCL','SDA'],init:()=>({src:'demo',col:'white',txt:'안녕하세요\nOLED 128x64'}),
+  pwr:[1,0,3,5.5,6],res:(c,r)=>[[1,0,r&&r.st==='READY'?250:5e4]],sig:[2,3],txt:'txt',
+  so:[{k:'src',l:'화면 내용 (보드가 보여 줄 것)',opts:DSRC,def:'demo'},{k:'col',l:'화면 색',opts:[['white','흰색'],['blue','파란색'],['yb','위 노랑 · 아래 파랑']],def:'white'}],
+  diag:(c,r,ctx,nm,W_)=>{let st='OFF';if(r.fail)st='OVERVOLT';else if(r.rev)st='REV';else if(r.ok){const h=i2cDiag(c,r,ctx,2,3,nm,W_);st=h?'READY':(ctx.ard(2).length||ctx.ard(3).length)?'BUS_ERR':'NO_HOST';if(st==='NO_HOST')W_.push(['info',`${nm} OLED: 전원은 들어왔어요. SDA·SCL을 아두이노 호환 보드의 I2C 핀에 이으면 화면이 나와요(보드가 미리 넣어 둔 표시 프로그램으로 봐요).`,c.id]);}
+    r.st=st;if(st==='READY')dispSense(c,r,ctx);},
+  tick:(c,r,now)=>r.st==='READY'&&(c.src||'demo')==='demo'?'o'+Math.floor(now):'',
+  live2:(c,r)=>`상태: <b>${DST[r.st||'OFF']}</b> · 전원 ${fx1(r.vs||0,2)}V${r.st==='READY'?' · 주소 0x3C':''}`,
+  draw:(c,ph,r)=>{r=r||{};const B=hdrBody(ph,46,104,'#1F3F7A'),sx=B.cx-64,sy=B.y0+14,st=r.st||'OFF',on=st==='READY';const L=on?dispLines(c,r,21,6):[];
+    const col=c.col==='blue'?'#6BC7FF':'#F4F7FA',yb=c.col==='yb';
+    let s=B.s+`<rect x="${sx-3}" y="${sy-3}" width="134" height="70" rx="2" fill="#050608"/>`;
+    s+=L.map((t,i)=>`<text x="${sx+1}" y="${sy+9+i*10.5}" font-size="9" font-family="var(--mono)" fill="${yb?(i<2?'#FFD84A':'#6BC7FF'):col}">${esc(t)}</text>`).join('');
+    if(!on&&st!=='OFF')s+=sxTx(B.cx,sy+36,DST[st],7,'#555');
+    return s+`<pattern id="opx${c.id}" width="1.2" height="1.2" patternUnits="userSpaceOnUse"><rect width="1.2" height="1.2" fill="none" stroke="#000" stroke-width=".25"/></pattern><rect x="${sx}" y="${sy}" width="128" height="64" fill="url(#opx${c.id})" opacity=".6"/>`+pinLab(ph,PX[c.kind].pins,B.y1-3);},
+  desc:'0.96인치 128×64 점 OLED 화면이에요. 스스로 빛나서 백라이트가 없고, I2C 두 선(SCL·SDA, 주소 0x3C)으로 그려요. 전원 3~5.5V(모듈 안에 변환기). 핀 순서가 GND·VCC인 것과 VCC·GND인 것이 섞여 팔리니 꼭 확인해요 — 거꾸로 꽂으면 경고가 떠요. SDA·SCL을 아두이노 호환 보드의 I2C 핀(UNO·Nano 폼팩터 A4·A5)에 이으면 화면이 나와요. [속성]에서 데모 / 직접 쓴 글(최대 6줄) / 연결된 센서 값을 고르고, 화면 색을 바꿔요.'});
+pxDef({k:'doledv',pp:2.54,sub:'out',pre:'DS',title:'0.96" I2C OLED 디스플레이 (핀 순서 VCC·GND·SCL·SDA 판)',lay:'row',dc:[0,1,2,3],pins:['VCC','GND','SCL','SDA'],init:()=>({src:'demo',col:'white',txt:'안녕하세요\nOLED 128x64'}),
+  pwr:[0,1,3,5.5,6],sig:[2,3],txt:'txt'});
+// 16×2 캐릭터 LCD (병렬 16핀): VO 명암, 백라이트 LED(A·K), 4비트·8비트 제어선
+DIOM.lcdbl={vf:3,rs:15,vr:5,imax:.03,nm:'LCD 백라이트 LED'};
+function lcdDraw(c,ph,r,i2c){r=r||{};const n=ph.length,x0=ph[0].x,x1=ph[n-1].x,cx=(x0+x1)/2,W=Math.max(250,x1-x0+30),y1=ph[0].y-6,y0=y1-110,st=r.st||'OFF',blu=c.lc==='blue',bl=!!r.bl;
+  const bg=blu?(bl?'#2F6FDB':'#1E3A6E'):(bl?'#A8D24A':'#6E7F3A'),fg=blu?'#F4F7FA':'#1A2410',L=st==='READY'?dispLines(c,r,16,2):[];
+  let s=legs2(ph,y1)+`<rect x="${cx-W/2}" y="${y0}" width="${W}" height="110" rx="4" fill="#1F7A3A" stroke="#0E1013"/><rect x="${cx-W/2+12}" y="${y0+18}" width="${W-24}" height="62" rx="3" fill="#15171A"/><rect x="${cx-W/2+18}" y="${y0+24}" width="${W-36}" height="50" fill="${bg}"/>`;
+  const cw=(W-44)/16,vo=r.vo,shade=vo==null?0:vo<.2?1:vo<.3?.8:vo<=1.2?0:vo<=2?.5:1;   // 0 선명, 1 안 보임(높음)/꽉 참(낮음)
+  for(let row=0;row<2;row++)for(let k=0;k<16;k++){const x=cx-W/2+22+k*cw,y=y0+28+row*22,ch=(L[row]||'')[k]||' ';
+    if(st==='READY'){if(vo!=null&&vo<.3)s+=`<rect x="${x}" y="${y}" width="${cw-2}" height="18" fill="${fg}" opacity="${vo<.2?.9:.6}"/>`;if(ch!==' '&&!(vo!=null&&vo>2))s+=`<text x="${x+cw/2-1}" y="${y+14}" font-size="13" text-anchor="middle" font-family="var(--mono)" font-weight="700" fill="${vo!=null&&vo<.3?bg:fg}" opacity="${vo!=null&&vo>1.2?.35:1}">${esc(ch)}</text>`;else s+=`<rect x="${x}" y="${y}" width="${cw-2}" height="18" fill="${fg}" opacity=".05"/>`;}
+    else if(st==='NO_INIT'&&row===0&&!(vo!=null&&vo>2))s+=`<rect x="${x}" y="${y}" width="${cw-2}" height="18" fill="${fg}" opacity="${vo!=null&&vo<.3?.9:.75}"/>`;
+    else s+=`<rect x="${x}" y="${y}" width="${cw-2}" height="18" fill="${fg}" opacity="${st==='OFF'?0:.05}"/>`;}
+  if(st!=='READY'&&st!=='OFF')s+=sxTx(cx,y0+96,DST[st],8,'#F4F7FA');
+  if(i2c)s+=`<rect x="${cx-34}" y="${y1-14}" width="68" height="10" fill="#1A1C1F"/>`+knob(cx+24,y0+96,6,(num(c.con,.85)-.5)*4.4,'#3E63DD');
+  return s+(i2c?pinLab(ph,['GND','VCC','SDA','SCL'],y1-1):pinLab(ph,LCDP.map(p=>p.split(' ')[0]),y1-1));}
+const LCDP=['VSS (GND)','VDD (+5V)','VO (명암)','RS','RW','E','D0','D1','D2','D3','D4','D5','D6','D7','A (백라이트 +)','K (백라이트 −)'];
+function lcdCtl(c,r,ctx,nm,W_){const on=k=>ctx.ard(k).length>0,rw=ctx.v(4),bad=[];
+  for(const k of [3,5,10,11,12,13])if(!on(k))bad.push(LCDP[k]);
+  if(rw==null||rw>.8){W_.push(['warn',`${nm} LCD: RW(5번 핀)를 GND에 이어요(쓰기만 함). 지금 ${rw==null?'떠 있어요':'HIGH예요'}.`,c.id]);return false;}
+  if(bad.length){if(bad.length<6)W_.push(['warn',`${nm} LCD: 제어선 ${bad.join(', ')}이 보드 핀에 안 이어졌어요. 4비트 방식은 RS·E·D4~D7 여섯 선을 보드 디지털 핀에 이어요.`,c.id]);return false;}
+  const host=ctx.ard(3)[0].b;r.host=host;r.mode=[6,7,8,9].every(on)?'8비트':'4비트';return true;}
+pxDef({k:'dlcd16',pp:2.54,sub:'out',pre:'DS',title:'16×2 캐릭터 LCD (병렬 16핀, 표준 문자 LCD 명령)',lay:'row',dc:rng(16,i=>i),pins:LCDP,init:()=>({src:'demo',lc:'yg',txt:'Hello, LCD!\n16x2 OK'}),
+  pwr:[1,0,4.5,5.5,7],res:c=>[[1,0,5e3],[2,0,1e5]],dio:[[14,15,'lcdbl']],sig:[3,5,10,11,12,13],txt:'txt',
+  so:[{k:'src',l:'화면 내용 (보드가 보여 줄 것)',opts:DSRC,def:'demo'},{k:'lc',l:'화면 색',opts:[['yg','노랑초록 바탕 · 검은 글자'],['blue','파란 바탕 · 흰 글자']],def:'yg'}],
+  diag:(c,r,ctx,nm,W_)=>{const vo=ctx.v(2),vs=ctx.v(0);r.vo=vo!=null&&vs!=null?vo-vs:null;r.bl=((r.di||[])[0]||{}).st===1;let st='OFF';
+    if(r.fail)st='OVERVOLT';else if(r.rev)st='REV';else if(r.ok){if(r.vo==null)W_.push(['warn',`${nm} LCD: VO(3번, 명암) 핀이 떠 있어요. 10kΩ 가변저항의 가운데 다리에 이어 0~1V로 맞춰요.`,c.id]);
+      else if(r.vo>2)W_.push(['warn',`${nm} LCD: VO 전압이 ${fx1(r.vo,2)}V로 높아 글자가 안 보여요. 10kΩ 가변저항으로 0.3~1.2V 사이로 낮춰 보세요.`,c.id]);
+      else if(r.vo<.2)W_.push(['info',`${nm} LCD: VO가 ${fx1(r.vo,2)}V로 너무 낮아 칸이 모두 까맣게 보여요. 가변저항을 조금 돌려 0.3V 이상으로.`,c.id]);
+      st=lcdCtl(c,r,ctx,nm,W_)?'READY':'NO_INIT';}
+    r.st=st;if(st==='READY')dispSense(c,r,ctx);if(r.ok&&!r.bl)W_.push(['info',`${nm} LCD: 백라이트(A 15번·K 16번)가 꺼져 있어요. A를 220Ω 저항을 거쳐 +5V에, K를 GND에 이으면 밝아져요.`,c.id]);},
+  tick:(c,r,now)=>r.st==='READY'&&(c.src||'demo')==='demo'?'l'+Math.floor(now):'',
+  live2:(c,r)=>`상태: <b>${DST[r.st||'OFF']}</b> · VO ${r.vo==null?'떠 있음':fx1(r.vo,2)+'V'} (0.3~1.2V가 선명) · 백라이트 ${r.bl?'켜짐 '+fx1(((r.di||[])[0]||{}).i*1000||0)+'mA':'꺼짐'}${r.mode?' · '+r.mode+' 방식':''}`,
+  draw:(c,ph,r)=>lcdDraw(c,ph,r,false),
+  desc:'글자 16개 × 2줄을 보여 주는 가장 흔한 LCD예요(5V). 1 VSS(GND) · 2 VDD(+5V) · 3 VO(명암) · 4 RS · 5 RW · 6 E · 7~14 D0~D7 · 15 A(백라이트 +) · 16 K(백라이트 −). 꼭 확인할 세 가지: ① VO는 10kΩ 가변저항 가운데 다리에 이어 0.3~1.2V로(높으면 글자가 안 보이고, 0V 가까우면 칸이 까매요) ② RW는 GND ③ 백라이트 A에는 220Ω 저항(없으면 과전류). 4비트 방식이면 RS·E·D4~D7 여섯 선을 보드 디지털 핀에 이어요. 전원·명암만 맞고 제어선이 없으면 실제처럼 윗줄에 네모만 보여요.'});
+pxDef({k:'dlcd16i',pp:2.54,sub:'out',pre:'DS',title:'16×2 캐릭터 LCD + I2C 백팩 (4핀, 명암 가변저항 내장)',lay:'row',dc:[0,1,2,3],pins:['GND','VCC','SDA','SCL'],init:()=>({src:'demo',lc:'blue',con:.85,blon:1,txt:'Hello, I2C LCD!\n0x27'}),
+  pwr:[1,0,4.5,5.5,7],res:(c,r)=>[[1,0,c.blon===0?2e3:200]],sig:[2,3],txt:'txt',
+  so:[{k:'src',l:'화면 내용 (보드가 보여 줄 것)',opts:DSRC,def:'demo'},{k:'lc',l:'화면 색',opts:[['yg','노랑초록 바탕'],['blue','파란 바탕']],def:'blue'},{k:'blon',l:'백라이트 점퍼',opts:[[1,'꽂음 (켜짐)'],[0,'뺌 (꺼짐)']],def:1}],
+  sld:[{k:'con',l:'백팩 명암 가변저항 (돌린 정도)',min:0,max:1,step:.01,u:'',def:.85}],
+  diag:(c,r,ctx,nm,W_)=>{r.vo=(r.vs||5)*(1-num(c.con,.85));r.bl=c.blon!==0&&r.ok;let st='OFF';if(r.fail)st='OVERVOLT';else if(r.rev)st='REV';else if(r.ok){const h=i2cDiag(c,r,ctx,3,2,nm,W_);st=h?'READY':'NO_HOST';
+      if(r.vo>2||r.vo<.2)W_.push(['info',`${nm} LCD: 글자가 ${r.vo>2?'안 보여요':'까맣게 뭉개져요'}. 백팩 뒤의 파란 가변저항(명암)을 돌려요(지금 VO ${fx1(r.vo,2)}V).`,c.id]);}
+    r.st=st;if(st==='READY')dispSense(c,r,ctx);},
+  tick:(c,r,now)=>r.st==='READY'&&(c.src||'demo')==='demo'?'l'+Math.floor(now):'',
+  live2:(c,r)=>`상태: <b>${DST[r.st||'OFF']}</b> · 명암 VO ${fx1(r.vo||0,2)}V · 주소 0x27`,
+  draw:(c,ph,r)=>lcdDraw(c,ph,r,true),
+  desc:'16×2 LCD 뒤에 I2C 변환 기판(백팩)을 붙여 선 4개(GND·VCC·SDA·SCL)로 쓰는 모듈이에요(주소 보통 0x27). 명암은 백팩의 파란 가변저항으로, 백라이트는 점퍼로 켜고 꺼요. 글자가 안 보이면 거의 늘 명암 가변저항 때문이에요. SDA·SCL을 보드의 I2C 핀에 이어요.'});
+pxDef({k:'dtft',pp:2.54,sub:'out',pre:'DS',title:'1.8" 컬러 TFT LCD 128×160 (SPI 8핀)',lay:'row',dc:rng(8,i=>i),pins:['VCC','GND','CS','RESET','DC (A0)','MOSI (SDA)','SCK','LED'],init:()=>({src:'demo',txt:'TFT 128x160\nSPI'}),
+  pwr:[0,1,3,5.5,6],res:(c,r)=>[[0,1,r&&r.st==='READY'?100:5e3],[7,1,150]],sig:[2,4,5,6],txt:'txt',so:[{k:'src',l:'화면 내용 (보드가 보여 줄 것)',opts:DSRC,def:'demo'}],
+  diag:(c,r,ctx,nm,W_)=>{let st='OFF';r.host=null;if(r.fail)st='OVERVOLT';else if(r.rev)st='REV';else if(r.ok){const sck=ctx.ard(6).find(x=>x.sp==='SCK'),mo=ctx.ard(5).find(x=>x.sp==='MOSI'),cs=ctx.ard(2)[0],dc=ctx.ard(4)[0];
+      if(sck&&mo&&cs&&dc){st='READY';r.host=sck.b;if((ardSpec(sck.b)||{}).v===5)W_.push(['warn',`${nm} TFT: 5V 보드의 핀을 바로 이었어요. 이 화면의 신호선은 3.3V 로직이라 오래 쓰면 망가질 수 있어요 — 1kΩ·2kΩ 저항 분배나 레벨 변환기를 넣어요.`,c.id]);}
+      else{st=ctx.ard(6).length||ctx.ard(5).length?'BUS_ERR':'NO_HOST';W_.push(['info',`${nm} TFT: SCK를 보드 SCK(UNO 13번, Mega 52번), MOSI를 MOSI(11번, Mega 51번)에, CS·DC를 아무 디지털 핀에 이어요.`,c.id]);}}
+    r.led=(ctx.v(7)||0)-(ctx.v(1)||0)>2.5;r.st=st;if(st==='READY')dispSense(c,r,ctx);},
+  tick:(c,r,now)=>r.st==='READY'&&(c.src||'demo')==='demo'?'t'+Math.floor(now):'',
+  live2:(c,r)=>`상태: <b>${DST[r.st||'OFF']}</b> · 백라이트(LED 핀) ${r.led?'켜짐':'꺼짐 — LED 핀을 3.3~5V에'}`,
+  draw:(c,ph,r)=>{r=r||{};const B=hdrBody(ph,22,150,'#B0202A'),sx=B.cx-56,sy=B.y0+12,on=r.st==='READY',L=on?dispLines(c,r,14,5):[];let s=B.s+`<rect x="${sx-3}" y="${sy-3}" width="118" height="120" fill="#050608"/>`;
+    if(on){const g=r.led?1:.25;s+=['#E5484D','#F2C230','#4BE38A','#35B6E8','#7A3FB8'].map((col,i)=>`<rect x="${sx}" y="${sy+i*8}" width="112" height="8" fill="${col}" opacity="${g}"/>`).join('')+L.map((t,i)=>`<text x="${sx+3}" y="${sy+56+i*12}" font-size="10" font-family="var(--mono)" fill="#F4F7FA" opacity="${g}">${esc(t)}</text>`).join('');}
+    else if(r.st&&r.st!=='OFF')s+=sxTx(B.cx,sy+60,DST[r.st],7,'#888');
+    return s+pinLab(ph,['VCC','GND','CS','RST','DC','SDA','SCK','LED'],B.y1-3);},
+  desc:'색을 보여 주는 1.8인치 TFT 화면이에요(128×160). SPI로 그려요: SCK·MOSI는 보드의 SPI 핀(UNO 폼팩터 13·11번), CS·DC·RESET은 디지털 핀. LED 핀은 백라이트예요. 신호선은 3.3V 로직이라 5V 보드에 바로 이으면 경고가 떠요(저항 분배·레벨 변환기 권장).'});
+pxDef({k:'abuz',pp:2.54,sub:'out',pre:'BZ',title:'능동 부저 (전압만 걸면 삐 — 약 2.5kHz)',lay:'row',dc:[0,3],pins:['+','−'],init:()=>({}),res:c=>[[0,1,200]],
+  upd:(c,r,v)=>{const a=v(0),b=v(1),d_=a!=null&&b!=null?a-b:0,on=d_>=2.5;r.dv=d_;if(on!==!!r.on){r.on=on;sndSet(c.id,on?2500:0);return false;}if(on)sndSet(c.id,2500);return false;},
+  live2:(c,r)=>`${r.on?'<b>삐 소리 남</b>':'조용함'} · 걸린 전압 ${fx1(r.dv||0,2)}V (3~5V에서 울림, 약 25mA)`,acts:[{l:'🔊 소리 켜기/끄기 (모든 부저)',f:()=>{sndAll(!SND.on);toast(SND.on?'부저 소리를 켰어요':'부저 소리를 껐어요');}}],
+  draw:(c,ph,r)=>{const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-16,on=r&&r.on;return legs2(ph,y+8)+`<circle cx="${x}" cy="${y}" r="13" fill="#1A1C1F"/><circle cx="${x}" cy="${y}" r="3" fill="#333"/>`+sxTx(a.x,y-9,'+',8,'#E5484D')+(on?`<g class="bzw"><path d="M${x+15} ${y-7}q5 7 0 14M${x+19} ${y-10}q8 10 0 20" stroke="#F2C230" stroke-width="1.5" fill="none"/></g>`:'');},
+  desc:'안에 발진 회로가 들어 있어서 + 와 − 사이에 3~5V를 걸기만 하면 "삐" 소리가 나는 부저예요(약 2.5kHz, 25mA). + 다리가 길고 윗면에 + 표시가 있어요 — 거꾸로 걸면 안 울려요. 보드 핀 전류(약 20~40mA)로 바로 울릴 수 있지만 트랜지스터로 켜는 게 안전해요. [속성]에서 소리를 켜면 실제로 들려요(기본은 꺼짐).'});
+pxDef({k:'pbuz',pp:2.54,sub:'out',pre:'BZ',title:'수동 부저 (피에조, 넣은 신호의 주파수로 울림)',lay:'row',dc:[0,3],pins:['+','−'],init:()=>({}),res:c=>[[0,1,1e4]],
+  upd:(c,r,v,now)=>{const a=v(0),b=v(1),hi=a!=null&&b!=null&&a-b>=2.5;r.ed=r.ed||[];if(hi&&!r.hi){r.ed.push(now);sndClick();}r.hi=hi;r.ed=r.ed.filter(t=>now-t<2);const f=r.ed.length>1?(r.ed.length-1)/(r.ed[r.ed.length-1]-r.ed[0]):0;
+    const on=r.ed.length>0&&now-r.ed[r.ed.length-1]<1.5;if(on!==!!r.on){r.on=on;}r.f=on?f:0;return false;},tick:(c,r,now)=>r.on?'b'+(r.ed||[]).length:'',
+  live2:(c,r)=>`${r.on?`<b>딸깍 ${r.f?fx1(r.f,1)+'번/초':''}</b> (신호 주파수대로 울림)`:'조용함 — 켜고 끄는 신호(클럭·함수 발생기·555)를 넣어요'}`,acts:[{l:'🔊 소리 켜기/끄기 (모든 부저)',f:()=>{sndAll(!SND.on);toast(SND.on?'부저 소리를 켰어요':'부저 소리를 껐어요');}}],
+  draw:(c,ph,r)=>{const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-16,on=r&&r.on;return legs2(ph,y+8)+`<circle cx="${x}" cy="${y}" r="13" fill="#1A1C1F"/><circle cx="${x}" cy="${y}" r="6" fill="none" stroke="#555"/>`+(on?`<g class="bzw"><path d="M${x+15} ${y-7}q5 7 0 14" stroke="#F2C230" stroke-width="1.5" fill="none"/></g>`:'');},
+  desc:'발진 회로가 없는 피에조 부저예요. 넣어 준 신호가 켜졌다 꺼질 때마다 판이 떨려서, 신호의 주파수가 곧 소리 높이가 돼요(실제로는 수백 Hz~수 kHz). 직류를 걸면 처음에 딸깍하고 조용해요. 시뮬레이터는 느리게 돌아서 켜질 때마다 "딸깍"으로 들려요. 555 발진기·함수 발생기·클럭에 이어 보세요.'});
+// 서보: PWM 핀의 펄스 폭 → 각도. 함수 발생기 출력이 바로 물리면 그 설정(듀티비)에서, 아니면 높은 구간·주기를 재서 계산(50Hz 기준 5% = 0°, 7.5% = 90°, 10% = 180°)
+function srvDuty(c,r,v,now,net){const n=net(2);for(const f of S.comps)if(f.t==='fg')for(const x of fgOn(f)){const h=HOLES.get(f.pins[x.o]);if(h&&SIM.netOf&&SIM.netOf[h.i]===n){const q=x.q;return q.wave==='sq'?Math.min(95,Math.max(5,num(q.duty,50)))/100:null;}}
+  const hi=(v(2)||0)>=2.5;if(hi&&!r.ph){if(r.tr!=null&&r.tf!=null&&r.tf>r.tr){r.per=now-r.tr;r.hiT=r.tf-r.tr;}r.tr=now;}if(!hi&&r.ph)r.tf=now;r.ph=hi;
+  if(r.tr!=null&&now-r.tr>3)return null;return r.per&&r.hiT?r.hiT/r.per:null;}
+pxDef({k:'asrv',pp:2.54,sub:'out',pre:'M',title:'마이크로 서보 모터 (9g급, 0~180°)',lay:'row',dc:[0,1,2],pins:['GND (갈색)','VCC (빨강)','PWM (주황)'],init:()=>({}),
+  pwr:[1,0,4.8,6,7],res:(c,r)=>[[1,0,r&&r.mv?25:500]],sig:[2],
+  upd:(c,r,v,now,net)=>{const du=r.ok?srvDuty(c,r,v,now,net):null;r.du=du;if(du!=null){const a=Math.round(Math.max(0,Math.min(180,(du-.05)/.05*180)));r.mv=a!==r.ang;r.ang=a;}else r.mv=false;return false;},tick:(c,r)=>String(r.ang),
+  live2:(c,r)=>`각도 <b>${r.ang??90}°</b>${r.du!=null?` · 듀티비 ${fx1(r.du*100,1)}% (50Hz 기준 펄스 ${fx1(r.du*20,2)}ms)`:' · PWM 신호를 기다리는 중'}`,
+  draw:(c,ph,r)=>{r=r||{};const B=hdrBody(ph,30,40,'#1F4E8C',8),hx=B.cx+12,hy=B.y0+14,a=(r.ang??90)-90;return B.s+`<circle cx="${hx}" cy="${hy}" r="7" fill="#E9ECEF"/><g style="transition:transform .35s;transform:rotate(${a}deg);transform-origin:${hx}px ${hy}px"><rect x="${hx-3}" y="${hy-26}" width="6" height="28" rx="3" fill="#F4F1E8" stroke="#999"/></g>`+sxTx(B.cx-18,B.y0+30,(r.ang??90)+'°',8,'#fff')+ph.map((p,i)=>`<circle cx="${p.x}" cy="${B.y1+3}" r="2" fill="${['#7A4A1E','#D22','#F08C00'][i]}"/>`).join('');},
+  desc:'펄스 폭으로 각도를 정하는 작은 서보 모터예요. 갈색 GND · 빨강 VCC(4.8~6V) · 주황 PWM. 20ms(50Hz)마다 펄스를 주는데, 1ms면 0°, 1.5ms면 90°, 2ms면 180°예요(듀티비 5~10%). 시뮬레이터는 느리게 돌기 때문에 펄스의 비율(듀티비)로 각도를 정해요 — 함수 발생기 구형파의 듀티비를 5~10%로 바꿔 보세요. 움직일 때 수백 mA를 먹어서 보드 5V 핀보다 따로 전원을 쓰는 게 좋아요.'});
+pxDef({k:'adcm',pp:2.54,sub:'out',pre:'M',title:'소형 DC 모터 (3~6V, 약 10Ω)',lay:'row',dc:[0,3],pins:['+','−'],init:()=>({}),res:c=>[[0,1,10]],
+  diag:(c,r,ctx,nm,W_)=>{const a=ctx.v(0),b=ctx.v(1);r.dv=a!=null&&b!=null?a-b:0;if([0,1].some(k=>ctx.ard(k).some(x=>/^D\d|^A\d/.test(sxPin(x)))))W_.push(['warn',`${nm} 모터를 보드 신호 핀에 바로 이었어요. 핀은 20~40mA까지인데 모터는 수백 mA를 먹어요 — 트랜지스터·MOSFET·모터 드라이버로 켜고, 다이오드를 거꾸로 달아요.`,c.id]);
+    if(Math.abs(r.dv)>7)W_.push(['warn',`${nm} 모터에 ${fx1(Math.abs(r.dv))}V가 걸려 정격(3~6V)을 넘었어요. 뜨거워져요.`,c.id]);},
+  live2:(c,r)=>{const v=r.dv||0;return Math.abs(v)<.8?'멈춤 (약 0.8V 넘어야 돌기 시작)':`<b>${v>0?'정방향':'역방향'}</b> 약 ${Math.round(Math.max(0,Math.abs(v)-.8)*2400)}rpm · 전류 ${fx1(Math.abs(v)/10*1000,0)}mA`;},
+  tick:(c,r)=>String(Math.round((r.dv||0)*2)),
+  draw:(c,ph,r)=>{r=r||{};const a=ph[0],b=ph[1],x=(a.x+b.x)/2,y=a.y-20,v=r.dv||0,sp=Math.abs(v)<.8?0:Math.max(.08,1.2/Math.abs(v));return legs2(ph,y+12)+`<rect x="${x-16}" y="${y-10}" width="32" height="22" rx="10" fill="#B8BDC4" stroke="#6B7078"/><g style="${sp?`animation:spin ${sp}s linear infinite${v<0?' reverse':''};`:''}transform-origin:${x}px ${y-18}px"><circle cx="${x}" cy="${y-18}" r="8" fill="#F2C230" opacity=".85"/><rect x="${x-1}" y="${y-26}" width="2" height="16" fill="#1A1C1F"/></g>`;},
+  desc:'건전지 몇 개로 도는 작은 직류 모터예요(3~6V, 안의 저항 약 10Ω이라 5V면 약 500mA). 전압이 클수록 빨리 돌고, + 와 − 를 바꾸면 반대로 돌아요. 보드 핀으로 바로 켜면 과전류라서 트랜지스터·MOSFET·모터 드라이버를 쓰고, 끌 때 생기는 역전압을 막는 다이오드를 모터에 거꾸로 달아요.'});
+pxDef({k:'dneo8',pp:2.54,sub:'out',pre:'LED',title:'주소 지정 RGB LED 스틱 8구 (1선 직렬 제어, 5V)',lay:'row',dc:[0,1,2,3],pins:['GND','5V','DIN','DOUT'],init:()=>({bri:.3}),
+  pwr:[1,0,3.5,5.5,6],res:(c,r)=>[[1,0,r&&r.st==='READY'?5/(.06*8*num(c.bri,.3)+.008):600]],sig:[2],
+  sld:[{k:'bri',l:'밝기 (데모)',min:.05,max:1,step:.05,u:'',def:.3,pre:[.1,.3,1]}],
+  diag:(c,r,ctx,nm,W_)=>{const d=ctx.ard(2).find(x=>/^D\d|^A\d/.test(sxPin(x)));r.st=r.fail?'OVERVOLT':r.rev?'REV':!r.ok?'OFF':d?'READY':'NO_HOST';r.host=d?d.b:null;r.mA=r.st==='READY'?Math.round(60*8*num(c.bri,.3)):8;
+    if(r.st==='NO_HOST')W_.push(['info',`${nm} RGB LED: DIN을 보드 디지털 핀에(330Ω 저항을 거쳐) 이으면 데모 무지개가 나와요.`,c.id]);
+    if(r.st==='READY'&&r.mA>400)W_.push(['warn',`${nm} RGB LED가 약 ${r.mA}mA를 먹어요. 보드 5V 핀(USB 전원 약 500mA)으로는 모자랄 수 있어요 — 따로 5V 전원을 쓰고 GND를 함께 이어요.`,c.id]);},
+  tick:(c,r,now)=>r.st==='READY'?'n'+Math.floor(now*4):'',
+  live2:(c,r)=>`상태: <b>${DST[r.st||'OFF']}</b> · 약 ${r.mA||0}mA (LED 하나 최대 60mA × 8)`,
+  draw:(c,ph,r)=>{r=r||{};const B=hdrBody(ph,40,22,'#1A1C1F'),on=r.st==='READY',t=simNow();return B.s+rng(8,i=>`<rect x="${B.x0+6+i*((B.x1-B.x0-12)/8)}" y="${B.y0+5}" width="${(B.x1-B.x0-12)/8-3}" height="12" rx="2" fill="${on?`hsl(${(i*45+t*90)%360} 100% ${40+20*num(c.bri,.3)}%)`:'#E9ECEF'}"/>`).join('')+pinLab(ph,['G','5V','DI','DO'],B.y1-2);},
+  desc:'LED마다 색을 따로 정할 수 있는 RGB LED 8개가 한 줄로 이어진 막대예요. 선 하나(DIN)로 색 정보를 차례로 보내고, DOUT은 다음 막대의 DIN에 이어요. LED 하나가 최대 60mA(흰색 최대 밝기)라 8개면 480mA까지 먹어요 — 큰 전류는 따로 5V 전원으로. DIN 앞에 330Ω, 전원에 1000µF 커패시터를 다는 게 좋아요. 보드 디지털 핀에 DIN을 이으면 데모 무지개가 나와요.'});
+pxDef({k:'arel',pp:2.54,sub:'out',pre:'K',title:'5V 릴레이 모듈 1채널 (입력 IN, 접점 COM·NO·NC, 역전압 다이오드 내장)',lay:'row',dc:[0,1,2,5,6,7],pins:['VCC','GND','IN','NO','COM','NC'],init:()=>({act:'L'}),
+  pwr:[0,1,4.5,5.5,7],res:(c,r)=>[[0,1,r&&r.on?70:5e3],[0,2,c.act==='H'?1e6:1e3]],sig:[2],
+  so:[{k:'act',l:'입력 방식',opts:[['L','LOW일 때 켜짐 (흔한 모듈)'],['H','HIGH일 때 켜짐']],def:'L'}],
+  upd:(c,r,v)=>{const vi=v(2),vc=v(0),vg=v(1),vs=vc!=null&&vg!=null?vc-vg:0,okp=vs>=3.5&&!r.fail;const on=okp&&vi!=null&&(c.act==='H'?vi-(vg||0)>=2.5:vi-(vg||0)<=1.5);if(on!==!!r.on){r.on=on;return true;}return false;},
+  contacts:(c,r)=>r&&r.on?[[4,3]]:[[4,5]],
+  live2:(c,r)=>`${r.on?'<b>붙음</b> (COM↔NO)':'떨어짐 (COM↔NC)'} · 입력 ${c.act==='H'?'HIGH':'LOW'}일 때 켜짐`,
+  draw:(c,ph,r)=>{const B=hdrBody(ph,8,44,'#1F4E8C'),on=r&&r.on;return B.s+`<rect x="${B.cx-14}" y="${B.y0+4}" width="40" height="24" rx="2" fill="#2F6FDB"/>`+sxTx(B.cx+6,B.y0+19,'5V',7,'#fff')+`<circle cx="${B.x0+8}" cy="${B.y0+10}" r="2.5" fill="${on?'#E5484D':'#3A2626'}"/>`+pinLab(ph,['V','G','IN','NO','C','NC'],B.y1-2);},
+  desc:'트랜지스터·역전압 다이오드·표시등이 함께 붙은 릴레이 모듈이에요. VCC·GND에 5V, IN에 보드 신호를 이으면 접점(COM·NO·NC)이 바뀌어요. 흔한 모듈은 IN이 LOW일 때 켜지고(풀업 내장이라 IN이 떠 있으면 꺼짐), [속성]에서 HIGH 방식으로 바꿀 수 있어요. 접점 쪽은 코일과 전기적으로 떨어져 있어 다른 전원의 회로를 켜고 꺼요.'});
+// OLED VCC·GND 판은 위 정의를 그대로 쓴다
+Object.assign(PX.doledv,{res:PX.doled.res,so:PX.doled.so,diag:PX.doled.diag,tick:PX.doled.tick,live2:PX.doled.live2,draw:PX.doled.draw,desc:PX.doled.desc.replace('핀 순서가 GND·VCC인 것과 VCC·GND인 것이','이 판은 VCC·GND·SCL·SDA 순서예요. GND·VCC 판과')});
+{const IH={doled:125,doledv:125,dlcd16:120,dlcd16i:120,dtft:172,asrv:62,susr:52,sjoy:60,smq2:52,spir:46,ssoil:70,arel:56,sdht:46,smic:44,sir:44,sbme:38,smpu:44,sbh17:36,dneo8:34,slm35:26,shall:44};for(const [k,v] of Object.entries(IH))PX[k].ih=v;}
 // ── 21차 부품: 계측기 부품 명세(전체판)의 수동 소자·기구·보호 소자·메모리 — 이미 있는 부품은 NIDALIAS로 이름만 이어 줌
 const boxDraw=(lab,fill,h,col)=>(c,ph)=>{const B=bodyAbove(ph,5,h||14,fill);return B.s+`<text x="${B.x}" y="${B.y+2.5}" font-size="6.5" font-weight="700" fill="${col||'#E9ECEF'}" text-anchor="middle" font-family="var(--mono)">${typeof lab==='function'?lab(c):lab}</text>`;};
 const NOSIM=' 이 부품은 시뮬레이터가 계산하지 않아요(이어도 신호가 바뀌지 않아요). 회로도·PCB에서 연결과 자리를 잡는 데 써요.';
@@ -3623,7 +4000,7 @@ function settle(){
   let UF2=null;const uf2=()=>{if(UF2)return UF2;const u=makeUF(n);for(let i=0;i<n;i++)u.u(i,baseRep[i]);for(const c of S.comps){const hs=ph.get(c.id);
       if(c.t==='wire'||(c.t==='sw'&&c.on)||(c.t==='btn'&&rt(c).pressed))u.u(hs[0],hs[1]);else if(c.t==='px'){const d=PX[c.kind];if(d.tr)continue;if(d.contacts)for(const [i,j] of d.contacts(c,rt(c)))u.u(hs[i],hs[j]);if(d.thru&&!d.ind)u.u(hs[0],hs[1]);}}return UF2=u;};
   // 가변저항·저항 어레이 안의 저항들: [줄 a, 줄 b, 옴]
-  const pxR=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].res){const hs=ph.get(c.id);for(const [i,j,o] of PX[c.kind].res(c))pxR.push([netOf[hs[i]],netOf[hs[j]],o]);}
+  const pxR=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].res){const hs=ph.get(c.id);for(const [i,j,o] of PX[c.kind].res(c,rt(c)))pxR.push([netOf[hs[i]],netOf[hs[j]],o]);}
   // 코일·인덕터: 선 저항(DCR) + 인덕턴스 L. {c, r, a, b, L(포화 반영), R}
   const indL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ind&&PX[c.kind].thru){const hs=ph.get(c.id),m=indModel(c),r=rt(c),im=indImaxOf(c),ia=Math.abs(r.iL||0);indL.push({c,r,a:netOf[hs[0]],b:netOf[hs[1]],L:ia>im?m.L*im/ia:m.L,R:m.R});}
   // 멀티미터 전류 모드: A 단자와 COM 사이에 0.1Ω 션트(퓨즈가 끊기면 열림)
@@ -3636,6 +4013,8 @@ function settle(){
     for(const u of A_.cmp||[])anaL.push({c,r,k:'cmp',o:n(u.o),p:n(u.p),m:n(u.n),vcc:n(A_.vcc),g:n(A_.gnd),M:A_,st:ps(0)});
     if(A_.reg)anaL.push({c,r,k:'reg',o:n(A_.reg.out),adj:n(A_.reg.adj),vin:n(A_.reg.in),M:A_,st:ps('reg')});
     if(A_.dac){const D_=A_.dac;anaL.push({c,r,k:'dac',io1:n(D_.io1),io2:n(D_.io2),vref:n(D_.vref),rfb:n(D_.rfb),vdd:n(D_.vdd),g:n(D_.gnd),bits:D_.bits.map(n),cs:D_.cs!=null?n(D_.cs):null,wr:D_.wr!=null?n(D_.wr):null,M:A_});}}
+  // 센서·모듈 출력(전압원): PX.vs(c,r) → [{o 출력 핀, g 기준(GND) 핀, vcc 전원 핀, R 출력 저항, f(전원 전압)→출력 전압(없으면 끔)}] — 테브난 등가(전압원 + 직렬 저항)라 단락돼도 발산하지 않는다
+  const vsL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].vs){const hs=ph.get(c.id),r=rt(c);for(const u of PX[c.kind].vs(c,r))vsL.push({c,r,o:netOf[hs[u.o]],g:netOf[hs[u.g]],vcc:netOf[hs[u.vcc]],R:u.R||100,f:u.f});}
   const dioL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].dio){const hs=ph.get(c.id),r=rt(c);r.di=[];PX[c.kind].dio.forEach(([i,j,m],q)=>{const d={c,a:netOf[hs[i]],k:netOf[hs[j]],m:DIOM[m],st:0,i:0};r.di[q]=d;dioL.push(d);});}
   // 트랜지스터: {r, T, bj, pol(+1 NPN·N, −1 PNP·P), b 베이스·게이트 줄, cN 컬렉터·드레인 줄, e 이미터·소스 줄, d 베이스-이미터 다이오드, st 아날로그 상태}
   const trL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].tr){const T=PX[c.kind].tr,hs=ph.get(c.id),r=rt(c),bj=T.b!=null,n=k=>netOf[hs[k]];
@@ -3648,6 +4027,7 @@ function settle(){
   // 아날로그 소자(커패시터·저항 어레이·다이오드·트랜지스터·아날로그 IC)가 닿은 줄: 논리값도 전압으로 정한다
   const anaNets=new Set();for(const c of S.comps)if(c.t==='cap'){const hs=ph.get(c.id);anaNets.add(netOf[hs[0]]);anaNets.add(netOf[hs[1]]);}
   for(const [a,b] of pxR){anaNets.add(a);anaNets.add(b);}for(const d of dioL){anaNets.add(d.a);anaNets.add(d.k);}for(const t of trL){anaNets.add(t.b);anaNets.add(t.cN);anaNets.add(t.e);}
+  for(const e of vsL)anaNets.add(e.o);
   for(const a of anaL)for(const k of ['o','p','m','adj','vin','io1','io2','vref','rfb'])if(a[k]!=null)anaNets.add(a[k]);
   const clkNets=new Set([...clks.map(c=>netOf[ph.get(c.id)[0]]),...fgs.flatMap(c=>fgOn(c).map(x=>netOf[ph.get(c.id)[x.o]]))]);
   let lvl,weak,strong=new Map(),volt=new Map(),srcV=new Map(); // srcV: 서플라이·함수 발생기가 직접 정하는 줄의 전압
@@ -3686,7 +4066,7 @@ function settle(){
     // 모드: 이미터·소스가 전원·출력에 바로 붙었으면 스위치, 아니면 아날로그(이미 스스로 이어 붙은 것은 그대로 스위치)
     for(const t of trL){const an=!!S.power&&!strong.has(t.e)&&!(t.r.on&&!t.r.an&&t.cN===t.e);if(!!t.r.an!==an){if(t.r.on)t.r.anCh=true;t.r.an=an;if(an)t.r.on=false;}}
     const resAny=S.comps.some(c=>c.t==='res');   // 저항만 있는 회로(전압 나누기, 저항 + LED)도 옴의 법칙으로 푼다
-    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny&&!indL.length&&!dmmSh.length)||!S.power){for(const c of caps)rt(c).v=0;for(const e of indL){e.r.iL=0;e.r.vL=0;}for(const d of dioL){d.st=0;d.i=0;}return;}
+    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny&&!indL.length&&!dmmSh.length&&!vsL.length)||!S.power){for(const c of caps)rt(c).v=0;for(const e of indL){e.r.iL=0;e.r.vL=0;}for(const d of dioL){d.st=0;d.i=0;}return;}
     const t555=ics.filter(c=>c.t==='ic'&&CHIPS[c.chip].is555&&rt(c).pw&&rt(c).st);
     const pn=(c,k)=>netOf[ph.get(c.id)[CHIPS[c.chip].idx[k]]];
     const Rl=S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/resEff(c)]);   // 저항: 오차를 반영한 실제 값, 탄 것은 빠짐
@@ -3700,7 +4080,7 @@ function settle(){
     const trA=trL.filter(t=>t.r.an);
     // 아날로그 IC 연결(전원 0V 기준점은 GND0 = 가짜 줄 -1)
     const GND0=-1;for(const a of anaL){if(a.k==='oa'||a.k==='cmp'){link(a.o,a.p);link(a.p,a.o);link(a.o,a.m);link(a.m,a.o);}else if(a.k==='reg'){link(a.o,a.adj);link(a.adj,a.o);}else{link(a.vref,a.io1);link(a.io1,a.vref);link(a.vref,a.io2);link(a.io2,a.vref);link(a.rfb,a.io1);link(a.io1,a.rfb);}}
-    for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...indL,...dioL.map(d=>({a:d.a,b:d.k})),...trA.flatMap(t=>[{a:t.cN,b:t.e},{a:t.b,b:t.e}])]){link(e.a,e.b);link(e.b,e.a);}
+    for(const [a,b] of Rl){link(a,b);link(b,a);}for(const e of [...Cl,...indL,...vsL.map(e=>({a:e.o,b:e.g})),...dioL.map(d=>({a:d.a,b:d.k})),...trA.flatMap(t=>[{a:t.cN,b:t.e},{a:t.b,b:t.e}])]){link(e.a,e.b);link(e.b,e.a);}
     /* 코일이 있으면 L/R 시정수보다 잘게 */const hT=Math.min(5e-4,...indL.map(e=>e.L/(e.R+1000)/4)),steps=caps.length||t555.length||indL.length?Math.max(1,Math.min(indL.length?240:80,Math.ceil(dtT/hT))):1,h=dtT/steps;let V=new Map(),known;   // 커패시터가 없으면 정상 상태(직류) 한 번
     for(let s=0;s<steps;s++){
       known=new Map();known.set(-1,0);
@@ -3709,7 +4089,7 @@ function settle(){
       if(steps>1)for(const c of fgs)for(const x of fgOn(c)){const n=netOf[ph.get(c.id)[x.o]];if(known.has(n)&&srcV.has(n))known.set(n,fgVolt(x.q,now-dtT+(s+1)*h));}   // 함수 발생기: 잘게 나눈 단계마다 그 순간의 전압(교류 임피던스가 제대로 나오게)
       // 미지 노드: 커패시터 단자에서 저항·커패시터로 닿는 줄 (알려진 줄에서 멈춤)
       // MOSFET 게이트 줄(저항으로만 이어진 것도 전압을 풀어야 한다)·아날로그 트랜지스터 단자도 출발점
-      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...indL,...Rl.map(([a,b])=>({a,b})),...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e})),...anaL.flatMap(a=>a.k==='dac'?[{a:a.io1,b:a.io2},{a:a.vref,b:a.rfb}]:a.k==='reg'?[{a:a.o,b:a.adj}]:[{a:a.o,b:a.p},{a:a.m,b:a.m}])])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
+      const U=[],ix=new Map(),stack=[];for(const e of [...Cl,...indL,...vsL.map(e=>({a:e.o,b:e.g})),...Rl.map(([a,b])=>({a,b})),...pxR.map(([a,b])=>({a,b})),...dioL.map(d=>({a:d.a,b:d.k})),...trL.filter(t=>!t.bj).map(t=>({a:t.b,b:t.b})),...trA.map(t=>({a:t.cN,b:t.e})),...anaL.flatMap(a=>a.k==='dac'?[{a:a.io1,b:a.io2},{a:a.vref,b:a.rfb}]:a.k==='reg'?[{a:a.o,b:a.adj}]:[{a:a.o,b:a.p},{a:a.m,b:a.m}])])for(const n of [e.a,e.b])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);}
       while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);}}
       {let grew=true;while(grew){grew=false;for(const d of ledL){if(d.a===d.k||!(ix.has(d.a)||ix.has(d.k)))continue;for(const n of [d.a,d.k])if(!known.has(n)&&!ix.has(n)){ix.set(n,U.length);U.push(n);stack.push(n);grew=true;}}
         while(stack.length){const n=stack.pop();for(const m of adj.get(n)||[])if(!known.has(m)&&!ix.has(m)){ix.set(m,U.length);U.push(m);stack.push(m);grew=true;}}}}
@@ -3731,6 +4111,7 @@ function settle(){
           for(const [y,k] of [[cp,gm],[cn,-gm]]){const yi=ix.get(y);if(yi!==undefined)A[xi][yi]+=sg*k;else A[xi][N_]-=sg*k*(known.get(y)||0);}A[xi][N_]+=sg*off;}};
       for(const d of ledA){if(d.st===1){const G=1/d.m.rs;stamp(d.a,d.k,G,G*d.m.vf);}else stamp(d.a,d.k,1e-9,0);}
       const vK=n=>V.has(n)?V.get(n):known.has(n)?known.get(n):SIM.volt&&SIM.volt.has(n)?SIM.volt.get(n):null;   // 아직 풀지 않은 줄(레귤레이터 출력 레일 등)은 지난번 전압으로
+      for(const e of vsL){if(e.o===e.g)continue;const vc=vK(e.vcc),vg=vK(e.g),V0=vc!=null&&vg!=null?e.f(vc-vg,e.c,e.r):null;e.on=V0!=null;e.r.vsOn=e.on;if(V0!=null)stamp(e.o,e.g,1/e.R,V0/e.R);}   // 센서 출력 = 기준 + V0, 출력 저항 R
       for(const a of anaL){const M=a.M;
         if(a.k==='oa'){const vc=vK(a.vcc),ve=vK(a.vee);a.on=vc!=null&&ve!=null&&vc-ve>=(M.vmin||5);if(!a.on||!ix.has(a.o))continue;const G=1/M.ro;
           if(a.st==='hi')stamp(a.o,-1,G,G*(vc-M.hd));else if(a.st==='lo')stamp(a.o,-1,G,G*(ve+(M.hdl??M.hd)));else{stamp(a.o,-1,G,0);vccs(null,a.o,a.p,a.m,G*M.A,0);}}
@@ -3774,7 +4155,7 @@ function settle(){
     }
     // 알려진 줄에서 실제로 전류가 흐를 수 있는 길(저항·커패시터·켜진 다이오드·켜진 트랜지스터)로 닿는 줄만 전압을 내놓는다
     {const adj2=new Map(),ln=(a,b)=>{if(a===b)return;if(!adj2.has(a))adj2.set(a,[]);if(!adj2.has(b))adj2.set(b,[]);adj2.get(a).push(b);adj2.get(b).push(a);};
-      for(const [a,b] of Rl)ln(a,b);for(const e of Cl)ln(e.a,e.b);for(const e of indL)ln(e.a,e.b);for(const d of dioL)if(d.st)ln(d.a,d.k);for(const d of ledA||[])if(d.st)ln(d.a,d.k);for(const a of anaL){if(!a.on)continue;if(a.k==='oa'||a.k==='reg')ln(a.o,-1);else if(a.k==='cmp'){if(a.st===1)ln(a.o,a.g);}else{ln(a.vref,a.io1);ln(a.vref,a.io2);ln(a.rfb,a.io1);}}
+      for(const [a,b] of Rl)ln(a,b);for(const e of Cl)ln(e.a,e.b);for(const e of indL)ln(e.a,e.b);for(const e of vsL)if(e.on)ln(e.o,e.g);for(const d of dioL)if(d.st)ln(d.a,d.k);for(const d of ledA||[])if(d.st)ln(d.a,d.k);for(const a of anaL){if(!a.on)continue;if(a.k==='oa'||a.k==='reg')ln(a.o,-1);else if(a.k==='cmp'){if(a.st===1)ln(a.o,a.g);}else{ln(a.vref,a.io1);ln(a.vref,a.io2);ln(a.rfb,a.io1);}}
       known.set(-1,0);for(const d of ledA||[])rt(d.c).ai=d.i;for(const t of trA)if(t.st){ln(t.cN,t.e);}
       const ok=new Set(),st=[];for(const n of V.keys())if((adj2.get(n)||[]).some(m=>known.has(m))){ok.add(n);st.push(n);}
       while(st.length){const n=st.pop();for(const m of adj2.get(n)||[])if(V.has(m)&&!ok.has(m)){ok.add(m);st.push(m);}}
@@ -3812,6 +4193,14 @@ function settle(){
   // 결과 해석
   const W_=[];const lvAt=i=>{const v=lvl.get(netOf[i]);return v===undefined?Z:v;};
   partStress(W_,vOf,netOf,ph);
+  // 센서·출력 장치: 전원 검사(정격·역접속·고장) → 버스·화면 진단(센서 먼저, 그다음 화면이 센서 값을 모은다)
+  {let AM=null;const ardMap=()=>{if(AM)return AM;AM=new Map();for(const b of S.comps)if(isArd(b)){const N=ardNames(b),hs=ph.get(b.id);if(!hs)continue;hs.forEach((hi,k)=>{const n=netOf[hi];if(!AM.has(n))AM.set(n,[]);AM.get(n).push({b,nm:N[k],role:i2cRole(b,N[k]),sp:spiRole(b,N[k])});});}return AM;};
+   const sx=S.comps.filter(c=>c.t==='px'&&(PX[c.kind].pwr||PX[c.kind].diag)).sort((a,b)=>(PX[a.kind].sub==='sen'?0:1)-(PX[b.kind].sub==='sen'?0:1));
+   for(const c of sx){const d=PX[c.kind],hs=ph.get(c.id),r=rt(c),nm=LBL.get(c.id)||'',v=k=>S.power?vOf(netOf[hs[k]]):null;
+     if(d.pwr)sxPower(c,r,v,nm,W_);else r.ok=true;
+     if(d.diag){const ctx={v,net:k=>netOf[hs[k]],ard:k=>ardMap().get(netOf[hs[k]])||[],ardOf:(s,k)=>ardMap().get(netOf[ph.get(s.id)[k]])||[],vOfPin:(s,k)=>S.power?vOf(netOf[ph.get(s.id)[k]]):null,
+         pullUp:k=>{const n=netOf[hs[k]];return S.comps.some(q=>{if(q.t!=='res')return false;const [a,b]=ph.get(q.id).map(i=>netOf[i]);const o=a===n?b:b===n?a:null;if(o==null||o===n)return false;const vo=vOf(o);return vo!=null&&vo>=3;});}};
+       d.diag(c,r,ctx,nm,W_);}}}
   // 멀티미터 읽기: 전압·전류는 계산된 전압으로, 저항은 수동 소자(저항·가변저항·코일 DCR·다른 멀티미터 션트)만으로 된 저항망을 따로 푼다(1A를 넣고 생긴 전압)
   for(const c of S.comps){if(c.t!=='dmm')continue;const r=rt(c),hs=ph.get(c.id),n=k=>netOf[hs[k]],nm=LBL.get(c.id)||'',wired=k=>S.comps.some(w=>w.t==='wire'&&w.pins.includes(c.pins[k])),m=c.mode||'v';let x=null;
     if(m==='v'){const a=vOf(n(1)),b=vOf(n(0));x=S.power&&a!=null&&b!=null?a-b:0;if(wired(2)&&!wired(1))W_.push(['warn',`${nm} 멀티미터: 전압은 VΩ 단자(빨강)와 COM 단자로 재요. 지금 A 단자에 이어져 있어요.`,c.id]);}
@@ -3851,6 +4240,8 @@ function settle(){
   let rch=false;const icDrv=new Map(),sinkDrv=new Map(),vOf0=n=>{if(srcV.has(n))return srcV.get(n);const v=lvl.get(n);return v===Hh?5:v===L?0:null;};
   for(const c of S.comps)if(c.t==='px'&&PX[c.kind].coil){const d=PX[c.kind],hs=ph.get(c.id),vC=n=>strong.has(n)?vOf0(n):vOf(n),va=vC(netOf[hs[d.coil[0]]]),vb=vC(netOf[hs[d.coil[1]]]);
     if(coilUpd(c,rt(c),S.power&&va!=null&&vb!=null?va-vb:0))rch=true;}
+  // 센서·출력장치 상태(초음파 에코 펄스, PIR 유지 시간, 서보 각도, 릴레이 모듈 등): PX.upd(c,r,핀 전압 함수,지금 시각) → true면 접점·출력이 바뀐 것
+  for(const c of S.comps)if(c.t==='px'&&PX[c.kind].upd){const hs=ph.get(c.id);if(PX[c.kind].upd(c,rt(c),k=>S.power?vOf(netOf[hs[k]]):null,now,k=>netOf[hs[k]]))rch=true;}
   const rchR=rch;let rchT=false;const trFlip=[];
   // 한 번 계산에 하나만 바꾸고 다시 계산한다(동시에 바꾸면 래치·멀티바이브레이터처럼 서로 물린 회로가 함께 뒤집혀 떤다)
   {const want=[];for(const t of trL){if(t.r.anCh){t.r.anCh=false;rchT=true;}if(trUpd(t,n=>vOf(n),false,uf2))want.push(t);}
@@ -4701,6 +5092,26 @@ function renderInfo(){const box=$('info');
   else if(tool.startsWith('gate:')){const d=GATES[tool.slice(5)];box.innerHTML=`<div class="ttl"><b>${esc(d.name)} 게이트</b></div><p class="desc">${esc(d.desc)}</p>${truthTable(d)}`;}
   else box.innerHTML=helpHTML();
   renderLive();}
+/* 센서·출력 장치 속성: 지금 상태, 고르기, 슬라이더(+ 자주 쓰는 값), 글 칸, 동작 단추 */
+function senProps(c){const d=PX[c.kind],r=rt(c);let h='';
+  if(d.live2)h+=`<div class="prop"><label>지금 상태</label><p class="desc" style="margin:0" id="senLive">${d.live2(c,r)}</p></div>`;
+  if(r.fail)h+=`<div class="row" style="margin:0 0 8px"><button class="btn pri" id="senNew">새 부품으로 바꾸기</button></div>`;
+  if(d.acts)h+=`<div class="row" style="margin:2px 0 8px">${d.acts.map((a,i)=>`<button class="btn" data-sact="${i}">${esc(a.l)}</button>`).join('')}</div>`;
+  for(const q of d.so||[]){const cur=c[q.k]??q.def;h+=`<div class="prop"><label>${esc(q.l)}</label><div class="seg">${q.opts.map(([v,t])=>`<button data-so="${q.k}" data-v="${v}" aria-pressed="${String(cur)===String(v)}">${esc(t)}</button>`).join('')}</div></div>`;}
+  for(const q of d.sld||[]){const v=num(c[q.k],q.def);h+=`<div class="prop"><label>${esc(q.l)}: <b data-slv="${q.k}">${v}${q.u?' '+q.u:''}</b></label><input type="range" data-sl="${q.k}" min="${q.min}" max="${q.max}" step="${q.step}" value="${v}" style="width:100%">`
+    +(q.pre?`<div class="seg">${q.pre.map(x=>`<button data-slp="${q.k}" data-v="${x}" aria-pressed="${v===x}">${x}${q.u?' '+q.u:''}</button>`).join('')}</div>`:'')+'</div>';}
+  if(d.txt)h+=`<div class="prop"><label>직접 쓴 글 (화면 내용을 '직접 쓴 글'로 고르면 보여요 · 줄 바꿈 가능)</label><textarea class="btn" data-stx="${d.txt}" rows="3" style="width:100%;font-family:var(--mono);text-align:left">${esc(c[d.txt]||'')}</textarea></div>`;
+  return h;}
+function senBind(c){const d=PX[c.kind],box=$('info');if(!d||!box)return;
+  box.querySelectorAll('[data-so]').forEach(b=>b.onclick=()=>{const q=d.so.find(x=>x.k===b.dataset.so),o=q&&q.opts.find(o=>String(o[0])===b.dataset.v);if(!o)return;pushHist();c[q.k]=o[0];commit(true);});
+  box.querySelectorAll('[data-sl]').forEach(inp=>{const k=inp.dataset.sl,q=d.sld.find(x=>x.k===k),lab=box.querySelector(`[data-slv="${k}"]`);
+    inp.onpointerdown=()=>{if(!inp._h){pushHist();inp._h=1;}};inp.onkeydown=()=>{if(!inp._h){pushHist();inp._h=1;}};
+    inp.oninput=()=>{c[k]=+inp.value;if(lab)lab.textContent=inp.value+(q.u?' '+q.u:'');settle();render();const lv=$('senLive');if(lv&&d.live2)lv.innerHTML=d.live2(c,rt(c));};
+    inp.onchange=()=>{inp._h=0;c[k]=+inp.value;commit(true);};});
+  box.querySelectorAll('[data-slp]').forEach(b=>b.onclick=()=>{pushHist();c[b.dataset.slp]=+b.dataset.v;commit(true);});
+  const ta=box.querySelector('[data-stx]');if(ta){ta.onkeydown=e=>e.stopPropagation();ta.onchange=()=>{pushHist();c[ta.dataset.stx]=ta.value.slice(0,200);commit(true);};}
+  box.querySelectorAll('[data-sact]').forEach(b=>b.onclick=()=>{d.acts[+b.dataset.sact].f(c,rt(c));settle();render();renderInfo();});
+  const nb=$('senNew');if(nb)nb.onclick=()=>{pushHist();const r=rt(c);delete r.fail;delete r.rev;commit(true);toast('새 부품으로 바꿨어요');};}
 function partDesc(c){return{
   wire:'두 구멍을 전기적으로 이어요. 양 끝의 파란 점을 끌어 옮기고, 겹치는 전선은 저절로 살짝 비켜 가서 경로가 보여요. 고른 뒤 가운데의 점선 동그라미를 끌면 그 자리에서 둥글게 꺾여요(흰 네모를 끌어 모양 바꾸기, 더블클릭하면 지우기).',
   res:`${ohmTx(c.ohms)} 저항. LED에 흐르는 전류를 제한하거나, 입력을 HIGH/LOW로 약하게 끌어당기는(풀업·풀다운) 데 써요.`,
@@ -4856,6 +5267,7 @@ function propEditor(c){
     if(d.tap&&!d.pot){const btns=c.kind.startsWith('dip')?(c.bits||[]).map((b,i,a)=>[(i/(a.length-1))*2-1,`${i+1}: ${b?'ON':'OFF'}`]):c.kind==='tog3'?[[-1,'왼쪽 (1번)'],[0,'가운데 (끊김)'],[1,'오른쪽 (3번)']]:c.kind==='enc'||c.kind==='rpg'?[[-1,'◀ 반시계 한 칸'],[1,'시계 한 칸 ▶']]:c.kind==='kp44'?[[-1,'◀ 이전 키'],[1,'다음 키 ▶']]:c.kind==='ctrim'?[[-1,'◀ 작게'],[1,'크게 ▶']]:/^(rbcd|rhex|sel)/.test(c.kind)?[[1,'다음 자리 ▶']]:[[1,'바꾸기']];
       h+=`<div class="prop"><label>조작</label><div class="seg" id="pxS">${btns.map(([sd,n])=>`<button data-side="${sd}">${n}</button>`).join('')}</div></div>`;}
     if(d.ind&&d.thru)return indLive(c)+h;
+    if(d.sld||d.so||d.live2||d.acts||d.txt)h=senProps(c)+h;
     const cs=d.contacts?d.contacts(c,rt(c)):[];h+=`<p class="desc">지금 이어진 접점: ${cs.length?cs.map(([i,j])=>d.pins[i]+'↔'+d.pins[j]).join(', '):'없음'}</p>`;return h;}
   if(c.t==='led')return`<div class="prop"><label>LED 색</label><div class="seg" id="pc">${Object.entries(LEDC).map(([k,[,n]])=>`<button data-v="${k}" aria-pressed="${c.color===k}">${n}</button>`).join('')}</div></div>`
     +`<div class="prop"><label>LED 종류</label><div class="seg" id="pc2">${Object.entries(LEDK).map(([k,[n,t]])=>`<button data-v="${k}" aria-pressed="${(c.lk||'std')===k}" title="${t}">${n}</button>`).join('')}</div></div><p class="desc">${LEDK[c.lk||'std'][1]}</p>`
@@ -4902,7 +5314,7 @@ function bindProps(c){
      btns('rPw',d=>{c.pw=+d.v;if(c.pw===.25)delete c.pw;});btns('rMat',d=>{c.mat=d.v;delete c.tol;if(d.v==='carbon')delete c.mat;});btns('rTol',d=>{c.tol=+d.v;});}
    if(c.t==='cap'){const dk=q('cDk'),vr=q('cVr');if(dk)dk.onchange=()=>{pushHist();c.dk=dk.value;delete c.vr;if(c.dk==='edlc'&&c.farad<.01)c.farad=1;if(c.dk!=='edlc'&&c.farad>=.01)c.farad=1e-4;commit(true);};
      if(vr)vr.onchange=()=>{pushHist();c.vr=+vr.value;commit(true);};}
-   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});if(d.bind)d.bind(c);
+   if(c.t==='px'){const d=PX[c.kind];btns('pxV',x=>{c.ohms=+x.v;});btns('pxC',x=>{c.cv=+x.v;});btns('pxH',x=>{c.henry=+x.v;});btns('pxN',x=>{c.turns=+x.v;c.henry=airL(c);});btns('pxD',x=>{c.dmm=+x.v;c.henry=airL(c);});btns('pxT',x=>{c.taper=x.v;});btns('pxS',x=>{d.tap(c,+x.side);});if(d.bind)d.bind(c);senBind(c);
      const pp=q('pxP');if(pp){pp.oninput=()=>{c.pos=+pp.value/100;settle();render();};pp.onchange=()=>{pushHist();c.pos=+pp.value/100;commit(true);};}}}
   const pc2=$('pc2');if(pc2&&c.t==='led')pc2.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();const v=b.dataset.v;if(v==='std')delete c.lk;else c.lk=v;opt.lk=v;store.set('opt',opt);commit(true);});
   if(!pc)return;
@@ -5059,7 +5471,7 @@ const LEDPRE={pk:[...Object.entries(LEDPK).filter(([k])=>!['cbi','bezel','pipe']
 /* 아이콘: 실제 그리기를 작은 자리에 */
 function pxIco(k){const d=PX[k],n=d.pins.length,ph=d.lay==='dip'?d.pins.map((_,i)=>{const h=d.cols.length;return i<h?{x:d.cols[i]*20,y:22}:{x:d.cols[n-1-i]*20,y:-22};}):d.dc.map(x=>({x:x*20,y:20}));
   const c=Object.assign({t:'px',kind:k},d.init());let s;try{s=d.draw(c,ph,{},false);}catch(e){s='';}
-  const xs=ph.map(p=>p.x),x0=Math.min(...xs)-14,x1=Math.max(...xs)+14,y0=d.lay==='dip'?-26:-12,y1=d.lay==='dip'?26:24;
+  const xs=ph.map(p=>p.x),x0=Math.min(...xs)-14,x1=Math.max(...xs)+14,y0=d.lay==='dip'?-26:d.ih?-d.ih:-12,y1=d.lay==='dip'?26:24;
   return`<svg width="24" height="18" viewBox="${x0} ${y0} ${x1-x0} ${y1-y0}" preserveAspectRatio="xMidYMid meet">${s}</svg>`;}
 const resIco=(pw,mat)=>{const P=RESPW[pw],M=RESMAT[mat],w=P[1]*1.1,h=P[2];return`<svg width="24" height="18" viewBox="-22 -9 44 18"><path d="M-22 0H22" stroke="#9AA0A8" stroke-width="1.6"/><rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="${mat==='wire'&&pw>=2?1:h/2}" fill="${M[1]}" stroke="${M[2]}"/></svg>`;};
 const capIco=dk=>{const col={c0g:'#E3A33B',x7r:'#E8C85A',alu:'#1F3E8C',alubp:'#2E7D5B',tant:'#E2B32E',film:'#C83A3A',x2:'#F0C21A',edlc:'#2B2F35',mica:'#8A3B2E'}[dk];return`<svg width="24" height="18" viewBox="-12 -9 24 18">${/film|x2|x7r|mica/.test(dk)?`<rect x="-8" y="-6" width="16" height="12" rx="1.5" fill="${col}"/>`:`<circle r="8" fill="${col}"/>`}</svg>`;};
@@ -5088,6 +5500,9 @@ const PTREE=(()=>{const tab=k=>CATALOG.find(t=>t.k===k),noTool=it=>!['select','w
   PTREE.push({k:'ard',label:'아두이노 호환 보드',sub:'Nano·MKR 폼팩터는 브레드보드에 꽂고, UNO·Mega 폼팩터는 밖에 두고 점퍼선으로',ico:dip[0].ico,kids:[
     {k:'ard-dip',label:'브레드보드에 꽂는 보드 (Nano 2×15 · MKR 2×14)',items:dip,ico:dip[0].ico,sub:dip.slice(0,2).map(it=>it.t[1]).join(' · ')+' …'},
     {k:'ard-ext',label:'보드 밖에 두는 보드 (UNO · Mega 폼팩터, 점퍼선 연결)',items:ext,ico:ext[0].ico,sub:ext.slice(0,2).map(it=>it.t[1]).join(' · ')+' …'}]});}
+PTREE.push({k:'sio',label:'센서 · 출력 장치',sub:'조도·온도·거리·움직임 센서 · OLED·LCD·TFT · 부저 · 서보 · 모터',ico:pxIco('sldr'),kids:SXSUB.map(([k,label])=>{
+  const items=Object.values(PX).filter(d=>d.sub===k).map(d=>({t:['px:'+d.k,d.title,d.pins.length+'핀 · 한 줄'+(d.pwr?` · ${d.pwr[2]}~${d.pwr[3]}V`:''),''],ico:pxIco(d.k)}));
+  return{k:'x-'+k,label,items,ico:items[0].ico,sub:items.slice(0,3).map(it=>it.t[1].replace(/ \(.*/,'')).join(' · ')+' …'};})});
 const SCHTREE=[PTREE[0],PTREE[4],PTREE[5],{k:'pwr',label:'전원 기호',sub:'VCC(+5V) · GND(접지) — 회로도에서 전원을 나타내요',items:[
     {t:['vcc','VCC','전원 + 기호',''],ico:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M12 17V6M5 6h14" stroke="#E5484D" stroke-width="2" fill="none"/></svg>'},
     {t:['lbl','넷 이름표','같은 이름끼리 선 없이 이어져요',''],ico:'<svg width="26" height="18" viewBox="0 0 26 18"><path d="M1 9h4l4-6h15v12H9l-4-6" stroke="#3E63DD" stroke-width="1.8" fill="none"/></svg>'},
@@ -5114,7 +5529,7 @@ function renderParts(){const q=$('partQ').value.trim().toLowerCase();PFIRST=null
   const fold=n=>{const ico=n.ico||(n.items&&n.items[0]&&n.items[0].ico)||'';return`<button class="pcard pfold" data-pf="${n.k}"><span class="ic">${ico}</span><span><b>${esc(n.label)}</b><small>${esc(n.sub||'')}</small></span><em>${pcount(n)}</em><i>›</i></button>`;};
   let h;
   // 영어로 찾아도 나오게: 수동 소자 분류별 영어 낱말
-  const PXKW={res:'resistor array',pot:'potentiometer pot trimmer',cap:'capacitor',sw:'switch button encoder',dio:'diode rectifier bridge zener schottky',rly:'relay ssr solenoid reed',ind:'inductor coil choke bead',tr:'transistor bjt npn pnp mosfet fet darlington'};
+  const PXKW={res:'resistor array',pot:'potentiometer pot trimmer',cap:'capacitor',sw:'switch button encoder',dio:'diode rectifier bridge zener schottky',rly:'relay ssr solenoid reed',ind:'inductor coil choke bead',tr:'transistor bjt npn pnp mosfet fet darlington',sen:'sensor ldr cds light ntc thermistor temperature lm35 fsr pressure joystick hall gas mq2 smoke sound mic soil ultrasonic sonar hcsr04 pir motion ir tilt reed dht bme280 mpu6050 bh1750 i2c',out:'oled ssd1306 lcd 1602 hd44780 i2c tft st7735 buzzer piezo servo sg90 motor dc ws2812 neopixel rgb relay module display'};
   if(q){const hay=it=>(it.t[1]+' '+it.t[2]+' '+it.t[0]+' '+(/^px:/.test(it.t[0])&&PX[it.t[0].slice(3)]?PXKW[PX[it.t[0].slice(3)].sub]||'':/^cap/.test(it.t[0])?'capacitor':/^res/.test(it.t[0])?'resistor':'')).toLowerCase();
     const qn=pqNorm(q),sc=it=>{const nm=pqNorm(it.t[1]),id=pqNorm(it.t[0].replace(/^(ic|gate|px):/,''));return nm===qn||id===qn?0:nm.startsWith(qn)||id.startsWith(qn)?1:pqNorm(hay(it)).includes(qn)?2:hay(it).includes(q)?3:9;};
     const gs=pleaves(curTree(),[]).map(g=>{const its=g.items.map(it=>({it,s:sc(it)})).filter(x=>x.s<9).sort((a,b)=>a.s-b.s);return{...g,its,best:its.length?its[0].s:9};}).filter(g=>g.its.length).sort((a,b)=>a.best-b.best);
@@ -5964,7 +6379,9 @@ function pxFix(c){const i=PX[c.kind].init();for(const k of Object.keys(i))if(c[k
   if(Array.isArray(i.bits)){const b=Array.isArray(c.bits)?c.bits:typeof c.bits==='string'?c.bits.split(''):[];c.bits=i.bits.map((_,j)=>+b[j]?1:0);}
   if('pos' in i)c.pos=Math.min(1,Math.max(0,numOr(c.pos,i.pos,-1e9)));
   if('taper' in i&&!TAPER[c.taper])c.taper=i.taper;
-  if('ohms' in i)c.ohms=numOr(c.ohms,i.ohms,1e-3,1e9);return c;}
+  if('ohms' in i)c.ohms=numOr(c.ohms,i.ohms,1e-3,1e9);
+  const d=PX[c.kind];for(const q of d.sld||[])if(c[q.k]!=null)c[q.k]=Math.min(q.max,Math.max(q.min,numOr(c[q.k],q.def,-1e9)));for(const q of d.so||[])if(c[q.k]!=null&&!q.opts.some(o=>String(o[0])===String(c[q.k])))c[q.k]=q.def;
+  if(d.txt&&c[d.txt]!=null)c[d.txt]=String(c[d.txt]).slice(0,200);return c;}
 function fixComp(c){if(!c||typeof c!=='object'||typeof c.t!=='string')return null;c=JSON.parse(JSON.stringify(c));
   const isHole=h=>typeof h==='string'&&h.length<16;
   const npins=c.t==='px'?(PX[c.kind]&&PX[c.kind].pins.length):c.t==='gate'?(GATES[c.kind]&&GATES[c.kind].pins.length):c.t==='led3'?3:c.t==='clk'?1:TWO.has(c.t)?2:null;
@@ -6152,7 +6569,7 @@ function autoLayout(spec){const report={placed:0,wires:0,fail:[],auto:[],boards:
     else if(it.t==='seg7')c={t:'seg7',col:col+1,b,ca:it.ca};
     else if(it.t==='gate')c={t:'gate',kind:it.kind,pins:gatePinCols(it.kind).map(k=>pf+'c'+(col+k))};
     else if(it.t==='clk')c={t:'clk',pins:[pf+'c'+col],hz:it.hz};
-    else if(it.t==='px'){c=Object.assign({t:'px',kind:it.kind,pins:pxHolesAt(it.kind,b,PX[it.kind].lay==='dip'?'e':'c',col)},PX[it.kind].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry','turns','dmm'])if(it[kk]!==undefined)c[kk]=it[kk];}
+    else if(it.t==='px'){c=Object.assign({t:'px',kind:it.kind,pins:pxHolesAt(it.kind,b,PX[it.kind].lay==='dip'?'e':'c',col)},PX[it.kind].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry','turns','dmm','lux','temp','force','jx','jy','mag','hm','gas','th','db','wet','cm','hold','obs','tilt','hum','hpa','pitch','roll','src','col','txt','lc','con','blon','bri','act'])if(it[kk]!==undefined)c[kk]=it[kk];}
     else if(it.t==='led3')c={t:'led3',pins:[0,1,2].map(k=>pf+'c'+(col+k)),ca:!!it.ca};
     else c=smallComp(it,[pf+'e'+col,pf+'f'+col]);
     return c;};
@@ -6307,7 +6724,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 계측기 앞판(실제 장비처럼: LCD·키패드·노브·하드 키)';
+const APP_VER='2026-11-27 · 센서·출력 장치 29종(OLED·LCD·TFT·서보·초음파 …) · 예제 ⓢ1~ⓢ4';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -6907,6 +7324,33 @@ Object.assign(EXAMPLES,{
       {t:'auno3',k:5,x:20,y:470},{t:'wire',pins:['@5:'+ARDX.auno3.hdr.findIndex(h=>h[2]==='3.3V'),'j57'],color:'#E57A1F'},{t:'res',pins:['g57','g60'],ohms:220},{t:'led',pins:['h60','bn59'],color:'yellow'},
       {t:'wire',pins:['@5:'+ARDX.auno3.hdr.findIndex(h=>h[2]==='GND'),'bn62'],color:'#24282D'}];
     return{comps,boards:B};},
+  // ⓢ1 자동 가로등: 10kΩ 위 · LDR 아래 분배기 → 1kΩ → NPN 베이스. 어두우면 LDR이 커져 베이스 전압이 오르고 LED가 켜진다
+  sx1:()=>{const B=[{id:1,type:'full',x:0,y:0}];const comps=[{t:'wire',pins:['tp8','a8'],color:'#D93A3A'},{t:'res',pins:['b8','b12'],ohms:10000},
+      {t:'px',kind:'sldr',pins:['c12','c14'],lux:300},{t:'wire',pins:['a14','tn14'],color:'#24282D'},{t:'res',pins:['d12','d17'],ohms:1000},
+      {t:'px',kind:'q3904',pins:['c16','c17','c18']},{t:'wire',pins:['a16','tn16'],color:'#24282D'},
+      {t:'wire',pins:['tp20','a20'],color:'#D93A3A'},{t:'res',pins:['b20','b24'],ohms:330},{t:'led',pins:['c24','c26'],color:'yellow'},{t:'wire',pins:['d26','d18'],color:'#2F6FDB'}];
+    return{comps,boards:B};},
+  // ⓢ2 서보 테스터: 함수 발생기 CH1 구형파 1Hz 듀티비 7.5% → 90°. 앞판에서 듀티비를 5%(0°)~10%(180°)로 바꿔 본다
+  sx2:()=>{const B=[{id:1,type:'full',x:0,y:0}];const comps=[{t:'px',kind:'asrv',pins:['c30','c31','c32']},{t:'wire',pins:['a30','tn31'],color:'#24282D'},{t:'wire',pins:['a31','tp31'],color:'#D93A3A'},
+      {t:'fg',k:1,x:300,y:440,wave:'sq',hz:1,vpp:5,off:0,duty:7.5,ph:0,on:true},{t:'wire',pins:['@1:0','a32'],color:'#E57A1F'},{t:'wire',pins:['@1:1','tn33'],color:'#24282D'}];
+    return{comps,boards:B};},
+  // ⓢ3 온도계: UNO 폼팩터 보드 USB 전원 → 레일, 선형 온도 센서 → A0, LCD 4비트(RS D12 · E D11 · D4~D7 D5~D2), VO 10kΩ 트리머, 백라이트 220Ω
+  sx3:()=>{const B=[{id:1,type:'full',x:0,y:0}],U=k=>'@5:'+ARDX.auno3.hdr.findIndex(h=>h[2]===k||h[2].startsWith(k+' ')),L=rng(16,i=>'h'+(30+i)),BLK='#24282D',RED='#D93A3A';
+    const comps=[{t:'auno3',k:5,x:20,y:470},{t:'wire',pins:[U('5V'),'tp3'],color:RED},{t:'wire',pins:[U('GND'),'tn3'],color:BLK},{t:'wire',pins:['tp2','bp2'],color:RED},{t:'wire',pins:['tn2','bn2'],color:BLK},
+      {t:'px',kind:'slm35',pins:['c10','c11','c12'],temp:23.5},{t:'wire',pins:['a10','tp10'],color:RED},{t:'wire',pins:['a12','tn13'],color:BLK},{t:'wire',pins:[U('A0'),'a11'],color:'#2FBF71'},
+      {t:'px',kind:'dlcd16',pins:L,src:'sense',lc:'yg'},{t:'wire',pins:['j30','bn31'],color:BLK},{t:'wire',pins:['j31','bp32'],color:RED},
+      {t:'px',kind:'trim3362',pins:['c20','c21','c22'],ohms:10000,taper:'B',pos:.88},{t:'wire',pins:['a20','tp20'],color:RED},{t:'wire',pins:['a22','tn22'],color:BLK},{t:'wire',pins:['e21','f32'],color:'#7A3FB8'},
+      {t:'wire',pins:['j34','bn35'],color:BLK},{t:'wire',pins:[U('D12'),'j33'],color:'#2F6FDB'},{t:'wire',pins:[U('D11'),'j35'],color:'#2F6FDB'},
+      ...['D5','D4','D3','D2'].map((d,i)=>({t:'wire',pins:[U(d),'j'+(40+i)],color:'#2F6FDB'})),
+      {t:'res',pins:['j44','bp47'],ohms:220},{t:'wire',pins:['j45','bn45'],color:BLK}];
+    return{comps,boards:B};},
+  // ⓢ4 거리계: Nano 폼팩터 보드(USB 전원) · 초음파 TRIG D9 · ECHO D10 · OLED SDA A4 · SCL A5
+  sx4:()=>{const B=[{id:1,type:'full',x:0,y:0}],n=pxHolesAtB('ano',1,3,B),P=nm=>n[PX.ano.pins.findIndex(x=>x.startsWith(nm))],col=h=>+h.replace(/^\D+/,''),j=h=>'j'+col(h),i_=h=>'i'+col(h),BLK='#24282D',RED='#D93A3A';
+    const comps=[{t:'px',kind:'ano',pins:n},{t:'wire',pins:[j(P('5V')),'bp14'],color:RED},{t:'wire',pins:[j(P('GND')),'bn16'],color:BLK},{t:'wire',pins:['bp2','tp2'],color:RED},{t:'wire',pins:['bn2','tn2'],color:BLK},
+      {t:'px',kind:'susr',pins:['c30','c31','c32','c33'],cm:42},{t:'wire',pins:['a30','tp29'],color:RED},{t:'wire',pins:['a33','tn33'],color:BLK},
+      {t:'wire',pins:['b31',j(P('D9'))],color:'#E57A1F'},{t:'wire',pins:['b32',j(P('D10'))],color:'#2FBF71'},
+      {t:'px',kind:'doled',pins:['a40','a41','a42','a43'],src:'sense'},{t:'wire',pins:['b40','tn40'],color:BLK},{t:'wire',pins:['b41','tp41'],color:RED},{t:'wire',pins:['b42',j(P('A5'))],color:'#2F6FDB'},{t:'wire',pins:['b43',j(P('A4'))],color:'#7A3FB8'}];
+    return{comps,boards:B};},
   // Ⓟ11 스펙트럼 분석기 한 대로 재기: 함수 발생기 구형파 2Hz → SA1(홀수 고조파) / 사인파 3Hz → SA2(선 하나)
   pspec:()=>{const K=ledKit(1);const L1=K.led(1,20,{color:'yellow'});K.gnd(L1.k);const L2=K.led(1,36,{color:'green'});K.gnd(L2.k);
     const out=K.fin(),cs=out.comps;
@@ -7330,7 +7774,7 @@ function _schApply(){syncTerms();const notes=[],real=SCH.parts.filter(p=>!isSchS
   if(gone.length){touch();const ids=new Set(gone.map(c=>c.id));S.comps=S.comps.filter(c=>!ids.has(c.id));gone.forEach(c=>RT.delete(c.id));}
   for(const p of real)if(p.bid&&!compById(p.bid))delete p.bid;
   // ② 값
-  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','pw','mat','tol','dk','vr','ser','cv','henry','turns','dmm'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
+  for(const p of real){const c=p.bid&&compById(p.bid);if(!c)continue;for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','pw','mat','tol','dk','vr','ser','cv','henry','turns','dmm','lux','temp','force','jx','jy','mag','hm','gas','th','db','wet','cm','hold','obs','tilt','hum','hpa','pitch','roll','src','col','txt','lc','con','blon','bri','act'])if(p[k]!==undefined&&c[k]!==p[k]&&!(c[k]===undefined&&p[k]===false)){touch();c[k]=p[k];}}
   // ③ 새 부품
   const added=[];
   for(const p of real){if(p.bid)continue;const c=schPlaceOnBoard(p);if(!c){notes.push(`${schLabels().get(p.id)}: 브레드보드에 빈자리가 없어 꽂지 못했어요`);continue;}
@@ -7376,7 +7820,7 @@ function schPlaceOnBoard(p){const B=S.boards[0],pt={x:B.x+bW(B.type)/2,y:B.y+MID
     if(p.t==='gate'){tool='gate:'+p.kind;const g=gateGhost(pt);if(!g||!g.ok)return null;return{t:'gate',kind:p.kind,pins:g.hs.map(h=>h.id)};}}finally{tool=t0;}
   const o=occ(),rects=bodyRects(),emptyStrip=(b,c,top)=>(top?'abcde':'fghij').split('').every(r=>!o.has(pref(b)+r+c));
   for(const Bd of S.boards){const N_=BTYPES[Bd.type].cols;for(let c=1;c<=N_;c++){
-    if(p.t==='px'){const k=p.kind,dip=PX[k].lay==='dip';for(const r of dip?['e']:['c','h']){const ids=pxHolesAt(k,Bd.id,r,c);if(!ids||ids.some(id=>o.has(id)))continue;const t=Object.assign({t:'px',kind:k,pins:ids},PX[k].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry','turns','dmm'])if(p[kk]!==undefined)t[kk]=p[kk];if(fitsHere(t,o,rects))return t;}continue;}
+    if(p.t==='px'){const k=p.kind,dip=PX[k].lay==='dip';for(const r of dip?['e']:['c','h']){const ids=pxHolesAt(k,Bd.id,r,c);if(!ids||ids.some(id=>o.has(id)))continue;const t=Object.assign({t:'px',kind:k,pins:ids},PX[k].init());for(const kk of ['ohms','pos','s','bits','taper','cv','henry','turns','dmm','lux','temp','force','jx','jy','mag','hm','gas','th','db','wet','cm','hold','obs','tilt','hum','hpa','pitch','roll','src','col','txt','lc','con','blon','bri','act'])if(p[kk]!==undefined)t[kk]=p[kk];if(fitsHere(t,o,rects))return t;}continue;}
     if(p.t==='led3'){if(c+2>N_||![0,1,2].every(k=>emptyStrip(Bd.id,c+k,true)))continue;const t={t:'led3',pins:[0,1,2].map(k=>pref(Bd.id)+'c'+(c+k)),ca:!!p.ca};if(fitsHere(t,o,rects))return t;continue;}
     if(p.t==='clk'){if(!emptyStrip(Bd.id,c,true))continue;const t={t:'clk',pins:[pref(Bd.id)+'c'+c],hz:p.hz||1};if(fitsHere(t,o,rects))return t;continue;}
     if(!emptyStrip(Bd.id,c,true)||!emptyStrip(Bd.id,c,false))continue;
@@ -7387,7 +7831,7 @@ function schPlaceOnBoard(p){const B=S.boards[0],pt={x:B.x+bW(B.type)/2,y:B.y+MID
 /* ── 브레드보드로 보내기: 회로도 → 부품·연결 목록 → 자동 배치 ── */
 function schToSpec(){const LB=schLabels(),parts=[],refOf=new Map(),errors=[];
   for(const p of SCH.parts){if(isSchSym(p))continue;const ref=LB.get(p.id).replace(/[^A-Za-z0-9_]/g,'');refOf.set(p.id,ref);
-    const it={ref,t:p.t};for(const k of ['chip','kind','ohms','color','farad','on','hz','ca','pos','s','bits','taper','pw','mat','tol','dk','vr','lk','pk','ln','lc','pat','cv','henry','turns','dmm'])if(p[k]!==undefined)it[k]=p[k];parts.push(it);}
+    const it={ref,t:p.t};for(const k of ['chip','kind','ohms','color','farad','on','hz','ca','pos','s','bits','taper','pw','mat','tol','dk','vr','lk','pk','ln','lc','pat','cv','henry','turns','dmm','lux','temp','force','jx','jy','mag','hm','gas','th','db','wet','cm','hold','obs','tilt','hum','hpa','pitch','roll','src','col','txt','lc','con','blon','bri','act'])if(p[k]!==undefined)it[k]=p[k];parts.push(it);}
   const N=schNets(false),groups=new Map();
   for(const p of SCH.parts){const ks=p.t==='seg7'?[0,1,2,3,4,5,6,8,9]:symOf(p).pins.map(q=>q.k);
     for(const k of ks){const n=N.net(p.id,k);if(!groups.has(n))groups.set(n,{pins:[],vcc:false,gnd:false,wired:false});const G=groups.get(n);
@@ -7449,7 +7893,7 @@ function boardToSch(auto){const comps=S.comps.filter(c=>c.t!=='wire'&&!INST.has(
   // 처음 그릴 때 부품이 많으면: 종류별 세로줄이 너무 길어지지 않게 높이 LIM에서 다음 줄로 넘긴다(종류 묶음은 왼쪽→오른쪽)
   const flow=first&&comps.length>14,LIM=Math.max(700,Math.sqrt(comps.length)*150);let fx=0,fy=0,fw=0,fk=-1;
   for(const c of [...comps].sort((a,b)=>col(a)-col(b))){const p=Object.assign({id:nid++,x:X_[col(c)],y:0,rot:0,bid:c.id},schNew(c.t==='ic'?'ic:'+c.chip:c.t==='gate'?'gate:'+c.kind:c.t==='px'?'px:'+c.kind:c.t));
-    for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','cv','henry','turns','dmm','pw','mat','tol','dk','vr','ser'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
+    for(const k of ['ohms','color','farad','on','hz','ca','lk','pk','ln','lc','pat','pos','s','bits','taper','cv','henry','turns','dmm','lux','temp','force','jx','jy','mag','hm','gas','th','db','wet','cm','hold','obs','tilt','hum','hpa','pitch','roll','src','col','txt','lc','con','blon','bri','act','pw','mat','tol','dk','vr','ser'])if(c[k]!==undefined)p[k]=c[k];const o=keep.get(c.id);
     if(sameKind(o,c)){p.x=o.x;p.y=o.y;p.rot=o.rot||0;}
     else if(flow){const s=symOf(p),k=col(c);if(k!==fk){if(fk>=0){fx+=fw+260;}fy=0;fw=0;fk=k;}
       if(fy>0&&fy+2*s.h>LIM){fx+=fw+260;fy=0;fw=0;}p.x=snapG(fx+s.w);p.y=snapG(fy+s.h+10);fy=p.y+s.h+80;fw=Math.max(fw,2*s.w);}
@@ -8615,6 +9059,7 @@ const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':'
     const clks=S.comps.filter(c=>c.t==='clk'||c.t==='fg'),caps=S.comps.some(c=>c.t==='cap'),oscs=S.comps.some(c=>c.t==='osc');
     const ana=caps||S.comps.some(c=>c.t==='fg'&&fgOn(c).some(x=>x.q.wave!=='sq')); // 전압이 연속으로 바뀌는 회로
     if(S.comps.some(c=>c.t==='led'&&c.lk==='blink'&&(SIM.led.get(c.id)||{}).lit)){const bp=Math.floor(now*3)%2;if(bp!==blinkPh){blinkPh=bp;render();}}
+    {const pk=S.comps.filter(c=>c.t==='px'&&PX[c.kind]&&PX[c.kind].tick).map(c=>PX[c.kind].tick(c,rt(c),now)).join('|');if(pk!==lastPk){lastPk=pk;settle();render();}}   /* 센서 시간 동작·화면 데모·서보·모터 */
     const timed=S.comps.some(c=>c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].timed);
     if(S.comps.some(c=>c.t==='spa'))spaTick(now);
     if(!clks.length&&!SIM.unstable&&!SIM.buzz&&!caps&&!oscs&&!timed)return;
@@ -8629,7 +9074,7 @@ const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':'
   function updScopes(){for(const c of S.comps){if(c.t!=='osc')continue;const g=gC.querySelector(`g[data-id="${c.id}"]`);if(!g)continue;const o=oscTrace(c);
       const set=(q,f)=>{const el=g.querySelector(q);if(el)f(el);};
       for(let k=0;k<4;k++){set('.tr'+(k+1),el=>el.setAttribute('d',o.d[k]));set('.om'+(k+1),el=>el.textContent='CH'+(k+1)+' '+o.meas[k]);}}}
-  let lastOut='',frame=0;
+  let lastOut='',frame=0,lastPk='';
   function snapOut(){return S.comps.map(c=>c.t==='ic'?(rt(c).out||[]).join(''):c.t==='led'?+((SIM.led.get(c.id)||{}).lit||0):c.t==='dmm'?(rt(c).rd||{}).t:'').join('|');}
   // 단락 전선 깜박임
 })();
