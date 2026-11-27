@@ -3,7 +3,7 @@ const {chromium}=require('playwright');const path=require('path');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:850}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(900);
 await p.evaluate(()=>{const t=document.getElementById('tut');if(t&&!t.hidden&&typeof endTut==='function')endTut(true);});
-const res=await p.evaluate(()=>{const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,msg:msg||''});
+const res=await p.evaluate(()=>{opt.tol=false;const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,msg:msg||''});
   const NEW=['q3055','q2955','q2222m','q2907m','qp39','q18s','jfn','jfn92','d914','d5711','d4004','oa2j','oa4j','oa2n','oa2b','oa4','oa1p','cmp2','reg317','dac10','cpu64','batt','byto','bytx','bconv','bfilt','bif','bref','bcrt','ctrim','cfeed','indv','xfmr','xflb','xtal21','xtal10','dpin','dvar','dzref','eprom','sram','gpib','coax','rlyrf','edge','rpg','kp44','fuse','ntc','tco','fan','emif'];
   const st=()=>{for(let i=0;i<6;i++)settle();};
   const load=()=>{setVM('bb');const ex=EXAMPLES.paana();S.power=true;loadComps(ex.comps,false,ex.boards);orthoWires();RT.clear();commit(true);st();};load();

@@ -4542,7 +4542,7 @@ function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}<
    저항: 오차(색띠 허용 오차 안에서 부품마다 정해짐), 소비 전력 P = V²/R — 정격을 넘으면 뜨겁고 2배를 넘으면 타서 끊어진다
    커패시터: 오차(유전체별), X7R 직류 전압에 따른 용량 감소, ESR(직렬 내부 저항), 누설 전류(병렬 저항),
              정격 전압 1.3배를 넘으면 고장(단락), 전해·탄탈을 거꾸로 걸면 크게 샌다. 부품을 [새 부품으로 바꾸기] 하면 되살아난다 */
-const partSeed=c=>{let h=2166136261;const k=(c.pins||[]).join('|')+'|'+c.t;for(let i=0;i<k.length;i++)h=Math.imul(h^k.charCodeAt(i),16777619);return((h>>>0)%20001)/10000-1;};   // -1 ~ 1, 꽂은 자리로 늘 같다
+const partSeed=c=>{if(opt.tol===false)return 0;let h=2166136261;const k=(c.pins||[]).join('|')+'|'+c.t;for(let i=0;i<k.length;i++)h=Math.imul(h^k.charCodeAt(i),16777619);return((h>>>0)%20001)/10000-1;};   // -1 ~ 1, 꽂은 자리로 늘 같다
 const resTol=c=>(c.tol||RESMAT[c.mat||'carbon'][3])/100;
 const resEff=c=>{const r=rt(c);if(r.burnt)return 1e12;return c.ohms*(1+resTol(c)*.6*partSeed(c));};
 const resPw=c=>+(c.pw||.25);
@@ -4573,7 +4573,7 @@ function partLive(c){const r=rt(c);let h='';
   if(c.t==='res'){const R=resEff(c);h=`실제 값 <b>${ohmTx(+R.toPrecision(4))}</b> (표시 ${ohmTx(c.ohms)}, 오차 ±${(resTol(c)*100).toFixed(0)}% 안) · 전류 <b>${fmtA(r.i||0)}</b> · 전력 <b>${fmtW(r.p||0)}</b> / 정격 ${fmtW(resPw(c))}`+(r.burnt?' · <b style="color:var(--bad)">탐(끊어짐)</b>':(r.p||0)>resPw(c)?' · <b style="color:var(--warn)">뜨거움</b>':'');}
   else if(c.t==='cap'){const C=capEff(c),V=r.vc??r.v??0;h=`실제 용량 <b>${capTx(+C.toPrecision(3))}</b> (표시 ${capTx(c.farad)}, 오차 ±${((CAPTOL[capDk(c)]||.1)*100).toFixed(0)}%${capDk(c)==='x7r'?', 걸린 전압만큼 줄어듦':''}) · 전압 <b>${V.toFixed(2)}V</b> / 정격 ${capVr(c)}V · ESR ${ohmTx(+capEsr(c).toPrecision(2))} · 누설 ${fmtA(Math.abs(V)/capLeak(c))} · 저장 에너지 ${fmtW(.5*C*V*V).replace('W','J')}`
     +(r.fail?' · <b style="color:var(--bad)">고장(단락)</b>':r.rev?' · <b style="color:var(--bad)">거꾸로 꽂힘</b>':Math.abs(V)>capVr(c)?' · <b style="color:var(--warn)">정격 초과</b>':'');}
-  if(!h)return'';return`<div class="prop"><label>계산 결과 (실제 특성)</label><p class="desc" style="margin:0">${h}</p>${r.burnt||r.fail?'<button class="btn" id="partNew" style="margin-top:6px">새 부품으로 바꾸기</button>':''}</div>`;}
+  if(!h)return'';return`<div class="prop"><label>계산 결과 (실제 특성)</label><p class="desc" style="margin:0">${h}</p><div class="row" style="margin-top:6px">${r.burnt||r.fail?'<button class="btn" id="partNew">새 부품으로 바꾸기</button>':''}<button class="btn" id="partTol" title="모든 저항·커패시터에 적용">부품 오차 반영: ${opt.tol===false?'꺼짐 (이상적인 값)':'켜짐'}</button></div></div>`;}
 function propEditor(c){
   if(INST.has(c.t))return instProps(c);
   if(c.t==='wire')return`<div class="prop"><label>전선 색</label><div class="sw" id="pc">${WIRE_COLORS.map(col=>`<button style="background:${col}" data-v="${col}" aria-pressed="${c.color===col}" aria-label="색"></button>`).join('')}</div></div>`;
@@ -4639,6 +4639,7 @@ function bindProps(c){
    const pcc=$('pcLc');if(pcc)pcc.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.lc=b.dataset.v;commit(true);});
    const pcp=$('pcPat');if(pcp)pcp.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();c.pat=b.dataset.v;commit(true);});}
   {const q=id=>$(id),btns=(id,fn)=>{const e=q(id);if(e)e.querySelectorAll('button').forEach(b=>b.onclick=()=>{pushHist();fn(b.dataset);commit(true);});};
+   {const pt=q('partTol');if(pt)pt.onclick=()=>{opt.tol=opt.tol===false?true:false;store.set('opt',opt);settle();render();renderInfo();toast(opt.tol===false?'부품 오차를 껐어요 — 표시된 값 그대로 계산해요':'부품 오차를 켰어요 — 실제 부품처럼 조금씩 달라요');};}
    {const pn=q('partNew');if(pn)pn.onclick=()=>{const r=rt(c);delete r.burnt;delete r.fail;delete r.rev;r.v=0;settle();render();renderInfo();toast('새 부품으로 바꿨어요');};}
    if(c.t==='res'){const ri=q('rIn'),rs=q('rSer');if(ri)ri.onchange=()=>{const v=parseOhm(ri.value);if(!v){toast('값을 알아볼 수 없어요(예: 4.7k, 330, 2M2)');return;}pushHist();c.ohms=snapE(v,c.ser||'E24');toast(`${ohmTx(+v.toPrecision(3))} → ${c.ser||'E24'} 표준값 ${ohmTx(c.ohms)}`);commit(true);};
      if(rs)rs.onchange=()=>{pushHist();c.ser=rs.value;c.ohms=snapE(c.ohms,c.ser);commit(true);};
@@ -6594,7 +6595,7 @@ Object.assign(EXAMPLES,{
     const U=K.px('oa1p',2,null,3),Q1=K.px('q2222m',2,'c',10),Q2=K.px('q3055',2,'c',15),DY=K.px('d4004',2,'h',20),Y=K.px('byto',2,'c',26),RF=K.px('bref',2,'h',30);
     K.add({t:'cap',pins:[K.hole(U(7)),K.hole(U(5))],farad:3e-11,dk:'c0g'});                               // C201 30pF 위상 보상(COMP–OUT)
     K.vcc(U(6));K.gnd(U(3));K.link(U(5),Q1(1));K.vcc(Q1(2));K.link(Q1(0),Q2(0));K.link(Q2(1),U(1));       // OUT → Q201 B, Q201 E → Q202 B, Q202 E = YTO_ISENSE → IN−
-    K.add({t:'res',pins:[K.hole(U(1)),K.rail(2,'bn',4)],ohms:10,pw:5,mat:'wire'});                       // R201 감지 저항(시뮬레이션 보기 좋게 10Ω)
+    K.add({t:'res',pins:[K.hole(U(1)),K.rail(2,'bn',4)],ohms:47,pw:5,mat:'wire'});                       // R201 감지 저항(47Ω 5W: 11V에서 2.6W라 타지 않음)
     const CN=K.at(2,false,26);K.add({t:'res',pins:[K.rail(2,'bp',26),K.hole(CN)],ohms:5,pw:5,mat:'wire'});                       // YIG 메인 코일 대신 5Ω(직류 저항)
     K.link(Q2(2),CN);K.link(DY(0),CN);K.vcc(DY(1));K.vcc(Y(2));K.vcc(Y(9));K.link(Y(8),CN);K.gnd(Y(1));K.vcc(RF(2));K.gnd(RF(3));   // 플라이백 다이오드, YTO +20V·TUNE±, 기준 발진기
     K.link(Y(0),C(1));K.link(Y(0),X(1));K.link(RF(0),C(2));                                               // LO1_YTO_RF → 변환 체인·YIG 믹서, REF_10MHZ → 변환 체인

@@ -16,6 +16,7 @@ const VERBOSE = process.argv.includes('-v');
 const FILE = path.join(__dirname, '..', 'index.html');
 
 function inPage() {
+  opt.tol = false;   // 공식 확인: 부품 오차 끔
   const R = [];   // {grp, part, ok, msg}
   const rec = (grp, part, ok, msg) => R.push({ grp, part, ok: !!ok, msg: msg || '' });
   const near = (a, b, tol) => Math.abs(a - b) <= tol;
