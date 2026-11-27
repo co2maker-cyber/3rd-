@@ -1,4 +1,4 @@
-# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 31차)
+# HANDOFF — 브레드보드 CAD 시뮬레이터 (2026-11-27, 32차)
 
 ## 목표
 - `co2maker-cyber/3rd-`의 `breadboard/index.html`(단일 HTML, 약 9000줄): 브레드보드+회로도+PCB 편집·시뮬레이터. 사용자 요청마다 기능·부품·예제 추가
@@ -18,6 +18,8 @@
 ✓ 30차 코일 임피던스: 인덕터 `thru` 합치기 없앰(`d.ind`면 settle 합치기 건너뜀) → `indL` 후진 오일러(R=DCR, L 오차 ±10% `indModel`, 병렬 손실 `IND_RP` 100k), 포화 `indImaxOf` 넘으면 L 줄어듦·경고, 역전압 `vpk`(끊길 때 바깥 저항 Rth를 `A0`로 따로 풀어 i×min(Rth,√(L/C)), `IND_CP` 20pF), 코일 있으면 시간 단계 L/(R+1000)/4·최대 240. 함수 발생기 잘게 나눈 단계마다 다시 읽음. `gsolve` 분리. 속성 `indLive`(|Z|·위상·FG 주파수·공진 f₀·전류). LED 과전류 경고는 계산 전류 `ai`로. 시험 tests/ui/coil.js
 
 ✓ 31차 계측기: 도구 막대에 '도구' 묶음(`.instg`, psu·bat·fg·osc·spa, 두 번 누르면 놓임·끌어 놓기). psu 3채널(단자 6개, CH1 = `c.v`·`c.on`, CH2·3 = `c.ch[0..1]` {v,on}, −100~100V, − 공통 접지, `psuChs`), fg 3채널(단자 6개, `c.ch` {wave,hz,vpp,off,duty,ph,on}, 위상 `ph`, `fgChs`·`fgOn`, [3상 만들기]), osc 4채널(단자 4개, `vdiv2~4` `pos1~4` `ph1~4` `on1~4` `split` 4분할, `oscTrace` 위상차 측정 CH1 기준). 속성 채널 탭 `INSTSEL`·`chTabs`, 필드 이름 '채널:칸'(`instObj`). 예전 파일은 CH1로 열림. 시험 tests/ui/inst3.js. 코일 역전압 추정은 |i|>5mA일 때만
+
+✓ 32차 멀티미터 `dmm`(INST, 단자 0 COM·1 VΩ·2 A, `mode` v·a·o): 전압 VΩ−COM, 전류 A→COM 0.1Ω 션트(`dmmSh`, 논리 `res`·아날로그 `Rl`), 10A 넘으면 `rt.fuse`(속성 [퓨즈 갈기]), 저항은 수동 소자망(저항·pxR·코일 DCR·션트)을 `gsolve`로 따로 풂(OL). 잘못 꽂은 단자·전원 걸린 저항 측정 경고. 읽기 `rt.rd`, 화면 갱신 `snapOut`. 속성 창 부품 설명은 맨 밑(`.pdesc`). 시험 tests/ui/dmm.js
 
 ## 결정사항
 - 제품 상표·로고 안 씀, "UNO/Nano 폼팩터 호환 보드 · 특징"으로 이름 — COPYRIGHT 2절, 8절 기록

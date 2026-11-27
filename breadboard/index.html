@@ -539,6 +539,7 @@ body.planon .cbar{display:none}
       <button class="tbtn" data-tool="bat" data-ico="bat" title="건전지 (1.5 ~ 9V)">건전지</button>
       <button class="tbtn" data-tool="fg" data-ico="fg" title="함수 발생기 (채널 3개, 채널마다 파형·주파수·크기·위상)">함수 발생기</button>
       <button class="tbtn" data-tool="osc" data-ico="osc" title="오실로스코프 (채널 4개, 4분할 그래프·채널별 위상 이동·위상차 측정)">오실로스코프</button>
+      <button class="tbtn" data-tool="dmm" data-ico="dmm" title="멀티미터: 전압(VΩ·COM)·전류(A·COM 직렬)·저항(VΩ·COM)을 재요">멀티미터</button>
       <button class="tbtn" data-tool="spa" data-ico="spa" title="스펙트럼 분석기 (주파수별 신호 세기)">스펙트럼</button>
     </div>
     <div class="grp">
@@ -1291,9 +1292,10 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `osc` | 오실로스코프 (채널 4개) | `tdiv`, `vdiv` `vdiv2` `vdiv3` `vdiv4`, `pos1`~`pos4`(0V 자리, 칸), `ph1`~`ph4`(위상 이동 °), `on1`~`on4`, `split`(true 4분할 / false 겹침), `run` | CH1 | CH2 (단자 2 = CH3, 3 = CH4) |
 | `auno3` `aunor4m` `aunor4w` `aleo` | 아두이노 호환 · UNO 폼팩터(보드 밖, 68.6 × 53.4mm) | `usb`(1 꽂음, 0 뺌) | 헤더 32개 | 단자 순서: 위 왼쪽 SCL SDA AREF GND D13~D8, 위 오른쪽 D7~D0, 아래 NC IOREF RESET 3.3V 5V GND GND VIN, A0~A5 |
 | `amega` `adue` `agiga` | 아두이노 호환 · Mega 폼팩터(보드 밖, 101.5 × 53.3mm) | `usb` | 헤더 84개 | UNO 32개 + D14~D21 + A8~A15(또는 A8~A11 DAC0 DAC1 CANRX CANTX) + 2×18(5V 5V, D22 D23 … D52 D53, GND GND) |
+| `dmm` | 멀티미터 | `mode`(`v` 직류 전압 · `a` 직류 전류 · `o` 저항) | COM | VΩ (단자 2 = A) |
 | `spa` | 스펙트럼 분석기 | `cf`(가운데 Hz), `span`(Hz), `ref`(dBm), `dbd`(dB/칸), `rbw`·`vbw`(Hz, 0 = 자동), `att`(dB, −1 = 자동), `swt`(초, 0 = 자동), `hold`(1 = 최대값 유지), `cal`(1 = 내부 교정 신호), `run` | RF IN | — |
 
-- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 200×150, bat 130×74, fg 220×150, osc 290×250, spa 310×250, UNO 폼팩터 540×420, Mega 폼팩터 799×420. 아두이노 호환 보드의 단자 이름은 부품 정보 창에 나와요.
+- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 200×150, bat 130×74, fg 220×150, osc 290×250, spa 310×250, dmm 150×214, UNO 폼팩터 540×420, Mega 폼팩터 799×420. 아두이노 호환 보드의 단자 이름은 부품 정보 창에 나와요.
 - `k`: 계측기마다 다른 번호(1, 2, 3 …). 단자 구멍 이름은 **`@k:번호`** 예요(`@1:0` = 1번 계측기의 + 단자, 파워 서플라이 `@1:2` = CH2 +).
 - 파워 서플라이·함수 발생기의 − / GND 단자는 모두 공통 접지(0V)예요. 꺼진 채널(`on`: false)은 아무것도 내보내지 않아요. 예전 파일(채널 1개)은 그대로 CH1이 되고 CH2·CH3은 꺼진 채로 열려요.
 - 5V가 아닌 전압은 자동 5V 레일과 섞이지 않게 **레일 말고 보드 줄(a~j)** 로 이어 쓰세요.
@@ -1335,7 +1337,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 불러오기는 문제 있는 부품을 **조용히 빼고** 나머지만 꽂아요. 부품 수가 모자라면 아래를 보세요.
 
-- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa` `auno3` `aunor4m` `aunor4w` `aleo` `amega` `adue` `agiga`)
+- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa` `dmm` `auno3` `aunor4m` `aunor4w` `aleo` `amega` `adue` `agiga`)
 - [ ] `ic`의 `chip`이 부록 표에 없다 / `gate`의 `kind`가 7가지가 아니다 / `px`의 `kind`가 표에 없다
 - [ ] 구멍 이름이 없다 — 레일 6의 배수 열, 보드 열 수를 넘음, `mini` 보드의 레일, 없는 보드 번호
 - [ ] 두 부품이 같은 구멍을 쓴다 (전선도 부품이에요)
@@ -3179,20 +3181,21 @@ const HZ=[0.5,1,2,4,10];
 const BAND=['#111','#7B4A1E','#D33','#F07A00','#E8D100','#2A2','#24D','#82C','#888','#FFF'];
 const ohmTx=o=>o>=1e6?(o/1e6)+'MΩ':o>=1000?(o/1000)+'kΩ':o+'Ω';
 const bands=o=>{const s=String(o);return[BAND[+s[0]],BAND[+s[1]],BAND[s.length-2],'#C9A227'];};
-const PREFIX={px:'X',led3:'D',psu:'PS',bat:'BAT',fg:'FG',osc:'OSC',spa:'SA',cap:'C',gate:'G',ic:'U',seg7:'DS',wire:'W',res:'R',led:'D',btn:'BTN',sw:'SW',clk:'CLK'};
-const TNAME={px:'수동 소자·스위치',led3:'2색 LED (3핀)',cap:'커패시터',wire:'전선',res:'저항',led:'LED',btn:'푸시 버튼',sw:'토글 스위치',clk:'클럭 발생기',seg7:'7세그먼트 표시기',psu:'파워 서플라이',bat:'건전지',fg:'함수 발생기',osc:'오실로스코프',spa:'스펙트럼 분석기'};
+const PREFIX={dmm:'DMM',px:'X',led3:'D',psu:'PS',bat:'BAT',fg:'FG',osc:'OSC',spa:'SA',cap:'C',gate:'G',ic:'U',seg7:'DS',wire:'W',res:'R',led:'D',btn:'BTN',sw:'SW',clk:'CLK'};
+const TNAME={px:'수동 소자·스위치',led3:'2색 LED (3핀)',cap:'커패시터',wire:'전선',res:'저항',led:'LED',btn:'푸시 버튼',sw:'토글 스위치',clk:'클럭 발생기',seg7:'7세그먼트 표시기',psu:'파워 서플라이',bat:'건전지',fg:'함수 발생기',osc:'오실로스코프',spa:'스펙트럼 분석기',dmm:'멀티미터'};
 const TWO=new Set(['wire','res','led','btn','sw','cap']);
 /* 계측기·건전지: 몸통은 보드 밖 아무 데나(c.x,c.y) 놓이고, 몸통의 단자가 구멍 노릇을 한다.
    단자 구멍의 이름은 '@열쇠:번호'(c.k = 계측기마다 다른 번호)이고, 보통 전선으로 보드 구멍과 잇는다. */
-const INST=new Set(['psu','bat','fg','osc','spa']);
-const ISZ={psu:[200,150],bat:[130,74],fg:[220,150],osc:[290,250],spa:[310,250]};
+const INST=new Set(['psu','bat','fg','osc','spa','dmm']);
+const ISZ={dmm:[150,214],psu:[200,150],bat:[130,74],fg:[220,150],osc:[290,250],spa:[310,250]};
 /* 파워 서플라이·함수 발생기: 채널 3개가 위아래 줄로(줄마다 왼쪽 + / OUT, 오른쪽 − / GND). 단자 번호 = 채널×2 (+ / OUT), 채널×2+1 (− / GND) — 1번 채널은 예전 파일의 0·1번 단자와 같다
    오실로스코프: 위쪽에 CH1~CH4 탐침 단자 4개 (0~3번) */
 const IROWY=i=>34+i*38+17,OSC_COL=['#F2C230','#35B6E8','#E05CD8','#4BE38A'];
-const IJACK={psu:[0,1,2].flatMap(i=>[[16,IROWY(i),'#E5484D','CH'+(i+1)+' +',0,1],[184,IROWY(i),'#59606B','CH'+(i+1)+' −',1,1]]),bat:[[18,16,'#E5484D','+'],[112,16,'#59606B','−',1]],fg:[0,1,2].flatMap(i=>[[16,IROWY(i),'#F08C00','OUT'+(i+1),0,1],[204,IROWY(i),'#59606B','GND'+(i+1),1,1]]),osc:[0,1,2,3].map(i=>[22+i*40,16,OSC_COL[i],'CH'+(i+1)]),spa:[[28,16,'#5CFF8F','RF IN']]};
-const JWIRE={psu:['#D93A3A','#24282D','#D93A3A','#24282D','#D93A3A','#24282D'],bat:['#D93A3A','#24282D'],fg:['#E57A1F','#24282D','#E57A1F','#24282D','#E57A1F','#24282D'],osc:['#E8B820','#2F6FDB','#C04FC0','#2FBF71'],spa:['#2FBF71']}; // 단자에서 뽑는 전선의 기본 색
+const IJACK={psu:[0,1,2].flatMap(i=>[[16,IROWY(i),'#E5484D','CH'+(i+1)+' +',0,1],[184,IROWY(i),'#59606B','CH'+(i+1)+' −',1,1]]),bat:[[18,16,'#E5484D','+'],[112,16,'#59606B','−',1]],fg:[0,1,2].flatMap(i=>[[16,IROWY(i),'#F08C00','OUT'+(i+1),0,1],[204,IROWY(i),'#59606B','GND'+(i+1),1,1]]),osc:[0,1,2,3].map(i=>[22+i*40,16,OSC_COL[i],'CH'+(i+1)]),spa:[[28,16,'#5CFF8F','RF IN']],
+  dmm:[[75,194,'#59606B','COM',0,1],[122,194,'#E5484D','VΩ',0,1],[28,194,'#F2C230','A',0,1]]};   // 멀티미터: 0 COM(기준, −), 1 VΩ(전압·저항 +), 2 A(전류 +)
+const JWIRE={psu:['#D93A3A','#24282D','#D93A3A','#24282D','#D93A3A','#24282D'],bat:['#D93A3A','#24282D'],fg:['#E57A1F','#24282D','#E57A1F','#24282D','#E57A1F','#24282D'],osc:['#E8B820','#2F6FDB','#C04FC0','#2FBF71'],spa:['#2FBF71'],dmm:['#24282D','#D93A3A','#E8B820']}; // 단자에서 뽑는 전선의 기본 색
 const PSU2=()=>[{v:12,on:false},{v:3.3,on:false}],FG2=()=>[{wave:'sin',hz:1,vpp:5,off:0,duty:50,ph:120,on:false},{wave:'sin',hz:1,vpp:5,off:0,duty:50,ph:240,on:false}];
-const IDEF={psu:()=>({v:5,on:true,ch:PSU2()}),bat:()=>({v:9}),fg:()=>({wave:'sq',hz:1,vpp:5,off:0,duty:50,ph:0,on:true,ch:FG2()}),osc:()=>({tdiv:.5,vdiv:2,vdiv2:2,vdiv3:2,vdiv4:2,pos1:1.75,pos2:3.75,pos3:5.75,pos4:7.75,ph1:0,ph2:0,ph3:0,ph4:0,on1:true,on2:true,on3:true,on4:true,split:true,run:true}),spa:()=>({cf:1000,span:2000,ref:20,dbd:10,rbw:0,vbw:0,att:-1,swt:0,hold:0,cal:0,run:true})};
+const IDEF={dmm:()=>({mode:'v'}),psu:()=>({v:5,on:true,ch:PSU2()}),bat:()=>({v:9}),fg:()=>({wave:'sq',hz:1,vpp:5,off:0,duty:50,ph:0,on:true,ch:FG2()}),osc:()=>({tdiv:.5,vdiv:2,vdiv2:2,vdiv3:2,vdiv4:2,pos1:1.75,pos2:3.75,pos3:5.75,pos4:7.75,ph1:0,ph2:0,ph3:0,ph4:0,on1:true,on2:true,on3:true,on4:true,split:true,run:true}),spa:()=>({cf:1000,span:2000,ref:20,dbd:10,rbw:0,vbw:0,att:-1,swt:0,hold:0,cal:0,run:true})};
 const PSU_V=[3.3,5,9,12,24,48,100],PSU_MAX=100,BAT_V=[1.5,3,4.5,6,9],FG_HZ=[0.5,1,2,5,10],FG_VPP=[1,3.3,5],OSC_T=[.05,.1,.2,.5,1],OSC_V=[1,2,5,10,20,50];
 const batName=v=>v===9?'9V 사각 건전지':'AA 건전지 '+Math.round(v/1.5)+'개';
 const isTerm=id=>typeof id==='string'&&id[0]==='@';
@@ -3203,6 +3206,10 @@ const psuChs=c=>c.t==='bat'?[{v:+c.v||0,on:true,p:0,m:1,i:0}]:[0,1,2].map(i=>{co
 // 함수 발생기 채널: {q 설정(wave·hz·vpp·off·duty·ph), on, o(OUT 단자), g(GND 단자), i}
 const fgChs=c=>[0,1,2].map(i=>{const q=instCh(c,i);return{q,on:q.on!==false,o:2*i,g:2*i+1,i};});
 const fgOn=c=>fgChs(c).filter(x=>x.on);
+/* 멀티미터: 모드 v 직류 전압(VΩ − COM), a 직류 전류(A → COM, 안의 션트 0.1Ω로 회로에 직렬로 끼움, 10A 넘으면 퓨즈가 끊김), o 저항(VΩ ~ COM 사이 저항망을 풀어 계산) */
+const DMM_MODES={v:'직류 전압 V⎓',a:'직류 전류 A⎓',o:'저항 Ω'},DMM_SHUNT=.1,DMM_FUSE=10;
+const dmmFmt=(m,x)=>{if(x==null)return'---';if(m==='o'){if(!Number.isFinite(x)||x>4e7)return'OL';return x<1e3?x.toFixed(x<100?2:1)+' Ω':x<1e6?(x/1e3).toPrecision(4)+' kΩ':(x/1e6).toPrecision(4)+' MΩ';}
+  const a=Math.abs(x),sg=x<0?'−':'';if(m==='a')return a<1e-3?sg+(a*1e6).toFixed(1)+' µA':a<1?sg+(a*1e3).toFixed(a<.01?3:a<.1?2:1)+' mA':sg+a.toFixed(3)+' A';return a<1?sg+(a*1e3).toFixed(1)+' mV':sg+a.toFixed(a<10?3:a<100?2:1)+' V';};
 const termIds=c=>IJACK[c.t].map((_,i)=>'@'+c.k+':'+i);
 const newKey=()=>Math.max(0,...S.comps.filter(c=>INST.has(c.t)).map(c=>+c.k||0))+1;
 const WAVES={sq:'구형파',sin:'사인파',tri:'삼각파',saw:'톱니파'};
@@ -3463,7 +3470,7 @@ function pinHoles(c){
   if(c.t==='ic'||c.t==='seg7'){const n=c.t==='ic'?CHIPS[c.chip].pins.length:10,h=n/2,a=[];
     const pf=pref(c.b||1);for(let k=0;k<n;k++)a.push(k<h?pf+'f'+(c.col+k):pf+'e'+(c.col+n-1-k));return a;}
   return c.pins;}
-const pinNames=c=>c.t==='px'?PX[c.kind].pins:c.t==='led3'?(c.ca?['빨강 캐소드(R)','공통 애노드(A)','초록 캐소드(G)']:['빨강 애노드(R)','공통 캐소드(K)','초록 애노드(G)']):c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:c.t==='bat'?['+ 단자','− 단자(GND)']:c.t==='psu'?[1,2,3].flatMap(i=>[`CH${i} + 단자`,`CH${i} − 단자(GND)`]):c.t==='fg'?[1,2,3].flatMap(i=>[`CH${i} 출력(OUT${i})`,`CH${i} GND`]):c.t==='osc'?[1,2,3,4].map(i=>`CH${i} 탐침 단자`):c.t==='spa'?['RF IN 단자']:ARDX[c.t]?ARDX[c.t].hdr.map(h=>h[2]+' 단자'):['1','2'];
+const pinNames=c=>c.t==='px'?PX[c.kind].pins:c.t==='led3'?(c.ca?['빨강 캐소드(R)','공통 애노드(A)','초록 캐소드(G)']:['빨강 애노드(R)','공통 캐소드(K)','초록 애노드(G)']):c.t==='ic'||c.t==='gate'?defOf(c).pins:c.t==='seg7'?SEG7PINS:c.t==='led'?['애노드(+)','캐소드(−)']:c.t==='cap'?['+ 극','− 극']:c.t==='clk'?['출력']:c.t==='bat'?['+ 단자','− 단자(GND)']:c.t==='psu'?[1,2,3].flatMap(i=>[`CH${i} + 단자`,`CH${i} − 단자(GND)`]):c.t==='fg'?[1,2,3].flatMap(i=>[`CH${i} 출력(OUT${i})`,`CH${i} GND`]):c.t==='osc'?[1,2,3,4].map(i=>`CH${i} 탐침 단자`):c.t==='dmm'?['COM 단자(기준 −)','VΩ 단자(전압·저항 +)','A 단자(전류 +)']:c.t==='spa'?['RF IN 단자']:ARDX[c.t]?ARDX[c.t].hdr.map(h=>h[2]+' 단자'):['1','2'];
 /* 구멍 → 꽂힌 부품. 계측기 단자에는 전선을 여러 가닥 물릴 수 있어서 차지한 것으로 치지 않는다 */
 function occ(except){const m=new Map();for(const c of S.comps){if(c.id===except)continue;for(const h of pinHoles(c))if(!isTerm(h))m.set(h,c.id);}return m;}
 function labels(){const cnt={},m=new Map();for(const c of S.comps){const p=c.t==='px'?PX[c.kind].pre:c.t==='ic'&&CHIPS[c.chip]&&CHIPS[c.chip].disp?'DS':PREFIX[c.t];cnt[p]=(cnt[p]||0)+1;m.set(c.id,p+cnt[p]);}return m;}
@@ -3508,7 +3515,9 @@ function settle(){
   const pxR=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].res){const hs=ph.get(c.id);for(const [i,j,o] of PX[c.kind].res(c))pxR.push([netOf[hs[i]],netOf[hs[j]],o]);}
   // 코일·인덕터: 선 저항(DCR) + 인덕턴스 L. {c, r, a, b, L(포화 반영), R}
   const indL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ind&&PX[c.kind].thru){const hs=ph.get(c.id),m=indModel(c),r=rt(c),im=indImaxOf(c),ia=Math.abs(r.iL||0);indL.push({c,r,a:netOf[hs[0]],b:netOf[hs[1]],L:ia>im?m.L*im/ia:m.L,R:m.R});}
-  const res=[...indL.map(e=>[e.a,e.b]),...S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
+  // 멀티미터 전류 모드: A 단자와 COM 사이에 0.1Ω 션트(퓨즈가 끊기면 열림)
+  const dmmSh=[];for(const c of S.comps)if(c.t==='dmm'&&c.mode==='a'&&!rt(c).fuse){const hs=ph.get(c.id);dmmSh.push([netOf[hs[2]],netOf[hs[0]]]);}
+  const res=[...dmmSh,...indL.map(e=>[e.a,e.b]),...S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]]]),...pxR.map(([a,b])=>[a,b])];
   // 다이오드: {c, a 애노드 줄, k 캐소드 줄, m 특성, st 상태(1 순방향, −1 제너 역방향, 0 끊김), i 전류}
   // 아날로그 IC: 연산 증폭기(이상 증폭기+출력 한계), 오픈컬렉터 비교기, 가변 레귤레이터, 곱셈형 R-2R DAC
   const anaL=[];for(const c of S.comps)if(c.t==='px'&&PX[c.kind].ana){const A_=PX[c.kind].ana,hs=ph.get(c.id),n=k=>netOf[hs[k]],r=rt(c),pv=r.ast||[];r.ast=[];let q_=0;const ps=(d)=>{const x=pv[q_++];return x&&x.st!=='off'&&x.st!=null?x.st:d;};   // 지난번 상태에서 시작(빨리 수렴)
@@ -3566,12 +3575,13 @@ function settle(){
     // 모드: 이미터·소스가 전원·출력에 바로 붙었으면 스위치, 아니면 아날로그(이미 스스로 이어 붙은 것은 그대로 스위치)
     for(const t of trL){const an=!!S.power&&!strong.has(t.e)&&!(t.r.on&&!t.r.an&&t.cN===t.e);if(!!t.r.an!==an){if(t.r.on)t.r.anCh=true;t.r.an=an;if(an)t.r.on=false;}}
     const resAny=S.comps.some(c=>c.t==='res');   // 저항만 있는 회로(전압 나누기, 저항 + LED)도 옴의 법칙으로 푼다
-    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny&&!indL.length)||!S.power){for(const c of caps)rt(c).v=0;for(const e of indL){e.r.iL=0;e.r.vL=0;}for(const d of dioL){d.st=0;d.i=0;}return;}
+    if((!caps.length&&!pxR.length&&!dioL.length&&!trL.length&&!anaL.length&&!resAny&&!indL.length&&!dmmSh.length)||!S.power){for(const c of caps)rt(c).v=0;for(const e of indL){e.r.iL=0;e.r.vL=0;}for(const d of dioL){d.st=0;d.i=0;}return;}
     const t555=ics.filter(c=>c.t==='ic'&&CHIPS[c.chip].is555&&rt(c).pw&&rt(c).st);
     const pn=(c,k)=>netOf[ph.get(c.id)[CHIPS[c.chip].idx[k]]];
     const Rl=S.comps.filter(c=>c.t==='res'&&!rt(c).burnt).map(c=>[netOf[ph.get(c.id)[0]],netOf[ph.get(c.id)[1]],1/resEff(c)]);   // 저항: 오차를 반영한 실제 값, 탄 것은 빠짐
     for(const c of caps){const a=netOf[ph.get(c.id)[0]],b=netOf[ph.get(c.id)[1]];if(a!==b)Rl.push([a,b,1/capLeak(c)]);}   // 커패시터 누설(고장·거꾸로면 크게)
     for(const c of t555)Rl.push([pn(c,'VCC'),pn(c,'CTRL'),1/5000],[pn(c,'CTRL'),pn(c,'GND'),1/10000]);
+    for(const [a,b] of dmmSh)Rl.push([a,b,1/DMM_SHUNT]);   // 멀티미터 전류 모드 션트
     for(const [a,b,o] of pxR)Rl.push([a,b,1/o]);
     const Cl=caps.map(c=>({r:rt(c),a:netOf[ph.get(c.id)[0]],b:netOf[ph.get(c.id)[1]],C:capEff(c),esr:capEsr(c)}));   // 실제 용량(오차·직류 바이어스)과 ESR
     const disch=new Map();for(const c of t555)disch.set(pn(c,'DISCH'),c);
@@ -3691,6 +3701,22 @@ function settle(){
   // 결과 해석
   const W_=[];const lvAt=i=>{const v=lvl.get(netOf[i]);return v===undefined?Z:v;};
   partStress(W_,vOf,netOf,ph);
+  // 멀티미터 읽기: 전압·전류는 계산된 전압으로, 저항은 수동 소자(저항·가변저항·코일 DCR·다른 멀티미터 션트)만으로 된 저항망을 따로 푼다(1A를 넣고 생긴 전압)
+  for(const c of S.comps){if(c.t!=='dmm')continue;const r=rt(c),hs=ph.get(c.id),n=k=>netOf[hs[k]],nm=LBL.get(c.id)||'',wired=k=>S.comps.some(w=>w.t==='wire'&&w.pins.includes(c.pins[k])),m=c.mode||'v';let x=null;
+    if(m==='v'){const a=vOf(n(1)),b=vOf(n(0));x=S.power&&a!=null&&b!=null?a-b:0;if(wired(2)&&!wired(1))W_.push(['warn',`${nm} 멀티미터: 전압은 VΩ 단자(빨강)와 COM 단자로 재요. 지금 A 단자에 이어져 있어요.`,c.id]);}
+    else if(m==='a'){if(r.fuse)x=null;else{const a=vOf(n(2)),b=vOf(n(0));x=S.power&&a!=null&&b!=null?(a-b)/DMM_SHUNT:0;
+        if(Math.abs(x)>DMM_FUSE){r.fuse=true;x=null;if(!dmmBurn.busy){dmmBurn.busy=true;setTimeout(()=>{dmmBurn.busy=false;settle();if(typeof render==='function')render();if(typeof renderInfo==='function')renderInfo();},0);}}}
+      if(r.fuse)W_.push(['bad',`${nm} 멀티미터 퓨즈가 끊어졌어요(10A 넘게 흐름). 전류 모드는 회로를 끊고 그 사이에 직렬로 끼워야 해요 — 전원 양 끝에 바로 대면 단락이에요. [속성]에서 [퓨즈 갈기]를 눌러요.`,c.id]);
+      if(wired(1)&&!wired(2))W_.push(['warn',`${nm} 멀티미터: 전류는 A 단자(노랑)와 COM 단자로, 회로를 끊은 자리에 직렬로 끼워 재요. 지금 VΩ 단자에 이어져 있어요.`,c.id]);}
+    else{const A_=n(1),B_=n(0);if(A_===B_)x=0;else{const G=new Map(),edge=(a,b,g)=>{if(a===b||!(g>0))return;for(const [u,v] of [[a,b],[b,a]]){if(!G.has(u))G.set(u,[]);G.get(u).push([v,g]);}};
+        for(const q of S.comps){if(q.t==='res'&&!rt(q).burnt){const h=ph.get(q.id);edge(netOf[h[0]],netOf[h[1]],1/resEff(q));}}
+        for(const [a,b,o] of pxR)edge(a,b,1/o);for(const e of indL)edge(e.a,e.b,1/e.R);for(const [a,b] of dmmSh)edge(a,b,1/DMM_SHUNT);
+        const seen=new Set([A_]),st=[A_];while(st.length){const u=st.pop();for(const [v] of G.get(u)||[])if(!seen.has(v)){seen.add(v);st.push(v);}}
+        if(!seen.has(B_))x=Infinity;else{const nodes=[...seen].filter(q=>q!==B_),ix=new Map(nodes.map((q,i)=>[q,i])),N=nodes.length,M=Array.from({length:N},()=>new Float64Array(N+1));
+          for(const u of nodes){const i=ix.get(u);for(const [v,g] of G.get(u)||[]){M[i][i]+=g;if(v!==B_)M[i][ix.get(v)]-=g;}}M[ix.get(A_)][N]=1;gsolve(M,N);x=M[ix.get(A_)][N];}}
+      if(S.power&&(strong.has(n(1))||strong.has(n(0)))&&(wired(0)||wired(1)))W_.push(['warn',`${nm} 멀티미터: 전원이 이어진 회로에서 저항을 재고 있어요. 실제로는 값이 틀리거나 멀티미터가 망가질 수 있어요 — 전원을 끄거나 부품을 빼서 재요.`,c.id]);
+      if(wired(2)&&!wired(1))W_.push(['warn',`${nm} 멀티미터: 저항은 VΩ 단자(빨강)와 COM 단자로 재요.`,c.id]);}
+    r.rd={m,x,t:r.fuse&&m==='a'?'FUSE':dmmFmt(m,x)};}
   ardWarns(W_,vOf,netOf,ph);
   SIM.led=new Map();SIM.seg=new Map();SIM.disp=new Map();
   const shortNets=new Set();for(const [net,v] of lvl)if(v===SH&&!weak.has(net))shortNets.add(net);
@@ -4070,6 +4096,10 @@ function instSVG(c,ph,isSel,one){if(ARDX[c.t])return ardExtSVG(c,isSel);const id
       +T(70,ry+12,'CH'+(ch.i+1)+(live?'':' OFF'),8,live?'#FFD08A':'#8A9099','start','var(--sans)')+T(70,ry+27,WAVES[q.wave]||'',7.5,live?'#AEB4BD':'#5D6068','start','var(--sans)')
       +T(w-36,ry+14,num(q.hz,1)+' Hz',11,live?'#FFD08A':'#6B5A3C','end')+T(w-36,ry+28,num(q.vpp,5)+'Vpp '+(lo?(lo>0?'+':'')+lo+'V ':'')+'φ'+num(q.ph,0)+'°',7.5,live?'#C9A56A':'#5C4A2A','end');}
   if(c.t==='spa')s+=spaSVG(c);
+  if(c.t==='dmm'){const rd=rt(c).rd||{},m=c.mode||'v',bad=rd.t==='FUSE'||rd.t==='OL',parts=String(rd.t||'---').split(' ');
+    s+=`<rect x="${x+10}" y="${y+34}" width="${w-20}" height="54" rx="4" fill="#B8C4A8" stroke="#000"/>`+T(w-18,71,parts[0],24,bad?'#8B1E1E':'#16200F','end')+T(w-18,84,parts[1]||'',9,'#2F3A26','end','var(--sans)')+T(16,46,{v:'DC V',a:'DC A',o:'Ω'}[m],8,'#2F3A26','start','var(--sans)')
+      +[['v','V⎓'],['a','A⎓'],['o','Ω']].map(([k,t],i)=>`<rect x="${x+12+i*43}" y="${y+98}" width="39" height="20" rx="10" fill="${k===m?'#F2C230':'#3A3F47'}"/>`+T(31.5+i*43,112,t,10,k===m?'#1A1C1F':'#AEB4BD')).join('')
+      +`<circle cx="${x+w/2}" cy="${y+148}" r="20" fill="#1E2126" stroke="#4A505A" stroke-width="2"/><path d="M${x+w/2} ${y+148}L${x+w/2+16*Math.cos((-150+60*'vao'.indexOf(m))*Math.PI/180)} ${y+148+16*Math.sin((-150+60*'vao'.indexOf(m))*Math.PI/180)}" stroke="#F2C230" stroke-width="3" stroke-linecap="round"/>`;}
   if(c.t==='osc'){const sx=x+12,sy=y+34,o=oscTrace(c),split=c.split!==false;let g='',g2='',tick='',clip='',tr='';
     for(let i=1;i<10;i++)g+=`M${sx+i*20} ${sy}V${sy+160}`;
     if(split){for(let i=1;i<16;i++)if(i%4)g+=`M${sx} ${sy+i*10}H${sx+200}`;else g2+=`M${sx} ${sy+i*10}H${sx+200}`;}else for(let i=1;i<8;i++)g+=`M${sx} ${sy+i*20}H${sx+200}`;
@@ -4541,11 +4571,11 @@ function renderInfo(){const box=$('info');
   if(sel&&sel.type==='comp'){const c=compById(sel.id);if(!c){sel=null;return renderInfo();}
     let h=`<div class="ttl"><b>${esc(LBL.get(c.id)||'')} ${esc(compName(c))}</b><span>${c.t==='ic'?esc(CHIPS[c.chip].title):''}</span></div>`;
     if(tab==='warn')showTab('info');
-    if(c.t==='ic'||c.t==='gate')h+=`<p class="desc">${esc(defOf(c).desc)}</p>`;
-    else h+=`<p class="desc">${esc(partDesc(c))}</p>`;
+    const dsc=c.t==='ic'||c.t==='gate'?defOf(c).desc:partDesc(c);   // 부품 설명은 맨 밑에
     h+=`<div id="live"></div>`;
     h+=propEditor(c);
     h+=`<div class="row"><button class="btn bad" id="del">삭제 (Delete)</button></div>`;
+    if(dsc)h+=`<div class="prop pdesc"><label>부품 설명</label><p class="desc" style="margin:0">${esc(dsc)}</p></div>`;
     box.innerHTML=h;bindProps(c);$('del').onclick=()=>delComp(c.id);}
   else if(sel&&sel.type==='hole'){box.innerHTML=`<div class="ttl"><b>구멍 ${esc(holeName(sel.id))}</b></div><div id="live"></div>`;}
   else if(tool.startsWith('ic:')){const d=CHIPS[tool.slice(3)];
@@ -4566,6 +4596,7 @@ function partDesc(c){return{
   psu:'실험실의 직류 전원 장치예요. 출력 채널(포트)이 3개(CH1·CH2·CH3)이고 채널마다 전압(−100 ~ 100V)과 켜기·끄기를 따로 정해요 — [속성]에서 채널을 골라요. 3V 이상이면 디지털 회로는 HIGH로 읽어요. − 단자는 모두 공통 접지예요. 쓰는 채널의 + 단자와 − 단자에서 각각 전선을 끌어 + 레일, − 레일에 이으면 그 줄에 전원이 들어가요. 서플라이나 건전지를 하나라도 놓으면 보드의 자동 5V 전원은 꺼지니, 위·아래 레일을 모두 쓰려면 레일끼리 전선으로 이어 주세요. 74 계열 칩은 5V에 맞추세요.',
   bat:'건전지예요. + 단자와 − 단자에서 전선을 끌어 회로에 이으면 전원이 돼요. 1.5V 하나로는 LED도 켜지지 않고(3V부터 켜져요), 74 계열 칩은 4.5~5V가 필요해서 AA 3개(4.5V)가 가장 가까워요. 9V는 칩에 바로 걸면 망가져요. 건전지를 놓으면 보드의 자동 5V 전원은 꺼져요.',
   fg:'구형파·사인파·삼각파·톱니파를 내보내요. 출력 채널(포트)이 3개이고 채널마다 파형, 주파수, 크기(Vpp), 가장 낮은 전압(오프셋), 구형파의 듀티비, 위상(°), 켜기·끄기를 [속성]에서 따로 정해요. [3상 만들기]를 누르면 0°·120°·240° 신호가 나와요. 각 채널의 OUT 단자에서 신호를 넣을 구멍까지, GND 단자에서 − 레일까지 전선을 끌어 이으세요. 2.5V를 넘으면 디지털 회로는 HIGH로 읽어요.',
+  dmm:'전압·전류·저항을 재는 계측기예요. [속성]에서 모드를 골라요. 전압(V⎓): VΩ 단자(빨강)와 COM 단자(검정)를 잴 두 곳에 대면 VΩ − COM 전압이 나와요. 전류(A⎓): 회로를 한 곳 끊고 그 사이에 A 단자(노랑)와 COM을 직렬로 끼워요 — 안의 0.1Ω 션트로 흐르는 전류를 재요(A → COM 방향이 +). 10A를 넘으면 퓨즈가 끊어져요. 저항(Ω): VΩ와 COM 사이의 저항·가변저항·코일 선 저항을 계산해요. 이어진 길이 없으면 OL(무한대)이에요. 저항은 전원을 끄거나 부품을 빼고 재는 게 맞아요.',
   spa:'신호를 주파수별로 나눠 각 주파수 성분의 세기(dBm, 50Ω 기준)를 그려 줘요. 스윕 동조형 분석기처럼 입력 감쇠기 → 믹서(국부 발진기가 시작~끝 주파수를 훑음) → IF 분해능 필터(RBW) → 로그 증폭·검파 → 비디오 필터(VBW) 순서로 계산하고, 화면은 스윕 시간 동안 왼쪽에서 오른쪽으로 그려져요. Ⓟ10 예제에서 보드 6장(감쇠기·국부 발진기·변환 체인·IF 로그 증폭·스윕 발생기·CRT)으로 나눠 놓았던 일을 한 대에 모아 실제로 동작하게 만든 계측기예요. RF IN 단자를 재고 싶은 구멍에 이어요. 함수 발생기·클럭 출력에 바로 이으면 그 파형을 정밀하게 분석하고(구형파의 홀수 고조파가 보여요), 다른 줄은 20ms마다 잰 전압으로 25Hz까지 분석해요. [신호 찾아 맞추기]를 누르면 가장 센 신호가 보이게 주파수를 맞춰요. 노란 마름모가 가장 센 점(피크 마커)이에요. 입력이 너무 세면(믹서에 −10dBm 넘게 들어가면) 꼭대기가 눌려요 — 기준 레벨을 올리면 감쇠기가 자동으로 커져요.',
   osc:'네 곳의 전압이 시간에 따라 어떻게 바뀌는지 그려 줘요. 화면을 4분할(채널마다 그래프 하나)이나 겹침으로 고르고, 시간/칸, 채널별 전압/칸·0V 자리·위상 이동·표시 여부를 [속성]에서 바꿀 수 있어요. 화면 아래에 채널마다 주파수·Vpp와 CH1과의 위상차가 나와요. CH1~CH4 단자에서 보고 싶은 구멍까지 전선을 끌어 이으세요. 전압은 회로의 GND(−)를 기준으로 재요. 화면 왼쪽의 짧은 눈금이 각 채널의 0V 자리예요.',
   seg7:c.ca?'공통 애노드 7세그먼트예요. COM(3·8번 핀)을 + 에 연결하고, a~g 핀이 LOW면 해당 획이 켜져요. 74LS47·46 과 짝이에요.':'공통 캐소드 7세그먼트예요. COM(3·8번 핀)을 − 에 연결하고, a~g 핀이 HIGH면 해당 획이 켜져요. CD4511 과 짝이에요.'}[c.t]??(ARDX[c.t]?ARDX[c.t].desc.replace(/<\/?b>/g,''):'');}
@@ -4579,6 +4610,10 @@ const chTabs=(c,n,sub)=>`<div class="prop"><label>채널 (포트) 고르기</lab
 /* 필드 이름 '채널:칸'(예: '2:v')은 그 채널의 설정, 아니면 몸통 칸 */
 const instObj=(c,f)=>{const m=/^(\d):(.+)$/.exec(f);return m?[instCh(c,+m[1]-1),m[2]]:[c,f];};
 function instProps(c){const P=(l,h)=>`<div class="prop"><label>${l}</label>${h}</div>`,on=v=>v?'켜짐':'꺼짐';
+  if(c.t==='dmm'){const rd=rt(c).rd||{};return`<div class="prop"><label>지금 읽은 값</label><p class="desc" style="margin:0;font-size:20px;font-family:var(--mono);font-weight:700">${esc(rd.t||'---')}</p></div>`
+    +P('측정 모드',segBtns('mode',Object.keys(DMM_MODES),c.mode||'v',v=>DMM_MODES[v]))
+    +(rt(c).fuse?'<div class="row" style="margin:2px 0 8px"><button class="btn pri" id="dmmFuse">퓨즈 갈기</button></div>':'')
+    +`<p class="desc">${{v:'VΩ(빨강)·COM(검정)을 잴 두 곳에 나란히 대요. 값 = VΩ 전압 − COM 전압.',a:'회로를 끊은 자리에 A(노랑)·COM을 직렬로 끼워요. A로 들어가 COM으로 나오는 전류가 +예요. 안의 저항 0.1Ω, 10A 퓨즈.',o:'VΩ·COM 사이의 저항을 재요. 전원을 끈 회로나 뺀 부품에서 재요. 길이 없으면 OL.'}[c.mode||'v']}</p>`;}
   if(ARDX[c.t])return`<div class="prop"><label>상태</label><p class="desc" style="margin:0">${ardState(c)}</p></div>`+P('USB 전원',segBtns('usb',[1,0],c.usb===0?0:1,v=>v?'USB 꽂음':'빼기 (VIN으로 전원)'))+`<p class="desc">${ARDX[c.t].hdr.length}개 단자 · 단자에서 구멍까지 끌면 점퍼선이 생겨요</p>`;
   if(c.t==='psu'){const k=instSel(c,3),q=instCh(c,k),f=n=>(k+1)+':'+n,chs=psuChs(c);
     return chTabs(c,3,i=>chs[i].on?(+chs[i].v)+'V':'꺼짐')
@@ -4635,6 +4670,7 @@ const capLeak=c=>{const r=rt(c),dk=capDk(c),uF=c.farad*1e6;if(r.fail)return 2;if
 const fmtA=i=>{const a=Math.abs(i);return a>=1?a.toFixed(2)+'A':a>=1e-3?(a*1e3).toFixed(a>=.1?0:1)+'mA':a>=1e-6?(a*1e6).toFixed(1)+'µA':(a*1e9).toFixed(1)+'nA';};
 const fmtW=w=>w>=1?w.toFixed(2)+'W':w>=1e-3?(w*1e3).toFixed(1)+'mW':(w*1e6).toFixed(1)+'µW';
 // 한 번 계산한 뒤: 저항 전력·커패시터 전압으로 상태(뜨거움·탐·고장·거꾸로) 정하고 경고
+function dmmBurn(){}
 function partStress(W_,vOf,netOf,ph){let changed=false;
   for(const c of S.comps){if(c.t!=='px'||!PX[c.kind].ind||!PX[c.kind].thru)continue;const r=rt(c),i=Math.abs(r.iL||0),im=indImaxOf(c),nm=LBL.get(c.id)||'',m=indModel(c);
     if(i>im)W_.push([i>2*im?'bad':'warn',`${nm} 코일에 ${fmtA(i)}가 흘러 흘릴 수 있는 전류(약 ${fmtA(im)})를 넘었어요 — 심이 포화돼 인덕턴스가 줄고, 선 저항(${ohmTx(+m.R.toPrecision(2))})에서 ${fmtW(i*i*m.R)}의 열이 나요. 직렬 저항을 넣거나 전류가 큰 코일(드럼 코어·토로이드)로 바꿔요.`,c.id]);
@@ -4718,7 +4754,8 @@ function propEditor(c){
   return'';}
 function bindProps(c){
   if(INST.has(c.t)){$('info').querySelectorAll('[data-f] button').forEach(b=>b.onclick=()=>{pushHist();const f=b.closest('[data-f]').dataset.f,v=b.dataset.v;
-      const [o,key]=instObj(c,f);if(key==='wave')o.wave=v;else if(['on','run','on1','on2','on3','on4','split'].includes(key))o[key]=v==='1';else o[key]=+v;commit(true);});
+      const [o,key]=instObj(c,f);if(key==='wave'||key==='mode')o[key]=v;else if(['on','run','on1','on2','on3','on4','split'].includes(key))o[key]=v==='1';else o[key]=+v;commit(true);});
+    {const fz=$('dmmFuse');if(fz)fz.onclick=()=>{pushHist();delete rt(c).fuse;commit(true);toast('퓨즈를 갈았어요');};}
     $('info').querySelectorAll('#chSel [data-ch]').forEach(b=>b.onclick=()=>{INSTSEL.set(c.id,+b.dataset.ch);renderInfo();});
     {const b3=$('fg3ph');if(b3)b3.onclick=()=>{pushHist();for(let i=1;i<3;i++){const q=instCh(c,i);for(const k of ['wave','hz','vpp','off','duty'])q[k]=c[k];q.ph=120*i;q.on=true;}c.ph=0;c.on=true;commit(true);toast('3상 신호를 만들었어요 · CH1 0° · CH2 120° · CH3 240°');};
      const bs=$('fgSame');if(bs)bs.onclick=()=>{pushHist();for(let i=1;i<3;i++)instCh(c,i).hz=c.hz;commit(true);};}
@@ -4845,6 +4882,7 @@ const ICO={led3:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M6 17V
   bat:'<svg width="24" height="14" viewBox="0 0 24 14"><rect x="1" y="2" width="19" height="10" rx="2.5" fill="#B45309"/><rect x="1" y="2" width="6" height="10" rx="2.5" fill="#1F2937"/><rect x="20" y="5" width="3" height="4" rx="1" fill="#9CA3AF"/><text x="13" y="10" font-size="6.5" font-weight="700" fill="#fff" text-anchor="middle" font-family="monospace">9V</text></svg>',
   fg:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><path d="M4 9Q7 1 10 9T16 9T22 9" fill="none" stroke="#FFB648" stroke-width="1.6"/><circle cx="7" cy="14" r="1.6" fill="#F08C00"/></svg>',
   spa:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><rect x="3.5" y="3.5" width="14" height="11" rx="1" fill="#041008"/><path d="M4 13h2l1-7 1 7h2l1-4 1 4h2l1-2 1 2h1" fill="none" stroke="#5CFF8F" stroke-width="1.1"/><circle cx="20" cy="6" r="1.4" fill="#5CFF8F"/></svg>',
+  dmm:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="5" y="0.5" width="14" height="17" rx="2.5" fill="#2A2E35"/><rect x="7" y="2.5" width="10" height="5" rx="1" fill="#B8C4A8"/><circle cx="12" cy="11.5" r="2.6" fill="#1E2126" stroke="#8A9099" stroke-width=".8"/><path d="M12 11.5l1.6-1.6" stroke="#F2C230" stroke-width="1"/><circle cx="8.5" cy="15.5" r="1" fill="#F2C230"/><circle cx="12" cy="15.5" r="1" fill="#59606B"/><circle cx="15.5" cy="15.5" r="1" fill="#E5484D"/></svg>',
   osc:'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="1" y="1" width="22" height="16" rx="3" fill="#2A2E35"/><rect x="3.5" y="3.5" width="13" height="11" rx="1" fill="#06110C"/><path d="M4 11h3V6h3v5h3V6h3" fill="none" stroke="#F2C230" stroke-width="1.3"/><circle cx="19.5" cy="6" r="1.4" fill="#8A9099"/><circle cx="19.5" cy="11" r="1.4" fill="#8A9099"/></svg>',
   seg7:'<svg width="16" height="20" viewBox="0 0 16 20"><rect width="16" height="20" rx="2" fill="#1A1C1F"/><path d="M5 3h6M4 4v5M12 4v5M5 10h6M4 11v5M12 11v5M5 17h6" stroke="#FF3B30" stroke-width="1.8"/></svg>',
   ic:'<svg width="26" height="16" viewBox="0 0 26 16"><rect x="1" y="3" width="24" height="10" rx="1.5" fill="#26292E"/><path d="M1 6a2 2 0 0 1 0 4z" fill="#000"/>'+[4,9,14,19].map(x=>`<rect x="${x}" y="0" width="2.5" height="3" fill="#AAB"/><rect x="${x}" y="13" width="2.5" height="3" fill="#AAB"/>`).join('')+'</svg>'};
@@ -4867,7 +4905,7 @@ const gIco=k=>`<svg width="30" height="16" viewBox="20 -10 64 30">${gateSVG(k,(k
 /* 부품 리본: 분류 탭 + 가로 목록 */
 const CATALOG=(()=>{const fam=d=>d.name.startsWith('74LS')?1:d.name.startsWith('74HC')?0:2,sorted=Object.values(CHIPS).sort((a,b)=>(+chipNum(a.name)-+chipNum(b.name))||fam(a)-fam(b));
   const tabs=[{k:'basic',label:'도구·부품',items:[...TOOLS,...PARTS].map(t=>({t,ico:ICO[t[0]]}))},
-    {k:'inst',label:'계측기·전원',items:[['psu','파워 서플라이','직류 전원 3채널 · −100 ~ 100V',''],['bat','건전지','1.5V ~ 9V',''],['fg','함수 발생기','3채널 · 구형·사인·삼각파 · 위상',''],['osc','오실로스코프','4채널 · 4분할 그래프 · 위상',''],['spa','스펙트럼 분석기','주파수별 신호 세기 (dBm)','']].map(t=>({t,ico:ICO[t[0]]}))},
+    {k:'inst',label:'계측기·전원',items:[['psu','파워 서플라이','직류 전원 3채널 · −100 ~ 100V',''],['bat','건전지','1.5V ~ 9V',''],['fg','함수 발생기','3채널 · 구형·사인·삼각파 · 위상',''],['osc','오실로스코프','4채널 · 4분할 그래프 · 위상',''],['dmm','멀티미터','전압·전류·저항',''],['spa','스펙트럼 분석기','주파수별 신호 세기 (dBm)','']].map(t=>({t,ico:ICO[t[0]]}))},
     {k:'gates',label:'기본 게이트',items:Object.values(GATES).map(d=>({t:['gate:'+d.name,d.name,'Y = '+d.expr,''],ico:gIco(d.name)}))}];
   for(const [k,label] of CATS){const list=sorted.filter(d=>d.cat===k);if(list.length)tabs.push({k:'ic-'+k,label:'IC '+label,items:list.map(d=>({t:['ic:'+d.name,d.name,d.title+' · '+d.pins.length+'핀',''],ico:ICO.ic}))});}
   return tabs;})();
@@ -5026,6 +5064,7 @@ function renderHint(){$('sMode').textContent=toolName();const H_={select:'<b>선
   bat:'<b>건전지</b> · 놓을 자리를 누르세요 · 그다음 + / − 단자에서 구멍까지 끌어 전선을 이으세요',
   fg:'<b>함수 발생기 (3채널)</b> · 놓을 자리를 누르세요 · 그다음 쓸 채널의 OUT / GND 단자에서 구멍까지 끌어 전선을 이으세요',
   osc:'<b>오실로스코프 (4채널)</b> · 놓을 자리를 누르세요 · 그다음 CH1~CH4 단자에서 구멍까지 끌어 전선을 이으세요',
+  dmm:'<b>멀티미터</b> · 놓을 자리를 누르세요 · 그다음 COM·VΩ(전압·저항) 또는 COM·A(전류) 단자에서 잴 곳까지 전선을 이으세요',
   spa:'<b>스펙트럼 분석기</b> · 놓을 자리를 누르세요 · 그다음 RF IN 단자에서 재고 싶은 구멍까지 끌어 전선을 이으세요',
   clk:'<b>클럭</b> · 출력 핀을 꽂을 구멍을 누르세요',seg7:'<b>7세그먼트</b> · 놓을 곳 근처를 누르세요 · 가운데 홈에, 겹치지 않는 빈자리로 자동으로 놓여요'};
   if(tool.startsWith('gate:')){$('hint').innerHTML=`<b>${tool.slice(5)} 게이트</b> · 놓을 줄을 누르세요. 다리는 같은 줄의 서로 다른 열(입력 왼쪽, 출력 오른쪽)에 꽂혀요 · 겹치면 가까운 빈자리로 옮겨 놓아요`;return;}
@@ -5820,6 +5859,7 @@ function fixComp(c){if(!c||typeof c!=='object'||typeof c.t!=='string')return nul
   if(c.t==='px')pxFix(c);
   if(INST.has(c.t)){const D=IDEF[c.t](),lo=k=>k==='off'||/^ph/.test(k)||(c.t==='psu'&&k==='v')?-1e3:1e-6;for(const k of Object.keys(D)){if(typeof D[k]==='number')c[k]=numOr(c[k],D[k],lo(k),1e6);else if(typeof D[k]==='boolean')c[k]=c[k]===undefined?D[k]:!!c[k];}
     if(c.t==='fg'){if(!WAVES[c.wave])c.wave='sq';c.duty=Math.min(95,Math.max(5,c.duty));}
+    if(c.t==='dmm'&&!DMM_MODES[c.mode])c.mode='v';
     if(c.t==='psu'||c.t==='fg'){const D2=c.t==='psu'?PSU2():FG2(),src=Array.isArray(c.ch)?c.ch:[];   // 2·3번 채널 설정
       c.ch=D2.map((d,i)=>{const q=src[i]&&typeof src[i]==='object'?src[i]:{},o={};for(const k of Object.keys(d))o[k]=typeof d[k]==='number'?numOr(q[k],d[k],k==='off'||k==='ph'||k==='v'?-1e3:1e-6,1e6):typeof d[k]==='boolean'?(q[k]===undefined?d[k]:!!q[k]):(WAVES[q[k]]?q[k]:d[k]);if(c.t==='fg')o.duty=Math.min(95,Math.max(5,o.duty));return o;});}
     if(c.k!=null&&!(Number.isFinite(+c.k)&&+c.k>=1))delete c.k;else if(c.k!=null)c.k=Math.round(+c.k);}
@@ -6144,7 +6184,7 @@ function applyCircuit(d,fname){const want=d.comps.filter(c=>c&&c.t!=='wire').len
   toast(got<want?`회로를 적용했어요 · 부품 ${want}개 중 ${want-got}개는 자리가 맞지 않아 뺐어요(안내서 B-7 점검표)`:'회로 파일을 적용했어요 · 이전 회로는 실행 취소로 되돌릴 수 있어요');}
 function impMsg(t,k){const m=$('impMsg');m.className='imsg'+(k?' '+k:'');m.textContent=t;}
 /* 화면 버전: 미리보기가 새로 고쳐졌는지 사용자가 확인할 수 있게 */
-const APP_VER='2026-11-27 · 도구 막대 계측기·전원 · 파워 서플라이 3채널 · 함수 발생기 3채널(위상) · 오실로스코프 4채널';
+const APP_VER='2026-11-27 · 멀티미터(전압·전류·저항) · 속성 창 부품 설명은 맨 밑';
 function openImport(file){$('impDlg').hidden=false;closeMenu();$('appVer').textContent='('+APP_VER+')';
   if(file)handleImportFile(file);else setTimeout(()=>$('impText').focus(),50);}
 function closeImport(){$('impDlg').hidden=true;}
@@ -8467,7 +8507,7 @@ const licLine=()=>LIC.mode==='key'?` ${LIC.local?'개인용 로컬 버전 · ':'
       const set=(q,f)=>{const el=g.querySelector(q);if(el)f(el);};
       for(let k=0;k<4;k++){set('.tr'+(k+1),el=>el.setAttribute('d',o.d[k]));set('.om'+(k+1),el=>el.textContent='CH'+(k+1)+' '+o.meas[k]);}}}
   let lastOut='',frame=0;
-  function snapOut(){return S.comps.map(c=>c.t==='ic'?(rt(c).out||[]).join(''):c.t==='led'?+((SIM.led.get(c.id)||{}).lit||0):'').join('|');}
+  function snapOut(){return S.comps.map(c=>c.t==='ic'?(rt(c).out||[]).join(''):c.t==='led'?+((SIM.led.get(c.id)||{}).lit||0):c.t==='dmm'?(rt(c).rd||{}).t:'').join('|');}
   // 단락 전선 깜박임
 })();
 </script>

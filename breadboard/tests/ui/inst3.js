@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const path=require('path');
 await p.goto('file://'+path.join(__dirname,'../../index.html'));await p.waitForTimeout(900);const out=[],T=(k,ok,msg)=>out.push({k,ok:!!ok,msg:msg==null?'':String(msg)});
 // 도구 막대
 const tb=await p.evaluate(()=>[...document.querySelectorAll('.toolbar .instg [data-tool]')].map(b=>b.dataset.tool+(b.querySelector('svg')?'+':'')).join(','));
-T('도구 막대에 계측기·전원 단추(그림 포함)',tb==='psu+,bat+,fg+,osc+,spa+',tb);
+T('도구 막대에 계측기·전원 단추(그림 포함)',tb==='psu+,bat+,fg+,osc+,dmm+,spa+',tb);
 await p.evaluate(()=>{S.comps=[];commit&&commit(true);});await p.dblclick('.toolbar .instg [data-tool="osc"]');await p.waitForTimeout(200);
 T('두 번 누르면 오실로스코프가 놓임',await p.evaluate(()=>S.comps.some(c=>c.t==='osc')));
 const r=await p.evaluate(async()=>{const R={},B=[{id:1,type:'full',x:0,y:0}];const v=id=>{const h=HOLES.get(id);return SIM.vOf(SIM.netOf[h.i]);};

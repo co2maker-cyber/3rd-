@@ -436,9 +436,10 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 | `osc` | 오실로스코프 (채널 4개) | `tdiv`, `vdiv` `vdiv2` `vdiv3` `vdiv4`, `pos1`~`pos4`(0V 자리, 칸), `ph1`~`ph4`(위상 이동 °), `on1`~`on4`, `split`(true 4분할 / false 겹침), `run` | CH1 | CH2 (단자 2 = CH3, 3 = CH4) |
 | `auno3` `aunor4m` `aunor4w` `aleo` | 아두이노 호환 · UNO 폼팩터(보드 밖, 68.6 × 53.4mm) | `usb`(1 꽂음, 0 뺌) | 헤더 32개 | 단자 순서: 위 왼쪽 SCL SDA AREF GND D13~D8, 위 오른쪽 D7~D0, 아래 NC IOREF RESET 3.3V 5V GND GND VIN, A0~A5 |
 | `amega` `adue` `agiga` | 아두이노 호환 · Mega 폼팩터(보드 밖, 101.5 × 53.3mm) | `usb` | 헤더 84개 | UNO 32개 + D14~D21 + A8~A15(또는 A8~A11 DAC0 DAC1 CANRX CANTX) + 2×18(5V 5V, D22 D23 … D52 D53, GND GND) |
+| `dmm` | 멀티미터 | `mode`(`v` 직류 전압 · `a` 직류 전류 · `o` 저항) | COM | VΩ (단자 2 = A) |
 | `spa` | 스펙트럼 분석기 | `cf`(가운데 Hz), `span`(Hz), `ref`(dBm), `dbd`(dB/칸), `rbw`·`vbw`(Hz, 0 = 자동), `att`(dB, −1 = 자동), `swt`(초, 0 = 자동), `hold`(1 = 최대값 유지), `cal`(1 = 내부 교정 신호), `run` | RF IN | — |
 
-- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 200×150, bat 130×74, fg 220×150, osc 290×250, spa 310×250, UNO 폼팩터 540×420, Mega 폼팩터 799×420. 아두이노 호환 보드의 단자 이름은 부품 정보 창에 나와요.
+- `x`, `y`: 몸통 위치. 보드 아래(`y`: 440 이상)에 두면 겹치지 않아요. 크기는 psu 200×150, bat 130×74, fg 220×150, osc 290×250, spa 310×250, dmm 150×214, UNO 폼팩터 540×420, Mega 폼팩터 799×420. 아두이노 호환 보드의 단자 이름은 부품 정보 창에 나와요.
 - `k`: 계측기마다 다른 번호(1, 2, 3 …). 단자 구멍 이름은 **`@k:번호`** 예요(`@1:0` = 1번 계측기의 + 단자, 파워 서플라이 `@1:2` = CH2 +).
 - 파워 서플라이·함수 발생기의 − / GND 단자는 모두 공통 접지(0V)예요. 꺼진 채널(`on`: false)은 아무것도 내보내지 않아요. 예전 파일(채널 1개)은 그대로 CH1이 되고 CH2·CH3은 꺼진 채로 열려요.
 - 5V가 아닌 전압은 자동 5V 레일과 섞이지 않게 **레일 말고 보드 줄(a~j)** 로 이어 쓰세요.
@@ -480,7 +481,7 @@ CAD에서 **[저장] ▸ 파일로 내려받기**를 하면 나오는 파일과 
 
 불러오기는 문제 있는 부품을 **조용히 빼고** 나머지만 꽂아요. 부품 수가 모자라면 아래를 보세요.
 
-- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa` `auno3` `aunor4m` `aunor4w` `aleo` `amega` `adue` `agiga`)
+- [ ] `t`가 위 표에 없는 값이다 (`wire` `res` `led` `led3` `cap` `sw` `btn` `clk` `gate` `ic` `seg7` `px` `psu` `bat` `fg` `osc` `spa` `dmm` `auno3` `aunor4m` `aunor4w` `aleo` `amega` `adue` `agiga`)
 - [ ] `ic`의 `chip`이 부록 표에 없다 / `gate`의 `kind`가 7가지가 아니다 / `px`의 `kind`가 표에 없다
 - [ ] 구멍 이름이 없다 — 레일 6의 배수 열, 보드 열 수를 넘음, `mini` 보드의 레일, 없는 보드 번호
 - [ ] 두 부품이 같은 구멍을 쓴다 (전선도 부품이에요)
